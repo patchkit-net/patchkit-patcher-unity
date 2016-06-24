@@ -1,0 +1,7 @@
+/src/.vs/
+/src/Library/
+/src/Temp/
+/src/obj/
+/src/*.sln
+/src/*.csproj
+/src/*.csproj.user
