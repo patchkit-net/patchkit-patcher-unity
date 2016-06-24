@@ -63,7 +63,7 @@ namespace PatchKit.Unity.Patcher
             if (TryReadArgument("--installdir", out applicationDataPath))
             {
                 // ReSharper disable once AssignNullToNotNullAttribute
-                ApplicationDataPath = Path.Combine(UnityEngine.Application.isEditor ? UnityEngine.Application.persistentDataPath : Path.GetDirectoryName(UnityEngine.Application.dataPath), applicationDataPath);
+                ApplicationDataPath = Path.Combine(GetBaseDirectory(), applicationDataPath);
             }
         }
 
@@ -73,6 +73,23 @@ namespace PatchKit.Unity.Patcher
             _patchKitUnityPatcher.ApplicationDataPath = ApplicationDataPath;
 
             _patchKitUnityPatcher.StartPatching();
+        }
+
+        private string GetBaseDirectory()
+        {
+            if (UnityEngine.Application.isEditor)
+            {
+                return UnityEngine.Application.persistentDataPath;
+            }
+
+            string path = Path.GetDirectoryName(UnityEngine.Application.dataPath);
+
+            if (UnityEngine.Application.platform == RuntimePlatform.OSXPlayer)
+            {
+                path = Path.GetDirectoryName(path);
+            }
+
+            return path;
         }
 
         private string[] GetCommandLineArgs()
