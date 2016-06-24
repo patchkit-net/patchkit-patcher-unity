@@ -29,11 +29,26 @@ namespace PatchKit.Unity.Patcher
         {
             var directoryInfo = new DirectoryInfo(_patchKitUnityPatcher.ApplicationDataPath);
 
-            var executableFile = directoryInfo.GetFiles("*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            FileInfo executableFile;
 
-            if (executableFile != null)
+            if (UnityEngine.Application.platform == RuntimePlatform.OSXPlayer ||
+                UnityEngine.Application.platform == RuntimePlatform.OSXEditor)
             {
-                Process.Start(executableFile.FullName);
+                executableFile = directoryInfo.GetFiles("*.app", SearchOption.TopDirectoryOnly).FirstOrDefault();
+
+                if (executableFile != null)
+                {
+                    Process.Start("open -a " + executableFile.FullName);
+                }
+            }
+            else
+            {
+                executableFile = directoryInfo.GetFiles("*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
+
+                if (executableFile != null)
+                {
+                    Process.Start(executableFile.FullName);
+                }
             }
         }
 
