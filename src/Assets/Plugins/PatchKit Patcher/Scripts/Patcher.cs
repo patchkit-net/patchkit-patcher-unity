@@ -16,7 +16,7 @@ namespace PatchKit.Unity.Patcher
     /// <summary>
     /// Patcher working in Unity.
     /// </summary>
-    public class PatchKitUnityPatcher : MonoBehaviour
+    public class Patcher : MonoBehaviour
     {
         // Configuration
 

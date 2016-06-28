@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
 {
-    [RequireComponent(typeof(PatchKitUnityPatcher))]
+    [RequireComponent(typeof(Patcher))]
     public class PatcherController : MonoBehaviour
     {
         [Multiline]
@@ -16,7 +16,7 @@ namespace PatchKit.Unity.Patcher
 
         public string ApplicationDataPath { get; private set; }
 
-        private PatchKitUnityPatcher _patchKitUnityPatcher;
+        private Patcher _patcher;
 
         public void StartApplicationAndQuit()
         {
@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher
 
         public void StartApplication()
         {
-            var directoryInfo = new DirectoryInfo(_patchKitUnityPatcher.ApplicationDataPath);
+            var directoryInfo = new DirectoryInfo(_patcher.ApplicationDataPath);
 
             FileInfo executableFile;
 
@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Patcher
 
         public void Retry()
         {
-            _patchKitUnityPatcher.StartPatching();
+            _patcher.StartPatching();
         }
 
         public void Quit()
@@ -64,7 +64,7 @@ namespace PatchKit.Unity.Patcher
 
         protected virtual void Awake()
         {
-            _patchKitUnityPatcher = GetComponent<PatchKitUnityPatcher>();
+            _patcher = GetComponent<Patcher>();
 
             string secretKey;
 
@@ -84,10 +84,10 @@ namespace PatchKit.Unity.Patcher
 
         protected virtual void Start()
         {
-            _patchKitUnityPatcher.SecretKey = SecretKey;
-            _patchKitUnityPatcher.ApplicationDataPath = ApplicationDataPath;
+            _patcher.SecretKey = SecretKey;
+            _patcher.ApplicationDataPath = ApplicationDataPath;
 
-            _patchKitUnityPatcher.StartPatching();
+            _patcher.StartPatching();
         }
 
         private string GetBaseDirectory()

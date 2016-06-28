@@ -4,10 +4,10 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher
 {
-    [RequireComponent(typeof(PatchKitUnityPatcher))]
+    [RequireComponent(typeof(Patcher))]
     public class PatcherLayout : MonoBehaviour
     {
-        private PatchKitUnityPatcher _patchKitUnityPatcher;
+        private Patcher _patcher;
 
         private PatcherController _patcherController;
 
@@ -47,7 +47,7 @@ namespace PatchKit.Unity.Patcher
 
         private void Awake()
         {
-            _patchKitUnityPatcher = GetComponent<PatchKitUnityPatcher>();
+            _patcher = GetComponent<Patcher>();
 
             _patcherController = GetComponent<PatcherController>();
         }
@@ -65,18 +65,18 @@ namespace PatchKit.Unity.Patcher
 
         private void UpdateProgress()
         {
-            ProgressBar.value = _patchKitUnityPatcher.Status.Progress;
+            ProgressBar.value = _patcher.Status.Progress;
 
-            ProgressText.text = _patchKitUnityPatcher.Status.Progress.ToString("0.0%");
+            ProgressText.text = _patcher.Status.Progress.ToString("0.0%");
 
-            DownloadProgressBar.value = _patchKitUnityPatcher.Status.DownloadProgress;
+            DownloadProgressBar.value = _patcher.Status.DownloadProgress;
 
-            DownloadProgressText.text = _patchKitUnityPatcher.Status.DownloadProgress.ToString("0.0%");
+            DownloadProgressText.text = _patcher.Status.DownloadProgress.ToString("0.0%");
         }
 
         private void UpdateStatus()
         {
-            switch (_patchKitUnityPatcher.Status.State)
+            switch (_patcher.Status.State)
             {
                 case PatcherState.None:
                     {
@@ -87,9 +87,9 @@ namespace PatchKit.Unity.Patcher
                 case PatcherState.Patching:
                     {
                         Status.text = "Processing...";
-                        DownloadStatus.text = _patchKitUnityPatcher.Status.IsDownloading
+                        DownloadStatus.text = _patcher.Status.IsDownloading
                             ? string.Format("Downloading {0} kB/s",
-                                _patchKitUnityPatcher.Status.DownloadSpeed.ToString("0.0"))
+                                _patcher.Status.DownloadSpeed.ToString("0.0"))
                             : string.Empty;
                         break;
                     }
@@ -122,14 +122,14 @@ namespace PatchKit.Unity.Patcher
 
         private void UpdatePlayButton()
         {
-            PlayButton.interactable = _patchKitUnityPatcher.Status.State == PatcherState.Succeed;
+            PlayButton.interactable = _patcher.Status.State == PatcherState.Succeed;
         }
 
         private void UpdateRetryPopup()
         {
             bool isVisible;
 
-            switch (_patchKitUnityPatcher.Status.State)
+            switch (_patcher.Status.State)
             {
                 case PatcherState.Cancelled:
                 case PatcherState.Failed:
