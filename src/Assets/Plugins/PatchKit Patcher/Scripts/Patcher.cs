@@ -109,29 +109,40 @@ namespace PatchKit.Unity.Patcher
 
             ThreadPool.QueueUserWorkItem(state =>
             {
+                LogInfo("Invoking OnPatchingStarted event.");
                 Dispatcher.Invoke(OnPatchingStarted.Invoke);
+
                 try
                 {
+                    LogInfo("Starting patching.");
                     Patch(_cancellationTokenSource.Token);
+
+                    LogInfo("Setting status to Succeed.");
                     _status.State = PatcherState.Succeed;
                 }
                 catch (NoInternetConnectionException exception)
                 {
+                    LogInfo("Setting status to NoInternetConnection.");
                     _status.State = PatcherState.NoInternetConnection;
+
                     Debug.LogException(exception);
                 }
                 catch (OperationCanceledException)
                 {
+                    LogInfo("Setting status to Cancelled.");
                     _status.State = PatcherState.Cancelled;
                 }
                 catch (Exception exception)
                 {
+                    LogInfo("Setting status to Failed.");
                     _status.State = PatcherState.Failed;
                     Debug.LogException(exception);
                 }
                 finally
                 {
                     ResetStatus();
+
+                    LogInfo("Invoking OnPatchingFinished event.");
                     Dispatcher.Invoke(OnPatchingFinished.Invoke);
                 }
             });
@@ -154,30 +165,49 @@ namespace PatchKit.Unity.Patcher
 
             _status.Progress = 0.0f;
 
+            LogInfo("Checking internet connection.");
             if (!InternetConnectionTester.CheckInternetConnection(cancellationToken))
             {
+                LogError("No internet connection.");
                 throw new NoInternetConnectionException();
             }
 
+
+            LogInfo("Fetching current application version.");
             int currentVersion = _api.GetAppLatestVersionId(_secretKey).Id;
+
+            LogInfo(string.Format("Fetched current version - {0}.", currentVersion));
 
             int? commonVersion = _applicationData.Cache.GetCommonVersion();
 
+            LogInfo(string.Format("Common version of local application - {0}.", commonVersion.HasValue ? commonVersion.Value.ToString() : "none"));
+
+            LogInfo("Comparing common local version with current version.");
+
             if (commonVersion == null || currentVersion < commonVersion.Value || !CheckVersionConsistency(commonVersion.Value))
             {
+                LogInfo("Local application doesn't exist or files are corrupted.");
+
+                LogInfo("Clearing local application data.");
                 _applicationData.Clear();
 
+                LogInfo("Downloading content of current version.");
                 DownloadVersionContent(currentVersion, progressTracker, cancellationToken);
             }
             else if (commonVersion.Value != currentVersion)
             {
+                LogInfo("Patching local application.");
                 while (currentVersion > commonVersion.Value)
                 {
+                    LogInfo(string.Format("Patching from version {0}.", commonVersion.Value));
+
                     commonVersion = commonVersion.Value + 1;
 
                     DownloadVersionDiff(commonVersion.Value, progressTracker, cancellationToken);
                 }
             }
+
+            LogInfo("Application is up to date.");
         }
 
         private void DownloadVersionContent(int version, ProgressTracker progressTracker, AsyncCancellationToken cancellationToken)
@@ -186,8 +216,10 @@ namespace PatchKit.Unity.Patcher
             var downloadProgress = progressTracker.AddNewTask(2.0f);
             var unzipProgress = progressTracker.AddNewTask(0.5f);
 
+            LogInfo("Fetching content summary.");
             var contentSummary = _api.GetAppContentSummary(_secretKey, version);
 
+            LogInfo("Fetching content torrent url.");
             var contentTorrentUrl = _api.GetAppContentTorrentUrl(_secretKey, version);
 
             var contentPackagePath = Path.Combine(_applicationData.TempPath, string.Format("download-content-{0}.package", version));
@@ -198,15 +230,28 @@ namespace PatchKit.Unity.Patcher
             {
                 _status.IsDownloading = true;
 
+                LogInfo(string.Format("Starting download of content torrent file from {0} to {1}.", contentTorrentUrl.Url, contentTorrentPath));
                 _httpDownloader.DownloadFile(contentTorrentUrl.Url, contentTorrentPath, 0, (progress, speed) => OnDownloadProgress(downloadTorrentProgress, progress, speed),
                     cancellationToken);
+
+                LogInfo("Content torrent file has been downloaded.");
+
+                LogInfo(string.Format("Starting download of content package to {0}.", contentPackagePath));
 
                 _torrentDownloader.DownloadFile(contentTorrentPath, contentPackagePath, (progress, speed) => OnDownloadProgress(downloadProgress, progress, speed),
                     cancellationToken);
 
+                LogInfo("Content package has been downloaded.");
+
                 _status.IsDownloading = false;
 
+                LogInfo(string.Format("Unarchiving content package to {0}.", _applicationData.Path));
+
                 _unarchiver.Unarchive(contentPackagePath, _applicationData.Path, progress => unzipProgress.Progress = progress, cancellationToken);
+
+                LogInfo("Content has been unarchived.");
+
+                LogInfo("Saving content files version to cache.");
 
                 foreach (var contentFile in contentSummary.Files)
                 {
@@ -215,6 +260,8 @@ namespace PatchKit.Unity.Patcher
             }
             finally
             {
+                LogInfo("Cleaning up after content downloading.");
+
                 if (File.Exists(contentTorrentPath))
                 {
                     File.Delete(contentTorrentPath);
@@ -234,8 +281,10 @@ namespace PatchKit.Unity.Patcher
             var unzipProgress = progressTracker.AddNewTask(0.5f);
             var patchProgress = progressTracker.AddNewTask(1.0f);
 
+            LogInfo("Fetching diff summary.");
             var diffSummary = _api.GetAppDiffSummary(_secretKey, version);
 
+            LogInfo("Fetching diff torrent url.");
             var diffTorrentUrl = _api.GetAppDiffTorrentUrl(_secretKey, version);
 
             var diffPackagePath = Path.Combine(_applicationData.TempPath, string.Format("download-diff-{0}.package", version));
@@ -248,13 +297,21 @@ namespace PatchKit.Unity.Patcher
             {
                 _status.IsDownloading = true;
 
+                LogInfo(string.Format("Starting download of diff torrent file from {0} to {1}.", diffTorrentUrl.Url, diffTorrentPath));
                 _httpDownloader.DownloadFile(diffTorrentUrl.Url, diffTorrentPath, 0, (progress, speed) => OnDownloadProgress(downloadTorrentProgress, progress, speed), cancellationToken);
 
+                LogInfo("Diff torrent file has been downloaded.");
+
+                LogInfo(string.Format("Starting download of diff package to {0}.", diffPackagePath));
                 _torrentDownloader.DownloadFile(diffTorrentPath, diffPackagePath, (progress, speed) => OnDownloadProgress(downloadProgress, progress, speed), cancellationToken);
 
-                _unarchiver.Unarchive(diffPackagePath, diffDirectoryPath, progress => unzipProgress.Progress = progress, cancellationToken);
+                LogInfo("Diff package has been downloaded.");
 
                 _status.IsDownloading = false;
+
+                LogInfo(string.Format("Unarchiving diff package to {0}.", diffDirectoryPath));
+
+                _unarchiver.Unarchive(diffPackagePath, diffDirectoryPath, progress => unzipProgress.Progress = progress, cancellationToken);
 
                 int totalFilesCount = diffSummary.RemovedFiles.Length + diffSummary.AddedFiles.Length +
                                         diffSummary.ModifiedFiles.Length;
@@ -265,6 +322,8 @@ namespace PatchKit.Unity.Patcher
 
                 foreach (var removedFile in diffSummary.RemovedFiles)
                 {
+                    LogInfo(string.Format("Deleting file {0}", removedFile));
+
                     _applicationData.ClearFile(removedFile);
 
                     doneFilesCount++;
@@ -274,6 +333,8 @@ namespace PatchKit.Unity.Patcher
 
                 foreach (var addedFile in diffSummary.AddedFiles)
                 {
+                    LogInfo(string.Format("Adding file {0}", addedFile));
+
                     // HACK: Workaround for directories included in diff summary.
                     if (Directory.Exists(Path.Combine(diffDirectoryPath, addedFile)))
                     {
@@ -291,6 +352,8 @@ namespace PatchKit.Unity.Patcher
 
                 foreach (var modifiedFile in diffSummary.ModifiedFiles)
                 {
+                    LogInfo(string.Format("Patching file {0}", modifiedFile));
+
                     // HACK: Workaround for directories included in diff summary.
                     if (Directory.Exists(_applicationData.GetFilePath(modifiedFile)))
                     {
@@ -350,6 +413,23 @@ namespace PatchKit.Unity.Patcher
             _status.IsDownloading = false;
             _status.DownloadProgress = 1.0f;
             _status.DownloadSpeed = 0.0f;
+        }
+
+        private const string LogMessageFormat = "[Patcher] {0}";
+
+        private void LogInfo(string message)
+        {
+            Debug.Log(string.Format(LogMessageFormat, message));
+        }
+
+        private void LogError(string message)
+        {
+            Debug.LogError(string.Format(LogMessageFormat, message));
+        }
+
+        private void LogWarning(string message)
+        {
+            Debug.LogWarning(string.Format(LogMessageFormat, message));
         }
     }
 }
