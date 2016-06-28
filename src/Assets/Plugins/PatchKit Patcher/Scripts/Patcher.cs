@@ -375,6 +375,8 @@ namespace PatchKit.Unity.Patcher
             }
             finally
             {
+                LogInfo("Cleaning up after diff downloading.");
+
                 if (File.Exists(diffTorrentPath))
                 {
                     File.Delete(diffTorrentPath);
