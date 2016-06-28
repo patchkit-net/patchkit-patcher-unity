@@ -31,6 +31,8 @@ namespace PatchKit.Unity.Patcher
 
             FileInfo executableFile;
 
+            ProcessStartInfo processStartInfo = new ProcessStartInfo();
+
             if (UnityEngine.Application.platform == RuntimePlatform.OSXPlayer ||
                 UnityEngine.Application.platform == RuntimePlatform.OSXEditor)
             {
@@ -38,7 +40,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (executableFile != null)
                 {
-                    Process.Start("open -a " + executableFile.FullName);
+                    processStartInfo.FileName = "open -a " + executableFile.FullName;
                 }
             }
             else
@@ -47,9 +49,13 @@ namespace PatchKit.Unity.Patcher
 
                 if (executableFile != null)
                 {
-                    Process.Start(executableFile.FullName);
+                    processStartInfo.FileName = executableFile.FullName;
                 }
             }
+
+            processStartInfo.WorkingDirectory = _patcher.ApplicationDataPath;
+
+            Process.Start(processStartInfo);
         }
 
         public void Retry()
