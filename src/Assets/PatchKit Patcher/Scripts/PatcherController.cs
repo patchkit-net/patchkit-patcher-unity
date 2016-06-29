@@ -40,7 +40,8 @@ namespace PatchKit.Unity.Patcher
 
                 if (executableFile != null)
                 {
-                    processStartInfo.FileName = "open -a " + executableFile.FullName;
+                    processStartInfo.FileName = "open";
+                    processStartInfo.Arguments = string.Format("\"{0}\"", executableFile.FullName);
                 }
             }
             else
