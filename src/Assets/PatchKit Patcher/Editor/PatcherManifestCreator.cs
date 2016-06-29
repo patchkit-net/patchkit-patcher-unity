@@ -23,8 +23,8 @@ namespace PatchKit.Unity.Patcher.Editor
                 buildTarget == BuildTarget.StandaloneOSXIntel ||
                 buildTarget == BuildTarget.StandaloneOSXIntel64)
             {
-                exeFileName = string.Format("open \\\"{{exedir}}/{0}\\\"", Path.GetFileName(buildPath));
-                exeArguments = "--args --installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"";
+                exeFileName = "open";
+                exeArguments = string.Format("\\\"{{exedir}}/{0}\\\" --args --installdir \\\"{{installdir}}\\\" --secret \\\"{{secret}}\\\"", Path.GetFileName(buildPath));
             }
 
             // ReSharper disable once AssignNullToNotNullAttribute
