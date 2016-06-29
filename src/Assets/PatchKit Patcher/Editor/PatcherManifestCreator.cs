@@ -10,26 +10,29 @@ namespace PatchKit.Unity.Patcher.Editor
         [PostProcessBuild, UsedImplicitly]
         private static void PostProcessBuild(BuildTarget buildTarget, string buildPath)
         {
-            string runCmd = string.Empty;
-
+            string exeFileName = string.Empty;
+            string exeArguments = string.Empty;
+            
             if (buildTarget == BuildTarget.StandaloneWindows || buildTarget == BuildTarget.StandaloneWindows64)
             {
-                runCmd = string.Format("\\\"{{0}}/{0}\\\" --installdir \\\"{{1}}\\\" --secret \\\"{{2}}\\\"", Path.GetFileName(buildPath));
-                    
+                exeFileName = string.Format("\\\"{{exedir}}/{0}\\\"", Path.GetFileName(buildPath));
+                exeArguments = "--installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"";  
             }
 
             if (buildTarget == BuildTarget.StandaloneOSXUniversal ||
                 buildTarget == BuildTarget.StandaloneOSXIntel ||
                 buildTarget == BuildTarget.StandaloneOSXIntel64)
             {
-                runCmd = string.Format("open -a \\\"{{0}}/{0}\\\" --args --installdir \\\"{{1}}\\\" --secret \\\"{{2}}\\\"", Path.GetFileName(buildPath));
+                exeFileName = string.Format("open \\\"{{exedir}}/{0}\\\"", Path.GetFileName(buildPath));
+                exeArguments = "--args --installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"";
             }
 
             // ReSharper disable once AssignNullToNotNullAttribute
             string manifestPath = Path.Combine(Path.GetDirectoryName(buildPath), "patcher.manifest");
 
             string manifestContent = "{" + "\n" +
-                                        string.Format("    \"run_cmd\" : \"{0}\"", runCmd) + "\n" +
+                                        string.Format("    \"exe_fileName\" : \"{0}\"", exeFileName) + "," + "\n" +
+                                        string.Format("    \"exe_arguments\" : \"{0}\"", exeArguments) + "\n" +
                                         "}";
 
             File.WriteAllText(manifestPath, manifestContent);
