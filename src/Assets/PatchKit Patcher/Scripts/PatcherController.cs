@@ -29,24 +29,23 @@ namespace PatchKit.Unity.Patcher
         {
             var directoryInfo = new DirectoryInfo(_patcher.ApplicationDataPath);
 
-            FileInfo executableFile;
 
             ProcessStartInfo processStartInfo = new ProcessStartInfo();
 
             if (UnityEngine.Application.platform == RuntimePlatform.OSXPlayer ||
                 UnityEngine.Application.platform == RuntimePlatform.OSXEditor)
             {
-                executableFile = directoryInfo.GetFiles("*.app", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                var executableApp = directoryInfo.GetDirectories("*.app", SearchOption.TopDirectoryOnly).FirstOrDefault();
 
-                if (executableFile != null)
+                if (executableApp != null)
                 {
                     processStartInfo.FileName = "open";
-                    processStartInfo.Arguments = string.Format("\"{0}\"", executableFile.FullName);
+                    processStartInfo.Arguments = string.Format("\"{0}\"", executableApp.FullName);
                 }
             }
             else
             {
-                executableFile = directoryInfo.GetFiles("*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                var executableFile = directoryInfo.GetFiles("*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
 
                 if (executableFile != null)
                 {
