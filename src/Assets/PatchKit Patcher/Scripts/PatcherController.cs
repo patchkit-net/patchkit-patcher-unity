@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Mono.Unix.Native;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
@@ -39,6 +40,18 @@ namespace PatchKit.Unity.Patcher
 
                 if (executableApp != null)
                 {
+                    try
+                    {
+                        foreach(var file in executableApp.GetFiles("*", SearchOption.AllDirectories))
+                        {
+                            Syscall.chmod(file.FullName, FilePermissions.ALLPERMS);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        UnityEngine.Debug.LogException(exception);
+                    }
+
                     processStartInfo.FileName = "open";
                     processStartInfo.Arguments = string.Format("\"{0}\"", executableApp.FullName);
                 }
