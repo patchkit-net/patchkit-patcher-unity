@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using PatchKit.API;
@@ -335,13 +335,28 @@ namespace PatchKit.Unity.Patcher
                 {
                     LogInfo(string.Format("Adding file {0}", addedFile));
 
-                    // HACK: Workaround for directories included in diff summary.
-                    if (Directory.Exists(Path.Combine(diffDirectoryPath, addedFile)))
+                    
+                    if (addedFile.EndsWith("/"))
+                    {
+                        string directoryPath = Path.Combine(diffDirectoryPath,
+                            addedFile.Substring(addedFile.Length - 1));
+
+                        if (!Directory.Exists(directoryPath))
+                        {
+                            Directory.CreateDirectory(directoryPath);
+                        }
+
+                        continue;
+                    }
+                    
+                    string sourceFilePath = Path.Combine(diffDirectoryPath, addedFile);
+
+                    if (Directory.Exists(sourceFilePath))
                     {
                         continue;
                     }
 
-                    File.Copy(Path.Combine(diffDirectoryPath, addedFile), _applicationData.GetFilePath(addedFile), true);
+                    File.Copy(sourceFilePath, _applicationData.GetFilePath(addedFile), true);
 
                     _applicationData.Cache.SetFileVersion(addedFile, version);
 
