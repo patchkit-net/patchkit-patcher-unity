@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -103,7 +103,14 @@ namespace PatchKit.Unity.Patcher
 
         protected virtual void Start()
         {
-            _patcher.SecretKey = SecretKey;
+#if UNITY_EDITOR
+            if (!string.IsNullOrEmpty(SecretKey))
+            {
+#endif
+                _patcher.SecretKey = SecretKey;
+#if UNITY_EDITOR
+            }
+#endif
             _patcher.ApplicationDataPath = ApplicationDataPath;
 
             _patcher.StartPatching();
@@ -139,11 +146,11 @@ namespace PatchKit.Unity.Patcher
         {
             var args = GetCommandLineArgs().ToList();
 
-            int index = args.IndexOf(argumentName) + 1;
+            int index = args.IndexOf(argumentName);
 
-            if (index < args.Count)
+            if (index != -1 && index < args.Count - 1)
             {
-                value = args[index];
+                value = args[index + 1];
 
                 return true;
             }

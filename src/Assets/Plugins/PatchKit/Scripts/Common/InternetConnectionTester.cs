@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Net;
 
@@ -8,7 +8,7 @@ namespace PatchKit.Unity.Common
     {
         private const int Timeout = 10000;
 
-        private const string TestingUrl = "http://www.google.com";
+        private const string TestingUrl = "http://www.google.com/";
 
         public static bool CheckInternetConnection(PatchKit.API.Async.AsyncCancellationToken cancellationToken)
         {

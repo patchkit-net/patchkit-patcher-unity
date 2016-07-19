@@ -24,6 +24,8 @@ namespace PatchKit.Unity.Patcher
 
         public string ApplicationDataPath;
 
+        public int ForceVersion;
+
         // Events
 
         public UnityEvent OnPatchingStarted;
@@ -44,6 +46,8 @@ namespace PatchKit.Unity.Patcher
         // Variables used during patching
 
         private string _secretKey;
+
+        private int _forceVersion;
 
         private AsyncCancellationTokenSource _cancellationTokenSource;
 
@@ -90,6 +94,8 @@ namespace PatchKit.Unity.Patcher
             }
 
             _secretKey = SecretKey;
+
+            _forceVersion = ForceVersion;
 
             _cancellationTokenSource = new AsyncCancellationTokenSource();
 
@@ -175,6 +181,14 @@ namespace PatchKit.Unity.Patcher
 
             LogInfo("Fetching current application version.");
             int currentVersion = _api.GetAppLatestVersionId(_secretKey).Id;
+
+#if UNITY_EDITOR
+            if (_forceVersion != 0)
+            {
+                Debug.Log("Forcing application version: " + _forceVersion);
+                currentVersion = _forceVersion;
+            }
+#endif
 
             LogInfo(string.Format("Fetched current version - {0}.", currentVersion));
 
