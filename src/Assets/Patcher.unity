@@ -676,9 +676,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Configuration:
-    AppSecret: 50c500bb2fae6724edd44b196cdcb4bc
+    AppSecret: 32286bd6ce75c0672c0967eb53b6b0d3
     ApplicationDataPath: app
-    ForceVersion: 2
+    ForceVersion: 1
 --- !u!114 &377531154
 MonoBehaviour:
   m_ObjectHideFlags: 0

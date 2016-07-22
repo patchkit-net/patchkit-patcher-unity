@@ -105,6 +105,18 @@ namespace PatchKit.Unity.Patcher
                 Configuration.ApplicationDataPath = Path.Combine(GetBaseDirectory(), applicationDataPath);
             }
 
+            string forceVersionStr;
+
+            if (TryReadArgument("--forceversion", out forceVersionStr))
+            {
+                int forceVersion;
+
+                if (int.TryParse(forceVersionStr, out forceVersion))
+                {
+                    Configuration.ForceVersion = forceVersion;
+                }
+            }
+
             Patcher = new Patcher(Configuration);
         }
 
@@ -127,6 +139,16 @@ namespace PatchKit.Unity.Patcher
                     Application.Quit();
                 };
             }
+            else
+            {
+                // HACK: Linux patcher is hanging if Application.Quit is used
+                Environment.Exit(0);
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            Patcher.Dispose();
         }
 
         private string GetBaseDirectory()

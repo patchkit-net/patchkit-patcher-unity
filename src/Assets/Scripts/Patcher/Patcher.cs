@@ -128,7 +128,7 @@ namespace PatchKit.Unity.Patcher
             LogInfo("Fetching current application version.");
             int currentVersion = _apiConnection.GetAppLatestVersionId(_configuration.AppSecret).Id;
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (_configuration.ForceVersion != 0)
             {
                 LogInfo("Forcing application version: " + _configuration.ForceVersion);
