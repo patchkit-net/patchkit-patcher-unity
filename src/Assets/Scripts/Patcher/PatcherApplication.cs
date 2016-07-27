@@ -139,11 +139,6 @@ namespace PatchKit.Unity.Patcher
                     Application.Quit();
                 };
             }
-            else
-            {
-                // HACK: Linux patcher is hanging if Application.Quit is used
-                Environment.Exit(0);
-            }
         }
 
         protected virtual void OnDestroy()
