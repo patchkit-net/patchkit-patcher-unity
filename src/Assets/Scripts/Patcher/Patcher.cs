@@ -33,6 +33,8 @@ namespace PatchKit.Unity.Patcher
 
         private PatcherStatus _status;
 
+        private Thread _thread;
+
         public event Action<Patcher> OnPatcherStarted;
 
         public event Action<Patcher> OnPatcherProgress;
@@ -73,7 +75,7 @@ namespace PatchKit.Unity.Patcher
 
             ResetStatus(PatcherState.Patching);
 
-            ThreadPool.QueueUserWorkItem(state =>
+            _thread = new Thread(state =>
             {
                 LogInfo("Invoking OnPatchingStarted event.");
                 Dispatcher.Invoke(InvokeOnPatcherStarted);
@@ -102,7 +104,11 @@ namespace PatchKit.Unity.Patcher
                     LogInfo("Invoking OnPatchingFinished event.");
                     Dispatcher.Invoke(InvokeOnPatcherFinished);
                 }
-            });
+            })
+            {
+                IsBackground = true
+            };
+            _thread.Start();
         }
 
         public void Cancel()
@@ -417,7 +423,11 @@ namespace PatchKit.Unity.Patcher
 
         public void Dispose()
         {
-            Cancel();
+            if (_thread != null && _thread.IsAlive)
+            {
+                Debug.LogWarning("Patcher thread wasn't cancelled so it had to be aborted.");
+                _thread.Abort();
+            }
         }
 
         protected virtual void InvokeOnPatcherStarted()
