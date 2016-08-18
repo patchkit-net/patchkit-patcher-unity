@@ -317,12 +317,17 @@ namespace PatchKit.Unity.Patcher
                     
                     string sourceFilePath = Path.Combine(diffDirectoryPath, addedFile);
 
-                    if (Directory.Exists(sourceFilePath))
+                    string destinationFilePath = _patcherData.GetFilePath(addedFile);
+
+                    string destinationDirPath = Path.GetDirectoryName(destinationFilePath);
+
+                    // ReSharper disable once AssignNullToNotNullAttribute
+                    if (!Directory.Exists(destinationDirPath))
                     {
-                        continue;
+                        Directory.CreateDirectory(destinationDirPath);
                     }
 
-                    File.Copy(sourceFilePath, _patcherData.GetFilePath(addedFile), true);
+                    File.Copy(sourceFilePath, destinationFilePath, true);
 
                     _patcherData.Cache.SetFileVersion(addedFile, version);
 
