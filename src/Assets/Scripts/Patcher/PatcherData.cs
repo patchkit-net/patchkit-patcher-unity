@@ -111,6 +111,30 @@ namespace PatchKit.Unity.Patcher
         }
 
         /// <summary>
+        /// Deletes directory if it's possible.
+        /// </summary>
+        public bool TryClearDirectory(string directoryName)
+        {
+            string directoryPath = System.IO.Path.Combine(Path, directoryName);
+
+            if (Directory.Exists(directoryPath))
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
+
+                if (directoryInfo.GetFiles("*", SearchOption.AllDirectories).Length == 0)
+                {
+                    Directory.Delete(directoryPath, true);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Returns absolute path to specified file (placed in local data).
         /// </summary>
         public string GetFilePath(string fileName)

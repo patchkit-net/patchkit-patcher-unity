@@ -288,6 +288,12 @@ namespace PatchKit.Unity.Patcher
 
                 foreach (var removedFile in diffSummary.RemovedFiles)
                 {
+                    // Skip directories
+                    if (removedFile.EndsWith("/"))
+                    {
+                        continue;
+                    }
+
                     LogInfo(string.Format("Deleting file {0}", removedFile));
 
                     _patcherData.ClearFile(removedFile);
@@ -295,6 +301,23 @@ namespace PatchKit.Unity.Patcher
                     doneFilesCount++;
 
                     patchProgress.Progress = (float)doneFilesCount/totalFilesCount;
+                }
+
+                foreach (var removedFile in diffSummary.RemovedFiles)
+                {
+                    if (removedFile.EndsWith("/"))
+                    {
+                        LogInfo(string.Format("Trying to clear directory {0}", removedFile));
+
+                        if (_patcherData.TryClearDirectory(removedFile))
+                        {
+                            LogInfo(string.Format("Succesfuly cleared directory {0}", removedFile));
+                        }
+                        else
+                        {
+                            LogInfo(string.Format("Unable to clear directory {0}", removedFile));
+                        }
+                    }
                 }
 
                 foreach (var addedFile in diffSummary.AddedFiles)
