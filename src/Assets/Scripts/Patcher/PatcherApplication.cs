@@ -51,7 +51,41 @@ namespace PatchKit.Unity.Patcher
                     processStartInfo.Arguments = string.Format("\"{0}\"", executableApp.FullName);
                 }
             }
-            else
+            else if (Application.platform == RuntimePlatform.LinuxPlayer)
+            {
+                var executableFile = directoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly).Where(info =>
+                {
+                    // Read magic bytes
+                    using (FileStream executableFileStream = File.OpenRead(info.FullName))
+                    {
+                        using (BinaryReader executableBinaryReader = new BinaryReader(executableFileStream))
+                        {
+                            byte[] magicBytes = executableBinaryReader.ReadBytes(4);
+
+                            if (magicBytes.Length == 4)
+                            {
+                                if (magicBytes[0] == 127 && // 7F
+                                    magicBytes[1] == 69  && // 45 - 'E'
+                                    magicBytes[2] == 76  && // 4c - 'L'
+                                    magicBytes[3] == 70)    // 46 - 'F'
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+
+                    return false;
+                }).FirstOrDefault();
+
+                if (executableFile != null)
+                {
+                    Chmod(executableFile.FullName, "+x");
+                    processStartInfo.FileName = executableFile.FullName;
+                }
+            }
+            else if (Application.platform == RuntimePlatform.WindowsEditor ||
+                    Application.platform == RuntimePlatform.WindowsPlayer)
             {
                 var executableFile = directoryInfo.GetFiles("*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
 
