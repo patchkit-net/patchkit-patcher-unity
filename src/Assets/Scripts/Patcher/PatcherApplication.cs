@@ -39,7 +39,7 @@ namespace PatchKit.Unity.Patcher
                     {
                         foreach(var file in executableApp.GetFiles("*", SearchOption.AllDirectories))
                         {
-                            Chmod(file.FullName, "a+x");
+                            Chmod(file.FullName, "+x");
                         }
                     }
                     catch (Exception exception)
