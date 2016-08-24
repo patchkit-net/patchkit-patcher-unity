@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using PatchKit.Api;
 using PatchKit.Unity.Api;
 using PatchKit.Unity.UI;
@@ -27,7 +28,7 @@ namespace PatchKit.Unity.Patcher.UI
 
             var versions = ApiConnectionInstance.Instance.EndGetAppVersionList(request);
 
-            foreach (var version in versions)
+            foreach (var version in versions.OrderByDescending(version => version.Id))
             {
                 CreateVersionChangelog(version);
             }
