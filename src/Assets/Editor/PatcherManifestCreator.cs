@@ -27,6 +27,14 @@ namespace PatchKit.Unity.Editor
                 exeArguments = string.Format("\\\"{{exedir}}/{0}\\\" --args --installdir \\\"{{installdir}}\\\" --secret \\\"{{secret}}\\\"", Path.GetFileName(buildPath));
             }
 
+            if (buildTarget == BuildTarget.StandaloneLinux ||
+                buildTarget == BuildTarget.StandaloneLinux64 ||
+                buildTarget == BuildTarget.StandaloneLinuxUniversal)
+            {
+                exeFileName = string.Format("\\\"{{exedir}}/{0}\\\"", Path.GetFileName(buildPath));
+                exeArguments = "--installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"";
+            }
+
             // ReSharper disable once AssignNullToNotNullAttribute
             string manifestPath = Path.Combine(Path.GetDirectoryName(buildPath), "patcher.manifest");
 
