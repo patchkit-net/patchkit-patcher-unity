@@ -240,7 +240,7 @@ namespace PatchKit.Unity.Patcher
             {
                 var process = new Process();
                 process.StartInfo.FileName = "/bin/chmod";
-                process.StartInfo.Arguments = string.Format("{0} {1}", permissions, file);
+                process.StartInfo.Arguments = string.Format("{0} \"{1}\"", permissions, file);
                 process.Start();
                 process.WaitForExit();
             }
