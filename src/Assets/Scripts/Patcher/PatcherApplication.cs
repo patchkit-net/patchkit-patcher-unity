@@ -53,7 +53,7 @@ namespace PatchKit.Unity.Patcher
             }
             else if (Application.platform == RuntimePlatform.LinuxPlayer)
             {
-                var executableFile = directoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly).Where(info =>
+                var executableFile = directoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly).Where(info =>
                 {
                     // Read magic bytes
                     using (FileStream executableFileStream = File.OpenRead(info.FullName))
