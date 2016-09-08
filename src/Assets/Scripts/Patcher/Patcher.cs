@@ -119,6 +119,43 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
+        bool ShouldDownloadContent(int currentVersion, int commonVersion)
+        {
+            if (currentVersion < commonVersion ||
+                !CheckVersionConsistency(commonVersion))
+            {
+                LogInfo("Local version is corrupted. Redownloading content.");
+                return true;
+            }
+
+            if (commonVersion < currentVersion)
+            {
+                // Calculate sum of diff size and compare it to the content size
+
+                long contentSize = _apiConnection.GetAppVersionContentSummary(_configuration.AppSecret, currentVersion).Size;
+
+                long sumDiffSize = 0;
+
+                for (int v = commonVersion + 1; v <= currentVersion; v++)
+                {
+                    sumDiffSize += _apiConnection.GetAppVersionDiffSummary(_configuration.AppSecret, v).Size;
+
+                    if (sumDiffSize >= contentSize)
+                    {
+                        LogInfo("Diff size is bigger than content size. Redownloading content.");
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        bool ShouldDownloadDiff(int currentVersion, int commonVersion)
+        {
+            return currentVersion < commonVersion;
+        }
+
         private void Patch(AsyncCancellationToken cancellationToken)
         {
             var progressTracker = new ProgressTracker();
@@ -150,7 +187,7 @@ namespace PatchKit.Unity.Patcher
 
             LogInfo("Comparing common local version with current version.");
 
-            if (commonVersion == null || currentVersion < commonVersion.Value || !CheckVersionConsistency(commonVersion.Value))
+            if (commonVersion == null || ShouldDownloadContent(currentVersion, commonVersion.Value))
             {
                 LogInfo("Local application doesn't exist or files are corrupted.");
 
@@ -160,7 +197,7 @@ namespace PatchKit.Unity.Patcher
                 LogInfo("Downloading content of current version.");
                 DownloadVersionContent(currentVersion, progressTracker, cancellationToken);
             }
-            else if (commonVersion.Value < currentVersion)
+            else if (ShouldDownloadDiff(currentVersion, commonVersion.Value))
             {
                 LogInfo("Patching local application.");
                 while (currentVersion > commonVersion.Value)
