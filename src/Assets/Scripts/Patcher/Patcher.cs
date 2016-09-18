@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using PatchKit.Api;
 using PatchKit.Async;
@@ -7,6 +9,7 @@ using PatchKit.Unity.Api;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Web;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -189,6 +192,8 @@ namespace PatchKit.Unity.Patcher
 
             if (commonVersion == null || ShouldDownloadContent(currentVersion, commonVersion.Value))
             {
+                CheckIfCurrentDirectoryIsWritable();
+
                 LogInfo("Local application doesn't exist or files are corrupted.");
 
                 LogInfo("Clearing local application data.");
@@ -199,6 +204,8 @@ namespace PatchKit.Unity.Patcher
             }
             else if (ShouldDownloadDiff(currentVersion, commonVersion.Value))
             {
+                CheckIfCurrentDirectoryIsWritable();
+
                 LogInfo("Patching local application.");
                 while (currentVersion > commonVersion.Value)
                 {
@@ -516,6 +523,63 @@ namespace PatchKit.Unity.Patcher
             if (OnPatcherFinished != null)
             {
                 OnPatcherFinished(this);
+            }
+        }
+
+        private void CheckIfCurrentDirectoryIsWritable()
+        {
+            bool isWritable;
+
+            try
+            {
+                string permissionsCheckFilePath = Path.Combine(_configuration.ApplicationDataPath, ".permissions_check");
+
+                if (!Directory.Exists(_configuration.ApplicationDataPath))
+                {
+                    Directory.CreateDirectory(_configuration.ApplicationDataPath);
+                }
+
+                using (FileStream fs = new FileStream(permissionsCheckFilePath, FileMode.CreateNew,
+                                                            FileAccess.Write))
+                {
+                    fs.WriteByte(0xff);
+                }
+
+                if (File.Exists(permissionsCheckFilePath))
+                {
+                    File.Delete(permissionsCheckFilePath);
+                    isWritable = true;
+                }
+                else
+                {
+                    isWritable = false;
+                }
+            }
+            catch (Exception)
+            {
+                isWritable = false;
+            }
+
+            if (!isWritable)
+            {
+                if (Application.platform == RuntimePlatform.WindowsPlayer)
+                {
+                    ProcessStartInfo info = new ProcessStartInfo
+                    {
+                        FileName = Application.dataPath.Replace("_Data", ".exe"),
+                        Arguments = string.Join(" ", Environment.GetCommandLineArgs().Select(s => "\"" + s + "\"").ToArray()),
+                        UseShellExecute = true,
+                        Verb = "runas"
+                    };
+
+                    Process.Start(info);
+
+                    Application.Quit();
+                    throw new OperationCanceledException();
+                }
+
+                throw new UnauthorizedAccessException("Missing write access for working directory - " +
+                                                      _configuration.ApplicationDataPath);
             }
         }
     }
