@@ -52,7 +52,7 @@ namespace PatchKit.Unity.Patcher.UI
         {
             var changeList = (version.Changelog ?? string.Empty).Split('\n');
 
-            foreach (var change in changeList)
+            foreach (var change in changeList.Where(s => !string.IsNullOrEmpty(s)))
             {
                 string formattedChange = change.TrimStart(' ', '-', '*');
                 CreateVersionChange(formattedChange);
