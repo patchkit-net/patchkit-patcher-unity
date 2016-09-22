@@ -54,6 +54,16 @@ namespace PatchKit.Unity.Web
                                 torrentManager.Error.Exception);
                         }
 
+                        if(torrentManager.State == TorrentState.Error)
+                        {
+                            throw new WebException("Torrent error.");
+                        }
+
+                        if(torrentManager.State == TorrentState.Paused || torrentManager.State == TorrentState.Stopped)
+                        {
+                            torrentManager.Start();
+                        }
+
                         if (stopwatch.ElapsedMilliseconds > 3000 && torrentManager.Progress > lastProgress)
                         {
                             var downloadSpeed = CalculateDownloadSpeed(torrentManager.Progress, lastProgress,
