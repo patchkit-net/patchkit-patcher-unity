@@ -44,7 +44,7 @@ namespace PatchKit.Unity.Web
                     stopwatch.Start();
 
                     using (
-                        var destinationStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write,
+                        var destinationStream = new FileStream(destinationPath, FileMode.CreateNew, FileAccess.Write,
                             FileShare.None))
                     {
                         int readBytesCount;
