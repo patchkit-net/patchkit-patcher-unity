@@ -161,7 +161,7 @@ namespace PatchKit.Unity.Patcher
 
         bool ShouldDownloadDiff(int currentVersion, int commonVersion)
         {
-            return currentVersion < commonVersion;
+            return currentVersion > commonVersion;
         }
 
         private void Patch(AsyncCancellationToken cancellationToken)
