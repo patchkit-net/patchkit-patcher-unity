@@ -1,10 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using PatchKit.Api;
 
 namespace PatchKit.Unity.Patcher
 {
-    internal class PatcherData
+    internal class PatcherData : IDisposable
     {
         /// <summary>
         /// Cache storing local data variables.
@@ -140,6 +141,14 @@ namespace PatchKit.Unity.Patcher
         public string GetFilePath(string fileName)
         {
             return System.IO.Path.Combine(Path, fileName);
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(TempPath))
+            {
+                Directory.Delete(TempPath, true);
+            }
         }
     }
 }

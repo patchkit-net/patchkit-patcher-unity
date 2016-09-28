@@ -104,11 +104,6 @@ namespace PatchKit.Unity.Patcher
                 }
                 finally
                 {
-                    if(Directory.Exists(_patcherData.TempPath))
-                    {
-                        Directory.Delete(_patcherData.TempPath);
-                    }
-
                     LogInfo("Invoking OnPatchingFinished event.");
                     Dispatcher.Invoke(InvokeOnPatcherFinished);
                 }
