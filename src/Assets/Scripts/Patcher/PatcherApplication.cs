@@ -124,6 +124,8 @@ namespace PatchKit.Unity.Patcher
         {
             Instance = this;
 
+            Application.runInBackground = true;
+
             string appSecret;
 
             if (TryReadArgument("--secret", out appSecret))
