@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Patcher
 
         /// <summary>
         /// Location of application that will be downloaded by patcher.
-        /// In editor this path is always set to Temp/Patcher directory in project files.
+        /// In editor this path is always set to Temp/PatcherApp{app_secret} directory in project files.
         /// </summary>
         public string ApplicationDataPath;
 

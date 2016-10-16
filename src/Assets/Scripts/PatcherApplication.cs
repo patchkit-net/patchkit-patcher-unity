@@ -82,7 +82,7 @@ namespace PatchKit.Unity.Patcher
         {
             if (Application.isEditor)
             {
-                Configuration.ApplicationDataPath = Application.dataPath.Replace("/Assets", "/Temp/PatcherApp");
+                Configuration.ApplicationDataPath = Application.dataPath.Replace("/Assets", string.Format("/Temp/PatcherApp{0}", Configuration.AppSecret));
             }
             else
             {

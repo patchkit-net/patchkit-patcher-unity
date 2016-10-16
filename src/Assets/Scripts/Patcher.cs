@@ -259,13 +259,22 @@ namespace PatchKit.Unity.Patcher
             {
                 EnsureWriteAccess();
 
-                if (localVersionId != null && CanUpdateWithDiff(localVersionId.Value, latestVersionId))
+                if (localVersionId != null && localVersionId.Value < latestVersionId &&
+                    CanUpdateWithDiff(localVersionId.Value, latestVersionId))
                 {
                     UpdateWithDiff(localVersionId.Value, latestVersionId, progressReporter, cancellationToken);
                 }
                 else
                 {
                     UpdateWithContent(latestVersionId, progressReporter, cancellationToken);
+                }
+            }
+            else
+            {
+                var contentSummary = _remoteAppData.GetContentSummary(latestVersionId);
+                if (!_localAppData.CheckDataConsistency(contentSummary, latestVersionId))
+                {
+                    throw new Exception("Corrupted data.");
                 }
             }
         }

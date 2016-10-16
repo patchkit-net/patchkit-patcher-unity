@@ -138,7 +138,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// </summary>
         public JObject GetDiffSummary(int versionId)
         {
-            Debug.Log(string.Format("Getting content summary of version with id - {0}", versionId));
+            Debug.Log(string.Format("Getting diff summary of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/diff_summary", _appSecret, versionId);
 
             return (JObject)_apiConnection.Get(path, null).GetJson();
