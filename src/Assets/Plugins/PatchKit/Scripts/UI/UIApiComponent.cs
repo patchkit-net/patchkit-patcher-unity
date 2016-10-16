@@ -44,7 +44,7 @@ namespace PatchKit.Unity.UI
             }
         }
 
-        protected virtual void Awake()
+        protected virtual void Start()
         {
             if (LoadOnAwake)
             {
