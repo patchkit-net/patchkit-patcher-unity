@@ -152,7 +152,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 12 minutes Remaining
+  m_Text: 
 --- !u!222 &50408495
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -633,6 +633,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 498b9652ef6fd4dd196de446f1cc0f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  LoadOnAwake: 1
   TitlePrefab: {fileID: 11414180, guid: b5d2d403627c04459b6923e3baec2808, type: 2}
   ChangePrefab: {fileID: 11489228, guid: 569a9ef51597141779e5b49d35a09077, type: 2}
 --- !u!1 &377531151
@@ -675,8 +676,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4bd13ea57c4e7e40a29f3b7830fb2bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  StartPatcherOnAwake: 1
   Configuration:
-    AppSecret: 32286bd6ce75c0672c0967eb53b6b0d3
+    AppSecret: fccf154bf2f0eb8be78f8e54a10dc066
     ApplicationDataPath: app
     ForceVersion: 1
 --- !u!114 &377531154
@@ -1549,7 +1551,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 25.02 MB of 78.42 MB
+  m_Text: 
 --- !u!222 &788506879
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3251,7 +3253,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 702.9 kB/sec.
+  m_Text: 
 --- !u!222 &1927476308
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3336,7 +3338,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 12 %
+  m_Text: 
 --- !u!222 &2013845299
 CanvasRenderer:
   m_ObjectHideFlags: 0
