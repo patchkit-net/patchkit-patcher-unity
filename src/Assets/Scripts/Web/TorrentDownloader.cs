@@ -1,15 +1,25 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using MonoTorrent.Client;
 using MonoTorrent.Client.Encryption;
 using MonoTorrent.Common;
 using PatchKit.Async;
+using Debug = UnityEngine.Debug;
 
 namespace PatchKit.Unity.Web
 {
     internal class TorrentDownloader
     {
+        public readonly int Timeout;
+
+        public TorrentDownloader(int timeout)
+        {
+            Timeout = timeout;
+        }
+
         public void DownloadFile(string torrentPath, string destinationPath, DownloaderProgressHandler onDownloaderProgress, AsyncCancellationToken cancellationToken)
         {
             string downloadDir = destinationPath + "_data";
@@ -25,12 +35,20 @@ namespace PatchKit.Unity.Web
 
             using (var engine = new ClientEngine(settings))
             {
+                Debug.Log("Creating torrent engine.");
+                
                 using (var torrentManager = new TorrentManager(
                     Torrent.Load(torrentPath), downloadDir, new TorrentSettings()))
                 {
+                    Debug.Log("Creating torrent manager.");
+
                     engine.Register(torrentManager);
 
                     engine.StartAll();
+
+                    Debug.Log("Starting all torrents.");
+
+                    DateTime startTime = DateTime.Now;
 
                     Stopwatch stopwatch = new Stopwatch();
 
@@ -40,6 +58,11 @@ namespace PatchKit.Unity.Web
 
                     while (!torrentManager.Complete)
                     {
+                        if (torrentManager.Progress < 0.0001 && (DateTime.Now - startTime).TotalMilliseconds > Timeout)
+                        {
+                            throw new TimeoutException("Torrent timeout exception.");
+                        }
+
                         if (cancellationToken.IsCancellationRequested)
                         {
                             torrentManager.Stop();

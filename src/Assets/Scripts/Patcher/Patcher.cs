@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher
             _configuration = configuration;
             _patcherData = new PatcherData(_configuration.ApplicationDataPath);
             _httpDownloader = new HttpDownloader();
-            _torrentDownloader = new TorrentDownloader();
+            _torrentDownloader = new TorrentDownloader(10000);
             _unarchiver = new Unarchiver();
             _librsync = new Librsync();
             _apiConnection = ApiConnectionInstance.Instance;
@@ -220,9 +220,75 @@ namespace PatchKit.Unity.Patcher
             LogInfo("Application is up to date.");
         }
 
+        private void DownloadPackage(string packagePath, string torrentUrl, string[] httpUrls, long packageSize, ProgressTracker.Task downloadProgress, AsyncCancellationToken cancellationToken)
+        {
+            string torrentPath = packagePath + ".torrent";
+
+            try
+            {
+                LogInfo("Trying to download with torrent.");
+
+                LogInfo(string.Format("Starting download of torrent file from {0} to {1}.", torrentUrl, torrentPath));
+                _httpDownloader.DownloadFile(torrentUrl, torrentPath, 0, (progress, speed, bytes, totalBytes) => { },
+                    cancellationToken);
+
+                LogInfo("Torrent file has been downloaded.");
+
+                LogInfo(string.Format("Starting torrent download of package to {0}.", packagePath));
+
+                _torrentDownloader.DownloadFile(torrentPath, packagePath,
+                    (progress, speed, bytes, totalBytes) =>
+                        OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes), cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                LogError(exception.ToString());
+                LogWarning("Failed to download with torrent.");
+                LogInfo("Trying to download with HTTP.");
+
+                bool downloaded = false;
+
+                foreach (var url in httpUrls)
+                {
+                    try
+                    {
+                        LogInfo(string.Format("Starting HTTP download of content package file from {0} to {1}.", url,
+                            packagePath));
+                        _httpDownloader.DownloadFile(url, packagePath, packageSize,
+                            (progress, speed, bytes, totalBytes) =>
+                                OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes),
+                            cancellationToken);
+                        downloaded = true;
+                        break;
+                    }
+                    catch (Exception exception2)
+                    {
+                        LogError(exception2.ToString());
+                        LogInfo(
+                            string.Format(
+                                "Failed to HTTP download content package file from {0} to {1}. Trying next url.", url,
+                                packagePath));
+                    }
+                }
+
+                if (!downloaded)
+                {
+                    throw new Exception("Failed to download content package from any sources.");
+                }
+            }
+            finally
+            {
+                LogInfo("Cleaning up package downloading.");
+
+                if (File.Exists(torrentPath))
+                {
+                    File.Delete(torrentPath);
+                }
+            }
+        }
+
         private void DownloadVersionContent(int version, ProgressTracker progressTracker, AsyncCancellationToken cancellationToken)
         {
-            var downloadTorrentProgress = progressTracker.AddNewTask(0.05f);
             var downloadProgress = progressTracker.AddNewTask(2.0f);
             var unzipProgress = progressTracker.AddNewTask(0.5f);
 
@@ -232,24 +298,19 @@ namespace PatchKit.Unity.Patcher
             LogInfo("Fetching content torrent url.");
             var contentTorrentUrl = _apiConnection.GetAppVersionContentTorrentUrl(_configuration.AppSecret, version);
 
-            var contentPackagePath = Path.Combine(_patcherData.TempPath, string.Format("download-content-{0}.package", version));
+            LogInfo("Fetching content urls.");
+            var contentUrls = _apiConnection.GetAppVersionContentUrls(_configuration.AppSecret, version).Select(url => url.Url).ToArray();
 
-            var contentTorrentPath = Path.Combine(_patcherData.TempPath, string.Format("download-content-{0}.torrent", version));
+            var contentPackagePath = Path.Combine(_patcherData.TempPath, string.Format("download-content-{0}.package", version));
 
             try
             {
                 _status.IsDownloading = true;
 
-                LogInfo(string.Format("Starting download of content torrent file from {0} to {1}.", contentTorrentUrl.Url, contentTorrentPath));
-                _httpDownloader.DownloadFile(contentTorrentUrl.Url, contentTorrentPath, 0, (progress, speed, bytes, totalBytes) => OnDownloadProgress(downloadTorrentProgress, progress, speed, bytes, totalBytes),
-                    cancellationToken);
+                LogInfo("Downloading content package.");
 
-                LogInfo("Content torrent file has been downloaded.");
-
-                LogInfo(string.Format("Starting download of content package to {0}.", contentPackagePath));
-
-                _torrentDownloader.DownloadFile(contentTorrentPath, contentPackagePath, (progress, speed, bytes, totalBytes) => OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes),
-                    cancellationToken);
+                DownloadPackage(contentPackagePath, contentTorrentUrl.Url, contentUrls, contentSummary.Size,
+                    downloadProgress, cancellationToken);
 
                 LogInfo("Content package has been downloaded.");
 
@@ -272,11 +333,6 @@ namespace PatchKit.Unity.Patcher
             {
                 LogInfo("Cleaning up after content downloading.");
 
-                if (File.Exists(contentTorrentPath))
-                {
-                    File.Delete(contentTorrentPath);
-                }
-
                 if (File.Exists(contentPackagePath))
                 {
                     File.Delete(contentPackagePath);
@@ -286,7 +342,6 @@ namespace PatchKit.Unity.Patcher
 
         private void DownloadVersionDiff(int version, ProgressTracker progressTracker, AsyncCancellationToken cancellationToken)
         {
-            var downloadTorrentProgress = progressTracker.AddNewTask(0.05f);
             var downloadProgress = progressTracker.AddNewTask(2.0f);
             var unzipProgress = progressTracker.AddNewTask(0.5f);
             var patchProgress = progressTracker.AddNewTask(1.0f);
@@ -297,9 +352,10 @@ namespace PatchKit.Unity.Patcher
             LogInfo("Fetching diff torrent url.");
             var diffTorrentUrl = _apiConnection.GetAppVersionDiffTorrentUrl(_configuration.AppSecret, version);
 
-            var diffPackagePath = Path.Combine(_patcherData.TempPath, string.Format("download-diff-{0}.package", version));
+            LogInfo("Fetching diff urls.");
+            var diffUrls = _apiConnection.GetAppVersionDiffUrls(_configuration.AppSecret, version).Select(url => url.Url).ToArray();
 
-            var diffTorrentPath = Path.Combine(_patcherData.TempPath, string.Format("download-diff-{0}.torrent", version));
+            var diffPackagePath = Path.Combine(_patcherData.TempPath, string.Format("download-diff-{0}.package", version));
 
             var diffDirectoryPath = Path.Combine(_patcherData.TempPath, string.Format("diff-{0}", version));
 
@@ -307,13 +363,10 @@ namespace PatchKit.Unity.Patcher
             {
                 _status.IsDownloading = true;
 
-                LogInfo(string.Format("Starting download of diff torrent file from {0} to {1}.", diffTorrentUrl.Url, diffTorrentPath));
-                _httpDownloader.DownloadFile(diffTorrentUrl.Url, diffTorrentPath, 0, (progress, speed, bytes, totalBytes) => OnDownloadProgress(downloadTorrentProgress, progress, speed, bytes, totalBytes), cancellationToken);
+                LogInfo("Downloading diff package.");
 
-                LogInfo("Diff torrent file has been downloaded.");
-
-                LogInfo(string.Format("Starting download of diff package to {0}.", diffPackagePath));
-                _torrentDownloader.DownloadFile(diffTorrentPath, diffPackagePath, (progress, speed, bytes, totalBytes) => OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes), cancellationToken);
+                DownloadPackage(diffPackagePath, diffTorrentUrl.Url, diffUrls, diffSummary.Size, downloadProgress,
+                    cancellationToken);
 
                 LogInfo("Diff package has been downloaded.");
 
@@ -429,11 +482,6 @@ namespace PatchKit.Unity.Patcher
             finally
             {
                 LogInfo("Cleaning up after diff downloading.");
-
-                if (File.Exists(diffTorrentPath))
-                {
-                    File.Delete(diffTorrentPath);
-                }
 
                 if (File.Exists(diffPackagePath))
                 {
