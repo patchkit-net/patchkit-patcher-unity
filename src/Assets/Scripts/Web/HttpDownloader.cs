@@ -43,6 +43,8 @@ namespace PatchKit.Unity.Web
 
                     stopwatch.Start();
 
+                    long lastTotalReadBytesCount = 0;
+
                     using (
                         var destinationStream = new FileStream(destinationPath, FileMode.CreateNew, FileAccess.Write,
                             FileShare.None))
@@ -53,14 +55,20 @@ namespace PatchKit.Unity.Web
                         {
                             totalReadBytesCount += readBytesCount;
 
-                            onDownloadProgress(CalculateProgress(totalReadBytesCount, totalDownloadBytesCount),
-                                CalculateDownloadSpeed(readBytesCount, stopwatch.ElapsedMilliseconds), totalReadBytesCount, totalDownloadBytesCount);
-
                             cancellationToken.ThrowIfCancellationRequested();
                             destinationStream.Write(buffer, 0, readBytesCount);
 
-                            stopwatch.Reset();
-                            stopwatch.Start();
+                            if (stopwatch.ElapsedMilliseconds > 1500)
+                            {
+                                onDownloadProgress(CalculateProgress(totalReadBytesCount, totalDownloadBytesCount),
+                                    CalculateDownloadSpeed(totalReadBytesCount - lastTotalReadBytesCount, stopwatch.ElapsedMilliseconds),
+                                    totalReadBytesCount, totalDownloadBytesCount);
+
+                                lastTotalReadBytesCount = totalReadBytesCount;
+
+                                stopwatch.Reset();
+                                stopwatch.Start();
+                            }
                         }
                     }
                 }
