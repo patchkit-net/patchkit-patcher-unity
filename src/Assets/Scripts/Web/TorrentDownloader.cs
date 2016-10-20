@@ -87,8 +87,27 @@ namespace PatchKit.Unity.Web
                             torrentManager.Start();
                         }
 
-                        if (stopwatch.ElapsedMilliseconds > 3000 && torrentManager.Progress > lastProgress)
+                        if (stopwatch.ElapsedMilliseconds > 1500 && torrentManager.Progress > lastProgress)
                         {
+                            try
+                            {
+                                Debug.Log("Torrent status:" + "\n" +
+                                      "Open connections - " + torrentManager.OpenConnections + "\n" +
+                                      "Current tracker Uri - " + torrentManager.TrackerManager.CurrentTracker.Uri + "\n" +
+                                      "Current tracker failure message - " + torrentManager.TrackerManager.CurrentTracker.FailureMessage + "\n" +
+                                      "Current tracker warning message - " + torrentManager.TrackerManager.CurrentTracker.WarningMessage + "\n" +
+                                      "Current tracker status - " + torrentManager.TrackerManager.CurrentTracker.Status + "\n" +
+                                      "Current tracker complete - " + torrentManager.TrackerManager.CurrentTracker.Complete + "\n" +
+                                      "Engine Peer Id - " + torrentManager.Engine.PeerId + "\n" +
+                                      "Dht Engine State - " + torrentManager.Engine.DhtEngine.State + "\n" +
+                                      "Inactive peers - " + torrentManager.InactivePeers + "\n" +
+                                      "Hash fails" + torrentManager.HashFails);
+                            }
+                            catch (Exception)
+                            {
+                                // ignored
+                            }
+
                             var downloadSpeed = CalculateDownloadSpeed(torrentManager.Progress, lastProgress,
                                 torrentManager.Torrent.Size, stopwatch.ElapsedMilliseconds);
 
