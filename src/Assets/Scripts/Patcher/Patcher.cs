@@ -229,7 +229,7 @@ namespace PatchKit.Unity.Patcher
                 LogInfo("Trying to download with torrent.");
 
                 LogInfo(string.Format("Starting download of torrent file from {0} to {1}.", torrentUrl, torrentPath));
-                _httpDownloader.DownloadFile(torrentUrl, torrentPath, 0, (progress, speed, bytes, totalBytes) => { },
+                _httpDownloader.DownloadFile(torrentUrl, torrentPath, 0, 0, 0, (progress, speed, bytes, totalBytes) => { },
                     cancellationToken);
 
                 LogInfo("Torrent file has been downloaded.");
@@ -254,7 +254,7 @@ namespace PatchKit.Unity.Patcher
                     {
                         LogInfo(string.Format("Starting HTTP download of content package file from {0} to {1}.", url,
                             packagePath));
-                        _httpDownloader.DownloadFile(url, packagePath, packageSize,
+                        _httpDownloader.DownloadFile(url, packagePath, packageSize, 0, 0,
                             (progress, speed, bytes, totalBytes) =>
                                 OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes),
                             cancellationToken);

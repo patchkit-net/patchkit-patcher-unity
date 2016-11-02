@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Threading;
 using PatchKit.Async;
 
 namespace PatchKit.Unity.Web
@@ -12,7 +13,7 @@ namespace PatchKit.Unity.Web
             ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true;
         }
 
-        public void DownloadFile(string url, string destinationPath, long totalDownloadBytesCount,
+        public void DownloadFile(string url, string destinationPath, long totalDownloadBytesCount, long offset, long contentLength,
             DownloaderProgressHandler onDownloadProgress, AsyncCancellationToken cancellationToken)
         {
             onDownloadProgress(0.0f, 0.0f, 0, totalDownloadBytesCount);
@@ -22,10 +23,20 @@ namespace PatchKit.Unity.Web
             var request = (HttpWebRequest) WebRequest.Create(url);
             request.Method = "GET";
             request.Timeout = 10000;
+            request.AddRange((int) offset); // TODO: http://stackoverflow.com/questions/6576397/how-to-specify-range-2gb-for-httpwebrequest-in-net-3-5
 
             using (var response = request.GetResponse())
             {
+                if (contentLength == 0)
+                {
+                    contentLength = response.ContentLength;
+                }
+                
+                long totalReadBytesCount = offset;
                 cancellationToken.ThrowIfCancellationRequested();
+
+                UnityEngine.Debug.Log("http content length: " + response.ContentLength);
+
                 using (var responseStream = response.GetResponseStream())
                 {
                     if (responseStream == null)
@@ -37,8 +48,6 @@ namespace PatchKit.Unity.Web
 
                     byte[] buffer = new byte[downloaderBufferSize];
 
-                    long totalReadBytesCount = 0;
-
                     Stopwatch stopwatch = new Stopwatch();
 
                     stopwatch.Start();
@@ -46,9 +55,14 @@ namespace PatchKit.Unity.Web
                     long lastTotalReadBytesCount = 0;
 
                     using (
-                        var destinationStream = new FileStream(destinationPath, FileMode.CreateNew, FileAccess.Write,
+                        var destinationStream = new FileStream(destinationPath, FileMode.OpenOrCreate, FileAccess.Write,
                             FileShare.None))
                     {
+                        if (totalReadBytesCount != 0)
+                        {
+                            destinationStream.Seek(0, SeekOrigin.End);
+                        }
+
                         int readBytesCount;
 
                         while ((readBytesCount = responseStream.Read(buffer, 0, downloaderBufferSize)) > 0)
@@ -60,6 +74,8 @@ namespace PatchKit.Unity.Web
 
                             if (stopwatch.ElapsedMilliseconds > 1500)
                             {
+                                UnityEngine.Debug.Log("Bytes downloaded: " + totalReadBytesCount);
+
                                 onDownloadProgress(CalculateProgress(totalReadBytesCount, totalDownloadBytesCount),
                                     CalculateDownloadSpeed(totalReadBytesCount - lastTotalReadBytesCount, stopwatch.ElapsedMilliseconds),
                                     totalReadBytesCount, totalDownloadBytesCount);
@@ -71,10 +87,22 @@ namespace PatchKit.Unity.Web
                             }
                         }
                     }
+
+                }
+
+                if (totalReadBytesCount != contentLength)
+                {
+                    UnityEngine.Debug.LogError("Downloaded content length is different: " + totalReadBytesCount);
+                    UnityEngine.Debug.Log("Will try again in 10 seconds...");
+                    Thread.Sleep(10000);
+
+                    DownloadFile(url, destinationPath, totalDownloadBytesCount,
+                        totalReadBytesCount, contentLength, onDownloadProgress, cancellationToken);
+                } else
+                {
+                    onDownloadProgress(1.0f, 0.0f, totalDownloadBytesCount, totalDownloadBytesCount);
                 }
             }
-
-            onDownloadProgress(1.0f, 0.0f, totalDownloadBytesCount, totalDownloadBytesCount);
         }
 
         private float CalculateProgress(long bytes, long totalBytes)
