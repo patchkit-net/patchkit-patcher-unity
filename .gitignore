@@ -3,5 +3,8 @@
 /src/Temp/
 /src/obj/
 /src/*.sln
+/src/*.suo
 /src/*.csproj
 /src/*.csproj.user
+/src/_Resharper.src/
+/src/app/
