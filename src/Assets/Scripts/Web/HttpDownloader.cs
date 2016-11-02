@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -13,10 +14,68 @@ namespace PatchKit.Unity.Web
             ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true;
         }
 
-        public void DownloadFile(string url, string destinationPath, long totalDownloadBytesCount, long offset, long contentLength,
+        public bool DownloadFile(string[] urls, string destinationPath, long totalDownloadBytesCount,
             DownloaderProgressHandler onDownloadProgress, AsyncCancellationToken cancellationToken)
         {
-            onDownloadProgress(0.0f, 0.0f, 0, totalDownloadBytesCount);
+            bool atLeastOneWorking;
+            do
+            {
+                atLeastOneWorking = false;
+
+                foreach (var url in urls)
+                {
+                    UnityEngine.Debug.Log(string.Format("Starting HTTP download of content package file from {0} to {1}.", url,
+                            destinationPath));
+
+                    try
+                    {
+                        long offset = 0;
+                        if (File.Exists(destinationPath))
+                        {
+                            offset = new FileInfo(destinationPath).Length;
+                            UnityEngine.Debug.Log("Current file size: " + offset);
+                        }
+
+                        DownloadFile(url, destinationPath, totalDownloadBytesCount, offset, totalDownloadBytesCount,
+                            onDownloadProgress, cancellationToken);
+
+                        if (File.Exists(destinationPath))
+                        {
+                            long newFileSize = new FileInfo(destinationPath).Length;
+
+                            if (newFileSize == totalDownloadBytesCount)
+                            {
+                                UnityEngine.Debug.Log("Downloaded all of it!");
+                                return true;
+                            }
+
+                            UnityEngine.Debug.Log("Contant is still not complete...");
+                            if (newFileSize != offset)
+                            {
+                                atLeastOneWorking = true;
+                            }
+
+                            UnityEngine.Debug.Log("Will try again in 10 seconds...");
+                            Thread.Sleep(10000);
+                        }
+                    } catch (Exception e)
+                    {
+                        UnityEngine.Debug.LogException(e);
+
+                        UnityEngine.Debug.Log("Will try again in 10 seconds...");
+                        Thread.Sleep(10000);
+                    }
+                }
+            } while (atLeastOneWorking);
+
+            // all mirrors down!
+            return false;
+        }
+
+        public bool DownloadFile(string url, string destinationPath, long totalDownloadBytesCount, long offset, long contentLength,
+            DownloaderProgressHandler onDownloadProgress, AsyncCancellationToken cancellationToken)
+        {
+            onDownloadProgress(CalculateProgress(offset, totalDownloadBytesCount), 0.0f, offset, totalDownloadBytesCount);
 
             ServicePointManager.DefaultConnectionLimit = 65535;
 
@@ -90,18 +149,9 @@ namespace PatchKit.Unity.Web
 
                 }
 
-                if (totalReadBytesCount != contentLength)
-                {
-                    UnityEngine.Debug.LogError("Downloaded content length is different: " + totalReadBytesCount);
-                    UnityEngine.Debug.Log("Will try again in 10 seconds...");
-                    Thread.Sleep(10000);
-
-                    DownloadFile(url, destinationPath, totalDownloadBytesCount,
-                        totalReadBytesCount, contentLength, onDownloadProgress, cancellationToken);
-                } else
-                {
-                    onDownloadProgress(1.0f, 0.0f, totalDownloadBytesCount, totalDownloadBytesCount);
-                }
+                onDownloadProgress(CalculateProgress(totalReadBytesCount, totalDownloadBytesCount),
+                    0.0f, totalDownloadBytesCount, totalDownloadBytesCount);
+                return true;
             }
         }
 
