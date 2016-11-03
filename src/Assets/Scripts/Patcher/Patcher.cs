@@ -229,7 +229,7 @@ namespace PatchKit.Unity.Patcher
                 LogInfo("Trying to download with torrent.");
 
                 LogInfo(string.Format("Starting download of torrent file from {0} to {1}.", torrentUrl, torrentPath));
-                _httpDownloader.DownloadFile(torrentUrl, torrentPath, 0, (progress, speed, bytes, totalBytes) => { },
+                _httpDownloader.DownloadFile(torrentUrl, torrentPath, 0, 0, 0, (progress, speed, bytes, totalBytes) => { },
                     cancellationToken);
 
                 LogInfo("Torrent file has been downloaded.");
@@ -246,29 +246,18 @@ namespace PatchKit.Unity.Patcher
                 LogWarning("Failed to download with torrent.");
                 LogInfo("Trying to download with HTTP.");
 
-                bool downloaded = false;
+                bool downloaded;
 
-                foreach (var url in httpUrls)
+                try
                 {
-                    try
-                    {
-                        LogInfo(string.Format("Starting HTTP download of content package file from {0} to {1}.", url,
-                            packagePath));
-                        _httpDownloader.DownloadFile(url, packagePath, packageSize,
-                            (progress, speed, bytes, totalBytes) =>
-                                OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes),
-                            cancellationToken);
-                        downloaded = true;
-                        break;
-                    }
-                    catch (Exception exception2)
-                    {
-                        LogError(exception2.ToString());
-                        LogInfo(
-                            string.Format(
-                                "Failed to HTTP download content package file from {0} to {1}. Trying next url.", url,
-                                packagePath));
-                    }
+                    downloaded = _httpDownloader.DownloadFile(httpUrls, packagePath, packageSize, (progress, speed, bytes, totalBytes) =>
+                            OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes),
+                        cancellationToken);
+                }
+                catch (Exception exception2)
+                {
+                    LogError(exception2.ToString());
+                    downloaded = false;
                 }
 
                 if (!downloaded)
