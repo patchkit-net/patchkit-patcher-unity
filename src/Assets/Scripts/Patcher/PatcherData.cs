@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using PatchKit.Api;
+using PatchKit.Unity.Patcher.Utilities;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -69,12 +70,11 @@ namespace PatchKit.Unity.Patcher
                     return false;
                 }
 
-                // TODO: Uncomment this after xxhash implementation.
-//                string fileHash = HashUtilities.ComputeFileHash(absolutePath);
-//                if (!fileHash.Equals(summaryFile.Hash))
-//                {
-//                    return false;
-//                }
+                string fileHash = HashUtilities.ComputeFileHash(absolutePath);
+                if (!fileHash.Equals(summaryFile.Hash))
+                {
+                    return false;
+                }
             }
 
             return true;
