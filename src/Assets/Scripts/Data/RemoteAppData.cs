@@ -25,7 +25,7 @@ namespace PatchKit.Unity.Patcher.Data
         {
             _appSecret = appSecret;
             _httpDownloader = new HttpDownloader();
-            _torrentDownloader = new TorrentDownloader();
+            _torrentDownloader = new TorrentDownloader(Application.streamingAssetsPath);
             _apiConnection = new ApiConnection(Settings.GetApiConnectionSettings());
         }
 

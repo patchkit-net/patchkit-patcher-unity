@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
-using MonoTorrent.Client;
-using MonoTorrent.Client.Encryption;
-using MonoTorrent.Common;
+using Newtonsoft.Json.Linq;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Statistics;
 using Debug = UnityEngine.Debug;
@@ -12,141 +11,107 @@ namespace PatchKit.Unity.Patcher.Net
 {
     internal class TorrentDownloader
     {
-        public void DownloadFile(string torrentFilePath, string destinationFilePath,
-            CustomProgressReporter<DownloadProgress> progressReporter, CancellationToken cancellationToken)
+        private readonly string _streamingAssetsPath;
+
+        public TorrentDownloader(string streamingAssetsPath)
         {
-            Debug.Log(string.Format("Downloading file with torrent from {0} to {1}", torrentFilePath,
-                destinationFilePath));
-
-            progressReporter.Progress = new DownloadProgress
-            {
-                DownloadedBytes = 0,
-                TotalBytes = 0,
-                KilobytesPerSecond = 0,
-                Progress = 0.0
-            };
-
-            string downloadDir = destinationFilePath + "_data";
-
-            var settings = new EngineSettings
-            {
-                AllowedEncryption = EncryptionTypes.All,
-                PreferEncryption = true,
-                SavePath = downloadDir
-            };
-
-            string downloadTorrentFile;
-
-            using (var engine = new ClientEngine(settings))
-            {
-                using (var torrentManager = new TorrentManager(
-                    Torrent.Load(torrentFilePath), downloadDir, new TorrentSettings()))
-                {
-                    progressReporter.Progress = new DownloadProgress
-                    {
-                        DownloadedBytes = 0,
-                        TotalBytes = torrentManager.Torrent.Size,
-                        KilobytesPerSecond = 0,
-                        Progress = 0.0
-                    };
-
-                    engine.Register(torrentManager);
-
-                    engine.StartAll();
-
-                    Stopwatch stopwatch = new Stopwatch();
-
-                    stopwatch.Start();
-
-                    double lastProgress = 0.0;
-
-                    while (!torrentManager.Complete)
-                    {
-                        if (cancellationToken.IsCancelled)
-                        {
-                            torrentManager.Stop();
-                            cancellationToken.ThrowIfCancellationRequested();
-                        }
-
-                        if (torrentManager.Error != null)
-                        {
-                            torrentManager.Stop();
-
-                            throw new WebException(torrentManager.Error.Reason.ToString(),
-                                torrentManager.Error.Exception);
-                        }
-
-                        if (torrentManager.State == TorrentState.Error)
-                        {
-                            throw new WebException("Torrent error.");
-                        }
-
-                        if (torrentManager.State == TorrentState.Paused || torrentManager.State == TorrentState.Stopped)
-                        {
-                            torrentManager.Start();
-                        }
-
-                        if (stopwatch.ElapsedMilliseconds > 3000 && torrentManager.Progress > lastProgress)
-                        {
-                            var downloadSpeed = CalculateDownloadSpeed(torrentManager.Progress, lastProgress,
-                                torrentManager.Torrent.Size, stopwatch.ElapsedMilliseconds);
-
-                            var downloadedBytes = (long) (torrentManager.Torrent.Size*torrentManager.Progress/100.0);
-
-                            progressReporter.Progress = new DownloadProgress
-                            {
-                                DownloadedBytes = downloadedBytes,
-                                TotalBytes = torrentManager.Torrent.Size,
-                                KilobytesPerSecond = downloadSpeed,
-                                Progress = downloadedBytes/(double) torrentManager.Torrent.Size
-                            };
-
-                            lastProgress = torrentManager.Progress;
-
-                            stopwatch.Reset();
-                            stopwatch.Start();
-                        }
-
-                        Thread.Sleep(100);
-                    }
-
-                    progressReporter.Progress = new DownloadProgress
-                    {
-                        DownloadedBytes = torrentManager.Torrent.Size,
-                        TotalBytes = torrentManager.Torrent.Size,
-                        KilobytesPerSecond = 0,
-                        Progress = 1.0
-                    };
-
-                    TorrentFile[] files = torrentManager.Torrent.Files;
-                    if (files.Length > 0)
-                    {
-                        downloadTorrentFile = files[0].FullPath;
-                    }
-                    else
-                    {
-                        throw new TorrentException("Missing files in downloaded torrent.");
-                    }
-                }
-            }
-            System.IO.File.Move(downloadTorrentFile, destinationFilePath);
+            _streamingAssetsPath = streamingAssetsPath;
         }
 
-        private static float CalculateDownloadSpeed(double progress, double lastProgress, long totalBytes,
-            long elapsedMilliseconds)
+        public void DownloadFile(string torrentPath, string destinationPath,
+            CustomProgressReporter<DownloadProgress> progressReporter, CancellationToken cancellationToken)
+        {
+            using (var torrentClient = new TorrentClient(_streamingAssetsPath))
+            {
+                string destinationDirectoryPath = destinationPath + "_dir";
+
+                var addTorrentResult =
+                    torrentClient.ExecuteCommand(string.Format("add-torrent {0} {1}", torrentPath,
+                        destinationDirectoryPath));
+
+                if (addTorrentResult.Value<string>("status") != "ok")
+                {
+                    throw new Exception("Wrong torrent-client status - " + addTorrentResult.Value<string>("status"));
+                }
+
+                bool downloaded = false;
+
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                double lastProgress = 0.0;
+
+                while (!downloaded)
+                {
+                    var statusResult = torrentClient.ExecuteCommand("status");
+
+                    Debug.Log("Torrent status:\n" + statusResult);
+
+                    if (statusResult.Value<string>("status") != "ok")
+                    {
+                        throw new Exception("Wrong torrent-client status - " + statusResult.Value<string>("status"));
+                    }
+
+                    if (statusResult["data"].Value<int>("count") < 1)
+                    {
+                        throw new Exception("Couldn't check status of torrent-client.");
+                    }
+
+                    var torrentStatus = statusResult["data"].Value<JArray>("torrents")[0];
+
+                    if (torrentStatus.Value<string>("error") != string.Empty)
+                    {
+                        throw new Exception("torrent-client error: " + torrentStatus.Value<string>("error"));
+                    }
+
+                    if (torrentStatus.Value<bool>("is_seeding"))
+                    {
+                        downloaded = true;
+                    }
+
+                    double progress = torrentStatus.Value<double>("progress");
+                    long totalBytes = torrentStatus.Value<long>("total_wanted");
+                    long bytes = (long)(progress * totalBytes);
+                    float speed = CalculateDownloadSpeed(progress, lastProgress, totalBytes,
+                        stopwatch.ElapsedMilliseconds);
+
+                    stopwatch.Reset();
+                    stopwatch.Start();
+                    lastProgress = progress;
+
+                    progressReporter.Progress = new DownloadProgress
+                    {
+                        DownloadedBytes = bytes,
+                        TotalBytes = totalBytes, 
+                        KilobytesPerSecond = speed,
+                        Progress = progress
+                    };
+
+                    Thread.Sleep(1000);
+                }
+
+                var dirInfo = new DirectoryInfo(destinationDirectoryPath);
+
+                File.Move(dirInfo.GetFiles()[0].FullName, destinationPath);
+
+                Directory.Delete(destinationDirectoryPath, true);
+            }
+        }
+
+        private static float CalculateDownloadSpeed(double progress, double lastProgress, long totalBytes, long elapsedMilliseconds)
         {
             if (elapsedMilliseconds == 0)
             {
                 return 0.0f;
             }
 
-            double elapsedSeconds = elapsedMilliseconds/1000.0f;
+            double elapsedSeconds = elapsedMilliseconds / 1000.0f;
 
-            double progressDelta = (progress - lastProgress)/100.0;
+            double progressDelta = progress - lastProgress;
 
-            double bytes = progressDelta*totalBytes;
+            double bytes = progressDelta * totalBytes;
 
-            return (float) (bytes/1024.0/elapsedSeconds);
+            return (float)(bytes / 1024.0 / elapsedSeconds);
         }
     }
 }
