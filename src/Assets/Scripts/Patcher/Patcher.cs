@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher
             _configuration = configuration;
             _patcherData = new PatcherData(_configuration.ApplicationDataPath);
             _httpDownloader = new HttpDownloader();
-            _torrentDownloader = new TorrentDownloader(10000);
+            _torrentDownloader = new TorrentDownloader(Application.streamingAssetsPath);
             _unarchiver = new Unarchiver();
             _librsync = new Librsync();
             _apiConnection = ApiConnectionInstance.Instance;
