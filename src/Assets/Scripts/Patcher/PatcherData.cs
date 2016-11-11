@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using PatchKit.Api;
@@ -62,19 +63,22 @@ namespace PatchKit.Unity.Patcher
                 string absolutePath = GetFilePath(summaryFile.Path);
                 if (!File.Exists(absolutePath))
                 {
+                    UnityEngine.Debug.LogError("File does not exist: " + summaryFile.Path);
                     return false;
                 }
 
                 if (Cache.GetFileVersion(summaryFile.Path) != version)
                 {
+                    UnityEngine.Debug.LogError("Version of file " + summaryFile.Path + " is different (" + Cache.GetFileVersion(summaryFile.Path) + " != " + version + ")");
                     return false;
                 }
 
-                string fileHash = HashUtilities.ComputeFileHash(absolutePath);
+                /*string fileHash = HashUtilities.ComputeFileHash(absolutePath);
                 if (!fileHash.Equals(summaryFile.Hash))
                 {
+                    UnityEngine.Debug.LogError("File hash different: " + summaryFile.Path + " expected " + summaryFile.Hash + " has " + fileHash);
                     return false;
-                }
+                }*/
             }
 
             return true;
