@@ -1,4 +1,5 @@
-﻿using System.Data.HashFunction;
+using System.Collections.Generic;
+using System.Data.HashFunction;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,8 @@ namespace PatchKit.Unity.Patcher.Data
         {
             using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
-                return string.Concat(new xxHash((ulong)42).ComputeHash(fileStream).Select(b => b.ToString("X2")).Reverse()).ToLower().TrimStart('0');
+                IEnumerable<string> enumerable = new xxHash((ulong)42).ComputeHash(fileStream).Select(b => b.ToString("X2")).Reverse();
+                return string.Concat(string.Join("", enumerable.ToArray()).ToLower().TrimStart('0'));
             }
         }
     }
