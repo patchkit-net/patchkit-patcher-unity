@@ -1,9 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using PatchKit.Api;
 using PatchKit.Unity.Api;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.Utilities;
+using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.UI
 {
@@ -20,6 +21,8 @@ namespace PatchKit.Unity.Patcher.UI
 
         protected override IEnumerator RefreshCoroutine()
         {
+            Assert.IsNotNull(PatcherApplication.Instance.Configuration.AppSecret);
+            
             var request =
                 ApiConnectionInstance.Instance.BeginGetAppVersionList(
                     PatcherApplication.Instance.Configuration.AppSecret);

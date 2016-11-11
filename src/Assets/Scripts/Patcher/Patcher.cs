@@ -124,8 +124,13 @@ namespace PatchKit.Unity.Patcher
 
         bool ShouldDownloadContent(int currentVersion, int commonVersion)
         {
-            if (currentVersion < commonVersion ||
-                !CheckVersionConsistency(commonVersion))
+            if (currentVersion < commonVersion)
+            {
+                LogInfo("Cannot specify version. Redownloading content.");
+                return true;
+            }
+
+            if (!CheckVersionConsistency(commonVersion))
             {
                 LogInfo("Local version is corrupted. Redownloading content.");
                 return true;
