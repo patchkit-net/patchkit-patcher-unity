@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using Assets.Scripts.Patcher;
 using Ionic.Zip;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -71,9 +72,11 @@ namespace Assets.Scripts.Web {
             var validUrls = new List<string>(_urls);
             validUrls.Reverse();
 
-            while (validUrls.Count > 0)
+            int retry = 100;
+
+            while (validUrls.Count > 0 && retry > 0)
             {
-                for (int i = validUrls.Count - 1; i >= 0; --i)
+                for (int i = validUrls.Count - 1; i >= 0 && retry-- > 0; --i)
                 {
                     string url = validUrls[i];
                     Status status = TryDownload(url, cancellationToken);
@@ -87,21 +90,32 @@ namespace Assets.Scripts.Web {
                         case Status.Canceled:
                             return false;
                         case Status.EmptyStream:
-                            validUrls.Remove(url);
+                            // try another one
                             break;
                         case Status.CorruptData:
                             // just try another one
                             break;
                         case Status.Timeout:
-                            validUrls.Remove(url);
+                            // try another one
                             break;
                         case Status.Other:
+                            // try another one
+                            break;
+                        case Status.NotFound:
                             validUrls.Remove(url);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
+
+                LogInfo("Waiting 10 seconds before trying again...");
+                Thread.Sleep(10000);
+            }
+
+            if (retry == 0)
+            {
+                LogError("Too much retries, aborting...");
             }
 
             return false;
@@ -140,10 +154,23 @@ namespace Assets.Scripts.Web {
             webRequest.Method = "GET";
             webRequest.Timeout = 10000;
             webRequest.AddRange(offset);
+            LogInfo("offset: " + offset);
 
-            using (WebResponse response = webRequest.GetResponse())
+            using (var response = (HttpWebResponse) webRequest.GetResponse())
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    LogError("Resource " + url + " not found (404)");
+                    return Status.NotFound;
+                }
+
+                if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.PartialContent)
+                {
+                    LogError("Resource " + url + " returned status code: " + response.StatusCode);
+                    return Status.Other;
+                }
 
                 LogInfo("http content length: " + response.ContentLength);
 
@@ -173,7 +200,7 @@ namespace Assets.Scripts.Web {
                 }
             }
 
-            return Status.Ok;
+            return _chunkedFile.RemainingLength == 0 ? Status.Ok : Status.Other;
         }
 
         private byte[] HashFunction(byte[] buffer, int offset, int length)
@@ -304,6 +331,7 @@ namespace Assets.Scripts.Web {
             EmptyStream,
             CorruptData,
             Timeout,
+            NotFound,
             Other,
         }
 
