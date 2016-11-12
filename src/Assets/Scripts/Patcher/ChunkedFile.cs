@@ -86,6 +86,7 @@ namespace Assets.Scripts.Patcher {
                 Array.Copy(buffer, offset, _buffer, _bufferPos, copyNum);
 
                 count -= copyNum;
+                offset += copyNum;
                 _bufferPos += copyNum;
 
                 if (ChunkFullyInBuffer())
