@@ -3,7 +3,6 @@ using System.Data.HashFunction;
 using System.IO;
 using System.Linq;
 using System.Text;
-using MonoTorrent.Client;
 
 namespace PatchKit.Unity.Patcher.Utilities
 {
