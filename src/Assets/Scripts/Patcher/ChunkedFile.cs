@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Assets.Scripts.Patcher {
 
@@ -36,9 +37,19 @@ namespace Assets.Scripts.Patcher {
             get { return Math.Min(_chunkIndex * _chunkSize, _fileSize); }
         }
 
+        public long SavedLength
+        {
+            get { return VerifiedLength + _bufferPos; }
+        }
+
         public long RemainingLength
         {
             get { return _fileSize - VerifiedLength; }
+        }
+
+        public long Length
+        {
+            get { return _fileSize; }
         }
 
         public ChunkedFile(string path, int chunkSize, long fileSize, byte[][] hashes, HashFunction hashFunction)
@@ -75,6 +86,7 @@ namespace Assets.Scripts.Patcher {
                 Array.Copy(buffer, offset, _buffer, _bufferPos, copyNum);
 
                 count -= copyNum;
+                offset += copyNum;
                 _bufferPos += copyNum;
 
                 if (ChunkFullyInBuffer())
@@ -101,7 +113,7 @@ namespace Assets.Scripts.Patcher {
 
         private bool BufferedChunkValid()
         {
-            byte[] bufferHash = _hashFunction(_buffer, 0, _buffer.Length);
+            byte[] bufferHash = _hashFunction(_buffer, 0, (int) Math.Min(_chunkSize, RemainingLength));
             byte[] chunkHash = _hashes[_chunkIndex];
 
             return bufferHash.SequenceEqual(chunkHash);
@@ -109,7 +121,7 @@ namespace Assets.Scripts.Patcher {
 
         private void FlushBuffer()
         {
-            _fileStream.Write(_buffer, 0, _buffer.Length);
+            _fileStream.Write(_buffer, 0, (int) Math.Min(_chunkSize, RemainingLength));
             _bufferPos = 0;
             _chunkIndex++;
         }

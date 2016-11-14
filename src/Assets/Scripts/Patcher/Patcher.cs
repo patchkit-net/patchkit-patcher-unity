@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Assets.Scripts.Web;
 using PatchKit.Api;
 using PatchKit.Async;
 using PatchKit.Unity.Api;
@@ -124,8 +125,13 @@ namespace PatchKit.Unity.Patcher
 
         bool ShouldDownloadContent(int currentVersion, int commonVersion)
         {
-            if (currentVersion < commonVersion ||
-                !CheckVersionConsistency(commonVersion))
+            if (currentVersion < commonVersion)
+            {
+                LogInfo("Cannot specify version. Redownloading content.");
+                return true;
+            }
+
+            if (!CheckVersionConsistency(commonVersion))
             {
                 LogInfo("Local version is corrupted. Redownloading content.");
                 return true;
@@ -220,7 +226,7 @@ namespace PatchKit.Unity.Patcher
             LogInfo("Application is up to date.");
         }
 
-        private void DownloadPackage(string packagePath, string torrentUrl, string[] httpUrls, long packageSize, ProgressTracker.Task downloadProgress, AsyncCancellationToken cancellationToken)
+        private void DownloadPackage(string packagePath, string torrentUrl, string[] httpUrls, long packageSize, int chunkSize, string[] chunkHashes, ProgressTracker.Task downloadProgress, AsyncCancellationToken cancellationToken)
         {
             string torrentPath = packagePath + ".torrent";
 
@@ -250,9 +256,24 @@ namespace PatchKit.Unity.Patcher
 
                 try
                 {
-                    downloaded = _httpDownloader.DownloadFile(httpUrls, packagePath, packageSize, (progress, speed, bytes, totalBytes) =>
+                    if (chunkSize > 0)
+                    {
+                        // chunked file downloading method
+                        using (var downloader = new ChunkedFileDownloader(httpUrls, packageSize, packagePath,
+                            chunkSize, chunkHashes))
+                        {
+                            downloader.DownloaderProgressHandler += (progress, speed, bytes, totalBytes) =>
+                                OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes);
+                            downloaded = downloader.Start(cancellationToken);
+                        }
+                    } else
+                    {
+                        // continuous file downloading method
+                        downloaded = _httpDownloader.DownloadFile(
+                            httpUrls, packagePath, packageSize, (progress, speed, bytes, totalBytes) =>
                             OnDownloadProgress(downloadProgress, progress, speed, bytes, totalBytes),
                         cancellationToken);
+                    }
                 }
                 catch (Exception exception2)
                 {
@@ -298,7 +319,7 @@ namespace PatchKit.Unity.Patcher
 
                 LogInfo("Downloading content package.");
 
-                DownloadPackage(contentPackagePath, contentTorrentUrl.Url, contentUrls, contentSummary.Size,
+                DownloadPackage(contentPackagePath, contentTorrentUrl.Url, contentUrls, contentSummary.Size, contentSummary.Chunks.Size, contentSummary.Chunks.Hashes,
                     downloadProgress, cancellationToken);
 
                 LogInfo("Content package has been downloaded.");
@@ -354,7 +375,7 @@ namespace PatchKit.Unity.Patcher
 
                 LogInfo("Downloading diff package.");
 
-                DownloadPackage(diffPackagePath, diffTorrentUrl.Url, diffUrls, diffSummary.Size, downloadProgress,
+                DownloadPackage(diffPackagePath, diffTorrentUrl.Url, diffUrls, diffSummary.Size, diffSummary.Chunks.Size, diffSummary.Chunks.Hashes, downloadProgress,
                     cancellationToken);
 
                 LogInfo("Diff package has been downloaded.");
@@ -486,9 +507,9 @@ namespace PatchKit.Unity.Patcher
 
         private bool CheckVersionConsistency(int version)
         {
-            var commonVersionContentSummary = _apiConnection.GetAppVersionContentSummary(_configuration.AppSecret, version);
-
-            return _patcherData.CheckFilesConsistency(version, commonVersionContentSummary);
+            ApiConnection.AppContentSummary contentSummary = _apiConnection.GetAppVersionContentSummary(
+                _configuration.AppSecret, version);
+            return _patcherData.CheckFilesConsistency(version, contentSummary);
         }
 
         private void OnDownloadProgress(ProgressTracker.Task downloadTaskProgress, float progress, float speed, long bytes, long totalBytes)
