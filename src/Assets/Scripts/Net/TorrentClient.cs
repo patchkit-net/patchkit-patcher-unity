@@ -75,22 +75,43 @@ namespace PatchKit.Unity.Patcher.Net
 
         private Process StartProcess()
         {
-            return Process.Start(new ProcessStartInfo()
-            {
-                CreateNoWindow = true,
-                FileName = GetExecutablePath(),
-                RedirectStandardOutput = true,
-                RedirectStandardInput = true,
-                UseShellExecute = false
-            });
+            var processStartInfo = GetProcessStartInfo();
+            
+            return Process.Start(processStartInfo);
         }
 
-        private string GetExecutablePath()
+        private ProcessStartInfo GetProcessStartInfo()
         {
             if (Application.platform == RuntimePlatform.WindowsPlayer ||
                 Application.platform == RuntimePlatform.WindowsEditor)
             {
-                return Path.Combine(_streamingAssetsPath, "torrent-client/win/torrent-client.exe");
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/win/torrent-client.exe"),
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                return processStartInfo;
+            }
+
+            if(Application.platform == RuntimePlatform.OSXEditor ||
+                Application.platform == RuntimePlatform.OSXPlayer)
+            {
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/osx64/torrent-client"),
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/osx64");
+
+                return processStartInfo;
             }
 
             throw new InvalidOperationException("Unsupported platform by torrent-client.");
