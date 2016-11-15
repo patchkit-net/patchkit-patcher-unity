@@ -42,6 +42,8 @@ namespace PatchKit.Unity.Web
 
                 while (!downloaded)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var statusResult = torrentClient.ExecuteCommand("status");
 
                     Debug.Log("Torrent status:\n" + statusResult);
