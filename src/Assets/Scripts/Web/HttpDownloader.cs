@@ -58,7 +58,12 @@ namespace PatchKit.Unity.Web
                             UnityEngine.Debug.Log("Will try again in 10 seconds...");
                             Thread.Sleep(10000);
                         }
-                    } catch (Exception e)
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception e)
                     {
                         UnityEngine.Debug.LogException(e);
 
