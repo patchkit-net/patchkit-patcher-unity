@@ -114,6 +114,22 @@ namespace PatchKit.Unity.Web
                 return processStartInfo;
             }
 
+            if(Application.platform == RuntimePlatform.LinuxPlayer && IntPtr.Size == 8) // Linux 64 bit
+            {
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/linux64/torrent-client"),
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/linux64");
+
+                return processStartInfo;
+            }
+
             throw new InvalidOperationException("Unsupported platform by torrent-client.");
         }
 
