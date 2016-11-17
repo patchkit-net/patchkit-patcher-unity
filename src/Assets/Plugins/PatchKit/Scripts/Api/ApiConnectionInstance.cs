@@ -31,7 +31,7 @@ namespace PatchKit.Unity.Api
         {
             var connectionSettings = ApiConnectionInstanceSettings.GetConnectionSettings();
 
-            _apiConnection = new ApiConnection(connectionSettings);
+            _apiConnection = new ApiConnection(connectionSettings, new ApiHttpDownloader());
         }
     }
 }

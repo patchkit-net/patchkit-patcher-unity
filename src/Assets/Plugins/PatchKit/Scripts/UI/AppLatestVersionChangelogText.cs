@@ -11,11 +11,11 @@ namespace PatchKit.Unity.UI
 
         protected override IEnumerator RefreshCoroutine()
         {
-            var request = ApiConnectionInstance.Instance.BeginGetAppLatestVersion(AppSecret);
+            var request = ApiConnectionInstance.Instance.BeginGetAppLatestAppVersion(AppSecret);
 
             yield return request.WaitCoroutine();
 
-            var version = ApiConnectionInstance.Instance.EndGetAppLatestVersion(request);
+            var version = ApiConnectionInstance.Instance.EndGetAppLatestAppVersion(request);
 
             Text.text = version.Changelog;
         }
