@@ -43,24 +43,30 @@ namespace PatchKit.Unity.Patcher.Net
             int bufferRead;
 
             long downloadedBytes = 0;
+            long lastDownloadedBytes = 0;
 
             while ((bufferRead = responseStream.Read(buffer, 0, DownloadBufferSize)) > 0)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 destinationFileStream.Write(buffer, 0, bufferRead);
                 downloadedBytes += bufferRead;
 
-                progressReporter.Progress = new DownloadProgress
+                if (stopwatch.ElapsedMilliseconds > 1500)
                 {
-                    DownloadedBytes = downloadedBytes,
-                    TotalBytes = totalBytes,
-                    KilobytesPerSecond = CalculateDownloadSpeed(bufferRead, stopwatch.ElapsedMilliseconds),
-                    Progress = totalBytes == 0 ? 0 : downloadedBytes/(double) totalBytes
-                };
+                    progressReporter.Progress = new DownloadProgress
+                    {
+                        DownloadedBytes = downloadedBytes,
+                        TotalBytes = totalBytes,
+                        KilobytesPerSecond = CalculateDownloadSpeed(downloadedBytes - lastDownloadedBytes, stopwatch.ElapsedMilliseconds),
+                        Progress = totalBytes == 0 ? 0 : downloadedBytes/(double) totalBytes
+                    };
 
-                cancellationToken.ThrowIfCancellationRequested();
+                    lastDownloadedBytes = downloadedBytes;
 
-                stopwatch.Reset();
-                stopwatch.Start();
+                    stopwatch.Reset();
+                    stopwatch.Start();
+                }
             }
         }
 
