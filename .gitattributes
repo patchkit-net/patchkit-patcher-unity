@@ -1,0 +1,12 @@
+* text=auto
+
+*.cs text=auto
+
+*.sln text eol=crlf
+*.csproj text eol=crlf
+*.unitypackage binary
+*.dll binary
+*.so binary
+*.bundle binary
+*.png binary
+*.ttf binary
