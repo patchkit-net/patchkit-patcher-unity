@@ -18,5 +18,10 @@
         {
             get { return new CancellationToken(this); }
         }
+
+        public static implicit operator CancellationToken(CancellationTokenSource cancellationTokenSource)
+        {
+            return cancellationTokenSource.Token;
+        }
     }
 }
