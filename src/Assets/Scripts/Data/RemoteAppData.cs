@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using Assets.Scripts.Web;
 using Newtonsoft.Json.Linq;
 using PatchKit.Api;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -29,31 +30,46 @@ namespace PatchKit.Unity.Patcher.Data
             _apiConnection = new ApiConnection(Settings.GetApiConnectionSettings());
         }
 
-        private void DownloadFileFromUrls(string destinationFilePath, string[] sourceFileUrls, long totalBytes, 
+        private void DownloadFileFromUrls(string destinationFilePath, string[] sourceFileUrls, long totalBytes, int chunkSize, string[] chunkHashes,
             CustomProgressReporter<DownloadProgress> progressReporter, CancellationToken cancellationToken)
         {
             Debug.Log("Downloading file from urls" + string.Join("; ", sourceFileUrls));
-            foreach (string sourceFileUrl in sourceFileUrls)
+            bool downloaded = false;
+            if (chunkSize > 0)
             {
-                try
+                using (var chunkedDownloader = new ChunkedFileDownloader(sourceFileUrls, totalBytes, destinationFilePath,
+                        chunkSize, chunkHashes))
                 {
-                    _httpDownloader.DownloadFile(sourceFileUrl, destinationFilePath, totalBytes, progressReporter,
-                        cancellationToken);
-
-                    return;
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogException(exception);
-                    Debug.LogWarning(string.Format("Failed to download file from {0}", sourceFileUrl));
+                    downloaded = chunkedDownloader.Start(progressReporter, cancellationToken);
                 }
             }
+            else
+            {
+                foreach (string sourceFileUrl in sourceFileUrls)
+                {
+                    try
+                    {
+                        _httpDownloader.DownloadFile(sourceFileUrl, destinationFilePath, totalBytes, progressReporter,
+                            cancellationToken);
 
-            throw new WebException("Failed to download file from urls: "+string.Join("; ", sourceFileUrls));
+                        downloaded = true;
+                        break;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.LogException(exception);
+                        Debug.LogWarning(string.Format("Failed to download file from {0}", sourceFileUrl));
+                    }
+                }
+            }
+            if (!downloaded)
+            {
+                throw new WebException("Failed to download file from urls: " + string.Join("; ", sourceFileUrls));
+            }
         }
 
         private void DownloadTorrent(string destinationFilePath, string torrentFileUrl, CustomProgressReporter<DownloadProgress> progressReporter, CancellationToken cancellationToken)
@@ -83,7 +99,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting content torrent url of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/content_torrent_url", _appSecret, versionId);
 
-            return ((JObject)_apiConnection.Get(path, null).GetJson()).Value<string>("url");
+            return ((JObject)_apiConnection.GetResponse(path, null).GetJson()).Value<string>("url");
         }
 
         private string GetDiffTorrentUrl(int versionId)
@@ -91,7 +107,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting diff torrent url of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/diff_torrent_url", _appSecret, versionId);
 
-            return ((JObject)_apiConnection.Get(path, null).GetJson()).Value<string>("url");
+            return ((JObject)_apiConnection.GetResponse(path, null).GetJson()).Value<string>("url");
         }
 
         private string[] GetContentUrls(int versionId)
@@ -99,7 +115,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting content urls of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/content_urls", _appSecret, versionId);
 
-            return ((JArray)_apiConnection.Get(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
+            return ((JArray)_apiConnection.GetResponse(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
         }
 
         private string[] GetDiffUrls(int versionId)
@@ -107,7 +123,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting content urls of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/diff_urls", _appSecret, versionId);
 
-            return ((JArray)_apiConnection.Get(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
+            return ((JArray)_apiConnection.GetResponse(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
         }
 
         /// <summary>
@@ -119,7 +135,7 @@ namespace PatchKit.Unity.Patcher.Data
 
             string path = string.Format("1/apps/{0}/versions/latest/id", _appSecret);
 
-            return _apiConnection.Get(path, null).GetJson().Value<int>("id");
+            return _apiConnection.GetResponse(path, null).GetJson().Value<int>("id");
         }
 
         /// <summary>
@@ -130,7 +146,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting content summary of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/content_summary", _appSecret, versionId);
 
-            return (JObject)_apiConnection.Get(path, null).GetJson();
+            return (JObject)_apiConnection.GetResponse(path, null).GetJson();
         }
 
         /// <summary>
@@ -141,7 +157,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting diff summary of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/diff_summary", _appSecret, versionId);
 
-            return (JObject)_apiConnection.Get(path, null).GetJson();
+            return (JObject)_apiConnection.GetResponse(path, null).GetJson();
         }
 
         /// <summary>
@@ -168,9 +184,9 @@ namespace PatchKit.Unity.Patcher.Data
 
                 var contentUrls = GetContentUrls(versionId);
 
-                var contentSize = GetContentSummary(versionId).Value<long>("size");
+                var contentSummary = _apiConnection.GetAppVersionContentSummary(_appSecret, versionId);
 
-                DownloadFileFromUrls(contentPackagePath, contentUrls, contentSize, progressReporter, cancellationToken);
+                DownloadFileFromUrls(contentPackagePath, contentUrls, contentSummary.Size, contentSummary.Chunks.Size, contentSummary.Chunks.Hashes, progressReporter, cancellationToken);
             }
         }
 
@@ -198,9 +214,9 @@ namespace PatchKit.Unity.Patcher.Data
 
                 var diffUrls = GetDiffUrls(versionId);
 
-                var diffSize = GetDiffSummary(versionId).Value<long>("size");
+                var diffSummary = _apiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
 
-                DownloadFileFromUrls(diffPackagePath, diffUrls, diffSize, progressReporter, cancellationToken);
+                DownloadFileFromUrls(diffPackagePath, diffUrls, diffSummary.Size, diffSummary.Chunks.Size, diffSummary.Chunks.Hashes, progressReporter, cancellationToken);
             }
         }
     }

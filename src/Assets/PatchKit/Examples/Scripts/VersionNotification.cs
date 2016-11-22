@@ -33,17 +33,16 @@ namespace PatchKit.Unity.Examples
         {
             while (!_newVersion)
             {
-                
-                yield return ApiConnection.GetCoroutine(string.Format("1/apps/{0}/versions/latest", AppSecret), null,
+                yield return Threading.StartThreadCoroutine(() => ApiConnection.GetAppLatestAppVersion(AppSecret),
                     response =>
                     {
-                        if (CurrentVersionId < response.GetJson().Value<int>("id"))
+                        if (CurrentVersionId < response.Id)
                         {
                             Background.CrossFadeAlpha(1.0f, 1.0f, true);
                             Text.CrossFadeAlpha(1.0f, 1.0f, true);
                             Text.text = "<b>A new version is available!</b>\n\n" +
-                                        "<b>" + response.GetJson().Value<string>("label") + "</b>\n" +
-                                        response.GetJson().Value<string>("changelog");
+                                        "<b>" + response.Label + "</b>\n" +
+                                        response.Changelog;
                         }
                     });
 

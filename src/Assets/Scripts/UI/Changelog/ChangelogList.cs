@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using PatchKit.Api.Models;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.Utilities;
 
@@ -15,25 +15,20 @@ namespace PatchKit.Unity.Patcher.UI
         protected override IEnumerator LoadCoroutine()
         {
             yield return
-                ApiConnection.GetCoroutine(
-                    string.Format("1/apps/{0}/versions", PatcherApplication.Instance.Configuration.AppSecret), null,
+                Threading.StartThreadCoroutine(() => ApiConnection.GetAppVersionList(PatcherApplication.Instance.Configuration.AppSecret),
                     response =>
                     {
-                        var versions = response.GetJson();
-                        foreach (var version in versions.OrderByDescending(version => version.Value<int>("id")))
+                        foreach (var version in response.OrderByDescending(version => version.Id))
                         {
-                            if (version is JObject)
-                            {
-                                CreateVersionChangelog(version as JObject);
-                            }
+                            CreateVersionChangelog(version);
                         }
                     });
         }
 
-        private void CreateVersionChangelog(JObject version)
+        private void CreateVersionChangelog(AppVersion version)
         {
-            CreateVersionTitle(version.Value<string>("label"));
-            CreateVersionChangeList(version.Value<string>("changelog"));
+            CreateVersionTitle(version.Label);
+            CreateVersionChangeList(version.Changelog);
         }
 
         private void CreateVersionTitle(string label)

@@ -1,24 +1,30 @@
 ﻿using System;
 using System.Collections;
 using System.Threading;
-using PatchKit.Api;
 using UnityEngine;
 
 namespace PatchKit.Unity.Utilities
 {
-    public static class ApiConnectionExtensions
+    public static class Threading
     {
-        public static IEnumerator GetCoroutine(this ApiConnection @this, string path,
-            string query, Action<IApiResponse> onSuccess, Action<Exception> onFailed = null)
+        /// <summary>
+        /// Starts the thread with specified action in coroutine.
+        /// </summary>
+        /// <param name="action">The action to do in thread.</param>
+        /// <param name="onSuccess">The action performed after successful thread result.</param>
+        /// <param name="onFailed">The action performed after thread failure.</param>
+        public static IEnumerator StartThreadCoroutine<T>(Func<T> action, Action<T> onSuccess, Action<Exception> onFailed = null)
         {
-            IApiResponse apiResponse = null;
+            bool success = false;
+            T result = default(T);
             Exception exception = null;
 
             Thread thread = new Thread(() =>
             {
                 try
                 {
-                    apiResponse = @this.Get(path, query);
+                    result = action();
+                    success = true;
                 }
                 catch (Exception e)
                 {
@@ -35,9 +41,9 @@ namespace PatchKit.Unity.Utilities
                     yield return null;
                 }
 
-                if (apiResponse != null)
+                if (success)
                 {
-                    onSuccess(apiResponse);
+                    onSuccess(result);
                 }
 
                 if (exception != null)

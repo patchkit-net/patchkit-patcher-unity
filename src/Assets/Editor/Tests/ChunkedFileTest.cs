@@ -79,6 +79,8 @@ public class ChunkedFileTest {
             Assert.AreEqual(3, chunkedFile.VerifiedLength);
             Assert.AreEqual(0, chunkedFile.RemainingLength);
         }
+
+        Assert.AreEqual(3, new FileInfo(_fileName).Length);
     }
 
     [Test]

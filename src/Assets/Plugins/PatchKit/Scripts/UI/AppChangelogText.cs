@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using PatchKit.Api.Utilities;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
@@ -16,16 +15,16 @@ namespace PatchKit.Unity.UI
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield return ApiConnection.GetCoroutine(string.Format("1/apps/{0}/versions", AppSecret), null, response =>
+            yield return Threading.StartThreadCoroutine(() => ApiConnection.GetAppVersionList(AppSecret), response =>
             {
                 Text.text = string.Join("\n",
-                    response.GetJson().Values<JObject>().OrderByDescending(version => version.Value<int>("id")).Select(version =>
+                    response.OrderByDescending(version => version.Id).Select(version =>
                     {
                         string changelog = Format;
 
-                        changelog = changelog.Replace("{label}", version.Value<string>("label"));
-                        changelog = changelog.Replace("{changelog}", version.Value<string>("changelog"));
-                        string publishDate = UnixTimeConvert.FromUnixTimeStamp(version.Value<int>("publish_date")).ToString("g");
+                        changelog = changelog.Replace("{label}", version.Label);
+                        changelog = changelog.Replace("{changelog}", version.Changelog);
+                        string publishDate = UnixTimeConvert.FromUnixTimeStamp(version.PublishDate).ToString("g");
                         changelog = changelog.Replace("{publishdate}", publishDate);
 
                         return changelog;

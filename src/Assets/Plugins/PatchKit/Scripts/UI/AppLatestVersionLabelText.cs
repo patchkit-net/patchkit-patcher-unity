@@ -10,10 +10,10 @@ namespace PatchKit.Unity.UI
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield return ApiConnection.GetCoroutine(string.Format("1/apps/{0}/versions/latest", AppSecret), null,
+            yield return Threading.StartThreadCoroutine(() => ApiConnection.GetAppLatestAppVersion(AppSecret),
                 response =>
                 {
-                    Text.text = response.GetJson().Value<string>("label");
+                    Text.text = response.Label;
                 });
         }
 
