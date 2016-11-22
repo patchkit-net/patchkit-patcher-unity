@@ -33,7 +33,7 @@ namespace PatchKit.Unity.Patcher.Data
             using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
                 IEnumerable<string> enumerable = new xxHash(Seed).ComputeHash(fileStream).Select(b => b.ToString("X2")).Reverse();
-                return string.Concat(string.Join("", enumerable.ToArray()).ToLower().TrimStart('0'));
+                return string.Join("", enumerable.ToArray()).ToLower().TrimStart('0');
             }
         }
     }
