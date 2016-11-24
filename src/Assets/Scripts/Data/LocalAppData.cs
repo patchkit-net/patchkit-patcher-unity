@@ -4,14 +4,17 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Diff;
+using PatchKit.Unity.Patcher.Log;
 using PatchKit.Unity.Patcher.Statistics;
 using PatchKit.Unity.Patcher.Zip;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.Data
 {
-    internal class LocalAppData
+    internal class LocalAppData : IDebugLogger
     {
+        private LocalFileSystem _fileSystem;
+
         private const string MetaDataFileName = "patcher_cache.json";
 
         private readonly string _metaDataFilePath;
@@ -28,9 +31,11 @@ namespace PatchKit.Unity.Patcher.Data
 
         public LocalAppData(string path)
         {
-            Debug.Log(string.Format("Initializing local application data in {0}", path));
+            this.Log(string.Format("Initializing local application data in {0}", path));
 
             _path = path;
+
+            _fileSystem = new LocalFileSystem(_path);
 
             _metaDataFilePath = Path.Combine(_path, MetaDataFileName);
 
@@ -42,47 +47,6 @@ namespace PatchKit.Unity.Patcher.Data
 
             _unzipper = new Unzipper();
             _librsync = new Librsync();
-        }
-
-        private void AddDirectory(string dirName)
-        {
-            Debug.Log(string.Format("Trying to add directory {0}", dirName));
-
-            string dirPath = Path.Combine(_path, dirName);
-
-            if (!Directory.Exists(dirPath))
-            {
-                Debug.Log(string.Format("Adding directory {0}", dirName));
-                Directory.CreateDirectory(dirPath);
-            }
-            else
-            {
-                Debug.Log(string.Format("Directory already exists {0}", dirName));
-            }
-        }
-
-        private void DeleteDirectory(string dirName)
-        {
-            Debug.Log(string.Format("Trying to delete directory {0}", dirName));
-
-            string dirPath = Path.Combine(_path, dirName);
-
-            if (Directory.Exists(dirPath))
-            {
-                if (Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0)
-                {
-                    Debug.Log(string.Format("Deleting directory {0}", dirName));
-                    Directory.Delete(dirPath, true);
-                }
-                else
-                {
-                    Debug.Log(string.Format("Couldn't delete directory {0} because it's not empty.", dirName));
-                }
-            }
-            else
-            {
-                Debug.Log(string.Format("Directory already doesn't exists {0}", dirPath));
-            }
         }
 
         private void AddFile(string fileName, string sourceFilePath, int versionId)
@@ -212,7 +176,10 @@ namespace PatchKit.Unity.Patcher.Data
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                DeleteDirectory(dirName);
+                if (_fileSystem.DirectoryExists(dirName) && !_fileSystem.IsDirectoryEmpty(dirName))
+                {
+                    _fileSystem.DeleteDirectory(dirName);
+                }
 
                 progressReporter.Step();
             }
@@ -235,7 +202,7 @@ namespace PatchKit.Unity.Patcher.Data
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                AddDirectory(dirName);
+                _fileSystem.CreateDirectory(dirName);
 
                 progressReporter.Step();
             }
