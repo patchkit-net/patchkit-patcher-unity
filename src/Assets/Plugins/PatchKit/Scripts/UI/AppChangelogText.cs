@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
-using PatchKit.Unity.Api;
+using PatchKit.Api.Utilities;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,46 +9,27 @@ namespace PatchKit.Unity.UI
 {
     public class AppChangelogText : AppCompontent
     {
-        private string _previousFormat;
-
-        [Multiline]
-        public string Format = "<b>{label}</b>\n{changelog}\n\n";
+        [Multiline] public string Format = "<b>{label}</b>\n{changelog}\n\n";
 
         public Text Text;
 
-        protected override void Update()
+        protected override IEnumerator LoadCoroutine()
         {
-            if (Format != _previousFormat)
+            yield return Threading.StartThreadCoroutine(() => ApiConnection.GetAppVersionList(AppSecret), response =>
             {
-                _previousFormat = Format;
+                Text.text = string.Join("\n",
+                    response.OrderByDescending(version => version.Id).Select(version =>
+                    {
+                        string changelog = Format;
 
-                Refresh();
-            }
+                        changelog = changelog.Replace("{label}", version.Label);
+                        changelog = changelog.Replace("{changelog}", version.Changelog);
+                        string publishDate = UnixTimeConvert.FromUnixTimeStamp(version.PublishDate).ToString("g");
+                        changelog = changelog.Replace("{publishdate}", publishDate);
 
-            base.Update();
-        }
-
-        protected override IEnumerator RefreshCoroutine()
-        {
-            //TODO: Use ApiConnection.Instance.BeginGetAppChangelog() after it receives implementation
-            var request = ApiConnectionInstance.Instance.BeginGetAppVersionList(AppSecret);
-
-            yield return request.WaitCoroutine();
-
-            var versionsList = ApiConnectionInstance.Instance.EndGetAppVersionList(request);
-
-            Text.text = string.Join("\n",
-                versionsList.OrderByDescending(version => version.Id).Select(version =>
-                {
-                    string changelog = Format;
-
-                    changelog = changelog.Replace("{label}", version.Label);
-                    changelog = changelog.Replace("{changelog}", version.Changelog);
-                    string publishDate = TimeConvert.FromUnixTimeStamp(version.PublishDate).ToString("g");
-                    changelog = changelog.Replace("{publishdate}", publishDate);
-
-                    return changelog;
-                }).ToArray());
+                        return changelog;
+                    }).ToArray());
+            });
         }
 
         private void Reset()

@@ -1,21 +1,7 @@
 ﻿namespace PatchKit.Unity.UI
 {
-    public abstract class AppCompontent : RefreshableComponent
+    public abstract class AppCompontent : UIApiComponent
     {
-        private string _previousAppSecret;
-
         public string AppSecret;
-
-        protected override void Update()
-        {
-            if (_previousAppSecret != AppSecret)
-            {
-                _previousAppSecret = AppSecret;
-
-                Refresh();
-            }
-
-            base.Update();
-        }
     }
 }

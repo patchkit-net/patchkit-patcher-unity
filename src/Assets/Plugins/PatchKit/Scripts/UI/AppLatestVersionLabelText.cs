@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using PatchKit.Unity.Api;
 using PatchKit.Unity.Utilities;
 using UnityEngine.UI;
 
@@ -9,15 +8,13 @@ namespace PatchKit.Unity.UI
     {
         public Text Text;
 
-        protected override IEnumerator RefreshCoroutine()
+        protected override IEnumerator LoadCoroutine()
         {
-            var request = ApiConnectionInstance.Instance.BeginGetAppLatestAppVersion(AppSecret);
-
-            yield return request.WaitCoroutine();
-
-            var version = ApiConnectionInstance.Instance.EndGetAppLatestAppVersion(request);
-
-            Text.text = version.Label;
+            yield return Threading.StartThreadCoroutine(() => ApiConnection.GetAppLatestAppVersion(AppSecret),
+                response =>
+                {
+                    Text.text = response.Label;
+                });
         }
 
         private void Reset()
