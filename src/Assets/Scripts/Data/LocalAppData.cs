@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.Data
 {
     internal class LocalAppData : IDebugLogger
     {
-        private readonly LocalFileSystem _fileSystem;
+        private readonly Storage _fileSystem;
 
         private const string MetaDataFileName = "patcher_cache.json";
 
@@ -33,7 +33,7 @@ namespace PatchKit.Unity.Patcher.Data
 
             _path = path;
 
-            _fileSystem = new LocalFileSystem(_path);
+            _fileSystem = new Storage(_path);
 
             _metaDataFilePath = Path.Combine(_path, MetaDataFileName);
 

@@ -4,13 +4,13 @@ using PatchKit.Unity.Patcher.Log;
 
 namespace PatchKit.Unity.Patcher.Data
 {
-    internal class LocalFileSystem : IDebugLogger
+    internal class Storage : IDebugLogger
     {
         public readonly string Path;
 
         private bool? _canWrite;
 
-        public LocalFileSystem(string path)
+        public Storage(string path)
         {
             Path = path;
         }
@@ -147,7 +147,7 @@ namespace PatchKit.Unity.Patcher.Data
         }
 
         /// <summary>
-        /// Determines whether file system allows write operations.
+        /// Determines whether storage allows write operations.
         /// </summary>
         public bool CanWrite()
         {
@@ -178,7 +178,7 @@ namespace PatchKit.Unity.Patcher.Data
                 catch (Exception exception)
                 {
                     this.LogException(exception);
-                    this.LogWarning("File system doesn't allow write operations.");
+                    this.LogWarning("Storage doesn't allow write operations.");
                 }
             }
 
@@ -189,7 +189,7 @@ namespace PatchKit.Unity.Patcher.Data
         {
             if (!CanWrite())
             {
-                throw new UnauthorizedAccessException("File system doesn't allow write operations.");
+                throw new UnauthorizedAccessException("Storage doesn't allow write operations.");
             }
         }
     }
