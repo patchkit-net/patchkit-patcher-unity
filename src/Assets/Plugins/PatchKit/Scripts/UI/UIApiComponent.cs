@@ -12,7 +12,7 @@ namespace PatchKit.Unity.UI
 
         private ApiConnection _apiConnection;
 
-        public bool LoadOnAwake = true;
+        public bool LoadOnStart = true;
 
         protected ApiConnection ApiConnection
         {
@@ -47,8 +47,11 @@ namespace PatchKit.Unity.UI
         protected virtual void Awake()
         {
             _apiConnection = new ApiConnection(Settings.GetApiConnectionSettings());
+        }
 
-            if (LoadOnAwake)
+        protected virtual void Start()
+        {
+            if (LoadOnStart)
             {
                 Load();
             }
