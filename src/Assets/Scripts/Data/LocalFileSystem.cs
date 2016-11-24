@@ -6,11 +6,13 @@ namespace PatchKit.Unity.Patcher.Data
 {
     internal class LocalFileSystem : IDebugLogger
     {
-        private readonly string _path;
+        public readonly string Path;
+
+        private bool? _canWrite;
 
         public LocalFileSystem(string path)
         {
-            _path = path;
+            Path = path;
         }
 
         /// <summary>
@@ -19,7 +21,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// <param name="entryName">Name of the entry.</param>
         public string GetEntryPath(string entryName)
         {
-            return Path.Combine(_path, entryName);
+            return System.IO.Path.Combine(Path, entryName);
         }
 
         /// <summary>
@@ -28,6 +30,8 @@ namespace PatchKit.Unity.Patcher.Data
         /// <param name="dirName">Name of the directory.</param>
         public void CreateDirectory(string dirName)
         {
+            ThrowIfCannotWrite();
+
             this.Log(string.Format("Creating directory <{0}>", dirName));
 
             string dirPath = GetEntryPath(dirName);
@@ -44,6 +48,8 @@ namespace PatchKit.Unity.Patcher.Data
         /// <param name="dirName">Name of the directory.</param>
         public void DeleteDirectory(string dirName)
         {
+            ThrowIfCannotWrite();
+
             this.Log(string.Format("Trying to delete directory <{0}>", dirName));
 
             string dirPath = GetEntryPath(dirName);
@@ -92,6 +98,8 @@ namespace PatchKit.Unity.Patcher.Data
         {
             this.Log(string.Format("Copying file <{0}> from <{1}>", fileName, sourceFilePath));
 
+            ThrowIfCannotWrite();
+
             if (!File.Exists(sourceFilePath))
             {
                 throw new ArgumentException(string.Format("Source file doesn't exist <{0}>", sourceFilePath), "sourceFilePath");
@@ -99,7 +107,7 @@ namespace PatchKit.Unity.Patcher.Data
 
             string filePath = GetEntryPath(fileName);
 
-            string fileDirectoryPath = Path.GetDirectoryName(filePath);
+            string fileDirectoryPath = System.IO.Path.GetDirectoryName(filePath);
 
             if (fileDirectoryPath != null && !Directory.Exists(fileDirectoryPath))
             {
@@ -115,6 +123,10 @@ namespace PatchKit.Unity.Patcher.Data
         /// <param name="fileName">Name of the file.</param>
         public void DeleteFile(string fileName)
         {
+            this.Log(string.Format("Deleting file <{0}>", fileName));
+
+            ThrowIfCannotWrite();
+
             string filePath = GetEntryPath(fileName);
 
             if (File.Exists(filePath))
@@ -132,6 +144,53 @@ namespace PatchKit.Unity.Patcher.Data
             string filePath = GetEntryPath(fileName);
 
             return File.Exists(filePath);
+        }
+
+        /// <summary>
+        /// Determines whether file system allows write operations.
+        /// </summary>
+        public bool CanWrite()
+        {
+            if (_canWrite == null)
+            {
+                _canWrite = false;
+
+                try
+                {
+                    string checkFilePath = System.IO.Path.Combine(Path, ".can_write");
+
+                    if (!Directory.Exists(Path))
+                    {
+                        Directory.CreateDirectory(Path);
+                    }
+
+                    using (var fs = new FileStream(checkFilePath, FileMode.CreateNew, FileAccess.Write))
+                    {
+                        fs.WriteByte(0xff);
+                    }
+
+                    if (File.Exists(checkFilePath))
+                    {
+                        File.Delete(checkFilePath);
+                        _canWrite = true;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.LogException(exception);
+                    this.LogWarning("File system doesn't allow write operations.");
+                }
+            }
+
+            return _canWrite.Value;
+        }
+
+        private void ThrowIfCannotWrite()
+        {
+            if (!CanWrite())
+            {
+                throw new UnauthorizedAccessException("File system doesn't allow write operations.");
+            }
         }
     }
 }

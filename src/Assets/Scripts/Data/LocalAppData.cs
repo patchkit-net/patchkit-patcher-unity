@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.Data
 {
     internal class LocalAppData : IDebugLogger
     {
-        private LocalFileSystem _fileSystem;
+        private readonly LocalFileSystem _fileSystem;
 
         private const string MetaDataFileName = "patcher_cache.json";
 
@@ -24,8 +24,6 @@ namespace PatchKit.Unity.Patcher.Data
         private readonly Unzipper _unzipper;
 
         private readonly Librsync _librsync;
-
-        private bool? _isWritable;
 
         private readonly string _path;
 
@@ -54,15 +52,8 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Adding file {0} from source {1} as version {2}", fileName, sourceFilePath,
                 versionId));
 
-            string filePath = Path.Combine(_path, fileName);
-            string fileDirectoryPath = Path.GetDirectoryName(filePath);
+            _fileSystem.CreateFile(fileName, sourceFilePath);
 
-            if (fileDirectoryPath != null && !Directory.Exists(fileDirectoryPath))
-            {
-                Directory.CreateDirectory(fileDirectoryPath);
-            }
-
-            File.Copy(sourceFilePath, filePath, true);
             _metaData.SetFileVersionId(fileName, versionId);
             _metaData.Serialize(_metaDataFilePath);
         }
@@ -297,11 +288,6 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Installing application with content package from {0} of version {1}.",
                 contentPackagePath, versionId));
 
-            if (!IsWritable())
-            {
-                throw new InvalidOperationException("Application directory is not writable.");
-            }
-
             if (IsInstalled())
             {
                 throw new InvalidOperationException("Application is already installed.");
@@ -335,11 +321,6 @@ namespace PatchKit.Unity.Patcher.Data
         {
             Debug.Log(string.Format("Patching application with diff package from {0} of version {1}.",
                 diffPackagePath, versionId));
-
-            if (!IsWritable())
-            {
-                throw new InvalidOperationException("Application directory is not writable.");
-            }
 
             if (!IsInstalled())
             {
@@ -434,43 +415,9 @@ namespace PatchKit.Unity.Patcher.Data
             return version;
         }
 
-        /// <summary>
-        /// Determines whether application directory is writable.
-        /// </summary>
         public bool IsWritable()
         {
-            if (_isWritable == null)
-            {
-                _isWritable = false;
-
-                try
-                {
-                    string permissionsCheckFilePath = Path.Combine(_path, ".permissions_check");
-
-                    if (!Directory.Exists(_path))
-                    {
-                        Directory.CreateDirectory(_path);
-                    }
-
-                    using (var fs = new FileStream(permissionsCheckFilePath, FileMode.CreateNew, FileAccess.Write))
-                    {
-                        fs.WriteByte(0xff);
-                    }
-
-                    if (File.Exists(permissionsCheckFilePath))
-                    {
-                        File.Delete(permissionsCheckFilePath);
-                        _isWritable = true;
-                    }
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogException(exception);
-                    Debug.LogWarning("Directory is not writable.");
-                }
-            }
-
-            return _isWritable.Value;
+            return _fileSystem.CanWrite();
         }
     }
 }
