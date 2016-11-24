@@ -5,15 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using Assets.Scripts.Patcher;
 using Ionic.Zip;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
-using PatchKit.Unity.Patcher.Net;
 using PatchKit.Unity.Patcher.Statistics;
 
-namespace Assets.Scripts.Web {
-
+namespace PatchKit.Unity.Patcher.Net
+{
     /// <summary>
     /// Downloads chunk-hashed file through http.
     /// Chunk hashes are used to interrupt and resume downloading if downloaded chunk will be

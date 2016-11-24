@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
 
-namespace Assets.Scripts.Web {
-
+namespace PatchKit.Unity.Patcher.Net
+{
     // http://stackoverflow.com/questions/6576397/how-to-specify-range-2gb-for-httpwebrequest-in-net-3-5
     static class HttpWebRequestExt {
         static MethodInfo httpWebRequestAddRangeHelper = typeof(WebHeaderCollection).GetMethod

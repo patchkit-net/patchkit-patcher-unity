@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using UnityEngine;
 
-namespace Assets.Scripts.Patcher {
-
+namespace PatchKit.Unity.Patcher.Net
+{
     /// <summary>
     /// Helps to save a file making a hash-checking of its chunks during the save process.
     /// 

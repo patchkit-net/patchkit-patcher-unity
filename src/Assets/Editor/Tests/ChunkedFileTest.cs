@@ -1,9 +1,7 @@
 using System;
 using System.IO;
-using Assets.Scripts.Patcher;
-using UnityEngine;
-using UnityEditor;
 using NUnit.Framework;
+using PatchKit.Unity.Patcher.Net;
 
 public class ChunkedFileTest {
     private string _fileName;

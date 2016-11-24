@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Net;
-using Assets.Scripts.Web;
 using Newtonsoft.Json.Linq;
 using PatchKit.Api;
 using PatchKit.Unity.Patcher.Cancellation;
