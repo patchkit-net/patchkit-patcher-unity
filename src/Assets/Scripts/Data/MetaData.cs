@@ -7,7 +7,7 @@ using PatchKit.Unity.Patcher.Log;
 
 namespace PatchKit.Unity.Patcher.Data
 {
-    internal class MetaData : IDebugLogger
+    internal sealed class MetaData : IMetaData, IDebugLogger
     {
         private struct Data
         {
@@ -25,19 +25,11 @@ namespace PatchKit.Unity.Patcher.Data
             LoadData();
         }
 
-        /// <summary>
-        /// Returns the names of files present in the database.
-        /// </summary>
         public string[] GetFileNames()
         {
             return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
-        /// <summary>
-        /// Adds or updates the file in the database.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        /// <param name="versionId">The version identifier.</param>
         public void AddOrUpdateFile(string fileName, int versionId)
         {
             _data.FileVersionIds[fileName] = versionId;
@@ -45,10 +37,6 @@ namespace PatchKit.Unity.Patcher.Data
             SaveData();
         }
 
-        /// <summary>
-        /// Removes the file from the database if it exists.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
         public void RemoveFile(string fileName)
         {
             _data.FileVersionIds.Remove(fileName);
@@ -56,19 +44,11 @@ namespace PatchKit.Unity.Patcher.Data
             SaveData();
         }
 
-        /// <summary>
-        /// Determines whether file exists in the database.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
         public bool FileExists(string fileName)
         {
             return _data.FileVersionIds.ContainsKey(fileName);
         }
 
-        /// <summary>
-        /// Returns file version in database. Note that file must exist.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
         public int GetFileVersion(string fileName)
         {
             if (!_data.FileVersionIds.ContainsKey(fileName))
