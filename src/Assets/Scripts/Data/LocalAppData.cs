@@ -17,9 +17,7 @@ namespace PatchKit.Unity.Patcher.Data
 
         private const string MetaDataFileName = "patcher_cache.json";
 
-        private readonly string _metaDataFilePath;
-
-        private readonly LocalMetaData _metaData;
+        private readonly MetaData _metaData;
 
         private readonly Unzipper _unzipper;
 
@@ -38,13 +36,7 @@ namespace PatchKit.Unity.Patcher.Data
 
             _fileSystem = new Storage(_path);
 
-            _metaDataFilePath = Path.Combine(_path, MetaDataFileName);
-
-            _metaData = new LocalMetaData();
-            if (File.Exists(_metaDataFilePath))
-            {
-                _metaData.Deserialize(_metaDataFilePath);
-            }
+            _metaData = new MetaData(Path.Combine(_path, MetaDataFileName));
 
             _unzipper = new Unzipper();
             _librsync = new Librsync();
@@ -57,8 +49,7 @@ namespace PatchKit.Unity.Patcher.Data
 
             _fileSystem.CreateFile(fileName, sourceFilePath);
 
-            _metaData.SetFileVersionId(fileName, versionId);
-            _metaData.Serialize(_metaDataFilePath);
+            _metaData.AddOrUpdateFile(fileName, versionId);
         }
 
         private void PatchFile(string fileName, string diffFilePath, int versionId)
@@ -69,20 +60,23 @@ namespace PatchKit.Unity.Patcher.Data
 
             _librsync.Patch(filePath, diffFilePath);
 
-            _metaData.SetFileVersionId(fileName, versionId);
-            _metaData.Serialize(_metaDataFilePath);
+            _metaData.AddOrUpdateFile(fileName, versionId);
         }
 
         private bool CheckFile(string fileName, int versionId, string hash = null)
         {
             Debug.Log(string.Format("Checking file {0} of version {1}", fileName, versionId));
 
-            var fileVersionId = _metaData.GetFileVersionId(fileName);
-
-            if (fileVersionId == null || fileVersionId.Value != versionId)
+            if (!_metaData.FileExists(fileName))
             {
-                Debug.Log(string.Format("File {0} has invaild version {1}", fileName,
-                    fileVersionId == null ? "<none>" : fileVersionId.Value.ToString()));
+                Debug.Log(string.Format("File doesn't exist {0}", fileName));
+            }
+
+            var fileVersionId = _metaData.GetFileVersion(fileName);
+
+            if (fileVersionId != versionId)
+            {
+                Debug.Log(string.Format("File {0} has invaild version {1}", fileName, fileVersionId));
 
                 return false;
             }
@@ -120,8 +114,7 @@ namespace PatchKit.Unity.Patcher.Data
                 Debug.Log(string.Format("File already doesn't exist {0}", fileName));
             }
 
-            _metaData.ClearFileVersionId(fileName);
-            _metaData.Serialize(_metaDataFilePath);
+            _metaData.RemoveFile(fileName);
         }
 
         private void ProcessContent(string sourcePath, JObject contentSummary, int versionId,
@@ -398,18 +391,13 @@ namespace PatchKit.Unity.Patcher.Data
 
             foreach (var fileName in _metaData.GetFileNames())
             {
-                int? fileVersion = _metaData.GetFileVersionId(fileName);
-
-                if (!fileVersion.HasValue)
-                {
-                    continue;
-                }
+                int fileVersion = _metaData.GetFileVersion(fileName);
 
                 if (version == null)
                 {
-                    version = fileVersion.Value;
+                    version = fileVersion;
                 }
-                else if (version.Value != fileVersion.Value)
+                else if (version.Value != fileVersion)
                 {
                     return null;
                 }
