@@ -4,7 +4,7 @@ using PatchKit.Unity.Patcher.Log;
 
 namespace PatchKit.Unity.Patcher.Data
 {
-    internal class Storage : IDebugLogger
+    internal class Storage : IStorage, IDebugLogger
     {
         public readonly string Path;
 
@@ -13,19 +13,6 @@ namespace PatchKit.Unity.Patcher.Data
             Path = path;
         }
 
-        /// <summary>
-        /// Gets the entry path.
-        /// </summary>
-        /// <param name="entryName">Name of the entry.</param>
-        private string GetEntryPath(string entryName)
-        {
-            return System.IO.Path.Combine(Path, entryName);
-        }
-
-        /// <summary>
-        /// Creates the directory if it doesn't already exist.
-        /// </summary>
-        /// <param name="dirName">Name of the directory.</param>
         public virtual void CreateDirectory(string dirName)
         {
             this.Log(string.Format("Creating directory <{0}>", dirName));
@@ -38,10 +25,6 @@ namespace PatchKit.Unity.Patcher.Data
             }
         }
 
-        /// <summary>
-        /// Deletes the directory if it exists.
-        /// </summary>
-        /// <param name="dirName">Name of the directory.</param>
         public virtual void DeleteDirectory(string dirName)
         {
             this.Log(string.Format("Trying to delete directory <{0}>", dirName));
@@ -54,10 +37,6 @@ namespace PatchKit.Unity.Patcher.Data
             }
         }
 
-        /// <summary>
-        /// Determines whether directory exists.
-        /// </summary>
-        /// <param name="dirName">Name of the directory.</param>
         public virtual bool DirectoryExists(string dirName)
         {
             string dirPath = GetEntryPath(dirName);
@@ -65,10 +44,6 @@ namespace PatchKit.Unity.Patcher.Data
             return Directory.Exists(dirPath);
         }
 
-        /// <summary>
-        /// Determines whether directory is empty.
-        /// </summary>
-        /// <param name="dirName">Name of the directory.</param>
         public virtual bool IsDirectoryEmpty(string dirName)
         {
             string dirPath = GetEntryPath(dirName);
@@ -81,13 +56,6 @@ namespace PatchKit.Unity.Patcher.Data
             return Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0;
         }
 
-        /// <summary>
-        /// Creates the file. 
-        /// If the file already exists it is overwritten.
-        /// If file directory doesn't exist it is created.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        /// <param name="sourceFilePath">The source file path.</param>
         public virtual void CreateFile(string fileName, string sourceFilePath)
         {
             this.Log(string.Format("Copying file <{0}> from <{1}>", fileName, sourceFilePath));
@@ -109,10 +77,6 @@ namespace PatchKit.Unity.Patcher.Data
             File.Copy(sourceFilePath, filePath, true);
         }
 
-        /// <summary>
-        /// Deletes the file if it exists.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
         public virtual void DeleteFile(string fileName)
         {
             this.Log(string.Format("Deleting file <{0}>", fileName));
@@ -125,10 +89,6 @@ namespace PatchKit.Unity.Patcher.Data
             }
         }
 
-        /// <summary>
-        /// Determines whether file exists.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
         public virtual bool FileExists(string fileName)
         {
             string filePath = GetEntryPath(fileName);
@@ -136,13 +96,14 @@ namespace PatchKit.Unity.Patcher.Data
             return File.Exists(filePath);
         }
 
-        /// <summary>
-        /// Gets the file path.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
         public virtual string GetFilePath(string fileName)
         {
             return GetEntryPath(fileName);
+        }
+
+        private string GetEntryPath(string entryName)
+        {
+            return System.IO.Path.Combine(Path, entryName);
         }
     }
 }
