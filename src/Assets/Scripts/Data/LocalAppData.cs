@@ -27,11 +27,14 @@ namespace PatchKit.Unity.Patcher.Data
 
         private readonly string _path;
 
-        public LocalAppData(string path)
+        public readonly string TemporaryPath;
+
+        public LocalAppData(string path, string temporaryPath)
         {
             this.Log(string.Format("Initializing local application data in {0}", path));
 
             _path = path;
+            TemporaryPath = temporaryPath;
 
             _fileSystem = new Storage(_path);
 
@@ -299,7 +302,7 @@ namespace PatchKit.Unity.Patcher.Data
             progressReporter.AddChild(unzipPackageProgressReporter, 1.5);
             progressReporter.AddChild(processContentProgressReporter, 0.5);
 
-            using (var temporaryDirectory = TemporaryDirectory.CreateDefault())
+            using (var temporaryDirectory = new TemporaryStorage(Path.Combine(TemporaryPath, "install")))
             {
                 _unzipper.Unzip(contentPackagePath, temporaryDirectory.Path, unzipPackageProgressReporter,
                     cancellationToken);
@@ -344,7 +347,7 @@ namespace PatchKit.Unity.Patcher.Data
             progressReporter.AddChild(unzipPackageProgressReporter, 1.5);
             progressReporter.AddChild(processDiffProgressReporter, 2.5);
 
-            using (var temporaryDirectory = TemporaryDirectory.CreateDefault())
+            using (var temporaryDirectory = new TemporaryStorage(Path.Combine(TemporaryPath, "patch")))
             {
                 _unzipper.Unzip(diffPackagePath, temporaryDirectory.Path, unzipPackageProgressReporter,
                     cancellationToken);

@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// Gets the entry path.
         /// </summary>
         /// <param name="entryName">Name of the entry.</param>
-        public string GetEntryPath(string entryName)
+        private string GetEntryPath(string entryName)
         {
             return System.IO.Path.Combine(Path, entryName);
         }
@@ -26,7 +26,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// Creates the directory if it doesn't already exist.
         /// </summary>
         /// <param name="dirName">Name of the directory.</param>
-        public void CreateDirectory(string dirName)
+        public virtual void CreateDirectory(string dirName)
         {
             this.Log(string.Format("Creating directory <{0}>", dirName));
 
@@ -42,7 +42,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// Deletes the directory if it exists.
         /// </summary>
         /// <param name="dirName">Name of the directory.</param>
-        public void DeleteDirectory(string dirName)
+        public virtual void DeleteDirectory(string dirName)
         {
             this.Log(string.Format("Trying to delete directory <{0}>", dirName));
 
@@ -58,7 +58,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// Determines whether directory exists.
         /// </summary>
         /// <param name="dirName">Name of the directory.</param>
-        public bool DirectoryExists(string dirName)
+        public virtual bool DirectoryExists(string dirName)
         {
             string dirPath = GetEntryPath(dirName);
 
@@ -69,7 +69,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// Determines whether directory is empty.
         /// </summary>
         /// <param name="dirName">Name of the directory.</param>
-        public bool IsDirectoryEmpty(string dirName)
+        public virtual bool IsDirectoryEmpty(string dirName)
         {
             string dirPath = GetEntryPath(dirName);
 
@@ -88,7 +88,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
         /// <param name="sourceFilePath">The source file path.</param>
-        public void CreateFile(string fileName, string sourceFilePath)
+        public virtual void CreateFile(string fileName, string sourceFilePath)
         {
             this.Log(string.Format("Copying file <{0}> from <{1}>", fileName, sourceFilePath));
 
@@ -113,7 +113,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// Deletes the file if it exists.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
-        public void DeleteFile(string fileName)
+        public virtual void DeleteFile(string fileName)
         {
             this.Log(string.Format("Deleting file <{0}>", fileName));
 
@@ -129,7 +129,7 @@ namespace PatchKit.Unity.Patcher.Data
         /// Determines whether file exists.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
-        public bool FileExists(string fileName)
+        public virtual bool FileExists(string fileName)
         {
             string filePath = GetEntryPath(fileName);
 

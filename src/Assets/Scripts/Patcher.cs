@@ -70,7 +70,7 @@ namespace PatchKit.Unity.Patcher
                 throw new InvalidOperationException("Patching is already started.");
             }
 
-            _localAppData = new LocalAppData(_configuration.ApplicationDataPath);
+            _localAppData = new LocalAppData(_configuration.ApplicationDataPath, Path.Combine(_configuration.ApplicationDataPath, ".temp"));
             _remoteAppData = new RemoteAppData(_configuration.AppSecret);
             _cancellationTokenSource = new CancellationTokenSource();
 
@@ -177,7 +177,7 @@ namespace PatchKit.Unity.Patcher
 
             for (int v = localVersionId + 1; v <= latestVersionId; v++)
             {
-                using (var temporaryDirectory = TemporaryDirectory.CreateDefault())
+                using (var temporaryDirectory = new TemporaryStorage(Path.Combine(_localAppData.TemporaryPath, string.Format("diff-{0}-download", v))))
                 {
                     string diffPackagePath = Path.Combine(temporaryDirectory.Path,
                         string.Format("diff-{0}.package", v));
@@ -209,8 +209,8 @@ namespace PatchKit.Unity.Patcher
             progressReporter.AddChild(installProgressReporter, 0.25);
 
             downloadContentPackageProgressReporter.OnProgress += InvokeOnDownloadProgress;
-            
-            using (var temporaryDirectory = TemporaryDirectory.CreateDefault())
+
+            using (var temporaryDirectory = new TemporaryStorage(Path.Combine(_localAppData.TemporaryPath, string.Format("content-{0}-download", latestVersionId))))
             {
                 string contentPackagePath = Path.Combine(temporaryDirectory.Path,
                     string.Format("content-{0}.package", latestVersionId));
