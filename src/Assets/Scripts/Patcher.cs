@@ -257,8 +257,6 @@ namespace PatchKit.Unity.Patcher
 
             if (localVersionId == null || localVersionId.Value != latestVersionId)
             {
-                EnsureWriteAccess();
-
                 if (localVersionId != null && localVersionId.Value < latestVersionId &&
                     CanUpdateWithDiff(localVersionId.Value, latestVersionId))
                 {
@@ -277,18 +275,6 @@ namespace PatchKit.Unity.Patcher
                     throw new Exception("Corrupted data.");
                 }
             }
-        }
-
-        private void EnsureWriteAccess()
-        {
-            Debug.Log("Ensuring write access to application directory.");
-
-            if (!_localAppData.IsWritable())
-            {
-                throw new UnauthorizedAccessException("Application directory is not writable.");
-            }
-
-            Debug.Log("Application directory is writable.");
         }
 
         private void InvokeOnStateChanged(PatcherState state)

@@ -414,10 +414,5 @@ namespace PatchKit.Unity.Patcher.Data
 
             return version;
         }
-
-        public bool IsWritable()
-        {
-            return _fileSystem.CanWrite();
-        }
     }
 }
