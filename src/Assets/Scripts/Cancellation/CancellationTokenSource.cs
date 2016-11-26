@@ -1,4 +1,6 @@
-﻿namespace PatchKit.Unity.Patcher.Cancellation
+﻿using System;
+
+namespace PatchKit.Unity.Patcher.Cancellation
 {
     internal class CancellationTokenSource
     {
@@ -11,13 +13,23 @@
 
         public void Cancel()
         {
-            IsCancelled = true;
+            if (!IsCancelled)
+            {
+                IsCancelled = true;
+
+                if (Cancelled != null)
+                {
+                    Cancelled();
+                }
+            }
         }
 
         public CancellationToken Token
         {
             get { return new CancellationToken(this); }
         }
+
+        public event Action Cancelled;
 
         public static implicit operator CancellationToken(CancellationTokenSource cancellationTokenSource)
         {

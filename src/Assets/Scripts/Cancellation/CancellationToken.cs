@@ -14,6 +14,24 @@ namespace PatchKit.Unity.Patcher.Cancellation
             _cancellationTokenSource = cancellationTokenSource;
         }
 
+        public event Action Cancelled
+        {
+            add
+            {
+                if (_cancellationTokenSource != null)
+                {
+                    _cancellationTokenSource.Cancelled += value;
+                }
+            }
+            remove
+            {
+                if (_cancellationTokenSource != null)
+                {
+                    _cancellationTokenSource.Cancelled -= value;
+                }
+            }
+        }
+
         public bool IsCancelled
         {
             get { return _cancellationTokenSource != null && _cancellationTokenSource.IsCancelled; }
