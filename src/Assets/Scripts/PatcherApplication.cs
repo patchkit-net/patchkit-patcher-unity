@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using PatchKit.Unity.Patcher.Licensing;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -93,7 +94,7 @@ namespace PatchKit.Unity.Patcher
 
         private void PreparePatcher()
         {
-            Patcher = new Patcher(Configuration);
+            Patcher = new Patcher(Configuration, FindObjectOfType<KeyLicenseObtainer>());
 
             Patcher.OnStateChanged += state =>
             {

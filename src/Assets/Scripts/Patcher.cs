@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Newtonsoft.Json.Linq;
+using PatchKit.Api;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
+using PatchKit.Unity.Patcher.Licensing;
 using PatchKit.Unity.Patcher.Net;
 using PatchKit.Unity.Patcher.Statistics;
 using PatchKit.Unity.Utilities;
@@ -35,16 +37,20 @@ namespace PatchKit.Unity.Patcher
 
         public event CustomProgressHandler<DownloadProgress> OnDownloadProgress;
 
+        private KeyLicenseObtainer _keyLicenseObtainer;
+
         /// <summary>
         /// Initializes instance of <see cref="PatcherConfiguration"/>.
         /// Must be called from main Unity thread since it requires some initial configuration.
         /// </summary>
         /// <param name="configuration"></param>
-        public Patcher(PatcherConfiguration configuration)
+        /// <param name="keyLicenseObtainer"></param>
+        public Patcher(PatcherConfiguration configuration, KeyLicenseObtainer keyLicenseObtainer)
         {
             Dispatcher.Initialize();
 
             _configuration = configuration;
+            _keyLicenseObtainer = keyLicenseObtainer;
         }
 
         public PatcherState State
@@ -65,13 +71,15 @@ namespace PatchKit.Unity.Patcher
 
         public void Start()
         {
-            if (_thread != null && !_thread.IsAlive)
+            if (_thread != null && _thread.IsAlive)
             {
                 throw new InvalidOperationException("Patching is already started.");
             }
 
             _localAppData = new LocalAppData(_configuration.ApplicationDataPath, Path.Combine(_configuration.ApplicationDataPath, ".temp"));
-            _remoteAppData = new RemoteAppData(_configuration.AppSecret);
+            var keysApiConnection = new KeysApiConnection(Settings.GetKeysApiConnectionSettings());
+            var keyLicenseValidator = new KeyLicenseValidator(_configuration.AppSecret, keysApiConnection);
+            _remoteAppData = new RemoteAppData(_configuration.AppSecret, _keyLicenseObtainer, keyLicenseValidator);
             _cancellationTokenSource = new CancellationTokenSource();
 
             _thread = new Thread(state =>

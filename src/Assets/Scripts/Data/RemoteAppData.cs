@@ -5,6 +5,7 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using PatchKit.Api;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.Licensing;
 using PatchKit.Unity.Patcher.Net;
 using PatchKit.Unity.Patcher.Statistics;
 using UnityEngine;
@@ -19,14 +20,45 @@ namespace PatchKit.Unity.Patcher.Data
 
         private readonly MainApiConnection _mainApiConnection;
 
+        private readonly ILicenseObtainer _licenseObtainer;
+
+        private readonly ILicenseValidator _licenseValidator;
+
         private readonly string _appSecret;
 
-        public RemoteAppData(string appSecret)
+        public RemoteAppData(string appSecret, ILicenseObtainer licenseObtainer, ILicenseValidator licenseValidator)
         {
             _appSecret = appSecret;
             _httpDownloader = new HttpDownloader();
             _torrentDownloader = new TorrentDownloader(Application.streamingAssetsPath);
             _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
+            _licenseObtainer = licenseObtainer;
+            _licenseValidator = licenseValidator;
+        }
+
+        private string GetKeySecret()
+        {
+            Debug.Log(_mainApiConnection.GetResponse("/1/apps/{app_secret}".Replace("{app_secret}", _appSecret), null).Body);
+            var app = _mainApiConnection.GetApplicationInfo(_appSecret);
+
+            if (app.UseKeys)
+            {
+                string keySecret;
+
+                bool showError = false;
+
+                do
+                {
+                    _licenseObtainer.ShowError = showError;
+                    var license = _licenseObtainer.Obtain();
+                    keySecret = _licenseValidator.Validate(license);
+                    showError = true;
+                } while (keySecret == null);
+
+                return keySecret;
+            }
+
+            return null;
         }
 
         private void DownloadFileFromUrls(string destinationFilePath, string[] sourceFileUrls, long totalBytes, int chunkSize, string[] chunkHashes,
@@ -93,38 +125,6 @@ namespace PatchKit.Unity.Patcher.Data
             }
         }
 
-        private string GetContentTorrentUrl(int versionId)
-        {
-            Debug.Log(string.Format("Getting content torrent url of version with id - {0}", versionId));
-            string path = string.Format("1/apps/{0}/versions/{1}/content_torrent_url", _appSecret, versionId);
-
-            return ((JObject)_mainApiConnection.GetResponse(path, null).GetJson()).Value<string>("url");
-        }
-
-        private string GetDiffTorrentUrl(int versionId)
-        {
-            Debug.Log(string.Format("Getting diff torrent url of version with id - {0}", versionId));
-            string path = string.Format("1/apps/{0}/versions/{1}/diff_torrent_url", _appSecret, versionId);
-
-            return ((JObject)_mainApiConnection.GetResponse(path, null).GetJson()).Value<string>("url");
-        }
-
-        private string[] GetContentUrls(int versionId)
-        {
-            Debug.Log(string.Format("Getting content urls of version with id - {0}", versionId));
-            string path = string.Format("1/apps/{0}/versions/{1}/content_urls", _appSecret, versionId);
-
-            return ((JArray)_mainApiConnection.GetResponse(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
-        }
-
-        private string[] GetDiffUrls(int versionId)
-        {
-            Debug.Log(string.Format("Getting content urls of version with id - {0}", versionId));
-            string path = string.Format("1/apps/{0}/versions/{1}/diff_urls", _appSecret, versionId);
-
-            return ((JArray)_mainApiConnection.GetResponse(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
-        }
-
         /// <summary>
         /// Gets the latest version id from the API server.
         /// </summary>
@@ -166,11 +166,13 @@ namespace PatchKit.Unity.Patcher.Data
         {
             Debug.Log(string.Format("Dowloading content package to {0} for version {1}", contentPackagePath, versionId));
 
+            string keySecret = GetKeySecret();
+
             try
             {
-                var contentTorrentUrl = GetContentTorrentUrl(versionId);
+                var contentTorrentUrl = _mainApiConnection.GetAppVersionContentTorrentUrl(_appSecret, versionId, keySecret);
 
-                DownloadTorrent(contentPackagePath, contentTorrentUrl, progressReporter, cancellationToken);
+                DownloadTorrent(contentPackagePath, contentTorrentUrl.Url, progressReporter, cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -181,11 +183,11 @@ namespace PatchKit.Unity.Patcher.Data
                 Debug.LogException(exception);
                 Debug.LogWarning("Failed to download content package with torrent. Trying to download it through HTTP.");
 
-                var contentUrls = GetContentUrls(versionId);
+                var contentUrls = _mainApiConnection.GetAppVersionContentUrls(_appSecret, versionId);
 
                 var contentSummary = _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId);
 
-                DownloadFileFromUrls(contentPackagePath, contentUrls, contentSummary.Size, contentSummary.Chunks.Size, contentSummary.Chunks.Hashes, progressReporter, cancellationToken);
+                DownloadFileFromUrls(contentPackagePath, contentUrls.Select(url => url.Url).ToArray(), contentSummary.Size, contentSummary.Chunks.Size, contentSummary.Chunks.Hashes, progressReporter, cancellationToken);
             }
         }
 
@@ -196,11 +198,13 @@ namespace PatchKit.Unity.Patcher.Data
         {
             Debug.Log(string.Format("Dowloading diff package to {0} for version {1}", diffPackagePath, versionId));
 
+            string keySecret = GetKeySecret();
+
             try
             {
-                var diffTorrentUrl = GetDiffTorrentUrl(versionId);
+                var diffTorrentUrl = _mainApiConnection.GetAppVersionDiffTorrentUrl(_appSecret, versionId, keySecret);
 
-                DownloadTorrent(diffPackagePath, diffTorrentUrl, progressReporter, cancellationToken);
+                DownloadTorrent(diffPackagePath, diffTorrentUrl.Url, progressReporter, cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -211,11 +215,11 @@ namespace PatchKit.Unity.Patcher.Data
                 Debug.LogException(exception);
                 Debug.LogWarning("Failed to download diff package with torrent. Trying to download it through HTTP.");
 
-                var diffUrls = GetDiffUrls(versionId);
+                var diffUrls = _mainApiConnection.GetAppVersionDiffUrls(_appSecret, versionId);
 
                 var diffSummary = _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
 
-                DownloadFileFromUrls(diffPackagePath, diffUrls, diffSummary.Size, diffSummary.Chunks.Size, diffSummary.Chunks.Hashes, progressReporter, cancellationToken);
+                DownloadFileFromUrls(diffPackagePath, diffUrls.Select(url => url.Url).ToArray(), diffSummary.Size, diffSummary.Chunks.Size, diffSummary.Chunks.Hashes, progressReporter, cancellationToken);
             }
         }
     }
