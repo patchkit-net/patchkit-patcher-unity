@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher.Data
 
         private readonly TorrentDownloader _torrentDownloader;
 
-        private readonly ApiConnection _apiConnection;
+        private readonly MainApiConnection _mainApiConnection;
 
         private readonly string _appSecret;
 
@@ -26,7 +26,7 @@ namespace PatchKit.Unity.Patcher.Data
             _appSecret = appSecret;
             _httpDownloader = new HttpDownloader();
             _torrentDownloader = new TorrentDownloader(Application.streamingAssetsPath);
-            _apiConnection = new ApiConnection(Settings.GetApiConnectionSettings());
+            _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
         }
 
         private void DownloadFileFromUrls(string destinationFilePath, string[] sourceFileUrls, long totalBytes, int chunkSize, string[] chunkHashes,
@@ -98,7 +98,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting content torrent url of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/content_torrent_url", _appSecret, versionId);
 
-            return ((JObject)_apiConnection.GetResponse(path, null).GetJson()).Value<string>("url");
+            return ((JObject)_mainApiConnection.GetResponse(path, null).GetJson()).Value<string>("url");
         }
 
         private string GetDiffTorrentUrl(int versionId)
@@ -106,7 +106,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting diff torrent url of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/diff_torrent_url", _appSecret, versionId);
 
-            return ((JObject)_apiConnection.GetResponse(path, null).GetJson()).Value<string>("url");
+            return ((JObject)_mainApiConnection.GetResponse(path, null).GetJson()).Value<string>("url");
         }
 
         private string[] GetContentUrls(int versionId)
@@ -114,7 +114,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting content urls of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/content_urls", _appSecret, versionId);
 
-            return ((JArray)_apiConnection.GetResponse(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
+            return ((JArray)_mainApiConnection.GetResponse(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
         }
 
         private string[] GetDiffUrls(int versionId)
@@ -122,7 +122,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting content urls of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/diff_urls", _appSecret, versionId);
 
-            return ((JArray)_apiConnection.GetResponse(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
+            return ((JArray)_mainApiConnection.GetResponse(path, null).GetJson()).Select(token => token.Value<string>("url")).ToArray();
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace PatchKit.Unity.Patcher.Data
 
             string path = string.Format("1/apps/{0}/versions/latest/id", _appSecret);
 
-            return _apiConnection.GetResponse(path, null).GetJson().Value<int>("id");
+            return _mainApiConnection.GetResponse(path, null).GetJson().Value<int>("id");
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting content summary of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/content_summary", _appSecret, versionId);
 
-            return (JObject)_apiConnection.GetResponse(path, null).GetJson();
+            return (JObject)_mainApiConnection.GetResponse(path, null).GetJson();
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Getting diff summary of version with id - {0}", versionId));
             string path = string.Format("1/apps/{0}/versions/{1}/diff_summary", _appSecret, versionId);
 
-            return (JObject)_apiConnection.GetResponse(path, null).GetJson();
+            return (JObject)_mainApiConnection.GetResponse(path, null).GetJson();
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace PatchKit.Unity.Patcher.Data
 
                 var contentUrls = GetContentUrls(versionId);
 
-                var contentSummary = _apiConnection.GetAppVersionContentSummary(_appSecret, versionId);
+                var contentSummary = _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId);
 
                 DownloadFileFromUrls(contentPackagePath, contentUrls, contentSummary.Size, contentSummary.Chunks.Size, contentSummary.Chunks.Hashes, progressReporter, cancellationToken);
             }
@@ -213,7 +213,7 @@ namespace PatchKit.Unity.Patcher.Data
 
                 var diffUrls = GetDiffUrls(versionId);
 
-                var diffSummary = _apiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
+                var diffSummary = _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
 
                 DownloadFileFromUrls(diffPackagePath, diffUrls, diffSummary.Size, diffSummary.Chunks.Size, diffSummary.Chunks.Hashes, progressReporter, cancellationToken);
             }
