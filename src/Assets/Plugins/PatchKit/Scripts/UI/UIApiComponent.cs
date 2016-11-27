@@ -10,13 +10,13 @@ namespace PatchKit.Unity.UI
 
         private bool _isDirty;
 
-        private ApiConnection _apiConnection;
+        private MainApiConnection _mainApiConnection;
 
         public bool LoadOnStart = true;
 
-        protected ApiConnection ApiConnection
+        protected MainApiConnection MainApiConnection
         {
-            get { return _apiConnection; }
+            get { return _mainApiConnection; }
         }
 
         [ContextMenu("Reload")]
@@ -46,7 +46,7 @@ namespace PatchKit.Unity.UI
 
         protected virtual void Awake()
         {
-            _apiConnection = new ApiConnection(Settings.GetApiConnectionSettings());
+            _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
         }
 
         protected virtual void Start()

@@ -11,10 +11,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd2d3c82a4e81854c8d847e2b7e240a7, type: 3}
   m_Name: PatchKit Settings
   m_EditorClassIdentifier: 
-  ApiConnectionSettings:
+  MainApiConnectionSettings:
     MainServer: api.patchkit.net
     CacheServers:
     - api-cache-node-1.patchkit.net:43230
     - api-cache-node-2.patchkit.net:43230
     - api-cache-node-3.patchkit.net:43230
+    Timeout: 5000
+  KeysApiConnectionSettings:
+    MainServer: keys.patchkit.net
+    CacheServers: []
     Timeout: 5000

@@ -8,7 +8,9 @@ namespace PatchKit.Unity
     {
         private const string AssetFileName = "PatchKit Settings";
 
-        [SerializeField] public ApiConnectionSettings ApiConnectionSettings;
+        [SerializeField] public ApiConnectionSettings MainApiConnectionSettings;
+
+        [SerializeField] public ApiConnectionSettings KeysApiConnectionSettings;
 
 #if UNITY_EDITOR
         private static Settings CreateSettingsInstance()
@@ -25,7 +27,8 @@ namespace PatchKit.Unity
             }
 
             var settings = CreateInstance<Settings>();
-            settings.ApiConnectionSettings = ApiConnectionSettings.CreateDefault();
+            settings.MainApiConnectionSettings = MainApiConnection.GetDefaultSettings();
+            settings.KeysApiConnectionSettings = KeysApiConnection.GetDefaultSettings();
 
             UnityEditor.AssetDatabase.CreateAsset(settings, string.Format("Assets/Plugins/PatchKit/Resources/{0}.asset", AssetFileName));
             UnityEditor.EditorUtility.SetDirty(settings);
@@ -56,11 +59,18 @@ namespace PatchKit.Unity
             return settings;
         }
 
-        public static ApiConnectionSettings GetApiConnectionSettings()
+        public static ApiConnectionSettings GetMainApiConnectionSettings()
         {
             var instance = FindInstance();
 
-            return instance == null ? ApiConnectionSettings.CreateDefault() : instance.ApiConnectionSettings;
+            return instance == null ? MainApiConnection.GetDefaultSettings() : instance.MainApiConnectionSettings;
+        }
+
+        public static ApiConnectionSettings GetKeysApiConnectionSettings()
+        {
+            var instance = FindInstance();
+
+            return instance == null ? KeysApiConnection.GetDefaultSettings() : instance.KeysApiConnectionSettings;
         }
     }
 }

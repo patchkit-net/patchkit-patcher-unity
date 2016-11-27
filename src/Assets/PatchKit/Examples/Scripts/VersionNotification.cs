@@ -8,11 +8,11 @@ namespace PatchKit.Unity.Examples
 {
     public class VersionNotification : MonoBehaviour
     {
-        private ApiConnection _apiConnection;
+        private MainApiConnection _apiConnection;
 
-        protected ApiConnection ApiConnection
+        protected MainApiConnection ApiConnection
         {
-            get { return _apiConnection ?? (_apiConnection = new ApiConnection(Settings.GetApiConnectionSettings())); }
+            get { return _apiConnection ?? (_apiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings())); }
         }
 
         private bool _newVersion = false;

@@ -15,7 +15,7 @@ namespace PatchKit.Unity.UI
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield return Threading.StartThreadCoroutine(() => ApiConnection.GetAppVersionList(AppSecret), response =>
+            yield return Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(AppSecret), response =>
             {
                 Text.text = string.Join("\n",
                     response.OrderByDescending(version => version.Id).Select(version =>
