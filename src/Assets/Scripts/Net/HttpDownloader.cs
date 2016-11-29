@@ -83,7 +83,7 @@ namespace PatchKit.Unity.Patcher.Net
                 }
 
                 using (
-                    var destinationFileStream = new FileStream(destinationFilePath, FileMode.CreateNew, FileAccess.Write,
+                    var destinationFileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write,
                         FileShare.None))
                 {
                     DownloadStream(responseStream, destinationFileStream, totalBytes, progressReporter,
