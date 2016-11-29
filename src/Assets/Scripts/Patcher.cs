@@ -203,13 +203,6 @@ namespace PatchKit.Unity.Patcher
         {
             Debug.Log(string.Format("Updating application with content of version {0}", latestVersionId));
 
-            if (_localAppData.IsInstalled())
-            {
-                Debug.Log("Removing previous application version data.");
-
-                _localAppData.Uninstall();
-            }
-
             var downloadContentPackageProgressReporter = new CustomProgressReporter<DownloadProgress>();
             var installProgressReporter = new ComplexProgressReporter();
 
@@ -227,6 +220,13 @@ namespace PatchKit.Unity.Patcher
 
                 _remoteAppData.DownloadContentPackage(contentPackagePath, latestVersionId,
                     downloadContentPackageProgressReporter, cancellationToken);
+
+                if (_localAppData.IsInstalled())
+                {
+                    Debug.Log("Removing previous application version data.");
+
+                    _localAppData.Uninstall();
+                }
 
                 _localAppData.Install(contentPackagePath, contentSummary, latestVersionId,
                     installProgressReporter, cancellationToken);
