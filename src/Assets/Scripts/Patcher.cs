@@ -39,6 +39,8 @@ namespace PatchKit.Unity.Patcher
 
         private KeyLicenseObtainer _keyLicenseObtainer;
 
+        private bool _canPlay;
+
         /// <summary>
         /// Initializes instance of <see cref="PatcherConfiguration"/>.
         /// Must be called from main Unity thread since it requires some initial configuration.
@@ -67,6 +69,11 @@ namespace PatchKit.Unity.Patcher
                     InvokeOnStateChanged(_state);
                 }
             }
+        }
+
+        public bool CanPlay
+        {
+            get { return State != PatcherState.Processing && _canPlay && (_configuration.AllowToPlayWithoutNewestVersion || State == PatcherState.Success); }
         }
 
         public void Start()
@@ -103,6 +110,10 @@ namespace PatchKit.Unity.Patcher
                     Debug.LogException(exception);
 
                     State = PatcherState.Error;
+                }
+                finally
+                {
+                    _canPlay = _localAppData.IsInstalled();
                 }
             })
             {

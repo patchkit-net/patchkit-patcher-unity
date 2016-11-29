@@ -21,5 +21,7 @@ namespace PatchKit.Unity.Patcher
         /// Works only in editor/development build. 
         /// </summary>
         public int ForceVersion;
+
+        public bool AllowToPlayWithoutNewestVersion;
     }
 }

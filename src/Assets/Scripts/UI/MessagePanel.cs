@@ -19,39 +19,32 @@ namespace PatchKit.Unity.Patcher
         {
             PatcherApplication.Instance.Patcher.OnStateChanged += state =>
             {
-                if (state == PatcherState.None)
-                {
-                    _animator.SetBool("IsOpened", true);
-                    ButtonText.text = "Patch";
-                }
-                else if (state == PatcherState.Cancelled || state == PatcherState.Error || state == PatcherState.UnauthorizedAccess)
-                {
-                    _animator.SetBool("IsOpened", true);
-                    ButtonText.text = "Retry";
-                }
-                else if (state == PatcherState.Processing)
+                if (state == PatcherState.Processing)
                 {
                     _animator.SetBool("IsOpened", false);
                 }
-                else if (state == PatcherState.Success)
+                else if (PatcherApplication.Instance.Patcher.CanPlay)
                 {
                     _animator.SetBool("IsOpened", true);
                     ButtonText.text = "Play";
+                }
+                else
+                {
+                    _animator.SetBool("IsOpened", true);
+                    ButtonText.text = "Retry";
                 }
             };
         }
 
         public void Action()
         {
-            var state = PatcherApplication.Instance.Patcher.State;
-
-            if (state == PatcherState.None || state == PatcherState.Cancelled || state == PatcherState.Error || state == PatcherState.UnauthorizedAccess)
-            {
-                PatcherApplication.Instance.RetryPatching();
-            }
-            else if (state == PatcherState.Success)
+            if (PatcherApplication.Instance.Patcher.CanPlay)
             {
                 PatcherApplication.Instance.StartApplicationAndQuit();
+            }
+            else
+            {
+                PatcherApplication.Instance.RetryPatching();
             }
         }
     }
