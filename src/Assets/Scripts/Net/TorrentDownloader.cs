@@ -92,6 +92,11 @@ namespace PatchKit.Unity.Patcher.Net
 
                 var dirInfo = new DirectoryInfo(destinationDirectoryPath);
 
+                if (File.Exists(destinationPath))
+                {
+                    File.Delete(destinationPath);
+                }
+
                 File.Move(dirInfo.GetFiles()[0].FullName, destinationPath);
 
                 Directory.Delete(destinationDirectoryPath, true);
