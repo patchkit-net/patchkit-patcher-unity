@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -41,6 +43,10 @@ namespace PatchKit.Unity.Patcher.Net
 
                 double lastProgress = 0.0;
 
+                const int maxSpeedListCount = 30;
+
+                List<double> lastSpeed = new List<double>();
+
                 while (!downloaded)
                 {
                     var statusResult = torrentClient.ExecuteCommand("status");
@@ -75,6 +81,17 @@ namespace PatchKit.Unity.Patcher.Net
                     float speed = CalculateDownloadSpeed(progress, lastProgress, totalBytes,
                         stopwatch.ElapsedMilliseconds);
 
+                    if (lastSpeed.Count > 0 && lastSpeed.Last() == 0.0)
+                    {
+                        lastSpeed.Clear();
+                    }
+
+                    lastSpeed.Add(speed);
+                    while (lastSpeed.Count > maxSpeedListCount)
+                    {
+                        lastSpeed.RemoveAt(0);
+                    }
+
                     stopwatch.Reset();
                     stopwatch.Start();
                     lastProgress = progress;
@@ -83,7 +100,7 @@ namespace PatchKit.Unity.Patcher.Net
                     {
                         DownloadedBytes = bytes,
                         TotalBytes = totalBytes, 
-                        KilobytesPerSecond = speed,
+                        KilobytesPerSecond = lastSpeed.Sum() / lastSpeed.Count,
                         Progress = progress
                     };
 
