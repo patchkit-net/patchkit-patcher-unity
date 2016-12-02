@@ -15,6 +15,15 @@ namespace PatchKit.Unity.Patcher.Net
     {
         private readonly string _streamingAssetsPath;
 
+        private struct DownloadSpeed
+        {
+            public long Bytes;
+
+            public long Time;
+
+            public DateTime AddTime;
+        }
+
         public TorrentDownloader(string streamingAssetsPath)
         {
             _streamingAssetsPath = streamingAssetsPath;
@@ -41,11 +50,11 @@ namespace PatchKit.Unity.Patcher.Net
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                double lastProgress = 0.0;
-
                 const int maxSpeedListCount = 30;
 
-                List<double> lastSpeed = new List<double>();
+                List<DownloadSpeed> downloadSpeedList = new List<DownloadSpeed>();
+
+                long lastBytes = 0;
 
                 while (!downloaded)
                 {
@@ -78,29 +87,34 @@ namespace PatchKit.Unity.Patcher.Net
                     double progress = torrentStatus.Value<double>("progress");
                     long totalBytes = torrentStatus.Value<long>("total_wanted");
                     long bytes = (long)(progress * totalBytes);
-                    float speed = CalculateDownloadSpeed(progress, lastProgress, totalBytes,
-                        stopwatch.ElapsedMilliseconds);
 
-                    if (lastSpeed.Count > 0 && lastSpeed.Last() == 0.0)
+                    downloadSpeedList.Add(new DownloadSpeed
                     {
-                        lastSpeed.Clear();
+                        Bytes = bytes - lastBytes,
+                        Time = stopwatch.ElapsedMilliseconds,
+                        AddTime = DateTime.Now
+                    });
+
+                    lastBytes = bytes;
+
+                    downloadSpeedList.RemoveAll(s => (DateTime.Now - s.AddTime).Seconds > 10);
+
+                    while (downloadSpeedList.Count > maxSpeedListCount)
+                    {
+                        downloadSpeedList.RemoveAt(0);
                     }
 
-                    lastSpeed.Add(speed);
-                    while (lastSpeed.Count > maxSpeedListCount)
-                    {
-                        lastSpeed.RemoveAt(0);
-                    }
+                    float speed = CalculateDownloadSpeed(downloadSpeedList.Sum(s => s.Bytes),
+                        downloadSpeedList.Sum(s => s.Time));
 
                     stopwatch.Reset();
                     stopwatch.Start();
-                    lastProgress = progress;
 
                     progressReporter.Progress = new DownloadProgress
                     {
                         DownloadedBytes = bytes,
                         TotalBytes = totalBytes, 
-                        KilobytesPerSecond = lastSpeed.Sum() / lastSpeed.Count,
+                        KilobytesPerSecond = speed,
                         Progress = progress
                     };
 
@@ -120,18 +134,14 @@ namespace PatchKit.Unity.Patcher.Net
             }
         }
 
-        private static float CalculateDownloadSpeed(double progress, double lastProgress, long totalBytes, long elapsedMilliseconds)
+        private static float CalculateDownloadSpeed(long bytes, long time)
         {
-            if (elapsedMilliseconds == 0)
+            if (bytes == 0)
             {
                 return 0.0f;
             }
 
-            double elapsedSeconds = elapsedMilliseconds / 1000.0f;
-
-            double progressDelta = progress - lastProgress;
-
-            double bytes = progressDelta * totalBytes;
+            double elapsedSeconds = time / 1000.0f;
 
             return (float)(bytes / 1024.0 / elapsedSeconds);
         }
