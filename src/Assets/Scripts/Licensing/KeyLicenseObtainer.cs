@@ -36,6 +36,9 @@ namespace PatchKit.Unity.Patcher.Licensing
 
         public void Confirm()
         {
+            string key = KeyInputField.text;
+            key = key.ToUpper().Trim();
+
             _keyLicense = new KeyLicense
             {
                 Key = KeyInputField.text
