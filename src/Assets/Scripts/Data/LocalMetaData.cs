@@ -7,7 +7,7 @@ using PatchKit.Unity.Patcher.Log;
 
 namespace PatchKit.Unity.Patcher.Data
 {
-    internal sealed class MetaData : IMetaData, IDebugLogger
+    internal sealed class LocalMetaData : ILocalMetaData, IDebugLogger
     {
         private struct Data
         {
@@ -19,7 +19,7 @@ namespace PatchKit.Unity.Patcher.Data
 
         private Data _data;
 
-        public MetaData(string filePath)
+        public LocalMetaData(string filePath)
         {
             _filePath = filePath;
             LoadData();

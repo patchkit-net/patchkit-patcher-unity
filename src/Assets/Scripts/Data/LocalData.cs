@@ -4,11 +4,11 @@ using PatchKit.Unity.Patcher.Log;
 
 namespace PatchKit.Unity.Patcher.Data
 {
-    internal class Storage : IStorage, IDebugLogger
+    internal class LocalData : ILocalData, IDebugLogger
     {
         public readonly string Path;
 
-        public Storage(string path)
+        public LocalData(string path)
         {
             Path = path;
         }
@@ -56,7 +56,7 @@ namespace PatchKit.Unity.Patcher.Data
             return Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0;
         }
 
-        public virtual void CreateFile(string fileName, string sourceFilePath)
+        public virtual void CreateOrUpdateFile(string fileName, string sourceFilePath)
         {
             this.Log(string.Format("Copying file <{0}> from <{1}>", fileName, sourceFilePath));
 

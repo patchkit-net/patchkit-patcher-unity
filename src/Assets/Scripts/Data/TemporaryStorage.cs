@@ -3,7 +3,7 @@ using System.IO;
 
 namespace PatchKit.Unity.Patcher.Data
 {
-    internal class TemporaryStorage : Storage, IDisposable
+    internal class TemporaryStorage : LocalData, IDisposable
     {
         private bool _disposed;
 
@@ -36,10 +36,10 @@ namespace PatchKit.Unity.Patcher.Data
             return base.IsDirectoryEmpty(dirName);
         }
 
-        public override void CreateFile(string fileName, string sourceFilePath)
+        public override void CreateOrUpdateFile(string fileName, string sourceFilePath)
         {
             ThrowIfDisposed();
-            base.CreateFile(fileName, sourceFilePath);
+            base.CreateOrUpdateFile(fileName, sourceFilePath);
         }
 
         public override void DeleteFile(string fileName)

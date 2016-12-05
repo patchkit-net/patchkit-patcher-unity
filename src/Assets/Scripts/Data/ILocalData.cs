@@ -1,7 +1,9 @@
 ﻿namespace PatchKit.Unity.Patcher.Data
 {
-    internal interface IStorage
+    internal interface ILocalData
     {
+        ILocalMetaData MetaData { get; }
+
         /// <summary>
         /// Creates the directory if it doesn't already exist.
         /// </summary>
@@ -27,13 +29,12 @@
         bool IsDirectoryEmpty(string dirName);
 
         /// <summary>
-        /// Creates the file. 
-        /// If the file already exists it is overwritten.
+        /// Creates or updates the file (if the file already exists it is overwritten). 
         /// If file directory doesn't exist it is created.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
         /// <param name="sourceFilePath">The source file path.</param>
-        void CreateFile(string fileName, string sourceFilePath);
+        void CreateOrUpdateFile(string fileName, string sourceFilePath);
 
         /// <summary>
         /// Deletes the file if it exists.

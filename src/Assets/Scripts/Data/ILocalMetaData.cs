@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Data
 {
-    internal interface IMetaData
+    internal interface ILocalMetaData
     {
         /// <summary>
         /// Returns the names of files present in the data.

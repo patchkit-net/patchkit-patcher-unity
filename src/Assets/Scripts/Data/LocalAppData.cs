@@ -13,11 +13,11 @@ namespace PatchKit.Unity.Patcher.Data
 {
     internal class LocalAppData : IDebugLogger
     {
-        private readonly Storage _fileSystem;
+        private readonly LocalData _fileSystem;
 
         private const string MetaDataFileName = "patcher_cache.json";
 
-        private readonly MetaData _metaData;
+        private readonly LocalMetaData _metaData;
 
         private readonly Unzipper _unzipper;
 
@@ -34,9 +34,9 @@ namespace PatchKit.Unity.Patcher.Data
             _path = path;
             TemporaryPath = temporaryPath;
 
-            _fileSystem = new Storage(_path);
+            _fileSystem = new LocalData(_path);
 
-            _metaData = new MetaData(Path.Combine(_path, MetaDataFileName));
+            _metaData = new LocalMetaData(Path.Combine(_path, MetaDataFileName));
 
             _unzipper = new Unzipper();
             _librsync = new Librsync();
@@ -47,7 +47,7 @@ namespace PatchKit.Unity.Patcher.Data
             Debug.Log(string.Format("Adding file {0} from source {1} as version {2}", fileName, sourceFilePath,
                 versionId));
 
-            _fileSystem.CreateFile(fileName, sourceFilePath);
+            _fileSystem.CreateOrUpdateFile(fileName, sourceFilePath);
 
             _metaData.AddOrUpdateFile(fileName, versionId);
         }
