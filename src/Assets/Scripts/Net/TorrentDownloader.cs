@@ -15,6 +15,8 @@ namespace PatchKit.Unity.Patcher.Net
     {
         private readonly string _streamingAssetsPath;
 
+        private readonly long _timeout;
+
         private struct DownloadSpeed
         {
             public long Bytes;
@@ -24,9 +26,10 @@ namespace PatchKit.Unity.Patcher.Net
             public DateTime AddTime;
         }
 
-        public TorrentDownloader(string streamingAssetsPath)
+        public TorrentDownloader(string streamingAssetsPath, long timeout)
         {
             _streamingAssetsPath = streamingAssetsPath;
+            _timeout = timeout;
         }
 
         public void DownloadFile(string torrentPath, string destinationPath,
@@ -49,6 +52,9 @@ namespace PatchKit.Unity.Patcher.Net
 
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
+
+                Stopwatch timeoutWatch = new Stopwatch();
+                timeoutWatch.Start();
 
                 const int maxSpeedListCount = 30;
 
@@ -94,6 +100,16 @@ namespace PatchKit.Unity.Patcher.Net
                         Time = stopwatch.ElapsedMilliseconds,
                         AddTime = DateTime.Now
                     });
+
+                    if (bytes != lastBytes)
+                    {
+                        timeoutWatch.Reset();
+                        timeoutWatch.Start();
+                    }
+                    else if (timeoutWatch.ElapsedMilliseconds > _timeout)
+                    {
+                        throw new TimeoutException("Downloading torrent has timed out.");
+                    }
 
                     lastBytes = bytes;
 

@@ -30,7 +30,7 @@ namespace PatchKit.Unity.Patcher.Data
         {
             _appSecret = appSecret;
             _httpDownloader = new HttpDownloader();
-            _torrentDownloader = new TorrentDownloader(Application.streamingAssetsPath);
+            _torrentDownloader = new TorrentDownloader(Application.streamingAssetsPath, 10000);
             _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
             _licenseObtainer = licenseObtainer;
             _licenseValidator = licenseValidator;
