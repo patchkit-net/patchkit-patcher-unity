@@ -56,8 +56,6 @@ namespace PatchKit.Unity.Patcher.Net
                 Stopwatch timeoutWatch = new Stopwatch();
                 timeoutWatch.Start();
 
-                const int maxSpeedListCount = 30;
-
                 List<DownloadSpeed> downloadSpeedList = new List<DownloadSpeed>();
 
                 long lastBytes = 0;
@@ -114,11 +112,6 @@ namespace PatchKit.Unity.Patcher.Net
                     lastBytes = bytes;
 
                     downloadSpeedList.RemoveAll(s => (DateTime.Now - s.AddTime).Seconds > 10);
-
-                    while (downloadSpeedList.Count > maxSpeedListCount)
-                    {
-                        downloadSpeedList.RemoveAt(0);
-                    }
 
                     float speed = CalculateDownloadSpeed(downloadSpeedList.Sum(s => s.Bytes),
                         downloadSpeedList.Sum(s => s.Time));
