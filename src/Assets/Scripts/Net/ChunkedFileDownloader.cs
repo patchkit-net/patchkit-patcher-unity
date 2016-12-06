@@ -20,8 +20,17 @@ namespace PatchKit.Unity.Patcher.Net
     /// </summary>
     class ChunkedFileDownloader : IDisposable {
 
+        private struct DownloadSpeed
+        {
+            public long Bytes;
+
+            public long Time;
+
+            public DateTime AddTime;
+        }
+
         #region Private Fields
-        
+
         private readonly string[] _urls;
         private readonly int _chunkSize;
 
@@ -35,6 +44,8 @@ namespace PatchKit.Unity.Patcher.Net
         private CustomProgressReporter<DownloadProgress> _progressReporter;
 
         private bool _started;
+
+        private readonly List<DownloadSpeed> _downloadSpeedList = new List<DownloadSpeed>();
 
         #endregion
 
@@ -66,6 +77,7 @@ namespace PatchKit.Unity.Patcher.Net
             }
             _started = true;
             _progressReporter = progressReporter;
+            _downloadSpeedList.Clear();
 
             var validUrls = new List<string>(_urls);
             validUrls.Reverse();
@@ -237,7 +249,18 @@ namespace PatchKit.Unity.Patcher.Net
         private void UpdateProgressNow(long elapsedMillis)
         {
             long currentFileSize = CurrentFileSize();
-            float kbps = CalculateDownloadSpeedKbps(currentFileSize - _lastReportedTotalBytes, elapsedMillis);
+
+            _downloadSpeedList.Add(new DownloadSpeed
+            {
+                Bytes = currentFileSize - _lastReportedTotalBytes,
+                Time = elapsedMillis,
+                AddTime = DateTime.Now
+            });
+
+            _downloadSpeedList.RemoveAll(s => (DateTime.Now - s.AddTime).Seconds > 10);
+
+            float kbps = CalculateDownloadSpeedKbps(_downloadSpeedList.Sum(s => s.Bytes),
+                        _downloadSpeedList.Sum(s => s.Time));
             float progress = CalculateProgress(currentFileSize, _chunkedFile.Length);
 
             _lastReportedTotalBytes = currentFileSize;
