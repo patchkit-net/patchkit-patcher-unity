@@ -43,6 +43,8 @@ namespace PatchKit.Unity.Patcher.Net
                     torrentClient.ExecuteCommand(string.Format("add-torrent {0} {1}", torrentPath,
                         destinationDirectoryPath));
 
+                Debug.Log("Add torrent:\n" + addTorrentResult);
+
                 if (addTorrentResult.Value<string>("status") != "ok")
                 {
                     throw new Exception("Wrong torrent-client status - " + addTorrentResult.Value<string>("status"));
