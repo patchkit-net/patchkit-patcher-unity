@@ -26,6 +26,8 @@ namespace PatchKit.Unity.Patcher.Data
 
         private readonly string _appSecret;
 
+        private string _keySecret;
+
         public RemoteAppData(string appSecret, ILicenseObtainer licenseObtainer, ILicenseValidator licenseValidator)
         {
             _appSecret = appSecret;
@@ -38,27 +40,22 @@ namespace PatchKit.Unity.Patcher.Data
 
         private string GetKeySecret()
         {
-            Debug.Log(_mainApiConnection.GetResponse("/1/apps/{app_secret}".Replace("{app_secret}", _appSecret), null).Body);
             var app = _mainApiConnection.GetApplicationInfo(_appSecret);
 
             if (app.UseKeys)
             {
-                string keySecret;
-
                 bool showError = false;
 
                 do
                 {
                     _licenseObtainer.ShowError = showError;
                     var license = _licenseObtainer.Obtain();
-                    keySecret = _licenseValidator.Validate(license);
+                    _keySecret = _licenseValidator.Validate(license);
                     showError = true;
-                } while (keySecret == null);
-
-                return keySecret;
+                } while (_keySecret == null);
             }
 
-            return null;
+            return _keySecret;
         }
 
         private void DownloadFileFromUrls(string destinationFilePath, string[] sourceFileUrls, long totalBytes, int chunkSize, string[] chunkHashes,
