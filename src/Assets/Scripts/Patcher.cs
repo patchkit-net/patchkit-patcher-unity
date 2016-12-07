@@ -324,8 +324,7 @@ namespace PatchKit.Unity.Patcher
         {
             if (_thread != null && _thread.IsAlive)
             {
-                Cancel();
-                _thread.Join();
+                _thread.Abort();
             }
         }
     }
