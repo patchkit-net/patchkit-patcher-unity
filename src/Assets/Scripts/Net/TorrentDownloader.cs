@@ -39,9 +39,13 @@ namespace PatchKit.Unity.Patcher.Net
             {
                 string destinationDirectoryPath = destinationPath + "_dir";
 
+                string specialTorrentPath = torrentPath.Replace("\\", "/").Replace(" ", "\\ ");
+
+                string specialDestinationDirectoryPath = destinationDirectoryPath.Replace("\\", "/").Replace(" ", "\\ ");
+
                 var addTorrentResult =
-                    torrentClient.ExecuteCommand(string.Format("add-torrent {0} {1}", torrentPath,
-                        destinationDirectoryPath));
+                    torrentClient.ExecuteCommand(string.Format("add-torrent {0} {1}", specialTorrentPath,
+                        specialDestinationDirectoryPath));
 
                 Debug.Log("Add torrent:\n" + addTorrentResult);
 
