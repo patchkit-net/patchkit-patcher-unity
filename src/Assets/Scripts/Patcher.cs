@@ -176,6 +176,8 @@ namespace PatchKit.Unity.Patcher
             var diffSummaries = new Dictionary<int, JObject>();
             var contentSummaries = new Dictionary<int, JObject>();
 
+            contentSummaries[localVersionId] = _remoteAppData.GetContentSummary(localVersionId);
+
             for (int v = localVersionId + 1; v <= latestVersionId; v++)
             {
                 var diffSummary = _remoteAppData.GetDiffSummary(v);
@@ -204,7 +206,7 @@ namespace PatchKit.Unity.Patcher
                     _remoteAppData.DownloadDiffPackage(diffPackagePath, v,
                         downloadDiffPackageProgressReporters[v], cancellationToken);
 
-                    _localAppData.Patch(diffPackagePath, diffSummaries[v], contentSummaries[v], v,
+                    _localAppData.Patch(diffPackagePath, diffSummaries[v], contentSummaries[v-1], v,
                         patchProgressReporters[v], cancellationToken);
                 }
             }
