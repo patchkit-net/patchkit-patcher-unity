@@ -91,29 +91,32 @@ namespace PatchKit.Unity.Patcher
 
             _thread = new Thread(state =>
             {
+                PatcherState patcherState = State;
+
                 try
                 {
                     Process(_cancellationTokenSource.Token);
 
-                    State = PatcherState.Success;
+                    patcherState = PatcherState.Success;
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    State = PatcherState.UnauthorizedAccess;
+                    patcherState = PatcherState.UnauthorizedAccess;
                 }
                 catch (OperationCanceledException)
                 {
-                    State = PatcherState.Cancelled;
+                    patcherState = PatcherState.Cancelled;
                 }
                 catch (Exception exception)
                 {
                     Debug.LogException(exception);
 
-                    State = PatcherState.Error;
+                    patcherState = PatcherState.Error;
                 }
                 finally
                 {
                     _canPlay = _localAppData.IsInstalled();
+                    State = patcherState;
                 }
             })
             {
