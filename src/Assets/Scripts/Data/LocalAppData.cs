@@ -70,6 +70,8 @@ namespace PatchKit.Unity.Patcher.Data
             if (!_metaData.FileExists(fileName))
             {
                 Debug.Log(string.Format("File doesn't exist {0}", fileName));
+
+                return false;
             }
 
             var fileVersionId = _metaData.GetFileVersion(fileName);
