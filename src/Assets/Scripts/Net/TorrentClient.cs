@@ -52,10 +52,20 @@ namespace PatchKit.Unity.Patcher.Net
 
             while (!str.ToString().EndsWith("#=end"))
             {
+                ThrowIfProcessExited();
+
                 str.Append((char)_stdOutput.Read());
             }
 
             return str.ToString().Substring(0, str.Length - 5);
+        }
+
+        private void ThrowIfProcessExited()
+        {
+            if (_process.HasExited)
+            {
+                throw new Exception("torrent-client process has exited");
+            }
         }
 
         private StreamReader CreateStdOutputStream()

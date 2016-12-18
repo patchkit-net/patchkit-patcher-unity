@@ -41,7 +41,7 @@ namespace PatchKit.Unity.Patcher.Licensing
 
             _keyLicense = new KeyLicense
             {
-                Key = KeyInputField.text
+                Key = key
             };
 
             _state = State.Confirmed;

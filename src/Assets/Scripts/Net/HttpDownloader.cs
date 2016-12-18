@@ -1,5 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Statistics;
@@ -12,6 +15,15 @@ namespace PatchKit.Unity.Patcher.Net
         private readonly int _timeout;
 
         private const int DownloadBufferSize = 1024;
+
+        private struct DownloadSpeed
+        {
+            public long Bytes;
+
+            public long Time;
+
+            public DateTime AddTime;
+        }
 
         public HttpDownloader(int timeout = 10000)
         {
@@ -43,7 +55,8 @@ namespace PatchKit.Unity.Patcher.Net
             int bufferRead;
 
             long downloadedBytes = 0;
-            long lastDownloadedBytes = 0;
+
+            List<DownloadSpeed> downloadSpeedList = new List<DownloadSpeed>();
 
             while ((bufferRead = responseStream.Read(buffer, 0, DownloadBufferSize)) > 0)
             {
@@ -52,21 +65,25 @@ namespace PatchKit.Unity.Patcher.Net
                 destinationFileStream.Write(buffer, 0, bufferRead);
                 downloadedBytes += bufferRead;
 
-                if (stopwatch.ElapsedMilliseconds > 1500)
+                downloadSpeedList.Add(new DownloadSpeed
                 {
-                    progressReporter.Progress = new DownloadProgress
-                    {
-                        DownloadedBytes = downloadedBytes,
-                        TotalBytes = totalBytes,
-                        KilobytesPerSecond = CalculateDownloadSpeed(downloadedBytes - lastDownloadedBytes, stopwatch.ElapsedMilliseconds),
-                        Progress = totalBytes == 0 ? 0 : downloadedBytes/(double) totalBytes
-                    };
+                    Bytes = bufferRead,
+                    Time = stopwatch.ElapsedMilliseconds,
+                    AddTime = DateTime.Now
+                });
 
-                    lastDownloadedBytes = downloadedBytes;
+                downloadSpeedList.RemoveAll(s => (DateTime.Now - s.AddTime).Seconds > 10);
 
-                    stopwatch.Reset();
-                    stopwatch.Start();
-                }
+                stopwatch.Reset();
+                stopwatch.Start();
+
+                progressReporter.Progress = new DownloadProgress
+                {
+                    DownloadedBytes = downloadedBytes,
+                    TotalBytes = totalBytes,
+                    KilobytesPerSecond = CalculateDownloadSpeed(downloadSpeedList.Sum(s => s.Bytes), downloadSpeedList.Sum(s => s.Time)),
+                    Progress = totalBytes == 0 ? 0 : downloadedBytes/(double) totalBytes
+                };
             }
         }
 

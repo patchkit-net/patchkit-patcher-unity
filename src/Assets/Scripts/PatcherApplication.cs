@@ -66,17 +66,7 @@ namespace PatchKit.Unity.Patcher
 
         protected virtual void OnApplicationQuit()
         {
-            if (Patcher.State == PatcherState.Processing)
-            {
-                Application.CancelQuit();
-
-                Patcher.Cancel();
-
-                Patcher.OnStateChanged += patcher =>
-                {
-                    Application.Quit();
-                };
-            }
+            ((IDisposable)Patcher).Dispose();
         }
 
         private void PrepareConfiguration()

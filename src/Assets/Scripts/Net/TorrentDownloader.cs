@@ -15,6 +15,8 @@ namespace PatchKit.Unity.Patcher.Net
     {
         private readonly string _streamingAssetsPath;
 
+        private readonly long _timeout;
+
         private struct DownloadSpeed
         {
             public long Bytes;
@@ -24,9 +26,10 @@ namespace PatchKit.Unity.Patcher.Net
             public DateTime AddTime;
         }
 
-        public TorrentDownloader(string streamingAssetsPath)
+        public TorrentDownloader(string streamingAssetsPath, long timeout)
         {
             _streamingAssetsPath = streamingAssetsPath;
+            _timeout = timeout;
         }
 
         public void DownloadFile(string torrentPath, string destinationPath,
@@ -36,9 +39,15 @@ namespace PatchKit.Unity.Patcher.Net
             {
                 string destinationDirectoryPath = destinationPath + "_dir";
 
+                string specialTorrentPath = torrentPath.Replace("\\", "/").Replace(" ", "\\ ");
+
+                string specialDestinationDirectoryPath = destinationDirectoryPath.Replace("\\", "/").Replace(" ", "\\ ");
+
                 var addTorrentResult =
-                    torrentClient.ExecuteCommand(string.Format("add-torrent {0} {1}", torrentPath,
-                        destinationDirectoryPath));
+                    torrentClient.ExecuteCommand(string.Format("add-torrent {0} {1}", specialTorrentPath,
+                        specialDestinationDirectoryPath));
+
+                Debug.Log("Add torrent:\n" + addTorrentResult);
 
                 if (addTorrentResult.Value<string>("status") != "ok")
                 {
@@ -50,7 +59,8 @@ namespace PatchKit.Unity.Patcher.Net
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                const int maxSpeedListCount = 30;
+                Stopwatch timeoutWatch = new Stopwatch();
+                timeoutWatch.Start();
 
                 List<DownloadSpeed> downloadSpeedList = new List<DownloadSpeed>();
 
@@ -95,14 +105,19 @@ namespace PatchKit.Unity.Patcher.Net
                         AddTime = DateTime.Now
                     });
 
+                    if (bytes != lastBytes)
+                    {
+                        timeoutWatch.Reset();
+                        timeoutWatch.Start();
+                    }
+                    else if (timeoutWatch.ElapsedMilliseconds > _timeout)
+                    {
+                        throw new TimeoutException("Downloading torrent has timed out.");
+                    }
+
                     lastBytes = bytes;
 
                     downloadSpeedList.RemoveAll(s => (DateTime.Now - s.AddTime).Seconds > 10);
-
-                    while (downloadSpeedList.Count > maxSpeedListCount)
-                    {
-                        downloadSpeedList.RemoveAt(0);
-                    }
 
                     float speed = CalculateDownloadSpeed(downloadSpeedList.Sum(s => s.Bytes),
                         downloadSpeedList.Sum(s => s.Time));
