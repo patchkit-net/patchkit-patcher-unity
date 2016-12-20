@@ -678,9 +678,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StartPatcherOnAwake: 1
   Configuration:
-    AppSecret: fccf154bf2f0eb8be78f8e54a10dc066
+    AppSecret: 42798685b0586629d46d7d7d2e1db111
     ApplicationDataPath: app
     ForceVersion: 0
+    AllowToPlayWithoutNewestVersion: 0
 --- !u!114 &377531154
 MonoBehaviour:
   m_ObjectHideFlags: 0

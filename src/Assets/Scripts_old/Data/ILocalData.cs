@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Data
 {
-    internal interface ILocalData
+    internal interface ILocalDataa
     {
         ILocalMetaData MetaData { get; }
 

@@ -1,4 +1,4 @@
-﻿namespace PatchKit.Unity.Patcher.Data.Resources
+﻿namespace PatchKit.Unity.Patcher.Data.Remote
 {
     public struct Chunk
     {

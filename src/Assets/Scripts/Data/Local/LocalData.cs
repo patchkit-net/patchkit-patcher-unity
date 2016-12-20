@@ -1,21 +1,26 @@
 ﻿using System;
 using System.IO;
-using PatchKit.Unity.Patcher.Log;
+using PatchKit.Unity.Patcher.Debug;
 
-namespace PatchKit.Unity.Patcher.Data
+namespace PatchKit.Unity.Patcher.Data.Local
 {
-    internal class LocalData : ILocalData, IDebugLogger
+    internal class LocalData : ILocalData
     {
+        private const string MetaDataFileName = "patcher_cache.json";
+
         public readonly string Path;
 
         public LocalData(string path)
         {
             Path = path;
+            MetaData = new LocalMetaData(System.IO.Path.Combine(Path, MetaDataFileName));
         }
+
+        public ILocalMetaData MetaData { get; private set; }
 
         public virtual void CreateDirectory(string dirName)
         {
-            this.Log(string.Format("Creating directory <{0}>", dirName));
+            DebugLogger.Log(this, string.Format("Creating directory <{0}>", dirName));
 
             string dirPath = GetEntryPath(dirName);
 
@@ -27,7 +32,7 @@ namespace PatchKit.Unity.Patcher.Data
 
         public virtual void DeleteDirectory(string dirName)
         {
-            this.Log(string.Format("Trying to delete directory <{0}>", dirName));
+            DebugLogger.Log(this, string.Format("Trying to delete directory <{0}>", dirName));
 
             string dirPath = GetEntryPath(dirName);
 
@@ -58,7 +63,7 @@ namespace PatchKit.Unity.Patcher.Data
 
         public virtual void CreateOrUpdateFile(string fileName, string sourceFilePath)
         {
-            this.Log(string.Format("Copying file <{0}> from <{1}>", fileName, sourceFilePath));
+            DebugLogger.Log(this, string.Format("Copying file <{0}> from <{1}>", fileName, sourceFilePath));
 
             if (!File.Exists(sourceFilePath))
             {
@@ -79,7 +84,7 @@ namespace PatchKit.Unity.Patcher.Data
 
         public virtual void DeleteFile(string fileName)
         {
-            this.Log(string.Format("Deleting file <{0}>", fileName));
+            DebugLogger.Log(this, string.Format("Deleting file <{0}>", fileName));
 
             string filePath = GetEntryPath(fileName);
 
