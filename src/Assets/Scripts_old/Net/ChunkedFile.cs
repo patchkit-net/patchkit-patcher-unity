@@ -7,7 +7,7 @@ namespace PatchKit.Unity.Patcher.Net
     /// <summary>
     /// Helps to save a file making a hash-checking of its chunks during the save process.
     /// 
-    /// ChunkedFile is a file that has hashes defined for its segments (chunks). Chunks size
+    /// ChunkedFileStream is a file that has hashes defined for its segments (chunks). Chunks size
     /// has to be predefined.
     /// 
     /// Usage:

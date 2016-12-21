@@ -7,7 +7,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     /// <summary>
     /// Helps to save a file making a hash-checking of its chunks during the save process.
     /// 
-    /// ChunkedFile is a file that has hashes defined for its segments (chunks). Chunks size
+    /// ChunkedFileStream is a file that has hashes defined for its segments (chunks). Chunks size
     /// has to be predefined.
     /// 
     /// Usage:
@@ -15,13 +15,12 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     /// procedure and restart it from next byte after VerifiedLength. If you will try to write
     /// bytes above the limit, you will get ArgumentOutOfRangeException.
     /// </summary>
-    public class ChunkedFile : IDisposable
+    internal class ChunkedFileStream : IDisposable
     {
         public delegate byte[] HashFunction(byte[] buffer, int offset, int length);
 
-        private readonly int _chunkSize;
+        private readonly ChunksData _chunksData;
         private readonly long _fileSize;
-        private readonly byte[][] _hashes;
         private readonly HashFunction _hashFunction;
 
         private readonly byte[] _buffer;
@@ -31,7 +30,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         public long VerifiedLength
         {
-            get { return Math.Min(_chunkIndex * _chunkSize, _fileSize); }
+            get { return Math.Min(_chunkIndex * _chunksData.ChunkSize, _fileSize); }
         }
 
         public long SavedLength
@@ -49,14 +48,13 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
             get { return _fileSize; }
         }
 
-        public ChunkedFile(string path, int chunkSize, long fileSize, byte[][] hashes, HashFunction hashFunction)
+        public ChunkedFileStream(string path, long fileSize, ChunksData chunksData, HashFunction hashFunction)
         {
-            _chunkSize = chunkSize;
             _fileSize = fileSize;
-            _hashes = hashes;
+            _chunksData = chunksData;
             _hashFunction = hashFunction;
 
-            _buffer = new byte[chunkSize];
+            _buffer = new byte[_chunksData.ChunkSize];
 
             _fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         }
@@ -79,7 +77,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
                         "Cannot write bytes over the file size: " + _fileSize);
                 }
 
-                int copyNum = (int)Math.Min(Math.Min(count, _chunkSize - _bufferPos), RemainingLength);
+                int copyNum = (int)Math.Min(Math.Min(count, _chunksData.ChunkSize - _bufferPos), RemainingLength);
                 Array.Copy(buffer, offset, _buffer, _bufferPos, copyNum);
 
                 count -= copyNum;
@@ -106,20 +104,20 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private bool ChunkFullyInBuffer()
         {
-            return _bufferPos == Math.Min(_chunkSize, RemainingLength);
+            return _bufferPos == Math.Min(_chunksData.ChunkSize, RemainingLength);
         }
 
         private bool BufferedChunkValid()
         {
-            byte[] bufferHash = _hashFunction(_buffer, 0, (int)Math.Min(_chunkSize, RemainingLength));
-            byte[] chunkHash = _hashes[_chunkIndex];
+            byte[] bufferHash = _hashFunction(_buffer, 0, (int)Math.Min(_chunksData.ChunkSize, RemainingLength));
+            byte[] chunkHash = _chunksData.Chunks[_chunkIndex].Hash;
 
             return bufferHash.SequenceEqual(chunkHash);
         }
 
         private void FlushBuffer()
         {
-            _fileStream.Write(_buffer, 0, (int)Math.Min(_chunkSize, RemainingLength));
+            _fileStream.Write(_buffer, 0, (int)Math.Min(_chunksData.ChunkSize, RemainingLength));
             _bufferPos = 0;
             _chunkIndex++;
         }

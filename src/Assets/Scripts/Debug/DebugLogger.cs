@@ -19,6 +19,11 @@ namespace PatchKit.Unity.Patcher.Debug
             UnityEngine.Debug.LogFormat("[{0}] {1}", GetTypeName(context), message);
         }
 
+        public static void LogError(object context, object message)
+        {
+            UnityEngine.Debug.LogErrorFormat("[{0}] {1}", GetTypeName(context), message);
+        }
+
         public static void LogException(object context, Exception exception)
         {
             UnityEngine.Debug.LogErrorFormat("[{0}] Exception: {1}", GetTypeName(context), FormatExceptionLog(exception));
