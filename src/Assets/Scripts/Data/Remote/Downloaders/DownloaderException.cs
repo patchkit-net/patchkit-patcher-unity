@@ -4,8 +4,11 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 {
     public class DownloaderException : Exception
     {
-        public DownloaderException(string message) : base(message)
+        public readonly DownloaderExceptionStatus Status;
+
+        public DownloaderException(string message, DownloaderExceptionStatus status) : base(message)
         {
+            Status = status;
         }
     }
 }

@@ -15,12 +15,19 @@ namespace PatchKit.Unity.Patcher.Data.Local
             public Dictionary<string, int> FileVersionIds;
         }
 
+        private readonly DebugLogger _debugLogger;
+
         private readonly string _filePath;
 
         private Data _data;
 
         public LocalMetaData(string filePath)
         {
+            _debugLogger = new DebugLogger(this);
+
+            _debugLogger.Log("Initialization");
+            _debugLogger.LogTrace("filePath = " + filePath);
+
             _filePath = filePath;
             LoadData();
         }
@@ -32,6 +39,8 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public void AddOrUpdateFile(string fileName, int versionId)
         {
+            _debugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", fileName, versionId));
+
             _data.FileVersionIds[fileName] = versionId;
 
             SaveData();
@@ -39,6 +48,8 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public void RemoveFile(string fileName)
         {
+            _debugLogger.Log(string.Format("Removing file {0}", fileName));
+
             _data.FileVersionIds.Remove(fileName);
 
             SaveData();

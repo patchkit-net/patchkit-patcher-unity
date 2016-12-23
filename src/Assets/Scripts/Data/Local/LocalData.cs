@@ -8,10 +8,17 @@ namespace PatchKit.Unity.Patcher.Data.Local
     {
         private const string MetaDataFileName = "patcher_cache.json";
 
+        private readonly DebugLogger _debugLogger;
+
         public readonly string Path;
 
         public LocalData(string path)
         {
+            _debugLogger = new DebugLogger(this);
+
+            _debugLogger.Log("Initialization");
+            _debugLogger.LogTrace("path = " + path);
+
             Path = path;
             MetaData = new LocalMetaData(System.IO.Path.Combine(Path, MetaDataFileName));
         }
@@ -20,7 +27,7 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual void CreateDirectory(string dirName)
         {
-            DebugLogger.Log(this, string.Format("Creating directory <{0}>", dirName));
+            _debugLogger.Log(string.Format("Creating directory {0}", dirName));
 
             string dirPath = GetEntryPath(dirName);
 
@@ -32,7 +39,7 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual void DeleteDirectory(string dirName)
         {
-            DebugLogger.Log(this, string.Format("Trying to delete directory <{0}>", dirName));
+            _debugLogger.Log(string.Format("Deleting directory {0}", dirName));
 
             string dirPath = GetEntryPath(dirName);
 
@@ -55,7 +62,7 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
             if (!Directory.Exists(dirName))
             {
-                throw new ArgumentException(string.Format("Directory doesn't exist <{0}>", dirPath), "dirName");
+                throw new ArgumentException(string.Format("Directory doesn't exist {0}", dirPath), "dirName");
             }
 
             return Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0;
@@ -63,11 +70,11 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual void CreateOrUpdateFile(string fileName, string sourceFilePath)
         {
-            DebugLogger.Log(this, string.Format("Copying file <{0}> from <{1}>", fileName, sourceFilePath));
+            _debugLogger.Log(string.Format("Copying file {0} from {1}", fileName, sourceFilePath));
 
             if (!File.Exists(sourceFilePath))
             {
-                throw new ArgumentException(string.Format("Source file doesn't exist <{0}>", sourceFilePath), "sourceFilePath");
+                throw new ArgumentException(string.Format("Source file doesn't exist {0}", sourceFilePath), "sourceFilePath");
             }
 
             string filePath = GetEntryPath(fileName);
@@ -84,7 +91,7 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual void DeleteFile(string fileName)
         {
-            DebugLogger.Log(this, string.Format("Deleting file <{0}>", fileName));
+            _debugLogger.Log(string.Format("Deleting file {0}", fileName));
 
             string filePath = GetEntryPath(fileName);
 

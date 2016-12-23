@@ -102,6 +102,11 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
             return true;
         }
 
+        public void Dispose()
+        {
+            CloseFile();
+        }
+
         private bool ChunkFullyInBuffer()
         {
             return _bufferPos == Math.Min(_chunksData.ChunkSize, RemainingLength);
@@ -125,11 +130,6 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
         private void DiscardBuffer()
         {
             _bufferPos = 0;
-        }
-
-        public void Dispose()
-        {
-            CloseFile();
         }
 
         private void CloseFile()

@@ -6,6 +6,8 @@ namespace PatchKit.Unity.Patcher.Data.Remote
     {
         int GetLatestVersionId();
 
+        App GetAppInfo();
+
         AppContentSummary GetContentSummary(int versionId);
 
         AppDiffSummary GetDiffSummary(int versionId);

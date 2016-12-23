@@ -5,11 +5,15 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace PatchKit.Unity.Patcher.Net
+namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 {
+    /// <summary>
+    /// Provides an easy access for torrent client program.
+    /// </summary>
+    /// <seealso cref="System.IDisposable" />
     internal class TorrentClient : IDisposable
     {
-        private readonly string _streamingAssetsPath;
+        public static string StreamingAssetsPath;
 
         private readonly Process _process;
 
@@ -17,9 +21,8 @@ namespace PatchKit.Unity.Patcher.Net
 
         private readonly StreamWriter _stdInput;
 
-        public TorrentClient(string streamingAssetsPath)
+        public TorrentClient()
         {
-            _streamingAssetsPath = streamingAssetsPath;
             _process = StartProcess();
             _stdOutput = CreateStdOutputStream();
             _stdInput = CreateStdInputStream();
@@ -64,7 +67,7 @@ namespace PatchKit.Unity.Patcher.Net
         {
             if (_process.HasExited)
             {
-                throw new Exception("torrent-client process has exited");
+                throw new TorrentClientException("torrent-client process has exited");
             }
         }
 
@@ -97,7 +100,7 @@ namespace PatchKit.Unity.Patcher.Net
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/win/torrent-client.exe"),
+                    FileName = Path.Combine(StreamingAssetsPath, "torrent-client/win/torrent-client.exe"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -112,14 +115,14 @@ namespace PatchKit.Unity.Patcher.Net
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/osx64/torrent-client"),
+                    FileName = Path.Combine(StreamingAssetsPath, "torrent-client/osx64/torrent-client"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
 
-                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/osx64");
+                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(StreamingAssetsPath, "torrent-client/osx64");
 
                 return processStartInfo;
             }
@@ -128,22 +131,22 @@ namespace PatchKit.Unity.Patcher.Net
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/linux64/torrent-client"),
+                    FileName = Path.Combine(StreamingAssetsPath, "torrent-client/linux64/torrent-client"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
 
-                processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/linux64");
+                processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(StreamingAssetsPath, "torrent-client/linux64");
 
                 return processStartInfo;
             }
 
-            throw new InvalidOperationException("Unsupported platform by torrent-client.");
+            throw new TorrentClientException("Unsupported platform by torrent-client.");
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             _stdOutput.Dispose();
             _stdInput.Dispose();

@@ -14,22 +14,9 @@ namespace PatchKit.Unity.Patcher.Cancellation
             _cancellationTokenSource = cancellationTokenSource;
         }
 
-        public event Action Cancelled
+        public CancellationTokenRegistration Register(Action action)
         {
-            add
-            {
-                if (_cancellationTokenSource != null)
-                {
-                    _cancellationTokenSource.Cancelled += value;
-                }
-            }
-            remove
-            {
-                if (_cancellationTokenSource != null)
-                {
-                    _cancellationTokenSource.Cancelled -= value;
-                }
-            }
+            return new CancellationTokenRegistration(_cancellationTokenSource, action);
         }
 
         public bool IsCancelled

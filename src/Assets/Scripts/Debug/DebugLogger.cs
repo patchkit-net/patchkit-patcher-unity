@@ -2,8 +2,15 @@
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    internal static class DebugLogger
+    internal class DebugLogger
     {
+        private readonly object _context;
+
+        public DebugLogger(object context)
+        {
+            _context = context;
+        }
+
         private static string GetTypeName(object obj)
         {
             return obj.GetType().Name;
@@ -19,9 +26,39 @@ namespace PatchKit.Unity.Patcher.Debug
             UnityEngine.Debug.LogFormat("[{0}] {1}", GetTypeName(context), message);
         }
 
+        public void Log(object message)
+        {
+            Log(_context, message);
+        }
+
+        public static void LogTrace(object context, object message)
+        {
+            UnityEngine.Debug.LogFormat("[{0}] {1}", GetTypeName(context), message);
+        }
+
+        public void LogTrace(object message)
+        {
+            LogTrace(_context, message);
+        }
+
+        public static void LogWarning(object context, object message)
+        {
+            UnityEngine.Debug.LogWarningFormat("[{0}] {1}", GetTypeName(context), message);
+        }
+
+        public void LogWarning(object message)
+        {
+            LogWarning(_context, message);
+        }
+
         public static void LogError(object context, object message)
         {
             UnityEngine.Debug.LogErrorFormat("[{0}] {1}", GetTypeName(context), message);
+        }
+
+        public void LogError(object message)
+        {
+            LogError(_context, message);
         }
 
         public static void LogException(object context, Exception exception)
@@ -37,9 +74,9 @@ namespace PatchKit.Unity.Patcher.Debug
             }
         }
 
-        public static void LogWarning(object context, object message)
+        public void LogException(Exception exception)
         {
-            UnityEngine.Debug.LogFormat("[{0}] Warning: {1}", GetTypeName(context), message);
+            LogException(_context, exception);
         }
     }
 }
