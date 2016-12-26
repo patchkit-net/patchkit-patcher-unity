@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.Data.Local
             public Dictionary<string, int> FileVersionIds;
         }
 
-        private readonly DebugLogger _debugLogger;
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(LocalMetaData));
 
         private readonly string _filePath;
 
@@ -23,23 +23,26 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public LocalMetaData(string filePath)
         {
-            _debugLogger = new DebugLogger(this);
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(filePath, "filePath");
 
-            _debugLogger.Log("Initialization");
-            _debugLogger.LogTrace("filePath = " + filePath);
+            Checks.ArgumentNotNullOrEmpty(filePath, "filePath");
 
             _filePath = filePath;
             LoadData();
         }
 
-        public IEnumerator<string> GetFileNames()
+        public string[] GetFileNames()
         {
-            return _data.FileVersionIds.Select(pair => pair.Key).GetEnumerator();
+            return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
         public void AddOrUpdateFile(string fileName, int versionId)
         {
-            _debugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", fileName, versionId));
+            DebugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", fileName, versionId));
+
+            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+            Checks.ArgumentValidVersionId(versionId, "versionId");
 
             _data.FileVersionIds[fileName] = versionId;
 
@@ -48,7 +51,9 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public void RemoveFile(string fileName)
         {
-            _debugLogger.Log(string.Format("Removing file {0}", fileName));
+            DebugLogger.Log(string.Format("Removing file {0}", fileName));
+
+            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
 
             _data.FileVersionIds.Remove(fileName);
 
@@ -57,11 +62,15 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public bool FileExists(string fileName)
         {
+            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+
             return _data.FileVersionIds.ContainsKey(fileName);
         }
 
         public int GetFileVersion(string fileName)
         {
+            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+
             if (!_data.FileVersionIds.ContainsKey(fileName))
             {
                 throw new InvalidOperationException(string.Format("File doesn't exist in database - {0}", fileName));
@@ -104,7 +113,7 @@ namespace PatchKit.Unity.Patcher.Data.Local
             }
             catch (Exception exception)
             {
-                DebugLogger.LogException(this, exception);
+                DebugLogger.LogException(exception);
 
                 return false;
             }

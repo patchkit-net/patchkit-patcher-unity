@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
@@ -13,6 +14,8 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     /// <seealso cref="System.IDisposable" />
     internal class TorrentClient : IDisposable
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(TorrentClient));
+
         public static string StreamingAssetsPath;
 
         private readonly Process _process;
@@ -23,6 +26,8 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         public TorrentClient()
         {
+            DebugLogger.LogConstructor();
+
             _process = StartProcess();
             _stdOutput = CreateStdOutputStream();
             _stdInput = CreateStdInputStream();
@@ -33,6 +38,8 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
         /// </summary>
         public JToken ExecuteCommand(string command)
         {
+            DebugLogger.Log(string.Format("Executing command {0}", command));
+
             WriteCommand(command);
             string resultStr = ReadCommandResult();
             return ParseCommandResult(resultStr);
@@ -67,7 +74,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
         {
             if (_process.HasExited)
             {
-                throw new TorrentClientException("torrent-client process has exited");
+                throw new TorrentClientException("torrent-client process has exited.");
             }
         }
 

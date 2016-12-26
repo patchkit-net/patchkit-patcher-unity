@@ -2,12 +2,13 @@
 using System.Linq;
 using PatchKit.Api;
 using PatchKit.Unity.Patcher.Debug;
+using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Data.Remote
 {
     public class RemoteData : IRemoteData
     {
-        private readonly DebugLogger _debugLogger;
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DebugLogger));
 
         private readonly string _appSecret;
         private readonly MainApiConnection _mainApiConnection;
@@ -16,10 +17,12 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         public RemoteData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
         {
-            _debugLogger = new DebugLogger(this);
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(appSecret, "appSecret");
 
-            _debugLogger.Log("Initialization");
-            _debugLogger.LogTrace("appSecret = " + appSecret);
+            Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
+            Assert.IsNotNull(mainApiConnection, "mainApiConnection");
+            Assert.IsNotNull(keysApiConnection, "keysApiConnection");
 
             _appSecret = appSecret;
             _mainApiConnection = mainApiConnection;
@@ -29,9 +32,12 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         public RemoteResource GetContentPackageResource(int versionId, string keySecret)
         {
-            _debugLogger.Log("Getting content package resource.");
-            _debugLogger.LogTrace("versionId = " + versionId);
-            _debugLogger.LogTrace("keySecret = " + keySecret);
+            DebugLogger.Log("Getting content package resource.");
+            DebugLogger.LogVariable(versionId, "versionId");
+            DebugLogger.LogVariable(keySecret, "keySecret");
+
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            Checks.ArgumentNotNullOrEmpty(keySecret, "keySecret");
 
             RemoteResource resource = new RemoteResource();
 
@@ -39,19 +45,23 @@ namespace PatchKit.Unity.Patcher.Data.Remote
             var torrentUrl = _mainApiConnection.GetAppVersionContentTorrentUrl(_appSecret, versionId, keySecret);
             var urls = _mainApiConnection.GetAppVersionContentUrls(_appSecret, versionId); // TODO: Add key secret checking
 
-            resource.ContentSize = summary.Size;
+            resource.Size = summary.Size;
+            resource.HashCode = summary.HashCode;
             resource.ChunksData = ConvertToChunksData(summary.Chunks);
             resource.TorrentUrls = new[] {torrentUrl.Url};
-            resource.ContentUrls = urls.Select(u => u.Url).ToArray();
+            resource.Urls = urls.Select(u => u.Url).ToArray();
 
             return resource;
         }
 
         public RemoteResource GetDiffPackageResource(int versionId, string keySecret)
         {
-            _debugLogger.Log("Getting diff package resource.");
-            _debugLogger.LogTrace("versionId = " + versionId);
-            _debugLogger.LogTrace("keySecret = " + keySecret);
+            DebugLogger.Log("Getting diff package resource.");
+            DebugLogger.LogVariable(versionId, "versionId");
+            DebugLogger.LogVariable(keySecret, "keySecret");
+
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            Checks.ArgumentNotNullOrEmpty(keySecret, "keySecret");
 
             RemoteResource resource = new RemoteResource();
 
@@ -59,10 +69,11 @@ namespace PatchKit.Unity.Patcher.Data.Remote
             var torrentUrl = _mainApiConnection.GetAppVersionDiffTorrentUrl(_appSecret, versionId, keySecret);
             var urls = _mainApiConnection.GetAppVersionDiffUrls(_appSecret, versionId); // TODO: Add key secret checking
 
-            resource.ContentSize = summary.Size;
+            resource.Size = summary.Size;
+            resource.HashCode = summary.HashCode;
             resource.ChunksData = ConvertToChunksData(summary.Chunks);
             resource.TorrentUrls = new[] { torrentUrl.Url };
-            resource.ContentUrls = urls.Select(u => u.Url).ToArray();
+            resource.Urls = urls.Select(u => u.Url).ToArray();
 
             return resource;
         }

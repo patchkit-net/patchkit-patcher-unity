@@ -1,7 +1,9 @@
-﻿namespace PatchKit.Unity.Patcher.Commands
+﻿using PatchKit.Unity.Patcher.Cancellation;
+
+namespace PatchKit.Unity.Patcher.Commands
 {
     internal interface ICommand
     {
-        void Execute();
+        void Execute(CancellationToken cancellationToken);
     }
 }

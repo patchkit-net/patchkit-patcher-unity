@@ -4,9 +4,11 @@
     {
         public string[] TorrentUrls;
 
-        public string[] ContentUrls;
+        public string[] Urls;
 
-        public long ContentSize;
+        public long Size;
+
+        public string HashCode;
 
         public ChunksData ChunksData;
     }

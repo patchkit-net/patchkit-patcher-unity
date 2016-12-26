@@ -1,12 +1,13 @@
 ﻿using PatchKit.Api;
 using PatchKit.Api.Models;
 using PatchKit.Unity.Patcher.Debug;
+using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Data.Remote
 {
     internal class RemoteMetaData : IRemoteMetaData
     {
-        private readonly DebugLogger _debugLogger;
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteMetaData));
 
         private readonly string _appSecret;
         private readonly MainApiConnection _mainApiConnection;
@@ -14,10 +15,12 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         public RemoteMetaData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
         {
-            _debugLogger = new DebugLogger(this);
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(appSecret, "appSecret");
 
-            _debugLogger.Log("Initialization");
-            _debugLogger.LogTrace("appSecret = " + appSecret);
+            Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
+            Assert.IsNotNull(mainApiConnection, "mainApiConnection");
+            Assert.IsNotNull(keysApiConnection, "keysApiConnection");
 
             _appSecret = appSecret;
             _mainApiConnection = mainApiConnection;
@@ -26,34 +29,37 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         public int GetLatestVersionId()
         {
-            _debugLogger.Log("Getting latest version id.");
+            DebugLogger.Log("Getting latest version id.");
             return _mainApiConnection.GetAppLatestAppVersionId(_appSecret).Id;
         }
 
         public App GetAppInfo()
         {
-            _debugLogger.Log("Getting app info.");
+            DebugLogger.Log("Getting app info.");
             return _mainApiConnection.GetApplicationInfo(_appSecret);
         }
 
         public AppContentSummary GetContentSummary(int versionId)
         {
-            _debugLogger.Log("Getting content summary.");
-            _debugLogger.LogTrace("versionId = " + versionId);
+            DebugLogger.Log(string.Format("Getting content summary of version with id {0}.", versionId));
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+
             return _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId);
         }
 
         public AppDiffSummary GetDiffSummary(int versionId)
         {
-            _debugLogger.Log("Getting diff summary.");
-            _debugLogger.LogTrace("versionId = " + versionId);
+            DebugLogger.Log(string.Format("Getting diff summary of version with id {0}.", versionId));
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+
             return _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
         }
 
         public string GetKeySecret(string key)
         {
-            _debugLogger.Log("Getting key secret.");
-            _debugLogger.LogTrace("key = " + key);
+            DebugLogger.Log(string.Format("Getting key secret from key {0}.", key));
+            Checks.ArgumentNotNullOrEmpty(key, "key");
+
             return _keysApiConnection.GetKeyInfo(key, _appSecret).KeySecret;
         }
     }

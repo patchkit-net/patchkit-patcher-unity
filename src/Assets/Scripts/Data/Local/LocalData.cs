@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.Data.Local
@@ -8,26 +9,38 @@ namespace PatchKit.Unity.Patcher.Data.Local
     {
         private const string MetaDataFileName = "patcher_cache.json";
 
-        private readonly DebugLogger _debugLogger;
+        private const string TemporaryDataDirectoryName = "temp";
+
+        private const string DownloadDataDirectoryName = "downloads";
+
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(LocalData));
 
         public readonly string Path;
 
         public LocalData(string path)
         {
-            _debugLogger = new DebugLogger(this);
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(path, "path");
 
-            _debugLogger.Log("Initialization");
-            _debugLogger.LogTrace("path = " + path);
+            Checks.ArgumentNotNullOrEmpty(path, "path");
 
             Path = path;
             MetaData = new LocalMetaData(System.IO.Path.Combine(Path, MetaDataFileName));
+            TemporaryData = new TemporaryData(System.IO.Path.Combine(Path, TemporaryDataDirectoryName));
+            DownloadData = new DownloadData(System.IO.Path.Combine(Path, DownloadDataDirectoryName));
         }
 
         public ILocalMetaData MetaData { get; private set; }
 
+        public ITemporaryData TemporaryData { get; private set; }
+
+        public IDownloadData DownloadData { get; private set; }
+
         public virtual void CreateDirectory(string dirName)
         {
-            _debugLogger.Log(string.Format("Creating directory {0}", dirName));
+            DebugLogger.Log(string.Format("Creating directory {0}", dirName));
+
+            Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
 
             string dirPath = GetEntryPath(dirName);
 
@@ -39,7 +52,9 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual void DeleteDirectory(string dirName)
         {
-            _debugLogger.Log(string.Format("Deleting directory {0}", dirName));
+            DebugLogger.Log(string.Format("Deleting directory {0}", dirName));
+
+            Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
 
             string dirPath = GetEntryPath(dirName);
 
@@ -51,6 +66,8 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual bool DirectoryExists(string dirName)
         {
+            Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
+
             string dirPath = GetEntryPath(dirName);
 
             return Directory.Exists(dirPath);
@@ -58,6 +75,8 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual bool IsDirectoryEmpty(string dirName)
         {
+            Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
+
             string dirPath = GetEntryPath(dirName);
 
             if (!Directory.Exists(dirName))
@@ -70,7 +89,10 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual void CreateOrUpdateFile(string fileName, string sourceFilePath)
         {
-            _debugLogger.Log(string.Format("Copying file {0} from {1}", fileName, sourceFilePath));
+            DebugLogger.Log(string.Format("Copying file {0} from {1}", fileName, sourceFilePath));
+
+            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+            Checks.ArgumentFileExists(sourceFilePath, "sourceFilePath");
 
             if (!File.Exists(sourceFilePath))
             {
@@ -91,7 +113,9 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual void DeleteFile(string fileName)
         {
-            _debugLogger.Log(string.Format("Deleting file {0}", fileName));
+            DebugLogger.Log(string.Format("Deleting file {0}", fileName));
+
+            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
 
             string filePath = GetEntryPath(fileName);
 
@@ -103,6 +127,8 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual bool FileExists(string fileName)
         {
+            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+
             string filePath = GetEntryPath(fileName);
 
             return File.Exists(filePath);
@@ -110,7 +136,34 @@ namespace PatchKit.Unity.Patcher.Data.Local
 
         public virtual string GetFilePath(string fileName)
         {
+            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+
             return GetEntryPath(fileName);
+        }
+
+        public bool IsInstalled()
+        {
+            var fileNames = MetaData.GetFileNames();
+
+            if (fileNames.Length == 0)
+            {
+                return false;
+            }
+
+            int installedVersion = MetaData.GetFileVersion(fileNames[0]);
+
+            return fileNames.All(FileExists) &&
+                   fileNames.All(fileName => MetaData.GetFileVersion(fileName) == installedVersion);
+        }
+
+        public int GetInstalledVersion()
+        {
+            if (!IsInstalled())
+            {
+                throw new InvalidOperationException("Cannot retrieve version when local data is not installed.");
+            }
+
+            return MetaData.GetFileVersion(MetaData.GetFileNames()[0]);
         }
 
         private string GetEntryPath(string entryName)

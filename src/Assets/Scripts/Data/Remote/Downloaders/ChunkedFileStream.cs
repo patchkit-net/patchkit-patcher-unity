@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 {
@@ -17,6 +18,8 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     /// </summary>
     internal class ChunkedFileStream : IDisposable
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ChunkedFileStream));
+
         public delegate byte[] HashFunction(byte[] buffer, int offset, int length);
 
         private readonly ChunksData _chunksData;
@@ -50,6 +53,11 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         public ChunkedFileStream(string path, long fileSize, ChunksData chunksData, HashFunction hashFunction)
         {
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(path, "path");
+
+            Checks.ArgumentNotNullOrEmpty(path, "path");
+
             _fileSize = fileSize;
             _chunksData = chunksData;
             _hashFunction = hashFunction;

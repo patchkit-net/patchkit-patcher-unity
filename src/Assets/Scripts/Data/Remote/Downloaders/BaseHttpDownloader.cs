@@ -11,7 +11,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     /// </summary>
     internal sealed class BaseHttpDownloader
     {
-        private readonly DebugLogger _debugLogger;
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(BaseHttpDownloader));
 
         private readonly string _url;
         private readonly int _bufferSize;
@@ -24,21 +24,23 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
         /// <summary>
         /// Occurs when request is created. Could be used to make some adjustements to request.
         /// </summary>
-        public event Action<HttpWebRequest> RequestCreated;
+        public event RequestCreatedHandler RequestCreated;
 
         /// <summary>
         /// Occurs when data is downloaded.
         /// </summary>
-        public event Action<byte[], int> DataDownloaded;
+        public event DataDownloadedHandler DataDownloaded;
 
         public BaseHttpDownloader(string url, int timeout, int bufferSize = 1024)
         {
-            _debugLogger = new DebugLogger(this);
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(url, "url");
+            DebugLogger.LogVariable(timeout, "timeout");
+            DebugLogger.LogVariable(bufferSize, "bufferSize");
 
-            _debugLogger.Log("Initialization");
-            _debugLogger.LogTrace("url = " + url);
-            _debugLogger.LogTrace("timeout = " + timeout);
-            _debugLogger.LogTrace("bufferSize = " + bufferSize);
+            Checks.ArgumentNotNullOrEmpty(url, "url");
+            Checks.ArgumentMoreThanZero(timeout, "timeout");
+            Checks.ArgumentMoreThanZero(bufferSize, "bufferSize");
 
             _url = url;
             _timeout = timeout;
@@ -52,7 +54,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void CreateRequest()
         {
-            _debugLogger.Log("Creating request");
+            DebugLogger.Log("Creating request");
 
             _request = (HttpWebRequest)WebRequest.Create(_url);
             _request.Method = "GET";
@@ -63,7 +65,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void VerifyResponse(HttpWebResponse response)
         {
-            _debugLogger.Log("Veryfing response");
+            DebugLogger.Log("Veryfing response");
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -78,7 +80,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void ProcessResponse(HttpWebResponse response, CancellationToken cancellationToken)
         {
-            _debugLogger.Log("Processing response");
+            DebugLogger.Log("Processing response");
 
             using (var responseStream = response.GetResponseStream())
             {
@@ -93,7 +95,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void ProcessStream(Stream responseStream, CancellationToken cancellationToken)
         {
-            _debugLogger.Log("Processing stream");
+            DebugLogger.Log("Processing stream");
 
             int bufferRead;
             while ((bufferRead = responseStream.Read(_buffer, 0, _bufferSize)) > 0)
@@ -106,6 +108,8 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         public void Download(CancellationToken cancellationToken)
         {
+            DebugLogger.Log("Starting download.");
+
             if (_started)
             {
                 throw new InvalidOperationException("Cannot start the same BaseHttpDownloader twice.");
@@ -116,7 +120,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _debugLogger.Log("Retrieving response from request");
+            DebugLogger.Log("Retrieving response from request");
 
             using (var response = _request.GetResponse())
             {

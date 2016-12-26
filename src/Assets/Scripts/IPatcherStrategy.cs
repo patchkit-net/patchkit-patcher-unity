@@ -1,7 +1,9 @@
-﻿namespace PatchKit.Unity.Patcher
+﻿using PatchKit.Unity.Patcher.Cancellation;
+
+namespace PatchKit.Unity.Patcher
 {
     internal interface IPatcherStrategy
     {
-        void Patch(PatcherContext context);
+        void Patch(CancellationToken cancellationToken);
     }
 }

@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     {
         private const int RetriesAmount = 100;
 
-        private readonly DebugLogger _debugLogger;
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ChunkedHttpDownloader));
 
         private readonly RemoteResource _resource;
 
@@ -31,27 +31,30 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         public ChunkedHttpDownloader(string destinationFilePath, RemoteResource resource, int timeout = 10000)
         {
-            _debugLogger = new DebugLogger(this);
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
+            DebugLogger.LogVariable(timeout, "timeout");
 
-            _debugLogger.Log("Initialization");
-            _debugLogger.LogTrace("destinationFilePath = " + destinationFilePath);
-            _debugLogger.LogTrace("timeout = " + timeout);
+            Checks.ArgumentDirectoryOfFileExists(destinationFilePath, "destinationFilePath");
+            Checks.ArgumentValidRemoteResource(resource, "resource");
+            Checks.ArgumentMoreThanZero(timeout, "timeout");
 
             _resource = resource;
             _timeout = timeout;
 
-            _fileStream = new ChunkedFileStream(destinationFilePath, resource.ContentSize, resource.ChunksData, HashFunction);
+            _fileStream = new ChunkedFileStream(destinationFilePath, resource.Size, resource.ChunksData, HashFunction);
         }
 
         public void Download(CancellationToken cancellationToken)
         {
+            DebugLogger.Log("Starting download.");
             if (_started)
             {
                 throw new InvalidOperationException("Cannot start the same ChunkedHttpDownloader twice.");
             }
             _started = true;
 
-            var validUrls = new List<string>(_resource.ContentUrls);
+            var validUrls = new List<string>(_resource.Urls);
             validUrls.Reverse();
 
             int retry = RetriesAmount;
@@ -69,7 +72,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
                     }
                     catch (DownloaderException downloaderException)
                     {
-                        _debugLogger.LogException(downloaderException);
+                        DebugLogger.LogException(downloaderException);
                         switch (downloaderException.Status)
                         {
                             case DownloaderExceptionStatus.EmptyStream:
@@ -91,12 +94,12 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
                     }
                     catch (Exception exception)
                     {
-                        _debugLogger.LogException(exception);
+                        DebugLogger.LogException(exception);
                         // try another one
                     }
                 }
 
-                _debugLogger.Log("Waiting 10 seconds before trying again...");
+                DebugLogger.Log("Waiting 10 seconds before trying again...");
                 Thread.Sleep(10000);
             }
 
@@ -110,11 +113,11 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void Download(string url, CancellationToken cancellationToken)
         {
-            _debugLogger.Log("Trying to download from " + url);
+            DebugLogger.Log("Trying to download from " + url);
             
             var offset = CurrentFileSize();
 
-            _debugLogger.LogTrace("offset = " + offset);
+            DebugLogger.LogVariable(offset, "offset");
 
             BaseHttpDownloader baseHttpDownloader = new BaseHttpDownloader(url, _timeout);
             baseHttpDownloader.RequestCreated += request =>
@@ -131,7 +134,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
                     throw new DownloaderException("Corrupt data.", DownloaderExceptionStatus.CorruptData);
                 }
 
-                OnDownloadProgressChanged(CurrentFileSize(), _resource.ContentSize);
+                OnDownloadProgressChanged(CurrentFileSize(), _resource.Size);
             };
 
             baseHttpDownloader.Download(cancellationToken);

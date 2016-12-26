@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     {
         private const int UpdateInterval = 1000;
 
-        private readonly DebugLogger _debugLogger;
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(TorrentDownloader));
 
         private readonly string _destinationFilePath;
 
@@ -37,11 +37,13 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         public TorrentDownloader(string destinationFilePath, RemoteResource resource, int timeout = 10000)
         {
-            _debugLogger = new DebugLogger(this);
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
+            DebugLogger.LogVariable(timeout, "timeout");
 
-            _debugLogger.Log("Initialization");
-            _debugLogger.LogTrace("destinationFilePath = " + destinationFilePath);
-            _debugLogger.LogTrace("timeout = " + timeout);
+            Checks.ArgumentDirectoryOfFileExists(destinationFilePath, "destinationFilePath");
+            Checks.ArgumentValidRemoteResource(resource, "resource");
+            Checks.ArgumentMoreThanZero(timeout, "timeout");
 
             _destinationFilePath = destinationFilePath;
             _resource = resource;
@@ -70,10 +72,10 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void DownloadTorrentFile(CancellationToken cancellationToken)
         {
-            _debugLogger.Log("Downloading torrent file.");
+            DebugLogger.Log("Downloading torrent file.");
 
             var torrentFileResouce = new RemoteResource();
-            Array.Copy(_resource.TorrentUrls, torrentFileResouce.ContentUrls, _resource.TorrentUrls.Length);
+            Array.Copy(_resource.TorrentUrls, torrentFileResouce.Urls, _resource.TorrentUrls.Length);
 
             using (var httpDownloader = new HttpDownloader(TorrentFilePath, torrentFileResouce, _timeout))
             {
@@ -96,20 +98,20 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void AddTorrent()
         {
-            _debugLogger.Log("Adding torrent.");
+            DebugLogger.Log("Adding torrent.");
             
             string convertedTorrentFilePath = ConvertPathForTorrentClient(TorrentFilePath);
             string convertedDownloadDirectoryPath = ConvertPathForTorrentClient(DownloadDirectoryPath);
 
-            _debugLogger.LogTrace("convertedTorrentFilePath = " + convertedTorrentFilePath);
-            _debugLogger.LogTrace("convertedDownloadDirectoryPath = " + convertedDownloadDirectoryPath);
+            DebugLogger.LogVariable(convertedTorrentFilePath, "convertedTorrentFilePath");
+            DebugLogger.LogVariable(convertedDownloadDirectoryPath, "convertedDownloadDirectoryPath");
 
             string command = string.Format("add-torrent {0} {1}", convertedTorrentFilePath,
                 convertedDownloadDirectoryPath);
 
             var result = _torrentClient.ExecuteCommand(command);
 
-            _debugLogger.LogTrace(result);
+            DebugLogger.LogVariable(result, "result");
 
             VerifyAddTorrentResult(result);
 
@@ -135,14 +137,14 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void UpdateTorrentProgress(double progress)
         {
-            OnDownloadProgressChanged(Mathf.CeilToInt(_resource.ContentSize * (float)progress), _resource.ContentSize);
+            OnDownloadProgressChanged(Mathf.CeilToInt(_resource.Size * (float)progress), _resource.Size);
         }
 
         private bool UpdateTorrentStatus()
         {
             var result = _torrentClient.ExecuteCommand("status");
 
-            _debugLogger.LogTrace(result);
+            DebugLogger.LogVariable(result, "result");
 
             if (result.Value<string>("status") != "ok")
             {
@@ -198,13 +200,13 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         private void MoveDownloadedFile()
         {
-            _debugLogger.Log("Moving downloaded file to " + _destinationFilePath);
+            DebugLogger.Log("Moving downloaded file to " + _destinationFilePath);
 
             var dirInfo = new DirectoryInfo(DownloadDirectoryPath);
 
             var dirFiles = dirInfo.GetFiles();
 
-            _debugLogger.LogTrace("dirFiles.Length = " + dirFiles.Length);
+            DebugLogger.LogVariable(dirFiles.Length, "dirFiles.Length");
 
             if (dirFiles.Length < 1)
             {
@@ -216,7 +218,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
                 File.Delete(_destinationFilePath);
             }
 
-            _debugLogger.LogTrace("dirFiles[0].FullName = " + dirFiles[0].FullName);
+            DebugLogger.LogVariable(dirFiles[0].FullName, "dirFiles[0].FullName");
 
             File.Move(dirFiles[0].FullName, _destinationFilePath);
         }
@@ -236,6 +238,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
 
         public void Download(CancellationToken cancellationToken)
         {
+            DebugLogger.Log("Starting download.");
             if (_started)
             {
                 throw new InvalidOperationException("Cannot start the same TorrentDownloader twice.");

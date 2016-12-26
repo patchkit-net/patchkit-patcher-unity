@@ -3,7 +3,7 @@ using PatchKit.Unity.Patcher.Data.Remote;
 
 namespace PatchKit.Unity.Patcher
 {
-    public class PatcherData
+    internal class PatcherData
     {
         public readonly ILocalData LocalData;
 

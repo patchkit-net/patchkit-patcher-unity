@@ -7,7 +7,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 {
     internal class RemoteResourceDownloader
     {
-        private readonly DebugLogger _debugLogger;
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteResourceDownloader));
 
         private const int TorrentDownloaderTimeout = 10000;
         private const int ChunkedHttpDownloaderTimeout = 10000;
@@ -19,15 +19,18 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         private readonly bool _useTorrents;
 
+        private bool _started;
+
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public RemoteResourceDownloader(string destinationFilePath, RemoteResource resource, bool useTorrents)
         {
-            _debugLogger = new DebugLogger(this);
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
+            DebugLogger.LogVariable(useTorrents, "useTorrents");
 
-            _debugLogger.Log("Initialization");
-            _debugLogger.LogTrace("destinationFilePath = " + destinationFilePath);
-            _debugLogger.LogTrace("useTorrents = " + useTorrents);
+            Checks.ArgumentDirectoryOfFileExists(destinationFilePath, "destinationFilePath");
+            Checks.ArgumentValidRemoteResource(resource, "resource");
 
             _destinationFilePath = destinationFilePath;
             _resource = resource;
@@ -36,7 +39,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         private bool TryDownloadWithTorrent(CancellationToken cancellationToken)
         {
-            _debugLogger.Log("Trying to download with torrent.");
+            DebugLogger.Log("Trying to download with torrent.");
 
             using (var downloader = 
                 new TorrentDownloader(_destinationFilePath, _resource, TorrentDownloaderTimeout))
@@ -49,7 +52,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote
                 }
                 catch (Exception exception)
                 {
-                    _debugLogger.LogException(exception);
+                    DebugLogger.LogException(exception);
                     return false;
                 }
             }
@@ -57,7 +60,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         private void DownloadWithChunkedHttp(CancellationToken cancellationToken)
         {
-            _debugLogger.Log("Downloading with chunked HTTP.");
+            DebugLogger.Log("Downloading with chunked HTTP.");
 
             using (var downloader =
                 new ChunkedHttpDownloader(_destinationFilePath, _resource, ChunkedHttpDownloaderTimeout))
@@ -68,7 +71,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         private void DownloadWithHttp(CancellationToken cancellationToken)
         {
-            _debugLogger.Log("Downloading with HTTP.");
+            DebugLogger.Log("Downloading with HTTP.");
 
             using (var downloader =
                 new HttpDownloader(_destinationFilePath, _resource, HttpDownloaderTimeout))
@@ -84,6 +87,14 @@ namespace PatchKit.Unity.Patcher.Data.Remote
 
         public void Download(CancellationToken cancellationToken)
         {
+            DebugLogger.Log("Starting download.");
+
+            if (_started)
+            {
+                throw new InvalidOperationException("Cannot start the same RemoteResourceDownloader twice.");
+            }
+            _started = true;
+
             if (_useTorrents)
             {
                 bool downloaded = TryDownloadWithTorrent(cancellationToken);

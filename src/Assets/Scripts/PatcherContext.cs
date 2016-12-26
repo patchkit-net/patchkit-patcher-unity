@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher
 {
-    public class PatcherContext
+    internal class PatcherContext
     {
         public readonly PatcherData Data;
 

@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-
-namespace PatchKit.Unity.Patcher.Data.Local
+﻿namespace PatchKit.Unity.Patcher.Data.Local
 {
     public interface ILocalMetaData
     {
-        IEnumerator<string> GetFileNames();
+        string[] GetFileNames();
 
         void AddOrUpdateFile(string fileName, int versionId);
 

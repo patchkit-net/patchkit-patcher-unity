@@ -1,8 +1,10 @@
 ﻿namespace PatchKit.Unity.Patcher.Data.Local
 {
-    public interface ILocalData
+    internal interface ILocalData
     {
         ILocalMetaData MetaData { get; }
+        ITemporaryData TemporaryData { get; }
+        IDownloadData DownloadData { get; }
 
         void CreateDirectory(string dirName);
 
@@ -19,5 +21,9 @@
         bool FileExists(string fileName);
 
         string GetFilePath(string fileName);
+
+        bool IsInstalled();
+
+        int GetInstalledVersion();
     }
 }
