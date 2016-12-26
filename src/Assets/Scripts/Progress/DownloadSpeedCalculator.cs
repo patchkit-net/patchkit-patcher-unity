@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PatchKit.Unity.Patcher.Views
+namespace PatchKit.Unity.Patcher.Progress
 {
-    internal class DownloadSpeedTracker
+    internal class DownloadSpeedCalculator
     {
         private struct Sample
         {
@@ -15,14 +15,14 @@ namespace PatchKit.Unity.Patcher.Views
             public DateTime AddTime;
         }
 
+        private const long SampleLifeTime = 10000;
+
         private readonly List<Sample> _samples = new List<Sample>();
 
         private void CleanOldSamples()
         {
             _samples.RemoveAll(s => (DateTime.Now - s.AddTime).TotalMilliseconds > SampleLifeTime);
         }
-
-        public long SampleLifeTime = 10000;
 
         public void AddSample(long bytes, long duration)
         {
