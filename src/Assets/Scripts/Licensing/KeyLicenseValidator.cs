@@ -20,7 +20,7 @@ namespace PatchKit.Unity.Patcher.Licensing
         {
             string keySecret = PlayerPrefs.GetString("PatchKit-" + key + "-KeySecret", null);
             PlayerPrefs.DeleteKey("PatchKit-" + key + "-KeySecret");
-            return keySecret
+            return keySecret;
         }
 
         private void SaveCachedKeySecret(string key, string keySecret)
