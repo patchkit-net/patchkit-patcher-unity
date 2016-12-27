@@ -1,29 +1,49 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using PatchKit.Api.Models;
 
 namespace PatchKit.Unity.Patcher.Progress
 {
-    public class ProgressMonitor : IProgressMonitor
+    internal class ProgressMonitor : IProgressMonitor
     {
-        private readonly List<Progress> _progressList = new List<Progress>();
-        private readonly List<DownloadProgress> _downloadProgressList = new List<DownloadProgress>();
+        private readonly List<IProgress> _progressList = new List<IProgress>();
 
-        public ProgressMonitor()
+        public double OverallProgress
         {
+            get
+            {
+                if (_progressList.Count == 0)
+                {
+                    return 0.0;
+                }
+
+                double weightsSum = _progressList.Sum(p => p.Weight);
+
+                double weightedValuesSum = _progressList.Sum(p => p.Value*p.Weight);
+
+                return weightedValuesSum/weightsSum;
+            }
         }
 
-        public IProgress AddProgress(double weight)
+        public IProgress[] ProgressList
         {
-            var progress = new Progress(weight);
+            get { return _progressList.ToArray(); }
+        }
+
+        public IGeneralProgressReporter AddGeneralProgress(double weight)
+        {
+            var progress = new GeneralProgress(weight);
             _progressList.Add(progress);
-            return progress;
+
+            return new GeneralProgressReporter(progress);
         }
 
-        public IDownloadProgress AddDownloadProgress(double weight)
+        public IDownloadProgressReporter AddDownloadProgress(double weight)
         {
-            var downloadProgress = new DownloadProgress(weight);
-            _downloadProgressList.Add(downloadProgress);
-            return downloadProgress;
+            var progress = new DownloadProgress(weight);
+            _progressList.Add(progress);
+
+            return new DownloadProgressReporter(progress);
         }
     }
 }
-

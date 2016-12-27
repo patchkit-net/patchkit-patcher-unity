@@ -1,6 +1,7 @@
 ﻿using PatchKit.Api.Models;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Progress;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Commands
@@ -30,11 +31,16 @@ namespace PatchKit.Unity.Patcher.Commands
 
             var summary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
 
+            var progressWeight = ProgressWeightHelper.GetCheckVersionIntegrityWeight(summary.Size);
+            var progressReporter = _context.ProgressMonitor.AddGeneralProgress(progressWeight);
+
             var results = new FileIntegrity[summary.Files.Length];
 
             for (int i = 0; i < summary.Files.Length; i++)
             {
                 results[i] = CheckFile(summary.Files[i]);
+
+                progressReporter.OnProgressChanged((i + 1)/(double) summary.Files.Length);
             }
 
             Results = results;

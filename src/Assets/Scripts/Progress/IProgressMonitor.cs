@@ -1,15 +1,13 @@
 ﻿namespace PatchKit.Unity.Patcher.Progress
 {
-    public interface IProgressMonitor
+    internal interface IProgressMonitor
     {
-        double Progress { get; }
+        double OverallProgress { get; }
 
-        double DownloadProgress { get; }
+        IProgress[] ProgressList { get; }
 
-        double DownloadSpeed { get; }
+        IGeneralProgressReporter AddGeneralProgress(double weight);
 
-        IProgress AddProgress(double weight);
-
-        IDownloadProgress AddDownloadProgress(double weight);
+        IDownloadProgressReporter AddDownloadProgress(double weight);
     }
 }

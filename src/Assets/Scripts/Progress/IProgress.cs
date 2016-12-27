@@ -1,7 +1,9 @@
 ﻿namespace PatchKit.Unity.Patcher.Progress
 {
-    public interface IProgress
+    internal interface IProgress
     {
-        void OnProgress(double value);
+        double Weight { get; }
+
+        double Value { get; }
     }
 }

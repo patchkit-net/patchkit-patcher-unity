@@ -1,7 +1,11 @@
 ﻿namespace PatchKit.Unity.Patcher.Progress
 {
-    public interface IDownloadProgress
+    internal interface IDownloadProgress : IProgress
     {
-        void OnDownloadProgress(long bytes, long totalBytes);
+        long Bytes { get; }
+
+        long TotalBytes { get; }
+
+        double DownloadSpeed { get; }
     }
 }

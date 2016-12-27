@@ -1,7 +1,9 @@
 ﻿using System.IO;
+using PatchKit.Api.Models;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data.Local;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Progress;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Commands
@@ -30,6 +32,10 @@ namespace PatchKit.Unity.Patcher.Commands
             using (var packageDir = new TemporaryDirectory(_context.Data.LocalData.TemporaryData.GetUniquePath()))
             {
                 var unarchiver = new Unarchiver(_packagePath, packageDir.Path);
+
+                var unarchiveProgressReporter = _context.ProgressMonitor.AddGeneralProgress((summary.Size / 1024.0 / 1024.0) * );
+                downloader.DownloadProgressChanged += progressReporter.OnDownloadProgressChanged;
+
                 unarchiver.Unarchive(cancellationToken);
 
                 foreach (var file in summary.Files)
@@ -54,6 +60,14 @@ namespace PatchKit.Unity.Patcher.Commands
 
             _context.Data.LocalData.CreateOrUpdateFile(fileName, sourceFilePath);
             _context.Data.LocalData.MetaData.AddOrUpdateFile(fileName, _versionId);
+        }
+
+        private void LinkUnarchiverProgressReporter(Unarchiver unarchiver, AppContentSummary summary)
+        {
+            var progressWeight = ProgressWeightHelper.GetUnarchiveWeight(summary.Size);
+            var progressReporter = _context.ProgressMonitor.AddGeneralProgress(progressWeight);
+
+
         }
     }
 }

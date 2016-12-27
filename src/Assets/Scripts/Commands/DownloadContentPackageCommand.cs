@@ -1,5 +1,6 @@
 ﻿using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data.Remote;
+using PatchKit.Unity.Patcher.Progress;
 
 namespace PatchKit.Unity.Patcher.Commands
 {
@@ -23,9 +24,19 @@ namespace PatchKit.Unity.Patcher.Commands
             var resource = _context.Data.RemoteData.GetContentPackageResource(_versionId, _keySecret);
 
             var downloader = new RemoteResourceDownloader(contentPath, resource, _context.Configuration.UseTorrents);
+
+            LinkDownloaderProgressReporter(downloader, resource);
+
             downloader.Download(cancellationToken);
 
             PackagePath = contentPath;
+        }
+
+        private void LinkDownloaderProgressReporter(RemoteResourceDownloader downloader, RemoteResource resource)
+        {
+            var progressWeight = ProgressWeightHelper.GetResourceDownloadWeight(resource.Size);
+            var progressReporter = _context.ProgressMonitor.AddDownloadProgress(progressWeight);
+            downloader.DownloadProgressChanged += progressReporter.OnDownloadProgressChanged;
         }
 
         public string PackagePath { get; private set; }

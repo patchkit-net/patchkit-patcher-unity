@@ -1,4 +1,6 @@
-﻿namespace PatchKit.Unity.Patcher
+﻿using PatchKit.Unity.Patcher.Progress;
+
+namespace PatchKit.Unity.Patcher
 {
     internal class PatcherContext
     {
@@ -6,13 +8,13 @@
 
         public readonly PatcherConfiguration Configuration;
 
-        public readonly PatcherView View;
+        public readonly IProgressMonitor ProgressMonitor;
 
-        public PatcherContext(PatcherData data, PatcherConfiguration configuration, PatcherView view)
+        public PatcherContext(PatcherData data, PatcherConfiguration configuration, IProgressMonitor progressMonitor)
         {
             Data = data;
             Configuration = configuration;
-            View = view;
+            ProgressMonitor = progressMonitor;
         }
     }
 }
