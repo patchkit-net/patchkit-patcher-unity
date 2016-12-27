@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using PatchKit.Api;
+using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.Licensing
 {
@@ -15,6 +16,19 @@ namespace PatchKit.Unity.Patcher.Licensing
             _keysApiConnection = keysApiConnection;
         }
 
+        private string GetAndDeleteCachedKeySecret(string key)
+        {
+            string keySecret = PlayerPrefs.GetString("PatchKit-" + key + "-KeySecret", null);
+            PlayerPrefs.DeleteKey("PatchKit-" + key + "-KeySecret");
+            return keySecret
+        }
+
+        private void SaveCachedKeySecret(string key, string keySecret)
+        {
+            PlayerPrefs.SetString("PatchKit-" + key + "-KeySecret", keySecret);
+            PlayerPrefs.Save();
+        }
+
         public string Validate(ILicense license)
         {
             if (license is KeyLicense)
@@ -23,7 +37,11 @@ namespace PatchKit.Unity.Patcher.Licensing
 
                 try
                 {
-                    var licenseKey = _keysApiConnection.GetKeyInfo(keyLicense.Key, _appSecret);
+                    string keySecret = GetAndDeleteCachedKeySecret(keyLicense.Key);
+
+                    var licenseKey = _keysApiConnection.GetKeyInfo(keyLicense.Key, _appSecret, keySecret);
+
+                    SaveCachedKeySecret(keyLicense.Key, licenseKey.KeySecret);
 
                     return licenseKey.KeySecret;
                 }
