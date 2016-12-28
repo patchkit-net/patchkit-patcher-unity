@@ -1,4 +1,5 @@
 ﻿using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.Progress;
 
 namespace PatchKit.Unity.Patcher.Commands
 {
@@ -15,6 +16,11 @@ namespace PatchKit.Unity.Patcher.Commands
         {
             // TODO: Implementation :-)
             KeySecret = null;
+        }
+
+        public void Prepare(IProgressMonitor progressMonitor)
+        {
+            throw new System.NotImplementedException();
         }
 
         public string KeySecret { get; private set; }

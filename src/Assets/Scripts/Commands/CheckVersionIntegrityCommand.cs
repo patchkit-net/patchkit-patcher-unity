@@ -32,18 +32,23 @@ namespace PatchKit.Unity.Patcher.Commands
             var summary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
 
             var progressWeight = ProgressWeightHelper.GetCheckVersionIntegrityWeight(summary.Size);
-            var progressReporter = _context.ProgressMonitor.AddGeneralProgress(progressWeight);
+            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
 
-            var results = new FileIntegrity[summary.Files.Length];
+            var files = new FileIntegrity[summary.Files.Length];
 
             for (int i = 0; i < summary.Files.Length; i++)
             {
-                results[i] = CheckFile(summary.Files[i]);
+                files[i] = CheckFile(summary.Files[i]);
 
                 progressReporter.OnProgressChanged((i + 1)/(double) summary.Files.Length);
             }
 
-            Results = results;
+            Results = new VersionIntegrity(files);
+        }
+
+        public void Prepare(IProgressMonitor progressMonitor)
+        {
+            throw new System.NotImplementedException();
         }
 
         private FileIntegrity CheckFile(AppContentSummaryFile file)
@@ -69,6 +74,6 @@ namespace PatchKit.Unity.Patcher.Commands
             return new FileIntegrity(file.Path, FileIntegrityStatus.Ok);
         }
 
-        public FileIntegrity[] Results { get; private set; }
+        public VersionIntegrity Results { get; private set; }
     }
 }

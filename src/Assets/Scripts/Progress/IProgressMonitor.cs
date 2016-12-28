@@ -6,8 +6,8 @@
 
         IProgress[] ProgressList { get; }
 
-        IGeneralProgressReporter AddGeneralProgress(double weight);
+        IGeneralProgressReporter CreateGeneralProgressReporter(double weight);
 
-        IDownloadProgressReporter AddDownloadProgress(double weight);
+        IDownloadProgressReporter CreateDownloadProgressReporter(double weight);
     }
 }

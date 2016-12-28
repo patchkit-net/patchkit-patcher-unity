@@ -12,14 +12,19 @@
             return BytesToWeight(size)*0.05;
         }
 
-        public static double GetProcessContentWeight(long size)
+        public static double GetCopyFilesWeight(long size)
         {
             return BytesToWeight(size)*0.01;
         }
 
-        public static double GetProcessDiffWeight(long size)
+        public static double GetPatchFilesWeight(long size)
         {
             return BytesToWeight(size)*0.2;
+        }
+
+        public static double GetRemoveFilesWeight(long size)
+        {
+            return BytesToWeight(size) * 0.001;
         }
 
         public static double GetResourceDownloadWeight(long size)

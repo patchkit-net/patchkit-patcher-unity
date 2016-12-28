@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.Progress;
 
 namespace PatchKit.Unity.Patcher.Commands
 {
@@ -14,8 +15,15 @@ namespace PatchKit.Unity.Patcher.Commands
 
         public void Execute(CancellationToken cancellationToken)
         {
-            foreach (var fileName in _context.Data.LocalData.MetaData.GetFileNames())
+            // TODO: Calculate size of removed files.
+            var progressWeight = ProgressWeightHelper.GetRemoveFilesWeight(1);
+            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+
+            var fileNames = _context.Data.LocalData.MetaData.GetFileNames();
+
+            for (int i = 0; i < fileNames.Length; i++)
             {
+                var fileName = fileNames[i];
                 _context.Data.LocalData.DeleteFile(fileName);
                 string directoryName = Path.GetDirectoryName(fileName);
                 if (_context.Data.LocalData.IsDirectoryEmpty(directoryName))
@@ -24,7 +32,14 @@ namespace PatchKit.Unity.Patcher.Commands
                 }
 
                 _context.Data.LocalData.MetaData.RemoveFile(fileName);
+
+                progressReporter.OnProgressChanged((i + 1)/(double) fileNames.Length);
             }
+        }
+
+        public void Prepare(IProgressMonitor progressMonitor)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -32,10 +32,15 @@ namespace PatchKit.Unity.Patcher.Commands
             PackagePath = diffPath;
         }
 
+        public void Prepare(IProgressMonitor progressMonitor)
+        {
+            throw new System.NotImplementedException();
+        }
+
         private void LinkDownloaderProgressReporter(RemoteResourceDownloader downloader, RemoteResource resource)
         {
             var progressWeight = ProgressWeightHelper.GetResourceDownloadWeight(resource.Size);
-            var progressReporter = _context.ProgressMonitor.AddDownloadProgress(progressWeight);
+            var progressReporter = _context.ProgressMonitor.CreateDownloadProgressReporter(progressWeight);
             downloader.DownloadProgressChanged += progressReporter.OnDownloadProgressChanged;
         }
 

@@ -2,6 +2,6 @@
 {
     internal interface ICheckVersionIntegrityCommand : ICommand
     {
-        FileIntegrity[] Results { get; }
+        VersionIntegrity Results { get; }
     }
 }

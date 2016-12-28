@@ -30,7 +30,7 @@ namespace PatchKit.Unity.Patcher.Progress
             get { return _progressList.ToArray(); }
         }
 
-        public IGeneralProgressReporter AddGeneralProgress(double weight)
+        public IGeneralProgressReporter CreateGeneralProgressReporter(double weight)
         {
             var progress = new GeneralProgress(weight);
             _progressList.Add(progress);
@@ -38,7 +38,7 @@ namespace PatchKit.Unity.Patcher.Progress
             return new GeneralProgressReporter(progress);
         }
 
-        public IDownloadProgressReporter AddDownloadProgress(double weight)
+        public IDownloadProgressReporter CreateDownloadProgressReporter(double weight)
         {
             var progress = new DownloadProgress(weight);
             _progressList.Add(progress);

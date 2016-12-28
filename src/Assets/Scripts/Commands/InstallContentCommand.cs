@@ -33,18 +33,27 @@ namespace PatchKit.Unity.Patcher.Commands
             {
                 var unarchiver = new Unarchiver(_packagePath, packageDir.Path);
 
-                var unarchiveProgressReporter = _context.ProgressMonitor.AddGeneralProgress((summary.Size / 1024.0 / 1024.0) * );
-                downloader.DownloadProgressChanged += progressReporter.OnDownloadProgressChanged;
+                LinkUnarchiverProgressReporter(unarchiver, summary);
 
                 unarchiver.Unarchive(cancellationToken);
 
-                foreach (var file in summary.Files)
+                var progressWeight = ProgressWeightHelper.GetCopyFilesWeight(summary.Size);
+                var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+
+                for (int i = 0; i < summary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    InstallFile(file.Path, packageDir.Path);
+                    InstallFile(summary.Files[i].Path, packageDir.Path);
+
+                    progressReporter.OnProgressChanged((i + 1)/(double) summary.Files.Length);
                 }
             }
+        }
+
+        public void Prepare(IProgressMonitor progressMonitor)
+        {
+            throw new System.NotImplementedException();
         }
 
         private void InstallFile(string fileName, string packageDirPath)
@@ -65,9 +74,12 @@ namespace PatchKit.Unity.Patcher.Commands
         private void LinkUnarchiverProgressReporter(Unarchiver unarchiver, AppContentSummary summary)
         {
             var progressWeight = ProgressWeightHelper.GetUnarchiveWeight(summary.Size);
-            var progressReporter = _context.ProgressMonitor.AddGeneralProgress(progressWeight);
+            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
 
-
+            unarchiver.UnarchiveProgressChanged += (name, entry, amount) =>
+            {
+                progressReporter.OnProgressChanged(entry/(double)amount);
+            };
         }
     }
 }

@@ -4,6 +4,7 @@ using PatchKit.Api.Models;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data.Local;
 using PatchKit.Unity.Patcher.Diff;
+using PatchKit.Unity.Patcher.Progress;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Commands
@@ -28,6 +29,9 @@ namespace PatchKit.Unity.Patcher.Commands
             using (var packageDir = new TemporaryDirectory(_context.Data.LocalData.TemporaryData.GetUniquePath()))
             {
                 var unarchiver = new Unarchiver(_packagePath, packageDir.Path);
+
+                LinkUnarchiverProgressReporter(unarchiver, summary);
+
                 unarchiver.Unarchive(cancellationToken);
 
                 ProcessAddedFiles(summary, packageDir.Path, cancellationToken);
@@ -36,10 +40,21 @@ namespace PatchKit.Unity.Patcher.Commands
             }
         }
 
+        public void Prepare(IProgressMonitor progressMonitor)
+        {
+            throw new System.NotImplementedException();
+        }
+
         private void ProcessRemovedFiles(AppDiffSummary summary, CancellationToken cancellationToken)
         {
+            // TODO: Calculate size of removed files.
+            var progressWeight = ProgressWeightHelper.GetRemoveFilesWeight(summary.Size);
+            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+
             var removedFiles = summary.RemovedFiles.Where(s => !s.EndsWith("/"));
             var removedDirectories = summary.RemovedFiles.Where(s => s.EndsWith("/"));
+
+            int counter = 0;
 
             foreach (var fileName in removedFiles)
             {
@@ -47,6 +62,9 @@ namespace PatchKit.Unity.Patcher.Commands
 
                 _context.Data.LocalData.DeleteFile(fileName);
                 _context.Data.LocalData.MetaData.RemoveFile(fileName);
+
+                counter++;
+                progressReporter.OnProgressChanged(counter/(double) summary.RemovedFiles.Length);
             }
 
             foreach (var dirName in removedDirectories)
@@ -57,13 +75,22 @@ namespace PatchKit.Unity.Patcher.Commands
                 {
                     _context.Data.LocalData.DeleteDirectory(dirName);
                 }
+
+                counter++;
+                progressReporter.OnProgressChanged(counter/(double) summary.RemovedFiles.Length);
             }
         }
 
-        private void ProcessAddedFiles(AppDiffSummary summary, string packageDirPath, CancellationToken cancellationToken)
+        private void ProcessAddedFiles(AppDiffSummary summary, string packageDirPath,
+            CancellationToken cancellationToken)
         {
-            foreach (var fileName in summary.AddedFiles)
+            // TODO: Calculate size of added files.
+            var progressWeight = ProgressWeightHelper.GetCopyFilesWeight(summary.Size);
+            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+
+            for (int i = 0; i < summary.AddedFiles.Length; i++)
             {
+                var fileName = summary.AddedFiles[i];
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (fileName.EndsWith("/"))
@@ -82,19 +109,29 @@ namespace PatchKit.Unity.Patcher.Commands
                     _context.Data.LocalData.CreateOrUpdateFile(fileName, sourceFilePath);
                     _context.Data.LocalData.MetaData.AddOrUpdateFile(fileName, _versionId);
                 }
+
+                progressReporter.OnProgressChanged((i + 1)/(double) summary.AddedFiles.Length);
             }
         }
 
-        private void ProcessModifiedFiles(AppDiffSummary summary, string packageDirPath, CancellationToken cancellationToken)
+        private void ProcessModifiedFiles(AppDiffSummary summary, string packageDirPath,
+            CancellationToken cancellationToken)
         {
-            foreach (var fileName in summary.ModifiedFiles)
+            // TODO: Calculate size of added files.
+            var progressWeight = ProgressWeightHelper.GetPatchFilesWeight(summary.Size);
+            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+
+            for (int i = 0; i < summary.ModifiedFiles.Length; i++)
             {
+                var fileName = summary.ModifiedFiles[i];
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (!fileName.EndsWith("/"))
                 {
                     PatchFile(fileName, packageDirPath);
                 }
+
+                progressReporter.OnProgressChanged((i + 1)/(double) summary.AddedFiles.Length);
             }
         }
 
@@ -126,6 +163,15 @@ namespace PatchKit.Unity.Patcher.Commands
                     File.Delete(newFile);
                 }
             }
+        }
+
+        private void LinkUnarchiverProgressReporter(Unarchiver unarchiver, AppDiffSummary summary)
+        {
+            var progressWeight = ProgressWeightHelper.GetUnarchiveWeight(summary.Size);
+            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+
+            unarchiver.UnarchiveProgressChanged +=
+                (name, entry, amount) => { progressReporter.OnProgressChanged(entry/(double) amount); };
         }
     }
 }

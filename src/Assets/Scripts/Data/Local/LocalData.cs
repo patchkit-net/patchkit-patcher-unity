@@ -5,7 +5,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.Data.Local
 {
-    internal class LocalData : ILocalData
+    internal class LocalData : IDisposable, ILocalData
     {
         private const string MetaDataFileName = "patcher_cache.json";
 
@@ -169,6 +169,11 @@ namespace PatchKit.Unity.Patcher.Data.Local
         private string GetEntryPath(string entryName)
         {
             return System.IO.Path.Combine(Path, entryName);
+        }
+
+        public void Dispose()
+        {
+            TemporaryData.Dispose();
         }
     }
 }
