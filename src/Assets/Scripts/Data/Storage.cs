@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher.Data
         {
             string dirPath = GetEntryPath(dirName);
 
-            if (!Directory.Exists(dirName))
+            if (!Directory.Exists(dirPath))
             {
                 throw new ArgumentException(string.Format("Directory doesn't exist <{0}>", dirPath), "dirName");
             }
