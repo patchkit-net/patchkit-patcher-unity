@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     /// proven corrupted. In this way even on poor internet connection there's a possibility
     /// of downloading big files through http without the need of re-downloading it again.
     /// </summary>
-    internal class ChunkedHttpDownloader : IDownloader, IDisposable
+    internal class ChunkedHttpDownloader : IDisposable
     {
         private const int RetriesAmount = 100;
 

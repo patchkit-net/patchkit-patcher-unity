@@ -32,7 +32,7 @@ namespace PatchKit.Unity.Patcher.Commands
             PackagePath = contentPath;
         }
 
-        public void Prepare(IProgressMonitor progressMonitor)
+        public void Prepare(IStatusMonitor statusMonitor)
         {
             throw new System.NotImplementedException();
         }
@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.Commands
         private void LinkDownloaderProgressReporter(RemoteResourceDownloader downloader, RemoteResource resource)
         {
             var progressWeight = ProgressWeightHelper.GetResourceDownloadWeight(resource.Size);
-            var progressReporter = _context.ProgressMonitor.CreateDownloadProgressReporter(progressWeight);
+            var progressReporter = _context.StatusMonitor.CreateDownloadProgressReporter(progressWeight);
             downloader.DownloadProgressChanged += progressReporter.OnDownloadProgressChanged;
         }
 

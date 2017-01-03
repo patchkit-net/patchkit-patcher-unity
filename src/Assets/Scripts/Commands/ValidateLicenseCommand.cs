@@ -18,7 +18,7 @@ namespace PatchKit.Unity.Patcher.Commands
             KeySecret = null;
         }
 
-        public void Prepare(IProgressMonitor progressMonitor)
+        public void Prepare(IStatusMonitor statusMonitor)
         {
             throw new System.NotImplementedException();
         }

@@ -38,7 +38,7 @@ namespace PatchKit.Unity.Patcher.Commands
                 unarchiver.Unarchive(cancellationToken);
 
                 var progressWeight = ProgressWeightHelper.GetCopyFilesWeight(summary.Size);
-                var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+                var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
 
                 for (int i = 0; i < summary.Files.Length; i++)
                 {
@@ -51,7 +51,7 @@ namespace PatchKit.Unity.Patcher.Commands
             }
         }
 
-        public void Prepare(IProgressMonitor progressMonitor)
+        public void Prepare(IStatusMonitor statusMonitor)
         {
             throw new System.NotImplementedException();
         }
@@ -74,7 +74,7 @@ namespace PatchKit.Unity.Patcher.Commands
         private void LinkUnarchiverProgressReporter(Unarchiver unarchiver, AppContentSummary summary)
         {
             var progressWeight = ProgressWeightHelper.GetUnarchiveWeight(summary.Size);
-            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
 
             unarchiver.UnarchiveProgressChanged += (name, entry, amount) =>
             {

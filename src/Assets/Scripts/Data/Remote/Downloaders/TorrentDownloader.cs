@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     /// Downloads file through torrents by using <see cref="TorrentClient"/>.
     /// </summary>
     /// <seealso cref="System.IDisposable" />
-    internal class TorrentDownloader : IDownloader, IDisposable
+    internal class TorrentDownloader : IDisposable
     {
         private const int UpdateInterval = 1000;
 

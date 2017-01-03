@@ -8,13 +8,13 @@ namespace PatchKit.Unity.Patcher
 
         public readonly PatcherConfiguration Configuration;
 
-        public readonly IProgressMonitor ProgressMonitor;
+        public readonly IStatusMonitor StatusMonitor;
 
-        public PatcherContext(PatcherData data, PatcherConfiguration configuration, IProgressMonitor progressMonitor)
+        public PatcherContext(PatcherData data, PatcherConfiguration configuration, IStatusMonitor statusMonitor)
         {
             Data = data;
             Configuration = configuration;
-            ProgressMonitor = progressMonitor;
+            StatusMonitor = statusMonitor;
         }
     }
 }

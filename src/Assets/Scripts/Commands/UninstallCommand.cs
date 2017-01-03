@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher.Commands
         {
             // TODO: Calculate size of removed files.
             var progressWeight = ProgressWeightHelper.GetRemoveFilesWeight(1);
-            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
 
             var fileNames = _context.Data.LocalData.MetaData.GetFileNames();
 
@@ -37,7 +37,7 @@ namespace PatchKit.Unity.Patcher.Commands
             }
         }
 
-        public void Prepare(IProgressMonitor progressMonitor)
+        public void Prepare(IStatusMonitor statusMonitor)
         {
             throw new System.NotImplementedException();
         }

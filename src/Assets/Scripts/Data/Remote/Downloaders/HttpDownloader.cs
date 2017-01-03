@@ -11,7 +11,7 @@ namespace PatchKit.Unity.Patcher.Data.Remote.Downloaders
     /// Downloads file through HTTP without any validation (such as hash checking).
     /// </summary>
     /// <seealso cref="System.IDisposable" />
-    internal class HttpDownloader : IDownloader, IDisposable
+    internal class HttpDownloader : IDisposable
     {
         private const int RetriesAmount = 100;
 

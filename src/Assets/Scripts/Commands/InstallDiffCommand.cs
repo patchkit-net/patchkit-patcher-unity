@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.Commands
             }
         }
 
-        public void Prepare(IProgressMonitor progressMonitor)
+        public void Prepare(IStatusMonitor statusMonitor)
         {
             throw new System.NotImplementedException();
         }
@@ -49,7 +49,7 @@ namespace PatchKit.Unity.Patcher.Commands
         {
             // TODO: Calculate size of removed files.
             var progressWeight = ProgressWeightHelper.GetRemoveFilesWeight(summary.Size);
-            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
 
             var removedFiles = summary.RemovedFiles.Where(s => !s.EndsWith("/"));
             var removedDirectories = summary.RemovedFiles.Where(s => s.EndsWith("/"));
@@ -86,7 +86,7 @@ namespace PatchKit.Unity.Patcher.Commands
         {
             // TODO: Calculate size of added files.
             var progressWeight = ProgressWeightHelper.GetCopyFilesWeight(summary.Size);
-            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
 
             for (int i = 0; i < summary.AddedFiles.Length; i++)
             {
@@ -119,7 +119,7 @@ namespace PatchKit.Unity.Patcher.Commands
         {
             // TODO: Calculate size of added files.
             var progressWeight = ProgressWeightHelper.GetPatchFilesWeight(summary.Size);
-            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
 
             for (int i = 0; i < summary.ModifiedFiles.Length; i++)
             {
@@ -168,7 +168,7 @@ namespace PatchKit.Unity.Patcher.Commands
         private void LinkUnarchiverProgressReporter(Unarchiver unarchiver, AppDiffSummary summary)
         {
             var progressWeight = ProgressWeightHelper.GetUnarchiveWeight(summary.Size);
-            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
 
             unarchiver.UnarchiveProgressChanged +=
                 (name, entry, amount) => { progressReporter.OnProgressChanged(entry/(double) amount); };

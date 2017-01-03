@@ -7,6 +7,6 @@ namespace PatchKit.Unity.Patcher.Commands
     {
         void Execute(CancellationToken cancellationToken);
 
-        void Prepare(IProgressMonitor progressMonitor);
+        void Prepare(IStatusMonitor statusMonitor);
     }
 }

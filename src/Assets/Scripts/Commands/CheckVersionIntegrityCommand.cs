@@ -32,7 +32,7 @@ namespace PatchKit.Unity.Patcher.Commands
             var summary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
 
             var progressWeight = ProgressWeightHelper.GetCheckVersionIntegrityWeight(summary.Size);
-            var progressReporter = _context.ProgressMonitor.CreateGeneralProgressReporter(progressWeight);
+            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
 
             var files = new FileIntegrity[summary.Files.Length];
 
@@ -46,7 +46,7 @@ namespace PatchKit.Unity.Patcher.Commands
             Results = new VersionIntegrity(files);
         }
 
-        public void Prepare(IProgressMonitor progressMonitor)
+        public void Prepare(IStatusMonitor statusMonitor)
         {
             throw new System.NotImplementedException();
         }

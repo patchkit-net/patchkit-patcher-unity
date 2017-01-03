@@ -1,4 +1,4 @@
-﻿namespace PatchKit.Unity.Patcher.Progress
+﻿namespace PatchKit.Unity.Patcher.Status
 {
     internal static class ProgressWeightHelper
     {

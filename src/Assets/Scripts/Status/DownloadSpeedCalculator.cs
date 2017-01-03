@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PatchKit.Unity.Patcher.Progress
+namespace PatchKit.Unity.Patcher.Status
 {
     internal class DownloadSpeedCalculator
     {
@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher.Progress
                     return 0.0;
                 }
 
-                return bytes / 1024.0 / duration;
+                return bytes/1024.0/duration;
             }
         }
     }
