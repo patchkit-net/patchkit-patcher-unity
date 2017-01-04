@@ -46,13 +46,13 @@ namespace PatchKit.Unity.Patcher.Data
             {
                 bool showError = false;
 
-                do
+                while (_keySecret == null)
                 {
                     _licenseObtainer.ShowError = showError;
                     var license = _licenseObtainer.Obtain();
                     _keySecret = _licenseValidator.Validate(license);
                     showError = true;
-                } while (_keySecret == null);
+                }
             }
 
             return _keySecret;
