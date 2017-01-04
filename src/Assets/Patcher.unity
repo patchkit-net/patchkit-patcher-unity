@@ -681,6 +681,7 @@ MonoBehaviour:
     AppSecret: fccf154bf2f0eb8be78f8e54a10dc066
     ApplicationDataPath: app
     ForceVersion: 0
+    AllowToPlayWithoutNewestVersion: 1
 --- !u!114 &377531154
 MonoBehaviour:
   m_ObjectHideFlags: 0
