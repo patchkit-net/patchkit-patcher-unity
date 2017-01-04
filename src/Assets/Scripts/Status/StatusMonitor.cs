@@ -5,7 +5,7 @@ namespace PatchKit.Unity.Patcher.Status
 {
     internal class StatusMonitor : IStatusMonitor
     {
-        private readonly List<IStatus> _statusList = new List<IStatus>();
+        private readonly List<IStatusHolder> _statusHolders = new List<IStatusHolder>();
 
         private OverallStatus _overallStatus;
 
@@ -13,8 +13,8 @@ namespace PatchKit.Unity.Patcher.Status
 
         public IGeneralStatusReporter CreateGeneralStatusReporter(double weight)
         {
-            var status = new GeneralStatus(weight);
-            _statusList.Add(status);
+            var status = new GeneralStatusHolder(weight);
+            _statusHolders.Add(status);
 
             var reporter = new GeneralStatusReporter(status);
             reporter.StatusReported += ProcessGeneralStatus;
@@ -24,8 +24,8 @@ namespace PatchKit.Unity.Patcher.Status
 
         public IDownloadStatusReporter CreateDownloadStatusReporter(double weight)
         {
-            var status = new DownloadStatus(weight);
-            _statusList.Add(status);
+            var status = new DownloadStatusHolder(weight);
+            _statusHolders.Add(status);
 
             var reporter = new DownloadStatusReporter(status);
             reporter.StatusReported += ProcessDownloadStatus;
@@ -33,19 +33,19 @@ namespace PatchKit.Unity.Patcher.Status
             return reporter;
         }
 
-        private void ProcessDownloadStatus(DownloadStatus downloadStatus)
+        private void ProcessDownloadStatus(DownloadStatusHolder downloadStatusHolder)
         {
-            _overallStatus.IsDownloading = downloadStatus.IsDownloading;
-            _overallStatus.DownloadSpeed = downloadStatus.Speed;
-            _overallStatus.DownloadBytes = downloadStatus.Bytes;
-            _overallStatus.DownloadTotalBytes = downloadStatus.TotalBytes;
+            _overallStatus.IsDownloading = downloadStatusHolder.IsDownloading;
+            _overallStatus.DownloadSpeed = downloadStatusHolder.Speed;
+            _overallStatus.DownloadBytes = downloadStatusHolder.Bytes;
+            _overallStatus.DownloadTotalBytes = downloadStatusHolder.TotalBytes;
 
             _overallStatus.Progress = CalculateOverallProgress();
 
             OnStatusChanged();
         }
 
-        private void ProcessGeneralStatus(GeneralStatus generalStatus)
+        private void ProcessGeneralStatus(GeneralStatusHolder generalStatusHolder)
         {
             _overallStatus.Progress = CalculateOverallProgress();
 
@@ -54,14 +54,14 @@ namespace PatchKit.Unity.Patcher.Status
 
         private double CalculateOverallProgress()
         {
-            if (_statusList.Count == 0)
+            if (_statusHolders.Count == 0)
             {
                 return 0.0;
             }
 
-            double weightsSum = _statusList.Sum(s => s.Weight);
+            double weightsSum = _statusHolders.Sum(s => s.Weight);
 
-            double progressSum = _statusList.Sum(s => s.Progress * s.Weight);
+            double progressSum = _statusHolders.Sum(s => s.Progress * s.Weight);
 
             return progressSum / weightsSum;
         }

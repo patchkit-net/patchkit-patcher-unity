@@ -3,7 +3,7 @@ using PatchKit.Api.Models;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data.Local;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Progress;
+using PatchKit.Unity.Patcher.Status;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Commands
@@ -16,6 +16,10 @@ namespace PatchKit.Unity.Patcher.Commands
         private readonly string _packagePath;
         private readonly PatcherContext _context;
 
+        private AppContentSummary _versionSummary;
+        private IGeneralStatusReporter _copyFilesStatusReporter;
+        private IGeneralStatusReporter _unarchivePackageStatusReporter;
+
         public InstallContentCommand(string packagePath, int versionId, PatcherContext context)
         {
             _versionId = versionId;
@@ -25,35 +29,47 @@ namespace PatchKit.Unity.Patcher.Commands
 
         public void Execute(CancellationToken cancellationToken)
         {
-            Assert.IsTrue(_context.Data.LocalData.MetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
+            DebugLogger.Log("Installing content.");
 
-            var summary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
+            Assert.IsTrue(_context.Data.LocalData.MetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
 
             using (var packageDir = new TemporaryDirectory(_context.Data.LocalData.TemporaryData.GetUniquePath()))
             {
+                DebugLogger.Log("Unarchiving package.");
+
                 var unarchiver = new Unarchiver(_packagePath, packageDir.Path);
 
-                LinkUnarchiverProgressReporter(unarchiver, summary);
+                unarchiver.UnarchiveProgressChanged += (name, entry, amount) =>
+                {
+                    _unarchivePackageStatusReporter.OnProgressChanged(entry / (double)amount);
+                };
 
                 unarchiver.Unarchive(cancellationToken);
 
-                var progressWeight = ProgressWeightHelper.GetCopyFilesWeight(summary.Size);
-                var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
+                DebugLogger.Log("Copying files.");
 
-                for (int i = 0; i < summary.Files.Length; i++)
+                for (int i = 0; i < _versionSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    InstallFile(summary.Files[i].Path, packageDir.Path);
+                    InstallFile(_versionSummary.Files[i].Path, packageDir.Path);
 
-                    progressReporter.OnProgressChanged((i + 1)/(double) summary.Files.Length);
+                    _copyFilesStatusReporter.OnProgressChanged((i + 1)/(double) _versionSummary.Files.Length);
                 }
             }
         }
 
         public void Prepare(IStatusMonitor statusMonitor)
         {
-            throw new System.NotImplementedException();
+            DebugLogger.Log("Preparing content installation.");
+
+            _versionSummary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
+
+            double copyFilesWeight = StatusWeightHelper.GetCopyFilesWeight(_versionSummary.Size);
+            _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
+
+            double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_versionSummary.Size);
+            _unarchivePackageStatusReporter = statusMonitor.CreateGeneralStatusReporter(unarchivePackageWeight);
         }
 
         private void InstallFile(string fileName, string packageDirPath)
@@ -69,17 +85,6 @@ namespace PatchKit.Unity.Patcher.Commands
 
             _context.Data.LocalData.CreateOrUpdateFile(fileName, sourceFilePath);
             _context.Data.LocalData.MetaData.AddOrUpdateFile(fileName, _versionId);
-        }
-
-        private void LinkUnarchiverProgressReporter(Unarchiver unarchiver, AppContentSummary summary)
-        {
-            var progressWeight = ProgressWeightHelper.GetUnarchiveWeight(summary.Size);
-            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
-
-            unarchiver.UnarchiveProgressChanged += (name, entry, amount) =>
-            {
-                progressReporter.OnProgressChanged(entry/(double)amount);
-            };
         }
     }
 }

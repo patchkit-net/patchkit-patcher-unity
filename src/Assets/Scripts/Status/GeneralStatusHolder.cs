@@ -1,12 +1,12 @@
 ﻿namespace PatchKit.Unity.Patcher.Status
 {
-    internal class GeneralStatus : IStatus
+    internal class GeneralStatusHolder : IStatusHolder
     {
         public double Weight { get; private set; }
 
         public double Progress { get; set; }
 
-        public GeneralStatus(double weight)
+        public GeneralStatusHolder(double weight)
         {
             Weight = weight;
         }

@@ -3,17 +3,26 @@ using System.Linq;
 using PatchKit.Api.Models;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data.Local;
+using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Diff;
-using PatchKit.Unity.Patcher.Progress;
+using PatchKit.Unity.Patcher.Status;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Commands
 {
     internal class InstallDiffCommand : IInstallDiffCommand
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallDiffCommand));
+
         private readonly string _packagePath;
         private readonly int _versionId;
         private readonly PatcherContext _context;
+
+        private AppContentSummary _versionSummary;
+        private IGeneralStatusReporter _copyFilesStatusReporter;
+        private IGeneralStatusReporter _patchFilesStatusReporter;
+        private IGeneralStatusReporter _removeFilesStatusReporter;
+        private IGeneralStatusReporter _unarchivePackageStatusReporter;
 
         public InstallDiffCommand(string packagePath, int versionId, PatcherContext context)
         {

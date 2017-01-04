@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Status
 {
-    internal class DownloadStatus : IStatus
+    internal class DownloadStatusHolder : IStatusHolder
     {
         public long Bytes;
 
@@ -17,7 +17,7 @@
             get { return Bytes/(double) TotalBytes; }
         }
 
-        public DownloadStatus(double weight)
+        public DownloadStatusHolder(double weight)
         {
             Weight = weight;
         }

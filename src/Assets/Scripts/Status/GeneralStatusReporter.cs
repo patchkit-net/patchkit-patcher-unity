@@ -4,25 +4,25 @@ namespace PatchKit.Unity.Patcher.Status
 {
     internal class GeneralStatusReporter : IGeneralStatusReporter
     {
-        private readonly GeneralStatus _generalStatus;
+        private readonly GeneralStatusHolder _generalStatusHolder;
 
-        public event Action<GeneralStatus> StatusReported;
+        public event Action<GeneralStatusHolder> StatusReported;
 
-        public GeneralStatusReporter(GeneralStatus generalStatus)
+        public GeneralStatusReporter(GeneralStatusHolder generalStatusHolder)
         {
-            _generalStatus = generalStatus;
-            _generalStatus.Progress = 0.0;
+            _generalStatusHolder = generalStatusHolder;
+            _generalStatusHolder.Progress = 0.0;
         }
 
         public void OnProgressChanged(double progress)
         {
-            _generalStatus.Progress = progress;
+            _generalStatusHolder.Progress = progress;
             OnStatusReported();
         }
 
         protected virtual void OnStatusReported()
         {
-            if (StatusReported != null) StatusReported(_generalStatus);
+            if (StatusReported != null) StatusReported(_generalStatusHolder);
         }
     }
 }

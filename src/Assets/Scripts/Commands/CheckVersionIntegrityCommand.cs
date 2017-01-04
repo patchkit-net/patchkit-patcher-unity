@@ -1,7 +1,7 @@
 ﻿using PatchKit.Api.Models;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Progress;
+using PatchKit.Unity.Patcher.Status;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Commands
@@ -12,6 +12,9 @@ namespace PatchKit.Unity.Patcher.Commands
 
         private readonly int _versionId;
         private readonly PatcherContext _context;
+
+        private AppContentSummary _versionSummary;
+        private IGeneralStatusReporter _statusReporter;
 
         public CheckVersionIntegrityCommand(int versionId, PatcherContext context)
         {
@@ -29,18 +32,13 @@ namespace PatchKit.Unity.Patcher.Commands
         {
             DebugLogger.Log("Checking version integrity.");
 
-            var summary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
+            var files = new FileIntegrity[_versionSummary.Files.Length];
 
-            var progressWeight = ProgressWeightHelper.GetCheckVersionIntegrityWeight(summary.Size);
-            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
-
-            var files = new FileIntegrity[summary.Files.Length];
-
-            for (int i = 0; i < summary.Files.Length; i++)
+            for (int i = 0; i < _versionSummary.Files.Length; i++)
             {
-                files[i] = CheckFile(summary.Files[i]);
+                files[i] = CheckFile(_versionSummary.Files[i]);
 
-                progressReporter.OnProgressChanged((i + 1)/(double) summary.Files.Length);
+                _statusReporter.OnProgressChanged((i + 1)/(double)_versionSummary.Files.Length);
             }
 
             Results = new VersionIntegrity(files);
@@ -48,7 +46,12 @@ namespace PatchKit.Unity.Patcher.Commands
 
         public void Prepare(IStatusMonitor statusMonitor)
         {
-            throw new System.NotImplementedException();
+            DebugLogger.Log("Preparing version integrity check.");
+
+            _versionSummary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
+
+            double weight = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary);
+            _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
         }
 
         private FileIntegrity CheckFile(AppContentSummaryFile file)

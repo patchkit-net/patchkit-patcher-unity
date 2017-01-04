@@ -4,25 +4,25 @@ namespace PatchKit.Unity.Patcher.Status
 {
     internal class DownloadStatusReporter : IDownloadStatusReporter
     {
-        private readonly DownloadStatus _downloadStatus;
+        private readonly DownloadStatusHolder _downloadStatusHolder;
 
         private readonly DownloadSpeedCalculator _downloadSpeedCalculator = new DownloadSpeedCalculator();
 
         private DateTime _lastProgress;
 
-        public event Action<DownloadStatus> StatusReported;
+        public event Action<DownloadStatusHolder> StatusReported;
 
-        public DownloadStatusReporter(DownloadStatus downloadStatus)
+        public DownloadStatusReporter(DownloadStatusHolder downloadStatusHolder)
         {
-            _downloadStatus = downloadStatus;
+            _downloadStatusHolder = downloadStatusHolder;
         }
 
         public void OnDownloadStarted()
         {
-            _downloadStatus.Bytes = 0;
-            _downloadStatus.TotalBytes = 0;
-            _downloadStatus.Speed = 0.0;
-            _downloadStatus.IsDownloading = true;
+            _downloadStatusHolder.Bytes = 0;
+            _downloadStatusHolder.TotalBytes = 0;
+            _downloadStatusHolder.Speed = 0.0;
+            _downloadStatusHolder.IsDownloading = true;
 
             _lastProgress = DateTime.Now;
 
@@ -31,18 +31,18 @@ namespace PatchKit.Unity.Patcher.Status
 
         public void OnDownloadProgressChanged(long bytes, long totalBytes)
         {
-            _downloadStatus.Bytes = bytes;
-            _downloadStatus.TotalBytes = totalBytes;
-            _downloadStatus.Speed = CalculateDownloadSpeed(bytes);
+            _downloadStatusHolder.Bytes = bytes;
+            _downloadStatusHolder.TotalBytes = totalBytes;
+            _downloadStatusHolder.Speed = CalculateDownloadSpeed(bytes);
 
             OnStatusReported();
         }
 
         public void OnDownloadEnded()
         {
-            _downloadStatus.Bytes = _downloadStatus.TotalBytes;
-            _downloadStatus.Speed = 0.0;
-            _downloadStatus.IsDownloading = false;
+            _downloadStatusHolder.Bytes = _downloadStatusHolder.TotalBytes;
+            _downloadStatusHolder.Speed = 0.0;
+            _downloadStatusHolder.IsDownloading = false;
 
             OnStatusReported();
         }
@@ -53,12 +53,12 @@ namespace PatchKit.Unity.Patcher.Status
             _downloadSpeedCalculator.AddSample(bytes, duration);
             _lastProgress = DateTime.Now;
 
-            return _downloadStatus.Speed;
+            return _downloadStatusHolder.Speed;
         }
 
         protected virtual void OnStatusReported()
         {
-            if (StatusReported != null) StatusReported(_downloadStatus);
+            if (StatusReported != null) StatusReported(_downloadStatusHolder);
         }
     }
 }
