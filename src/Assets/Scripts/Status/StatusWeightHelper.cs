@@ -9,19 +9,34 @@ namespace PatchKit.Unity.Patcher.Status
             return BytesToWeight(size)*0.1;
         }
 
+        public static double GetUninstallWeight()
+        {
+            return 0.0001;
+        }
+
         public static double GetCheckVersionIntegrityWeight(AppContentSummary summary)
         {
             return BytesToWeight(summary.Size)*0.05;
         }
 
-        public static double GetCopyFilesWeight(long size)
+        public static double GetCopyContentFilesWeight(AppContentSummary summary)
         {
-            return BytesToWeight(size) *0.01;
+            return BytesToWeight(summary.Size) *0.01;
         }
 
-        public static double GetInstallDiffWeight(AppDiffSummary summary)
+        public static double GetAddDiffFilesWeight(AppDiffSummary summary)
         {
-            return BytesToWeight(summary.Size)*0.2;
+            return BytesToWeight(summary.Size) * 0.01;
+        }
+
+        public static double GetModifyDiffFilesWeight(AppDiffSummary summary)
+        {
+            return BytesToWeight(summary.Size) * 0.2;
+        }
+
+        public static double GetRemoveDiffFilesWeight(AppDiffSummary summary)
+        {
+            return BytesToWeight(summary.Size) * 0.001;
         }
 
         public static double GetResourceDownloadWeight(Data.Remote.RemoteResource resource)

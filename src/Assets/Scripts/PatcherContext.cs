@@ -1,4 +1,5 @@
-﻿using PatchKit.Unity.Patcher.Progress;
+﻿using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -12,6 +13,9 @@ namespace PatchKit.Unity.Patcher
 
         public PatcherContext(PatcherData data, PatcherConfiguration configuration, IStatusMonitor statusMonitor)
         {
+            AssertChecks.ArgumentNotNull(data, "data");
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
             Data = data;
             Configuration = configuration;
             StatusMonitor = statusMonitor;

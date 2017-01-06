@@ -1,23 +1,31 @@
 ﻿using System.IO;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Progress;
+using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Status;
+using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Commands
 {
     internal class UninstallCommand : IUninstallCommand
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(UninstallCommand));
+
         private readonly PatcherContext _context;
+
+        private IGeneralStatusReporter _statusReporter;
 
         public UninstallCommand(PatcherContext context)
         {
+            DebugLogger.LogConstructor();
+
+            Assert.IsNotNull(context, "context");
+
             _context = context;
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-            // TODO: Calculate size of removed files.
-            var progressWeight = ProgressWeightHelper.GetRemoveFilesWeight(1);
-            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
+            DebugLogger.Log("Uninstalling.");
 
             var fileNames = _context.Data.LocalData.MetaData.GetFileNames();
 
@@ -33,13 +41,16 @@ namespace PatchKit.Unity.Patcher.Commands
 
                 _context.Data.LocalData.MetaData.RemoveFile(fileName);
 
-                progressReporter.OnProgressChanged((i + 1)/(double) fileNames.Length);
+                _statusReporter.OnProgressChanged((i + 1)/(double) fileNames.Length);
             }
         }
 
         public void Prepare(IStatusMonitor statusMonitor)
         {
-            throw new System.NotImplementedException();
+            DebugLogger.Log("Preparing uninstallation.");
+
+            double weight = StatusWeightHelper.GetUninstallWeight();
+            _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
         }
     }
 }

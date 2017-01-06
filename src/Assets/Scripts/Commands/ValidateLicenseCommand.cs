@@ -1,5 +1,5 @@
 ﻿using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Progress;
+using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.Commands
 {
@@ -20,7 +20,6 @@ namespace PatchKit.Unity.Patcher.Commands
 
         public void Prepare(IStatusMonitor statusMonitor)
         {
-            throw new System.NotImplementedException();
         }
 
         public string KeySecret { get; private set; }

@@ -22,6 +22,14 @@ namespace PatchKit.Unity.Patcher.Commands
 
         public InstallContentCommand(string packagePath, int versionId, PatcherContext context)
         {
+            DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(packagePath, "packagePath");
+            DebugLogger.LogVariable(versionId, "versionId");
+
+            Checks.ArgumentFileExists(packagePath, "packagePath");
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            Assert.IsNotNull(context, "context");
+
             _versionId = versionId;
             _packagePath = packagePath;
             _context = context;
@@ -65,7 +73,7 @@ namespace PatchKit.Unity.Patcher.Commands
 
             _versionSummary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
 
-            double copyFilesWeight = StatusWeightHelper.GetCopyFilesWeight(_versionSummary.Size);
+            double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionSummary);
             _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
 
             double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_versionSummary.Size);

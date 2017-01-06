@@ -18,9 +18,9 @@ namespace PatchKit.Unity.Patcher.Commands
         private readonly int _versionId;
         private readonly PatcherContext _context;
 
-        private AppContentSummary _versionSummary;
-        private IGeneralStatusReporter _copyFilesStatusReporter;
-        private IGeneralStatusReporter _patchFilesStatusReporter;
+        private AppDiffSummary _diffSummary;
+        private IGeneralStatusReporter _addFilesStatusReporter;
+        private IGeneralStatusReporter _modifiedFilesStatusReporter;
         private IGeneralStatusReporter _removeFilesStatusReporter;
         private IGeneralStatusReporter _unarchivePackageStatusReporter;
 
@@ -33,35 +33,52 @@ namespace PatchKit.Unity.Patcher.Commands
 
         public void Execute(CancellationToken cancellationToken)
         {
-            var summary = _context.Data.RemoteData.MetaData.GetDiffSummary(_versionId);
+            DebugLogger.Log("Installing diff.");
 
             using (var packageDir = new TemporaryDirectory(_context.Data.LocalData.TemporaryData.GetUniquePath()))
             {
+                DebugLogger.Log("Unarchiving files.");
+
                 var unarchiver = new Unarchiver(_packagePath, packageDir.Path);
 
-                LinkUnarchiverProgressReporter(unarchiver, summary);
+                unarchiver.UnarchiveProgressChanged += (name, entry, amount) =>
+                {
+                    _unarchivePackageStatusReporter.OnProgressChanged(entry / (double)amount);
+                };
 
                 unarchiver.Unarchive(cancellationToken);
 
-                ProcessAddedFiles(summary, packageDir.Path, cancellationToken);
-                ProcessRemovedFiles(summary, cancellationToken);
-                ProcessModifiedFiles(summary, packageDir.Path, cancellationToken);
+                ProcessAddedFiles(packageDir.Path, cancellationToken);
+                ProcessRemovedFiles(cancellationToken);
+                ProcessModifiedFiles(packageDir.Path, cancellationToken);
             }
         }
 
         public void Prepare(IStatusMonitor statusMonitor)
         {
-            throw new System.NotImplementedException();
+            DebugLogger.Log("Preparing diff installation.");
+
+            _diffSummary = _context.Data.RemoteData.MetaData.GetDiffSummary(_versionId);
+
+            double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_diffSummary.Size);
+            _unarchivePackageStatusReporter = statusMonitor.CreateGeneralStatusReporter(unarchivePackageWeight);
+
+            double addFilesWeight = StatusWeightHelper.GetAddDiffFilesWeight(_diffSummary);
+            _addFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(addFilesWeight);
+
+            double modifiedFilesWeight = StatusWeightHelper.GetModifyDiffFilesWeight(_diffSummary);
+            _modifiedFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(modifiedFilesWeight);
+
+            double removeFilesWeight = StatusWeightHelper.GetRemoveDiffFilesWeight(_diffSummary);
+            _removeFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(removeFilesWeight);
         }
 
-        private void ProcessRemovedFiles(AppDiffSummary summary, CancellationToken cancellationToken)
+        private void ProcessRemovedFiles(CancellationToken cancellationToken)
         {
-            // TODO: Calculate size of removed files.
-            var progressWeight = ProgressWeightHelper.GetRemoveFilesWeight(summary.Size);
-            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
+            DebugLogger.Log("Processing removed files.");
 
-            var removedFiles = summary.RemovedFiles.Where(s => !s.EndsWith("/"));
-            var removedDirectories = summary.RemovedFiles.Where(s => s.EndsWith("/"));
+            var removedFiles = _diffSummary.RemovedFiles.Where(s => !s.EndsWith("/"));
+            var removedDirectories = _diffSummary.RemovedFiles.Where(s => s.EndsWith("/"));
 
             int counter = 0;
 
@@ -73,7 +90,8 @@ namespace PatchKit.Unity.Patcher.Commands
                 _context.Data.LocalData.MetaData.RemoveFile(fileName);
 
                 counter++;
-                progressReporter.OnProgressChanged(counter/(double) summary.RemovedFiles.Length);
+
+                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_diffSummary.RemovedFiles.Length);
             }
 
             foreach (var dirName in removedDirectories)
@@ -86,20 +104,18 @@ namespace PatchKit.Unity.Patcher.Commands
                 }
 
                 counter++;
-                progressReporter.OnProgressChanged(counter/(double) summary.RemovedFiles.Length);
+                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_diffSummary.RemovedFiles.Length);
             }
         }
 
-        private void ProcessAddedFiles(AppDiffSummary summary, string packageDirPath,
+        private void ProcessAddedFiles(string packageDirPath,
             CancellationToken cancellationToken)
         {
-            // TODO: Calculate size of added files.
-            var progressWeight = ProgressWeightHelper.GetCopyFilesWeight(summary.Size);
-            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
+            DebugLogger.Log("Processing added files.");
 
-            for (int i = 0; i < summary.AddedFiles.Length; i++)
+            for (int i = 0; i < _diffSummary.AddedFiles.Length; i++)
             {
-                var fileName = summary.AddedFiles[i];
+                var fileName = _diffSummary.AddedFiles[i];
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (fileName.EndsWith("/"))
@@ -119,20 +135,18 @@ namespace PatchKit.Unity.Patcher.Commands
                     _context.Data.LocalData.MetaData.AddOrUpdateFile(fileName, _versionId);
                 }
 
-                progressReporter.OnProgressChanged((i + 1)/(double) summary.AddedFiles.Length);
+                _addFilesStatusReporter.OnProgressChanged((i + 1)/(double)_diffSummary.AddedFiles.Length);
             }
         }
 
-        private void ProcessModifiedFiles(AppDiffSummary summary, string packageDirPath,
+        private void ProcessModifiedFiles(string packageDirPath,
             CancellationToken cancellationToken)
         {
-            // TODO: Calculate size of added files.
-            var progressWeight = ProgressWeightHelper.GetPatchFilesWeight(summary.Size);
-            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
+            DebugLogger.Log("Processing modified files.");
 
-            for (int i = 0; i < summary.ModifiedFiles.Length; i++)
+            for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
             {
-                var fileName = summary.ModifiedFiles[i];
+                var fileName = _diffSummary.ModifiedFiles[i];
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (!fileName.EndsWith("/"))
@@ -140,7 +154,7 @@ namespace PatchKit.Unity.Patcher.Commands
                     PatchFile(fileName, packageDirPath);
                 }
 
-                progressReporter.OnProgressChanged((i + 1)/(double) summary.AddedFiles.Length);
+                _modifiedFilesStatusReporter.OnProgressChanged((i + 1)/(double)_diffSummary.ModifiedFiles.Length);
             }
         }
 
@@ -172,15 +186,6 @@ namespace PatchKit.Unity.Patcher.Commands
                     File.Delete(newFile);
                 }
             }
-        }
-
-        private void LinkUnarchiverProgressReporter(Unarchiver unarchiver, AppDiffSummary summary)
-        {
-            var progressWeight = ProgressWeightHelper.GetUnarchiveWeight(summary.Size);
-            var progressReporter = _context.StatusMonitor.CreateGeneralProgressReporter(progressWeight);
-
-            unarchiver.UnarchiveProgressChanged +=
-                (name, entry, amount) => { progressReporter.OnProgressChanged(entry/(double) amount); };
         }
     }
 }
