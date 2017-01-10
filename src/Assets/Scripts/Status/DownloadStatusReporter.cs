@@ -1,4 +1,5 @@
 ﻿using System;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.Status
 {
@@ -14,6 +15,8 @@ namespace PatchKit.Unity.Patcher.Status
 
         public DownloadStatusReporter(DownloadStatusHolder downloadStatusHolder)
         {
+            AssertChecks.ArgumentNotNull(downloadStatusHolder, "downloadStatusHolder");
+
             _downloadStatusHolder = downloadStatusHolder;
         }
 

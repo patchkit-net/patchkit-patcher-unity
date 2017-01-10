@@ -1,19 +1,35 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using PatchKit.Unity.Patcher.Net;
+using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 
 public class ChunkedFileTest {
     private string _fileName;
-    private byte[][] _bytes;
     private byte[] _invalidHash;
+    private ChunksData _chunksData;
 
     [SetUp]
     public void Setup()
     {
         _fileName = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        _bytes = new[] { new byte[] { 1 }, new byte[] { 2 } };
         _invalidHash = new byte[] { 1, 2, 3, 4, 5 };
+
+        _chunksData = new ChunksData
+        {
+            ChunkSize = 2,
+            Chunks = new []
+            {
+                new Chunk
+                {
+                    Hash = new byte[]{ 1 }
+                },
+                new Chunk
+                {
+                    Hash = new byte[]{ 2 }
+                }
+            }
+        };
     }
 
     [TearDown]
@@ -29,7 +45,8 @@ public class ChunkedFileTest {
     public void CreateChunkedFile()
     {
         Assert.False(File.Exists(_fileName));
-        var chunkedFile = new ChunkedFile(_fileName, 2, 3, _bytes, (buffer, offset, length) => null);
+        
+        var chunkedFile = new ChunkedFileStream(_fileName, 3, _chunksData, (buffer, offset, length) => null);
         Assert.True(File.Exists(_fileName));
         chunkedFile.Dispose();
     }
@@ -39,9 +56,9 @@ public class ChunkedFileTest {
     {
         int chunk = 0;
 
-        ChunkedFile.HashFunction hashFunction = (buffer, offset, length) => _bytes[chunk++];
+        ChunkedFileStream.HashFunction hashFunction = (buffer, offset, length) => _chunksData.Chunks[chunk++].Hash;
         
-        using (var chunkedFile = new ChunkedFile(_fileName, 2, 3, _bytes, hashFunction))
+        using (var chunkedFile = new ChunkedFileStream(_fileName, 3, _chunksData, hashFunction))
         {
 
             Assert.AreEqual(0, chunkedFile.VerifiedLength);
@@ -59,9 +76,9 @@ public class ChunkedFileTest {
     {
         int sequence = 0;
 
-        ChunkedFile.HashFunction hashFunction = (buffer, offset, length) => _bytes[sequence++];
+        ChunkedFileStream.HashFunction hashFunction = (buffer, offset, length) => _chunksData.Chunks[sequence++].Hash;
         
-        using (var chunkedFile = new ChunkedFile(_fileName, 2, 3, _bytes, hashFunction))
+        using (var chunkedFile = new ChunkedFileStream(_fileName, 3, _chunksData, hashFunction))
         {
 
             Assert.AreEqual(0, chunkedFile.VerifiedLength);
@@ -86,22 +103,22 @@ public class ChunkedFileTest {
     {
         int sequence = 0;
 
-        ChunkedFile.HashFunction hashFunction = (buffer, offset, length) =>
+        ChunkedFileStream.HashFunction hashFunction = (buffer, offset, length) =>
         {
             switch (sequence++)
             {
                 case 0:
                     return _invalidHash;
                 case 1:
-                    return _bytes[0];
+                    return _chunksData.Chunks[0].Hash;
                 case 2:
-                    return _bytes[1];
+                    return _chunksData.Chunks[1].Hash;
                 default:
                     throw new IndexOutOfRangeException(sequence.ToString());
             }
         };
         
-        using (var chunkedFile = new ChunkedFile(_fileName, 2, 3, _bytes, hashFunction))
+        using (var chunkedFile = new ChunkedFileStream(_fileName, 3, _chunksData, hashFunction))
         {
 
             Assert.AreEqual(0, chunkedFile.VerifiedLength);
@@ -129,22 +146,22 @@ public class ChunkedFileTest {
     {
         int sequence = 0;
 
-        ChunkedFile.HashFunction hashFunction = (buffer, offset, length) =>
+        ChunkedFileStream.HashFunction hashFunction = (buffer, offset, length) =>
         {
             switch (sequence++)
             {
                 case 0:
-                    return _bytes[0];
+                    return _chunksData.Chunks[0].Hash;
                 case 1:
                     return _invalidHash;
                 case 2:
-                    return _bytes[1];
+                    return _chunksData.Chunks[1].Hash;
                 default:
                     throw new IndexOutOfRangeException(sequence.ToString());
             }
         };
         
-        using (var chunkedFile = new ChunkedFile(_fileName, 2, 3, _bytes, hashFunction))
+        using (var chunkedFile = new ChunkedFileStream(_fileName, 3, _chunksData, hashFunction))
         {
 
             Assert.AreEqual(0, chunkedFile.VerifiedLength);

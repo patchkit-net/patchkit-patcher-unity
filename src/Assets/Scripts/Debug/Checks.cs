@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using PatchKit.Unity.Patcher.Data.Remote;
+using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher.Debug
 {

@@ -61,6 +61,12 @@ namespace PatchKit.Unity.Patcher.Status
 
             double weightsSum = _statusHolders.Sum(s => s.Weight);
 
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (weightsSum == 0.0)
+            {
+                return 0.0;
+            }
+
             double progressSum = _statusHolders.Sum(s => s.Progress * s.Weight);
 
             return progressSum / weightsSum;

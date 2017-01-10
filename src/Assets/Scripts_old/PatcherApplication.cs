@@ -1,22 +1,22 @@
-using System;
+/*using System;
 using System.Diagnostics;
 using System.Linq;
-using PatchKit.Unity.Patcher.Licensing;
+using PatchKit.Unity.Patcher.AppUpdater.Licensing;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace PatchKit.Unity.Patcher
+namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    public class PatcherApplication : MonoBehaviour
+    //public class PatcherApplication : MonoBehaviour
     {
         public static PatcherApplication Instance { get; private set; }
 
         public bool StartPatcherOnAwake = true;
 
-        public Patcher Patcher { get; private set; }
+        public Patcher AppUpdater { get; private set; }
 
         [Header("Configuration is overwritten in standalone build by values from command line arguments.")]
-        public PatcherConfiguration Configuration;
+        public AppUpdaterConfiguration Configuration;
 
         public void StartApplication()
         {
@@ -84,7 +84,7 @@ namespace PatchKit.Unity.Patcher
 
         private void PreparePatcher()
         {
-            Patcher = new Patcher(Configuration, FindObjectOfType<KeyLicenseObtainer>());
+            Patcher = new AppUpdater(Configuration, FindObjectOfType<KeyLicenseObtainer>());
 
             Patcher.OnStateChanged += state =>
             {
@@ -117,3 +117,4 @@ namespace PatchKit.Unity.Patcher
         }
     }
 }
+*/

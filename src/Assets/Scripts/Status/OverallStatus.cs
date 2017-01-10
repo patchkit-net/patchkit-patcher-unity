@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Status
 {
-    internal struct OverallStatus
+    public struct OverallStatus
     {
         public double Progress;
 

@@ -1,13 +1,13 @@
-﻿using System;
+﻿/*using System;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 
-namespace PatchKit.Unity.Patcher
+namespace PatchKit.Unity.Patcher.AppUpdater
 {
     internal class PatcherConfigurationParser
     {
-        public void Parse(ref PatcherConfiguration configuration)
+        public void Parse(ref AppUpdaterConfiguration configuration)
         {
             string appSecret;
 
@@ -86,4 +86,4 @@ namespace PatchKit.Unity.Patcher
             return new string(chars);
         }
     }
-}
+}*/

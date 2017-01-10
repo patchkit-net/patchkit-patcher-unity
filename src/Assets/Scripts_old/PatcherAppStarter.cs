@@ -1,11 +1,11 @@
-﻿using System;
+﻿/*using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace PatchKit.Unity.Patcher
+namespace PatchKit.Unity.Patcher.AppUpdater
 {
     internal class PatcherAppStarter
     {
@@ -148,4 +148,4 @@ namespace PatchKit.Unity.Patcher
             process.WaitForExit();
         }
     }
-}
+}*/

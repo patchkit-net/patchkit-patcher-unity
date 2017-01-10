@@ -1,4 +1,5 @@
 ﻿using PatchKit.Api.Models;
+using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher.Status
 {
@@ -39,7 +40,7 @@ namespace PatchKit.Unity.Patcher.Status
             return BytesToWeight(summary.Size) * 0.001;
         }
 
-        public static double GetResourceDownloadWeight(Data.Remote.RemoteResource resource)
+        public static double GetResourceDownloadWeight(RemoteResource resource)
         {
             return BytesToWeight(resource.Size)*1;
         }

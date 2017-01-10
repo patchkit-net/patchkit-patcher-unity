@@ -1,4 +1,5 @@
 ﻿using System;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.Status
 {
@@ -10,6 +11,8 @@ namespace PatchKit.Unity.Patcher.Status
 
         public GeneralStatusReporter(GeneralStatusHolder generalStatusHolder)
         {
+            AssertChecks.ArgumentNotNull(generalStatusHolder, "generalStatusHolder");
+
             _generalStatusHolder = generalStatusHolder;
             _generalStatusHolder.Progress = 0.0;
         }

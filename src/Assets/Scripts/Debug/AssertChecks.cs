@@ -1,4 +1,4 @@
-﻿using PatchKit.Unity.Patcher.Data.Local;
+﻿using PatchKit.Unity.Patcher.AppData.Local;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Debug
