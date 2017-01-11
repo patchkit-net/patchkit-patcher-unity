@@ -1,6 +1,8 @@
-﻿namespace PatchKit.Unity.Patcher.AppData.Local
+﻿using System;
+
+namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal interface ILocalData
+    internal interface ILocalData : IDisposable
     {
         ILocalMetaData MetaData { get; }
         ITemporaryData TemporaryData { get; }

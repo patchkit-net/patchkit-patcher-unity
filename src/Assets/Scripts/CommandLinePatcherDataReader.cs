@@ -5,30 +5,34 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
 {
-    internal class CommandLineParser
+    internal class CommandLinePatcherDataReader
     {
-        public bool TryParseAppSecret(out string appSecret)
+        public PatcherData Read()
         {
+            PatcherData data;
+
             string encodedAppSecret;
 
-            if (TryReadArgument("--secret", out encodedAppSecret))
+            if (!TryReadArgument("--secret", out encodedAppSecret))
             {
-                appSecret = DecodeSecret(encodedAppSecret);
-
-                return true;
+                throw new ApplicationException("Unable to parse secret from command line.");
             }
 
-            appSecret = null;
+            data.AppSecret = DecodeSecret(encodedAppSecret);
 
-            return false;
+            string relativeAppDataPath;
+
+            if (!TryReadArgument("--installDir", out relativeAppDataPath))
+            {
+                throw new ApplicationException("Unable to parse app data path from command line.");
+            }
+
+            data.AppDataPath = MakeAppDataPathAbsolute(relativeAppDataPath);
+
+            return data;
         }
 
-        public bool TryParseInstallDir(out string installDir)
-        {
-            return TryReadArgument("--installDir", out installDir);
-        }
-
-        private static string GetBaseApplicationDataPath()
+        private static string MakeAppDataPathAbsolute(string relativeAppDataPath)
         {
             string path = Path.GetDirectoryName(Application.dataPath);
 
@@ -37,7 +41,8 @@ namespace PatchKit.Unity.Patcher
                 path = Path.GetDirectoryName(path);
             }
 
-            return path;
+            // ReSharper disable once AssignNullToNotNullAttribute
+            return Path.Combine(path, relativeAppDataPath);
         }
 
         private static bool TryReadArgument(string argumentName, out string value)

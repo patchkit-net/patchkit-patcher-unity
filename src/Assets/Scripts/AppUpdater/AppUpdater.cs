@@ -1,4 +1,6 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
+﻿using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
@@ -12,8 +14,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private bool _patchCalled;
 
-        public AppUpdater(string appSecret, string appDataPath, AppUpdaterConfiguration configuration) : this(
-            new AppUpdaterStrategyResolver(), new AppUpdaterContext(appSecret, appDataPath, configuration))
+        public AppUpdater(ILocalData localData, IRemoteData remoteData, AppUpdaterConfiguration configuration) : this(
+            new AppUpdaterStrategyResolver(), new AppUpdaterContext(localData, remoteData, configuration))
         {
         }
 

@@ -15,6 +15,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public IRemoteMetaData MetaData { get; private set; }
 
+        public RemoteData(string appSecret) : this(appSecret,
+            new MainApiConnection(Settings.GetMainApiConnectionSettings()),
+            new KeysApiConnection(Settings.GetKeysApiConnectionSettings()))
+        {
+        }
+
         public RemoteData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
         {
             DebugLogger.LogConstructor();

@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PatchKit.Unity.Patcher.Debug;
+using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal class LocalData : IDisposable, ILocalData
+    internal class LocalData : ILocalData
     {
+        private static readonly List<string> CurrentInstances = new List<string>();
+
         private const string MetaDataFileName = "patcher_cache.json";
 
         private const string TemporaryDataDirectoryName = "temp";
@@ -22,12 +26,16 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(path, "path");
 
+            Assert.IsFalse(CurrentInstances.Contains(path),
+                "You cannot create two instances of LocalData pointing to the same path.");
             Checks.ArgumentNotNullOrEmpty(path, "path");
-
+            
             Path = path;
             MetaData = new LocalMetaData(System.IO.Path.Combine(Path, MetaDataFileName));
             TemporaryData = new TemporaryData(System.IO.Path.Combine(Path, TemporaryDataDirectoryName));
             DownloadData = new DownloadData(System.IO.Path.Combine(Path, DownloadDataDirectoryName));
+
+            CurrentInstances.Add(Path);
         }
 
         public ILocalMetaData MetaData { get; private set; }
@@ -173,6 +181,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Dispose()
         {
+            CurrentInstances.Remove(Path);
             TemporaryData.Dispose();
         }
     }

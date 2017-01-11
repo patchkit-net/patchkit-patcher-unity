@@ -1,4 +1,6 @@
-﻿using PatchKit.Unity.Patcher.Debug;
+﻿using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Patcher.UI.Dialogs;
 using UnityEngine;
@@ -15,18 +17,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public readonly ILicenseDialog LicenseDialog;
 
-        public AppUpdaterContext(string appSecret, string appDataPath, AppUpdaterConfiguration configuration) :
-            this(new AppData.AppData(appSecret, appDataPath), configuration, new StatusMonitor(), FindLicenseDialog())
+        public AppUpdaterContext(ILocalData localData, IRemoteData remoteData, AppUpdaterConfiguration configuration) :
+            this(localData, remoteData, configuration, new StatusMonitor(), FindLicenseDialog())
         {
         }
 
-        public AppUpdaterContext(AppData.AppData data, AppUpdaterConfiguration configuration, IStatusMonitor statusMonitor, ILicenseDialog licenseDialog)
+        public AppUpdaterContext(ILocalData localData, IRemoteData remoteData, AppUpdaterConfiguration configuration, IStatusMonitor statusMonitor, ILicenseDialog licenseDialog)
         {
-            AssertChecks.ArgumentNotNull(data, "data");
+            AssertChecks.ArgumentNotNull(localData, "localData");
+            AssertChecks.ArgumentNotNull(remoteData, "remoteData");
             AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
             AssertChecks.ArgumentNotNull(licenseDialog, "licenseDialog");
 
-            Data = data;
+            Data = new AppData.AppData(localData, remoteData);
             Configuration = configuration;
             StatusMonitor = statusMonitor;
             LicenseDialog = licenseDialog;

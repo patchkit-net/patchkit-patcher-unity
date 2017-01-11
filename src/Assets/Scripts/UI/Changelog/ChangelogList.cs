@@ -16,7 +16,7 @@ namespace PatchKit.Unity.Patcher.UI
         {
             yield break;
             /*yield return
-                Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(PatcherApplication.Instance.Configuration.AppSecret),
+                Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Configuration.AppSecret),
                     response =>
                     {
                         foreach (var version in response.OrderByDescending(version => version.Id))

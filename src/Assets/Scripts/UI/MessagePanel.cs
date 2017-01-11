@@ -17,13 +17,13 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            /*PatcherApplication.Instance.Patcher.OnStateChanged += state =>
+            /*Patcher.Instance.Patcher.OnStateChanged += state =>
             {
                 if (state == PatcherState.Processing)
                 {
                     _animator.SetBool("IsOpened", false);
                 }
-                else if (PatcherApplication.Instance.Patcher.CanPlay)
+                else if (Patcher.Instance.Patcher.CanPlay)
                 {
                     _animator.SetBool("IsOpened", true);
                     ButtonText.text = "Play";
@@ -38,13 +38,13 @@ namespace PatchKit.Unity.Patcher.UI
 
         public void Action()
         {
-            /*if (PatcherApplication.Instance.Patcher.CanPlay)
+            /*if (Patcher.Instance.Patcher.CanPlay)
             {
-                PatcherApplication.Instance.StartApplicationAndQuit();
+                Patcher.Instance.StartApplicationAndQuit();
             }
             else
             {
-                PatcherApplication.Instance.RetryPatching();
+                Patcher.Instance.RetryPatching();
             }*/
         }
     }

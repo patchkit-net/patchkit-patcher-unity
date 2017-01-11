@@ -1,6 +1,7 @@
 ﻿namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    internal class PatcherUI
+    public class PatcherConfigurationReader
     {
+        //TODO:
     }
 }

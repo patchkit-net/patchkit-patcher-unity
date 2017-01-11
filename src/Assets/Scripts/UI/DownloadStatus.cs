@@ -9,13 +9,13 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            /*PatcherApplication.Instance.Patcher.OnDownloadProgress += progress =>
+            /*Patcher.Instance.Patcher.OnDownloadProgress += progress =>
             {
                 Text.text = string.Format("{0} MB of {1} MB", (progress.DownloadedBytes / 1024.0 / 1024.0).ToString("0.0"),
                     (progress.TotalBytes / 1024.0 / 1024.0).ToString("0.0"));
             };
 
-            PatcherApplication.Instance.Patcher.OnStateChanged += state =>
+            Patcher.Instance.Patcher.OnStateChanged += state =>
             {
                 if (state != PatcherState.Processing)
                 {
