@@ -3,7 +3,7 @@
     public enum PatcherState
     {
         None,
-        Preparing,
+        CheckingAppStatus,
         UpdatingApp,
         StartingApp,
         WaitingForUserDecision

@@ -1,17 +1,23 @@
 ﻿using System;
 using System.Threading;
-using PatchKit.Api;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater;
 using PatchKit.Unity.Patcher.Status;
-using PatchKit.Unity.Patcher.UI.Dialogs;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
 {
     public class Patcher : MonoBehaviour
     {
+        public enum UserDecision
+        {
+            None,
+            CheckInternetConnection,
+            UpdateApp,
+            StartApp
+        }
+
         private readonly CommandLinePatcherDataReader _commandLinePatcherDataReader = new CommandLinePatcherDataReader();
 
         private Thread _thread;
@@ -33,6 +39,8 @@ namespace PatchKit.Unity.Patcher
         private IRemoteData _remoteData;
 
         private bool _hasBeenDestroyed;
+
+        private UserDecision _userDecision = UserDecision.None;
 
         public event Action<OverallStatus> UpdateAppStatusChanged;
 
@@ -90,54 +98,105 @@ namespace PatchKit.Unity.Patcher
 
         private void ThreadFunc()
         {
+            LoadPatcherData();
+
             while (!_hasBeenDestroyed)
             {
-                Prepare();
+                CheckInternetConnection();
+                LoadPatcherConfiguration();
+
+                if (_localData != null)
+                {
+                    _localData.TemporaryData.Dispose();
+                }
+
+                // Dispose previous instance
+                if (_localData != null)
+                {
+                    _localData.Dispose();
+                }
+
+                _localData = new LocalData(_data.AppDataPath);
+                _remoteData = new RemoteData(_data.AppSecret);
 
                 if (_hasInternetConnection)
                 {
                     if (_configuration.UpdateAppAutomatically)
                     {
-
+                        if (!UpdateApp())
+                        {
+                            continue;
+                        }
                     }
-                    else
+
+                    if (_configuration.StartAppAutomatically)
                     {
-                        if (_configuration.StartAppAutomatically)
-                        {
-
-                        }
-                        else
-                        {
-
-                        }
+                        StartApp();
+                        return;
                     }
+
+                    do
+                    {
+                        WaitForUserDecision();
+
+                        if (_userDecision == UserDecision.UpdateApp)
+                        {
+                            UpdateApp();
+                        }
+                        else if (_userDecision == UserDecision.StartApp)
+                        {
+                            StartApp();
+                            return;
+                        }
+
+                    } while (_userDecision != UserDecision.CheckInternetConnection);
+                }
+
+                if (_hasInternetConnection)
+                {
+                    if (CanUpdateApp && _configuration.UpdateAppAutomatically)
+                    {
+                        UpdateApp();
+                    }
+
+                    if (CanStartApp && _configuration.StartAppAutomatically)
+                    {
+                        StartApp();
+                        return; // Application execution tracking isn't done yet so we exit the application.
+                    }
+                }
+
+
+
+
+                WaitForUserDecision();
+
+                if (_userDecision == UserDecision.UpdateApp && CanUpdateApp)
+                {
+                    UpdateApp();
+                }
+                else if (_userDecision == UserDecision.StartApp && CanStartApp)
+                {
+                    StartApp();
+                    return; // Application execution tracking isn't done yet so we exit the application.
+                }
+                else if (_userDecision == UserDecision.CheckInternetConnection) // Check internet connection
+                {
+                    CheckAppStatus();
                 }
             }
         }
 
-        private void Prepare()
+        private void CheckAppStatus()
         {
-            State = PatcherState.Preparing;
+            State = PatcherState.CheckingAppStatus;
 
-            CheckInternetConnection();
-            LoadPatcherData();
-            LoadPatcherConfiguration();
             
-            // Logic for assumption that internet connection is available
 
-            if (_localData != null)
-            {
-                _localData.TemporaryData.Dispose();
-            }
+            CanStartApp = _localData.IsInstalled();
 
-            // Dispose previous instance
-            if (_localData != null)
-            {
-                _localData.Dispose();
-            }
-
-            _localData = new LocalData(_data.AppDataPath);
-            _remoteData = new RemoteData(_data.AppSecret);
+            CanUpdateApp = _hasInternetConnection && _localData.IsInstalled() &&
+                           _remoteData.MetaData.GetLatestVersionId() > _localData.GetInstalledVersion();
         }
 
         private void CheckInternetConnection()
@@ -165,35 +224,25 @@ namespace PatchKit.Unity.Patcher
             _configuration = DefaultConfiguration;
         }
 
-        private void UpdateApp()
+        private bool UpdateApp()
         {
-
+            return true;
         }
 
-        private void PatcherThreadOnFinished(Exception exception)
+        private bool StartApp()
         {
-            if (exception == null && Configuration.AutomaticalyStartApplication)
-            {
-                StartApplication();
-            }
+            return true;
         }
 
-        public void StartApp()
+        private void DisplayErrorMessage()
         {
-            if (IsPatching)
-            {
-                throw new InvalidOperationException();
-            }
-
-            var applicationStarter = new AppStarter(CreateLocalData(), CreateRemoteData());
-            applicationStarter.Start();
+            
         }
 
-        private LicenseDialog FindLicenseDialog()
+        private void WaitForUserDecision()
         {
-            return FindObjectOfType<LicenseDialog>();
+            
         }
-
 
         protected virtual void OnStateChanged(PatcherState obj)
         {
@@ -212,7 +261,7 @@ namespace PatchKit.Unity.Patcher
 
         private void OnDestroy()
         {
-            _hasInternetConnection = true;
+            _hasBeenDestroyed = true;
         }
     }
 }
