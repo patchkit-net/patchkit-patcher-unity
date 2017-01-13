@@ -18,7 +18,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         public readonly ILicenseDialog LicenseDialog;
 
         public AppUpdaterContext(ILocalData localData, IRemoteData remoteData, AppUpdaterConfiguration configuration) :
-            this(localData, remoteData, configuration, new StatusMonitor(), FindLicenseDialog())
+            this(localData, remoteData, configuration, new StatusMonitor(), UI.Dialogs.LicenseDialog.Instance)
         {
         }
 
@@ -33,11 +33,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             Configuration = configuration;
             StatusMonitor = statusMonitor;
             LicenseDialog = licenseDialog;
-        }
-
-        private static LicenseDialog FindLicenseDialog()
-        {
-            return Object.FindObjectOfType<LicenseDialog>();
         }
     }
 }

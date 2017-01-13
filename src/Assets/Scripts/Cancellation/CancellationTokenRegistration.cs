@@ -22,26 +22,22 @@ namespace PatchKit.Unity.Patcher.Cancellation
 
         private void Register()
         {
-            if (_isRegistered)
+            if (!_isRegistered)
             {
-                throw new InvalidOperationException();
+                if (_cancellationTokenSource != null) _cancellationTokenSource.Cancelled += _action;
+
+                _isRegistered = true;
             }
-
-            if (_cancellationTokenSource != null) _cancellationTokenSource.Cancelled += _action;
-
-            _isRegistered = false;
         }
 
         private void Unregister()
         {
-            if (!_isRegistered)
+            if (_isRegistered)
             {
-                throw new InvalidOperationException();
+                if (_cancellationTokenSource != null) _cancellationTokenSource.Cancelled -= _action;
+
+                _isRegistered = false;
             }
-
-            if (_cancellationTokenSource != null) _cancellationTokenSource.Cancelled -= _action;
-
-            _isRegistered = true;
         }
 
         public void Dispose()

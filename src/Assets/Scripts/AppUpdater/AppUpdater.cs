@@ -10,9 +10,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdater));
 
         private readonly IAppUpdaterStrategyResolver _strategyResolver;
-        private readonly AppUpdaterContext _context;
 
         private bool _patchCalled;
+
+        public readonly AppUpdaterContext Context;
 
         public AppUpdater(ILocalData localData, IRemoteData remoteData, AppUpdaterConfiguration configuration) : this(
             new AppUpdaterStrategyResolver(), new AppUpdaterContext(localData, remoteData, configuration))
@@ -27,7 +28,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.LogConstructor();
 
             _strategyResolver = strategyResolver;
-            _context = context;
+            Context = context;
         }
 
         public void Patch(CancellationToken cancellationToken)
@@ -36,7 +37,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             AssertChecks.MethodCalledOnlyOnce(ref _patchCalled, "Patch");
 
-            var strategy = _strategyResolver.Resolve(_context);
+            var strategy = _strategyResolver.Resolve(Context);
             strategy.Patch(cancellationToken);
         }
     }

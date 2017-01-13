@@ -7,6 +7,8 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
     public class LicenseDialog : MonoBehaviour, ILicenseDialog
     {
+        public static LicenseDialog Instance { get; private set; }
+
         private readonly ManualResetEvent _dialogResultChangedEvent = new ManualResetEvent(false);
 
         private LicenseDialogResult _result;
@@ -95,6 +97,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         private void Awake()
         {
+            Instance = this;
             _animator = GetComponent<Animator>();
         }
 

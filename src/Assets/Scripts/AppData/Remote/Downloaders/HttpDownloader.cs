@@ -17,7 +17,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(HttpDownloader));
 
-        private readonly RemoteResource _resource;
+        private readonly string[] _urls;
+
+        private readonly long _size;
 
         private readonly int _timeout;
 
@@ -27,17 +29,24 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public HttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
+        public HttpDownloader(string destinationFilePath, RemoteResource resource, int timeout) : 
+            this(destinationFilePath, resource.Urls, resource.Size, timeout)
+        {
+            Checks.ArgumentValidRemoteResource(resource, "resource");
+        }
+
+        public HttpDownloader(string destinationFilePath, string[] urls, long size, int timeout)
         {
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
             DebugLogger.LogVariable(timeout, "timeout");
 
+            AssertChecks.ArgumentNotNull(urls, "urls");
             Checks.ArgumentDirectoryOfFileExists(destinationFilePath, "destinationFilePath");
-            Checks.ArgumentValidRemoteResource(resource, "resource");
             Checks.ArgumentMoreThanZero(timeout, "timeout");
 
-            _resource = resource;
+            _urls = urls;
+            _size = size;
             _timeout = timeout;
 
             _fileStream = new FileStream(destinationFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
@@ -52,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
             _started = true;
 
-            var validUrls = new List<string>(_resource.Urls);
+            var validUrls = new List<string>(_urls);
             validUrls.Reverse();
 
             int retry = RetriesAmount;
@@ -123,7 +132,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 _fileStream.Write(bytes, 0, length);
 
                 downloadedBytes += length;
-                OnDownloadProgressChanged(downloadedBytes, _resource.Size);
+                OnDownloadProgressChanged(downloadedBytes, _size);
             };
 
             baseHttpDownloader.Download(cancellationToken);

@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.AppUpdater;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Status;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
@@ -15,24 +20,17 @@ namespace PatchKit.Unity.Patcher
             None,
             CheckInternetConnection,
             UpdateApp,
-            StartApp
+            StartApp,
+            Quit
         }
-
-        private readonly CommandLinePatcherDataReader _commandLinePatcherDataReader = new CommandLinePatcherDataReader();
 
         private Thread _thread;
 
         private bool _hasInternetConnection;
 
-        private PatcherState _state = PatcherState.None;
-
         private PatcherData _data;
 
         private PatcherConfiguration _configuration;
-
-        private bool _canUpdateApp;
-
-        private bool _canStartApp;
 
         private ILocalData _localData;
 
@@ -42,6 +40,14 @@ namespace PatchKit.Unity.Patcher
 
         private UserDecision _userDecision = UserDecision.None;
 
+        private readonly ManualResetEvent _userDecisionSetEvent = new ManualResetEvent(false);
+
+        private bool _triedToAutomaticallyUpdateApp;
+
+        private bool _triedToAutomaticallyStartApp;
+
+        private CancellationTokenSource _cancellationTokenSource;
+
         public event Action<OverallStatus> UpdateAppStatusChanged;
 
         public event Action<PatcherState> StateChanged;
@@ -50,9 +56,11 @@ namespace PatchKit.Unity.Patcher
 
         public event Action<bool> CanStartAppChanged;
 
-        public PatcherData DebugData;
+        public string DebugAppSecret;
 
         public PatcherConfiguration DefaultConfiguration;
+
+        private PatcherState _state = PatcherState.None;
 
         public PatcherState State
         {
@@ -66,6 +74,8 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
+        private bool _canUpdateApp;
+
         public bool CanUpdateApp
         {
             get { return _canUpdateApp; }
@@ -77,6 +87,8 @@ namespace PatchKit.Unity.Patcher
                 OnCanUpdateAppChanged(_canUpdateApp);
             }
         }
+
+        private bool _canStartApp;
 
         public bool CanStartApp
         {
@@ -90,158 +102,227 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
+        public void SetUserDecision(UserDecision userDecision)
+        {
+            _userDecision = userDecision;
+            _userDecisionSetEvent.Set();
+        }
+
+        public void Cancel()
+        {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+            }
+        }
+
+        private void Awake()
+        {
+            Dispatcher.Initialize();
+        }
+
         private void Start()
         {
+            TorrentClient.StreamingAssetsPath = Application.streamingAssetsPath;
+            LoadPatcherData();
+
             _thread = new Thread(ThreadFunc);
             _thread.Start();
         }
 
+        private void OnDestroy()
+        {
+            if (_thread != null && _thread.IsAlive)
+            {
+                _thread.Abort();
+            }
+            _hasBeenDestroyed = true;
+        }
+
         private void ThreadFunc()
         {
-            LoadPatcherData();
+            CheckInternetConnection();
+            LoadPatcherConfiguration();
 
             while (!_hasBeenDestroyed)
             {
-                CheckInternetConnection();
-                LoadPatcherConfiguration();
+                WaitForUserDecision();
 
-                if (_localData != null)
+                if (_userDecision == UserDecision.CheckInternetConnection)
                 {
-                    _localData.TemporaryData.Dispose();
+                    CheckInternetConnection();
+                    LoadPatcherConfiguration();
                 }
-
-                // Dispose previous instance
-                if (_localData != null)
+                else if (_userDecision == UserDecision.StartApp)
                 {
-                    _localData.Dispose();
-                }
-
-                _localData = new LocalData(_data.AppDataPath);
-                _remoteData = new RemoteData(_data.AppSecret);
-
-                if (_hasInternetConnection)
-                {
-                    if (_configuration.UpdateAppAutomatically)
-                    {
-                        if (!UpdateApp())
-                        {
-                            continue;
-                        }
-                    }
-
-                    if (_configuration.StartAppAutomatically)
+                    try
                     {
                         StartApp();
-                        return;
+                        Quit();
                     }
-
-                    do
+                    catch (Exception exception)
                     {
-                        WaitForUserDecision();
-
-                        if (_userDecision == UserDecision.UpdateApp)
-                        {
-                            UpdateApp();
-                        }
-                        else if (_userDecision == UserDecision.StartApp)
-                        {
-                            StartApp();
-                            return;
-                        }
-
-                    } while (_userDecision != UserDecision.CheckInternetConnection);
+                        DisplayErrorMessage(exception);
+                    }
                 }
-
-                if (_hasInternetConnection)
+                else if (_userDecision == UserDecision.UpdateApp)
                 {
-                    if (CanUpdateApp && _configuration.UpdateAppAutomatically)
+                    try
                     {
                         UpdateApp();
                     }
-
-                    if (CanStartApp && _configuration.StartAppAutomatically)
+                    catch (UnauthorizedAccessException)
                     {
-                        StartApp();
-                        return; // Application execution tracking isn't done yet so we exit the application.
+                        RestartWithRequestForPermissions();
+                    }
+                    catch (Exception exception)
+                    {
+                        DisplayErrorMessage(exception);
                     }
                 }
-
-
-
-
-                WaitForUserDecision();
-
-                if (_userDecision == UserDecision.UpdateApp && CanUpdateApp)
+                else if (_userDecision == UserDecision.Quit)
                 {
-                    UpdateApp();
-                }
-                else if (_userDecision == UserDecision.StartApp && CanStartApp)
-                {
-                    StartApp();
-                    return; // Application execution tracking isn't done yet so we exit the application.
-                }
-                else if (_userDecision == UserDecision.CheckInternetConnection) // Check internet connection
-                {
-                    CheckAppStatus();
+                    Quit();
                 }
             }
-        }
-
-        private void CheckAppStatus()
-        {
-            State = PatcherState.CheckingAppStatus;
-
-            
-
-            CanStartApp = _localData.IsInstalled();
-
-            CanUpdateApp = _hasInternetConnection && _localData.IsInstalled() &&
-                           _remoteData.MetaData.GetLatestVersionId() > _localData.GetInstalledVersion();
-        }
-
-        private void CheckInternetConnection()
-        {
-            // TODO: Check whether internet connection is available
-            _hasInternetConnection = true;
         }
 
         private void LoadPatcherData()
         {
             if (Application.isEditor)
             {
-                _data = DebugData;
+                _data.AppSecret = DebugAppSecret;
+                _data.AppDataPath = Application.dataPath.Replace("/Assets",
+                    string.Format("/Temp/PatcherApp{0}", DebugAppSecret));
             }
             else
             {
                 var commandLinePatcherDataReader = new CommandLinePatcherDataReader();
                 _data = commandLinePatcherDataReader.Read();
             }
+
+            if (_localData != null)
+            {
+                _localData.TemporaryData.Dispose();
+            }
+
+            // Dispose previous instance
+            if (_localData != null)
+            {
+                _localData.Dispose();
+            }
+
+            _localData = new LocalData(_data.AppDataPath);
+            _remoteData = new RemoteData(_data.AppSecret);
+        }
+
+        private void CheckInternetConnection()
+        {
+            State = PatcherState.CheckingInternetConnection;
+
+            // TODO: Check whether internet connection is available
+            _hasInternetConnection = true;
         }
 
         private void LoadPatcherConfiguration()
         {
+            State = PatcherState.LoadingPatcherConfiguration;
+
             // TODO: Use PatcherConfigurationReader
             _configuration = DefaultConfiguration;
         }
 
-        private bool UpdateApp()
+        private void UpdateApp()
         {
-            return true;
+            State = PatcherState.UpdatingApp;
+
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            var appUpdater = new AppUpdater.AppUpdater(_localData, _remoteData, _configuration.AppUpdaterConfiguration);
+
+            appUpdater.Context.StatusMonitor.OverallStatusChanged += OnUpdateAppStatusChanged;
+
+            appUpdater.Patch(_cancellationTokenSource.Token);
         }
 
-        private bool StartApp()
+        private void StartApp()
         {
-            return true;
+            State = PatcherState.StartingApp;
+
+            var appStarter = new AppStarter(_localData, _remoteData);
+
+            appStarter.Start();
         }
 
-        private void DisplayErrorMessage()
+        private void RestartWithRequestForPermissions()
         {
-            
+            if (Application.platform == RuntimePlatform.WindowsPlayer)
+            {
+                var info = new ProcessStartInfo
+                {
+                    FileName = Application.dataPath.Replace("_Data", ".exe"),
+                    Arguments =
+                        string.Join(" ", Environment.GetCommandLineArgs().Select(s => "\"" + s + "\"").ToArray()),
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+
+                Process.Start(info);
+            }
+        }
+
+        private void DisplayErrorMessage(Exception exception)
+        {
+            State = PatcherState.DisplayingErrorMessage;
+
+            UnityEngine.Debug.LogError(exception);
         }
 
         private void WaitForUserDecision()
         {
-            
+            State = PatcherState.WaitingForUserDecision;
+
+            CanStartApp = _localData.IsInstalled();
+
+            CanUpdateApp = _hasInternetConnection && (!_localData.IsInstalled() ||
+                           _remoteData.MetaData.GetLatestVersionId() > _localData.GetInstalledVersion());
+
+            if (CanUpdateApp && _configuration.UpdateAppAutomatically && !_triedToAutomaticallyUpdateApp)
+            {
+                _triedToAutomaticallyUpdateApp = true;
+                _userDecision = UserDecision.UpdateApp;
+                return;
+            }
+
+            if (CanStartApp && _configuration.StartAppAutomatically && !_triedToAutomaticallyStartApp)
+            {
+                _triedToAutomaticallyStartApp = true;
+                _userDecision = UserDecision.StartApp;
+                return;
+            }
+
+            _userDecisionSetEvent.Reset();
+            _userDecisionSetEvent.WaitOne();
+        }
+
+        private void Quit()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (Application.isEditor)
+                {
+                    UnityEditor.EditorApplication.isPlaying = false;
+                }
+                else
+                {
+                    Application.Quit();
+                }
+            }).WaitOne();
+        }
+
+        protected virtual void OnUpdateAppStatusChanged(OverallStatus obj)
+        {
+            if (UpdateAppStatusChanged != null) UpdateAppStatusChanged(obj);
         }
 
         protected virtual void OnStateChanged(PatcherState obj)
@@ -257,11 +338,6 @@ namespace PatchKit.Unity.Patcher
         protected virtual void OnCanStartAppChanged(bool obj)
         {
             if (CanStartAppChanged != null) CanStartAppChanged(obj);
-        }
-
-        private void OnDestroy()
-        {
-            _hasBeenDestroyed = true;
         }
     }
 }

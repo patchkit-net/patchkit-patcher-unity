@@ -95,7 +95,6 @@ GameObject:
   - 224: {fileID: 50408493}
   - 222: {fileID: 50408495}
   - 114: {fileID: 50408494}
-  - 114: {fileID: 50408496}
   m_Layer: 5
   m_Name: Status
   m_TagString: Untagged
@@ -159,18 +158,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 50408492}
---- !u!114 &50408496
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 50408492}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 828ad1eae056a4247a4b3ee310c0daff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Text: {fileID: 50408494}
 --- !u!1 &59275199
 GameObject:
   m_ObjectHideFlags: 0
@@ -248,7 +235,6 @@ GameObject:
   - 224: {fileID: 87425941}
   - 222: {fileID: 87425943}
   - 114: {fileID: 87425942}
-  - 114: {fileID: 87425944}
   m_Layer: 5
   m_Name: Progress Bar
   m_TagString: Untagged
@@ -306,19 +292,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 87425940}
---- !u!114 &87425944
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 87425940}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30235d757fd376243abdb693a630c907, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Text: {fileID: 2013845298}
-  Image: {fileID: 87425942}
 --- !u!1 &108516980
 GameObject:
   m_ObjectHideFlags: 0
@@ -645,7 +618,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 377531152}
   - 114: {fileID: 377531153}
-  - 114: {fileID: 377531154}
   m_Layer: 0
   m_Name: Patcher
   m_TagString: Untagged
@@ -673,32 +645,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 377531151}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4bd13ea57c4e7e40a29f3b7830fb2bb, type: 3}
+  m_Script: {fileID: 11500000, guid: 177215dfa0b474d44a8288b12b5c0642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  StartPatcherOnAwake: 1
-  Configuration:
-    AppSecret: 42798685b0586629d46d7d7d2e1db111
-    ApplicationDataPath: app
-    ForceVersion: 0
-    AllowToPlayWithoutNewestVersion: 0
---- !u!114 &377531154
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 377531151}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eec7eff8c3b6f7f4297a2de7d486c68b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DraggableArea:
-    serializedVersion: 2
-    x: 0
-    y: 345
-    width: 600
-    height: 55
+  DebugAppSecret: 160297d28469aa4db543b6451b6dba85
+  DefaultConfiguration:
+    AppUpdaterConfiguration:
+      UseTorrents: 1
+    StartAppAutomatically: 0
+    UpdateAppAutomatically: 0
 --- !u!1 &421519242
 GameObject:
   m_ObjectHideFlags: 0
@@ -999,11 +954,11 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 589436518}
-  - 114: {fileID: 589436523}
   - 225: {fileID: 589436522}
   - 222: {fileID: 589436521}
   - 114: {fileID: 589436520}
   - 95: {fileID: 589436519}
+  - 114: {fileID: 589436523}
   m_Layer: 5
   m_Name: Key License Obtainer Panel
   m_TagString: Untagged
@@ -1103,11 +1058,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 589436517}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24a5fc4295a7a5a42831ce7370fb8500, type: 3}
+  m_Script: {fileID: 11500000, guid: 21ccdb095f6b3b845b4ee117c495d61a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MessageText: {fileID: 818770297}
   KeyInputField: {fileID: 498869792}
-  ErrorMessage: {fileID: 988190022}
+  InvalidLicenseMessageText: Invalid license.
+  BlockedLicenseMessageText: Blocked license.
+  ServiceUnavailableMessageText: Service is unavailable.
 --- !u!1 &591607407
 GameObject:
   m_ObjectHideFlags: 0
@@ -1183,7 +1141,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 377531154}
+      - m_Target: {fileID: 0}
         m_MethodName: CloseWindow
         m_Mode: 1
         m_Arguments:
@@ -1555,7 +1513,6 @@ GameObject:
   - 223: {fileID: 776156507}
   - 114: {fileID: 776156506}
   - 114: {fileID: 776156505}
-  - 114: {fileID: 776156509}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1650,19 +1607,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &776156509
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 776156504}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2457632b1d28f8347b5ec5369f99f5d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CloseButton: {fileID: 591607409}
-  MinimizeButton: {fileID: 835868113}
 --- !u!1 &787731903
 GameObject:
   m_ObjectHideFlags: 0
@@ -1746,7 +1690,6 @@ GameObject:
   - 224: {fileID: 788506877}
   - 222: {fileID: 788506879}
   - 114: {fileID: 788506878}
-  - 114: {fileID: 788506880}
   m_Layer: 5
   m_Name: Download Status
   m_TagString: Untagged
@@ -1810,18 +1753,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 788506876}
---- !u!114 &788506880
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 788506876}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7057fe411988b4f4dbf363bb6bcdfed2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Text: {fileID: 788506878}
 --- !u!1 &818770294
 GameObject:
   m_ObjectHideFlags: 0
@@ -1984,7 +1915,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 377531154}
+      - m_Target: {fileID: 0}
         m_MethodName: MinimizeWindow
         m_Mode: 1
         m_Arguments:
@@ -2391,7 +2322,6 @@ GameObject:
   - 114: {fileID: 1026572725}
   - 225: {fileID: 1026572728}
   - 95: {fileID: 1026572727}
-  - 114: {fileID: 1026572729}
   m_Layer: 5
   m_Name: Message Panel
   m_TagString: Untagged
@@ -2478,18 +2408,6 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
---- !u!114 &1026572729
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1026572723}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcaafe60c9d5a5840a424b6697b9f270, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ButtonText: {fileID: 688672647}
 --- !u!1 &1031806573
 GameObject:
   m_ObjectHideFlags: 0
@@ -3482,7 +3400,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 589436523}
+      - m_Target: {fileID: 0}
         m_MethodName: Cancel
         m_Mode: 1
         m_Arguments:
@@ -3925,7 +3843,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 377531153}
+      - m_Target: {fileID: 0}
         m_MethodName: CancelPatching
         m_Mode: 1
         m_Arguments:
@@ -4109,7 +4027,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1026572729}
+      - m_Target: {fileID: 0}
         m_MethodName: Action
         m_Mode: 1
         m_Arguments:
@@ -4132,7 +4050,6 @@ GameObject:
   - 224: {fileID: 1927476306}
   - 222: {fileID: 1927476308}
   - 114: {fileID: 1927476307}
-  - 114: {fileID: 1927476309}
   m_Layer: 5
   m_Name: Download Speed
   m_TagString: Untagged
@@ -4196,18 +4113,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1927476305}
---- !u!114 &1927476309
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1927476305}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 618a35c4cc3d4f74e838098cf142f7f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Text: {fileID: 1927476307}
 --- !u!1 &2013845296
 GameObject:
   m_ObjectHideFlags: 0
@@ -4358,7 +4263,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 589436523}
+      - m_Target: {fileID: 0}
         m_MethodName: Confirm
         m_Mode: 1
         m_Arguments:

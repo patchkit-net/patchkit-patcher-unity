@@ -64,7 +64,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             _buffer = new byte[_chunksData.ChunkSize];
 
-            _fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
         }
 
         /// <summary>

@@ -8,7 +8,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 {
     public class RemoteData : IRemoteData
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DebugLogger));
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteData));
 
         private readonly string _appSecret;
         private readonly MainApiConnection _mainApiConnection;
@@ -43,7 +43,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             DebugLogger.LogVariable(keySecret, "keySecret");
 
             Checks.ArgumentValidVersionId(versionId, "versionId");
-            Checks.ArgumentNotNullOrEmpty(keySecret, "keySecret");
 
             RemoteResource resource = new RemoteResource();
 
@@ -67,7 +66,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             DebugLogger.LogVariable(keySecret, "keySecret");
 
             Checks.ArgumentValidVersionId(versionId, "versionId");
-            Checks.ArgumentNotNullOrEmpty(keySecret, "keySecret");
 
             RemoteResource resource = new RemoteResource();
 

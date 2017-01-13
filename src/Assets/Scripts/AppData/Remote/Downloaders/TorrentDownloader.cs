@@ -74,10 +74,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             DebugLogger.Log("Downloading torrent file.");
 
-            var torrentFileResouce = new RemoteResource();
-            Array.Copy(_resource.TorrentUrls, torrentFileResouce.Urls, _resource.TorrentUrls.Length);
-
-            using (var httpDownloader = new HttpDownloader(TorrentFilePath, torrentFileResouce, _timeout))
+            using (var httpDownloader = new HttpDownloader(TorrentFilePath, _resource.TorrentUrls, -1, _timeout))
             {
                 httpDownloader.Download(cancellationToken);
             }
