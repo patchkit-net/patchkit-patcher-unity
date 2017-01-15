@@ -1,5 +1,4 @@
-﻿using System;
-using Ionic.Zip;
+﻿using Ionic.Zip;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Cancellation;
 
@@ -12,18 +11,18 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly string _packagePath;
         private readonly string _destinationDirPath;
 
-        private bool _started;
+        private bool _unarchiveHasBeenCalled;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
         public Unarchiver(string packagePath, string destinationDirPath)
         {
+            Checks.ArgumentFileExists(packagePath, "packagePath");
+            Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
             DebugLogger.LogVariable(destinationDirPath, "destinationDirPath");
-
-            Checks.ArgumentFileExists(packagePath, "packagePath");
-            Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
 
             _packagePath = packagePath;
             _destinationDirPath = destinationDirPath;
@@ -31,13 +30,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Unarchive(CancellationToken cancellationToken)
         {
-            DebugLogger.Log("Unarchiving.");
+            AssertChecks.MethodCalledOnlyOnce(ref _unarchiveHasBeenCalled, "Unarchive");
 
-            if (_started)
-            {
-                throw new InvalidOperationException("Cannot start the same Unarchiver twice.");
-            }
-            _started = true;
+            DebugLogger.Log("Unarchiving.");
 
             using (var zip = ZipFile.Read(_packagePath))
             {

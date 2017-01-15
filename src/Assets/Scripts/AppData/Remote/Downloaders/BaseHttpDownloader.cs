@@ -6,9 +6,6 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
-    /// <summary>
-    /// Base HTTP downloader. Data is transfered through events.
-    /// </summary>
     public sealed class BaseHttpDownloader
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(BaseHttpDownloader));
@@ -19,28 +16,23 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private readonly int _timeout;
 
         private HttpWebRequest _request;
-        private bool _started;
 
-        /// <summary>
-        /// Occurs when request is created. Could be used to make some adjustements to request.
-        /// </summary>
+        private bool _downloadHasBeenCalled;
+
         public event RequestCreatedHandler RequestCreated;
 
-        /// <summary>
-        /// Occurs when data is downloaded.
-        /// </summary>
         public event DataDownloadedHandler DataDownloaded;
 
         public BaseHttpDownloader(string url, int timeout, int bufferSize = 1024)
         {
+            Checks.ArgumentNotNullOrEmpty(url, "url");
+            Checks.ArgumentMoreThanZero(timeout, "timeout");
+            Checks.ArgumentMoreThanZero(bufferSize, "bufferSize");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(url, "url");
             DebugLogger.LogVariable(timeout, "timeout");
             DebugLogger.LogVariable(bufferSize, "bufferSize");
-
-            Checks.ArgumentNotNullOrEmpty(url, "url");
-            Checks.ArgumentMoreThanZero(timeout, "timeout");
-            Checks.ArgumentMoreThanZero(bufferSize, "bufferSize");
 
             _url = url;
             _timeout = timeout;
@@ -108,13 +100,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Download(CancellationToken cancellationToken)
         {
+            AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
+            
             DebugLogger.Log("Starting download.");
-
-            if (_started)
-            {
-                throw new InvalidOperationException("Cannot start the same BaseHttpDownloader twice.");
-            }
-            _started = true;
 
             CreateRequest();
 

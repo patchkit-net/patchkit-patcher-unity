@@ -11,12 +11,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly IAppUpdaterStrategyResolver _strategyResolver;
 
-        private bool _patchCalled;
+        private bool _patchHasBeenCalled;
 
         public readonly AppUpdaterContext Context;
 
-        public AppUpdater(ILocalData localData, IRemoteData remoteData, AppUpdaterConfiguration configuration) : this(
-            new AppUpdaterStrategyResolver(), new AppUpdaterContext(localData, remoteData, configuration))
+        public AppUpdater(App app, AppUpdaterConfiguration configuration) : this(
+            new AppUpdaterStrategyResolver(), new AppUpdaterContext(app, configuration))
         {
         }
 
@@ -33,9 +33,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public void Patch(CancellationToken cancellationToken)
         {
-            DebugLogger.Log("Patching.");
+            AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
 
-            AssertChecks.MethodCalledOnlyOnce(ref _patchCalled, "Patch");
+            DebugLogger.Log("Patching.");
 
             var strategy = _strategyResolver.Resolve(Context);
             strategy.Patch(cancellationToken);

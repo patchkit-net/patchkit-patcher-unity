@@ -23,10 +23,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public LocalMetaData(string filePath)
         {
+            Checks.ArgumentNotNullOrEmpty(filePath, "filePath");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(filePath, "filePath");
-
-            Checks.ArgumentNotNullOrEmpty(filePath, "filePath");
 
             _filePath = filePath;
             LoadData();
@@ -39,10 +39,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void AddOrUpdateFile(string fileName, int versionId)
         {
-            DebugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", fileName, versionId));
-
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
             Checks.ArgumentValidVersionId(versionId, "versionId");
+
+            DebugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", fileName, versionId));
 
             _data.FileVersionIds[fileName] = versionId;
 
@@ -51,9 +51,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void RemoveFile(string fileName)
         {
-            DebugLogger.Log(string.Format("Removing file {0}", fileName));
-
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+
+            DebugLogger.Log(string.Format("Removing file {0}", fileName));
 
             _data.FileVersionIds.Remove(fileName);
 
@@ -70,11 +70,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public int GetFileVersion(string fileName)
         {
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
-
-            if (!_data.FileVersionIds.ContainsKey(fileName))
-            {
-                throw new InvalidOperationException(string.Format("File doesn't exist in database - {0}", fileName));
-            }
+            AssertChecks.IsTrue(FileExists(fileName), string.Format("File doesn't exist in meta data - {0}", fileName));
 
             return _data.FileVersionIds[fileName];
         }

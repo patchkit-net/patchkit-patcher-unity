@@ -53,10 +53,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public ChunkedFileStream(string path, long fileSize, ChunksData chunksData, HashFunction hashFunction)
         {
+            Checks.ArgumentNotNullOrEmpty(path, "path");
+            Checks.ArgumentMoreThanZero(fileSize, "fileSize");
+            AssertChecks.ArgumentNotNull(hashFunction, "hashFunction");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(path, "path");
-
-            Checks.ArgumentNotNullOrEmpty(path, "path");
+            DebugLogger.LogVariable(fileSize, "fileSize");
 
             _fileSize = fileSize;
             _chunksData = chunksData;
@@ -77,6 +80,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         /// <returns></returns>
         public bool Write(byte[] buffer, int offset, int count)
         {
+            AssertChecks.ArgumentNotNull(buffer, "buffer");
+            // TODO: Rest of assertions
+
             do
             {
                 if (RemainingLength == 0)

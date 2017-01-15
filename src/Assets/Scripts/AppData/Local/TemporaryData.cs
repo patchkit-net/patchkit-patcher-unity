@@ -10,10 +10,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public TemporaryData(string path) : base(path)
         {
+            Checks.ArgumentNotNullOrEmpty(path, "path");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(path, "path");
-
-            Checks.ArgumentNotNullOrEmpty(path, "path");
         }
 
         public string GetUniquePath()

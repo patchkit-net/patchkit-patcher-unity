@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Preparing version integrity check.");
 
-            _versionSummary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
+            _versionSummary = _context.App.RemoteData.MetaData.GetContentSummary(_versionId);
 
             double weight = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary);
             _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
@@ -56,17 +56,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private FileIntegrity CheckFile(AppContentSummaryFile file)
         {
-            if (!_context.Data.LocalData.FileExists(file.Path))
+            if (!_context.App.LocalData.FileExists(file.Path))
             {
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingData);
             }
 
-            if (!_context.Data.LocalData.MetaData.FileExists(file.Path))
+            if (!_context.App.LocalData.MetaData.FileExists(file.Path))
             {
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingMetaData);
             }
 
-            if (_context.Data.LocalData.MetaData.GetFileVersion(file.Path) != _versionId)
+            if (_context.App.LocalData.MetaData.GetFileVersion(file.Path) != _versionId)
             {
                 return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidVersion);
             }

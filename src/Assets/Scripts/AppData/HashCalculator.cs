@@ -6,7 +6,7 @@ using System.Text;
 
 namespace PatchKit.Unity.Patcher.AppData
 {
-    public static class HashUtilities
+    public static class HashCalculator
     {
         private const ulong Seed = 42;
 

@@ -1,17 +1,12 @@
-﻿using PatchKit.Unity.Patcher.AppData.Local;
-using PatchKit.Unity.Patcher.AppData.Remote;
-
-namespace PatchKit.Unity.Patcher
+﻿namespace PatchKit.Unity.Patcher
 {
     public class AppStarter
     {
-        private readonly ILocalData _localData;
-        private readonly IRemoteData _remoteData;
+        private readonly App _app;
 
-        public AppStarter(ILocalData localData, IRemoteData remoteData)
+        public AppStarter(App app)
         {
-            _localData = localData;
-            _remoteData = remoteData;
+            _app = app;
         }
 
         public void Start()

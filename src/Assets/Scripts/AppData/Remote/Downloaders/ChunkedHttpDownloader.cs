@@ -25,19 +25,19 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly ChunkedFileStream _fileStream;
 
-        private bool _started;
+        private bool _downloadHasBeenCalled;
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public ChunkedHttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
         {
+            Checks.ArgumentParentDirectoryExists(destinationFilePath, "destinationFilePath");
+            Checks.ArgumentValidRemoteResource(resource, "resource");
+            Checks.ArgumentMoreThanZero(timeout, "timeout");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
             DebugLogger.LogVariable(timeout, "timeout");
-
-            Checks.ArgumentDirectoryOfFileExists(destinationFilePath, "destinationFilePath");
-            Checks.ArgumentValidRemoteResource(resource, "resource");
-            Checks.ArgumentMoreThanZero(timeout, "timeout");
 
             _resource = resource;
             _timeout = timeout;
@@ -47,12 +47,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Download(CancellationToken cancellationToken)
         {
+            AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
+
             DebugLogger.Log("Starting download.");
-            if (_started)
-            {
-                throw new InvalidOperationException("Cannot start the same ChunkedHttpDownloader twice.");
-            }
-            _started = true;
 
             var validUrls = new List<string>(_resource.Urls);
             validUrls.Reverse();
@@ -147,7 +144,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private static byte[] HashFunction(byte[] buffer, int offset, int length)
         {
-            return HashUtilities.ComputeHash(buffer, offset, length).Reverse().ToArray();
+            return HashCalculator.ComputeHash(buffer, offset, length).Reverse().ToArray();
         }
 
         private long CurrentFileSize()

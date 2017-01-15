@@ -8,6 +8,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         ITemporaryData TemporaryData { get; }
         IDownloadData DownloadData { get; }
 
+        void EnableWriteAccess();
+
         void CreateDirectory(string dirName);
 
         void DeleteDirectory(string dirName);
@@ -24,8 +26,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         string GetFilePath(string fileName);
 
-        bool IsInstalled();
-
-        int GetInstalledVersion();
+        string GetDirectoryPath(string dirName);
     }
 }

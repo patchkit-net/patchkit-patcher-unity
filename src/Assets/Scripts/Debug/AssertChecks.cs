@@ -1,37 +1,55 @@
-﻿using PatchKit.Unity.Patcher.AppData.Local;
-using UnityEngine.Assertions;
+﻿using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    public class AssertChecks
+    public class AssertChecks : BaseChecks
     {
-        private static void Argument(bool condition, string name, string message)
+        private static ValidationFailedHandler ArgumentValidationFailed(string name)
         {
-            Assert.IsTrue(condition, string.Format("Argument \"{0}\" {1}.", name, message));
+            return message => Assert.IsTrue(true, string.Format("Argument \"{0}\": {1}", name, message));
+        }
+
+        public static void IsTrue(bool condition, string message)
+        {
+            Assert.IsTrue(condition, message);
+        }
+
+        public static void IsFalse(bool condition, string message)
+        {
+            Assert.IsFalse(condition, message);
+        }
+
+        public static void AreEqual<T>(T expected, T actual, string message)
+        {
+            Assert.AreEqual(expected, actual, message);
+        }
+
+        public static void AreNotEqual<T>(T expected, T actual, string message)
+        {
+            Assert.AreNotEqual(expected, actual, message);
         }
 
         public static void ArgumentNotNull(object value, string name)
         {
-            Argument(value != null, name, "cannot be null");
+            NotNull(value, ArgumentValidationFailed(name));
         }
 
         public static void MethodCalledOnlyOnce(ref bool hasBeenCalled, string methodName)
         {
-            Assert.IsFalse(hasBeenCalled, string.Format("Method \"{0}\" cannot be called more than once.", "ARG0"));
+            IsFalse(hasBeenCalled, string.Format("Method \"{0}\" cannot be called more than once.", methodName));
             hasBeenCalled = true;
         }
 
-        public static void ApplicationIsInstalled(ILocalData localData)
+        public static void ApplicationIsInstalled(App app)
         {
-            Assert.IsTrue(localData.IsInstalled(), "Expected application to be installed.");
+            IsTrue(app.IsInstalled(), "Application is not installed.");
         }
 
-        public static void ApplicationVersionEquals(ILocalData localData, int versionId)
+        public static void ApplicationVersionEquals(App app, int versionId)
         {
-            ApplicationIsInstalled(localData);
+            ApplicationIsInstalled(app);
 
-            Assert.AreEqual(localData.GetInstalledVersion(), versionId,
-                string.Format("Expected application version to equal {0}.", versionId));
+            AreEqual(app.GetInstalledVersion(), versionId, "Application versions don't match.");
         }
     }
 }

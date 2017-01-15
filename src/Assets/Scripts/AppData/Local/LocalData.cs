@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using PatchKit.Unity.Patcher.Debug;
-using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -19,36 +17,76 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(LocalData));
 
+        private ITemporaryData _temporaryData;
+
+        private IDownloadData _downloadData;
+
+        private bool _writeAccess;
+
         public readonly string Path;
 
         public LocalData(string path)
         {
+            AssertChecks.IsFalse(CurrentInstances.Contains(path),
+                "You cannot create two instances of LocalData pointing to the same path.");
+            Checks.ArgumentNotNullOrEmpty(path, "path");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(path, "path");
 
-            Assert.IsFalse(CurrentInstances.Contains(path),
-                "You cannot create two instances of LocalData pointing to the same path.");
-            Checks.ArgumentNotNullOrEmpty(path, "path");
-            
             Path = path;
             MetaData = new LocalMetaData(System.IO.Path.Combine(Path, MetaDataFileName));
-            TemporaryData = new TemporaryData(System.IO.Path.Combine(Path, TemporaryDataDirectoryName));
-            DownloadData = new DownloadData(System.IO.Path.Combine(Path, DownloadDataDirectoryName));
-
+            
             CurrentInstances.Add(Path);
         }
 
         public ILocalMetaData MetaData { get; private set; }
 
-        public ITemporaryData TemporaryData { get; private set; }
+        public ITemporaryData TemporaryData
+        {
+            get
+            {
+                AssertChecks.IsTrue(_writeAccess, "Cannot use TemporaryData without write access.");
+                return _temporaryData;
+            }
+        }
 
-        public IDownloadData DownloadData { get; private set; }
+        public IDownloadData DownloadData
+        {
+            get
+            {
+                AssertChecks.IsTrue(_writeAccess, "Cannot use DownloadData without write access.");
+                return _downloadData;
+            }
+        }
+
+        public void EnableWriteAccess()
+        {
+            DebugLogger.Log("Enabling write access.");
+
+            if (!_writeAccess)
+            {
+                if (!Directory.Exists(Path))
+                {
+                    Directory.CreateDirectory(Path);
+                }
+
+                _temporaryData = new TemporaryData(System.IO.Path.Combine(Path, TemporaryDataDirectoryName));
+                _downloadData = new DownloadData(System.IO.Path.Combine(Path, DownloadDataDirectoryName));
+                _writeAccess = true;
+            }
+        }
 
         public virtual void CreateDirectory(string dirName)
         {
-            DebugLogger.Log(string.Format("Creating directory {0}", dirName));
-
             Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
+
+            if (FileExists(dirName))
+            {
+                throw new InvalidOperationException("File exists - " + dirName);
+            }
+
+            DebugLogger.Log(string.Format("Creating directory {0}", dirName));
 
             string dirPath = GetEntryPath(dirName);
 
@@ -60,9 +98,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public virtual void DeleteDirectory(string dirName)
         {
-            DebugLogger.Log(string.Format("Deleting directory {0}", dirName));
-
             Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
+
+            DebugLogger.Log(string.Format("Deleting directory {0}", dirName));
 
             string dirPath = GetEntryPath(dirName);
 
@@ -87,25 +125,22 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             string dirPath = GetEntryPath(dirName);
 
-            if (!Directory.Exists(dirName))
-            {
-                throw new ArgumentException(string.Format("Directory doesn't exist {0}", dirPath), "dirName");
-            }
+            Checks.DirectoryExists(dirPath);
 
             return Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0;
         }
 
         public virtual void CreateOrUpdateFile(string fileName, string sourceFilePath)
         {
-            DebugLogger.Log(string.Format("Copying file {0} from {1}", fileName, sourceFilePath));
-
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
             Checks.ArgumentFileExists(sourceFilePath, "sourceFilePath");
 
-            if (!File.Exists(sourceFilePath))
+            if (DirectoryExists(fileName))
             {
-                throw new ArgumentException(string.Format("Source file doesn't exist {0}", sourceFilePath), "sourceFilePath");
+                throw new InvalidOperationException("Directory exists - " + fileName);
             }
+
+            DebugLogger.Log(string.Format("Copying file {0} from {1}", fileName, sourceFilePath));
 
             string filePath = GetEntryPath(fileName);
 
@@ -121,9 +156,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public virtual void DeleteFile(string fileName)
         {
-            DebugLogger.Log(string.Format("Deleting file {0}", fileName));
-
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+
+            DebugLogger.Log(string.Format("Deleting file {0}", fileName));
 
             string filePath = GetEntryPath(fileName);
 
@@ -149,29 +184,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return GetEntryPath(fileName);
         }
 
-        public bool IsInstalled()
+        public string GetDirectoryPath(string dirName)
         {
-            var fileNames = MetaData.GetFileNames();
+            Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
 
-            if (fileNames.Length == 0)
-            {
-                return false;
-            }
-
-            int installedVersion = MetaData.GetFileVersion(fileNames[0]);
-
-            return fileNames.All(FileExists) &&
-                   fileNames.All(fileName => MetaData.GetFileVersion(fileName) == installedVersion);
-        }
-
-        public int GetInstalledVersion()
-        {
-            if (!IsInstalled())
-            {
-                throw new InvalidOperationException("Cannot retrieve version when local data is not installed.");
-            }
-
-            return MetaData.GetFileVersion(MetaData.GetFileNames()[0]);
+            return GetEntryPath(dirName);
         }
 
         private string GetEntryPath(string entryName)

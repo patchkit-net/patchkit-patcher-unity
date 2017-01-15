@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <doc>
     <assembly>
         <name>Ionic.Zip</name>
@@ -2692,7 +2692,7 @@
              <code lang="C#">
              private void WriteEntry (String filename, Stream output)
              {
-                 DataSet ds1 = ObtainDataSet();
+                 DataSet ds1 = ObtainAppSet();
                  ds1.WriteXml(output);
              }
             
@@ -2708,7 +2708,7 @@
             
              <code lang="vb">
              Private Sub WriteEntry (ByVal filename As String, ByVal output As Stream)
-                 DataSet ds1 = ObtainDataSet()
+                 DataSet ds1 = ObtainAppSet()
                  ds1.WriteXml(stream)
              End Sub
             
@@ -6938,12 +6938,12 @@
             
              <code lang="C#">
              var c1= new System.Data.SqlClient.SqlConnection(connstring1);
-             var da = new System.Data.SqlClient.SqlDataAdapter()
+             var da = new System.Data.SqlClient.SqlAppAdapter()
                  {
                      SelectCommand=  new System.Data.SqlClient.SqlCommand(strSelect, c1)
                  };
             
-             DataSet ds1 = new DataSet();
+             DataSet ds1 = new AppSet();
              da.Fill(ds1, "Invoices");
             
              using(Ionic.Zip.ZipFile zip = new Ionic.Zip.ZipFile())

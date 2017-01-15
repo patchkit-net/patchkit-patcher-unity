@@ -38,6 +38,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         /// </summary>
         public JToken ExecuteCommand(string command)
         {
+            Checks.ArgumentNotNull(command, "command");
+
             DebugLogger.Log(string.Format("Executing command {0}", command));
 
             WriteCommand(command);

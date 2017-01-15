@@ -36,9 +36,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Installing content.");
 
-            Assert.IsTrue(_context.Data.LocalData.MetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
+            Assert.IsTrue(_context.App.LocalData.MetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
 
-            using (var packageDir = new TemporaryDirectory(_context.Data.LocalData.TemporaryData.GetUniquePath()))
+            using (var packageDir = new TemporaryDirectory(_context.App.LocalData.TemporaryData.GetUniquePath()))
             {
                 DebugLogger.Log("Unarchiving package.");
 
@@ -68,7 +68,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Preparing content installation.");
 
-            _versionSummary = _context.Data.RemoteData.MetaData.GetContentSummary(_versionId);
+            _versionSummary = _context.App.RemoteData.MetaData.GetContentSummary(_versionId);
 
             double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionSummary);
             _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
@@ -93,8 +93,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new InstallerException(string.Format("Cannot find file {0} in content package.", fileName));
             }
 
-            _context.Data.LocalData.CreateOrUpdateFile(fileName, sourceFilePath);
-            _context.Data.LocalData.MetaData.AddOrUpdateFile(fileName, _versionId);
+            _context.App.LocalData.CreateOrUpdateFile(fileName, sourceFilePath);
+            _context.App.LocalData.MetaData.AddOrUpdateFile(fileName, _versionId);
         }
     }
 }

@@ -31,19 +31,19 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private double _lastProgress;
 
-        private bool _started;
+        private bool _downloadHasBeenCalled;
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public TorrentDownloader(string destinationFilePath, RemoteResource resource, int timeout)
         {
+            Checks.ArgumentParentDirectoryExists(destinationFilePath, "destinationFilePath");
+            Checks.ArgumentValidRemoteResource(resource, "resource");
+            Checks.ArgumentMoreThanZero(timeout, "timeout");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
             DebugLogger.LogVariable(timeout, "timeout");
-
-            Checks.ArgumentDirectoryOfFileExists(destinationFilePath, "destinationFilePath");
-            Checks.ArgumentValidRemoteResource(resource, "resource");
-            Checks.ArgumentMoreThanZero(timeout, "timeout");
 
             _destinationFilePath = destinationFilePath;
             _resource = resource;
@@ -235,12 +235,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Download(CancellationToken cancellationToken)
         {
+            AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
+
             DebugLogger.Log("Starting download.");
-            if (_started)
-            {
-                throw new InvalidOperationException("Cannot start the same TorrentDownloader twice.");
-            }
-            _started = true;
+
             _lastProgress = 0.0;
 
             try

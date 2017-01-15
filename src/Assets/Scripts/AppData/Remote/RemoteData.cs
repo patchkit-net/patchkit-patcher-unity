@@ -23,12 +23,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public RemoteData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
         {
+            Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
+            AssertChecks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
+            AssertChecks.ArgumentNotNull(keysApiConnection, "keysApiConnection");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");
-
-            Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
-            Assert.IsNotNull(mainApiConnection, "mainApiConnection");
-            Assert.IsNotNull(keysApiConnection, "keysApiConnection");
 
             _appSecret = appSecret;
             _mainApiConnection = mainApiConnection;
@@ -38,11 +38,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public RemoteResource GetContentPackageResource(int versionId, string keySecret)
         {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+
             DebugLogger.Log("Getting content package resource.");
             DebugLogger.LogVariable(versionId, "versionId");
             DebugLogger.LogVariable(keySecret, "keySecret");
-
-            Checks.ArgumentValidVersionId(versionId, "versionId");
 
             RemoteResource resource = new RemoteResource();
 
@@ -61,11 +61,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public RemoteResource GetDiffPackageResource(int versionId, string keySecret)
         {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+
             DebugLogger.Log("Getting diff package resource.");
             DebugLogger.LogVariable(versionId, "versionId");
             DebugLogger.LogVariable(keySecret, "keySecret");
-
-            Checks.ArgumentValidVersionId(versionId, "versionId");
 
             RemoteResource resource = new RemoteResource();
 

@@ -652,8 +652,8 @@ MonoBehaviour:
   DefaultConfiguration:
     AppUpdaterConfiguration:
       UseTorrents: 1
-    StartAppAutomatically: 0
-    UpdateAppAutomatically: 0
+    StartAppAutomatically: 1
+    UpdateAppAutomatically: 1
 --- !u!1 &421519242
 GameObject:
   m_ObjectHideFlags: 0

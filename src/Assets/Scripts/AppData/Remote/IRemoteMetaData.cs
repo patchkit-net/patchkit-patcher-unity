@@ -6,7 +6,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
     {
         int GetLatestVersionId();
 
-        App GetAppInfo();
+        Api.Models.App GetAppInfo();
 
         AppContentSummary GetContentSummary(int versionId);
 

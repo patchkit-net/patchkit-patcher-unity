@@ -25,7 +25,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly FileStream _fileStream;
 
-        private bool _started;
+        private bool _downloadHasBeenCalled;
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
@@ -37,13 +37,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public HttpDownloader(string destinationFilePath, string[] urls, long size, int timeout)
         {
+            Checks.ArgumentParentDirectoryExists(destinationFilePath, "destinationFilePath");
+            AssertChecks.ArgumentNotNull(urls, "urls");
+            Checks.ArgumentMoreThanZero(timeout, "timeout");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
             DebugLogger.LogVariable(timeout, "timeout");
-
-            AssertChecks.ArgumentNotNull(urls, "urls");
-            Checks.ArgumentDirectoryOfFileExists(destinationFilePath, "destinationFilePath");
-            Checks.ArgumentMoreThanZero(timeout, "timeout");
 
             _urls = urls;
             _size = size;
@@ -54,12 +54,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Download(CancellationToken cancellationToken)
         {
+            AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
+
             DebugLogger.Log("Starting download.");
-            if (_started)
-            {
-                throw new InvalidOperationException("Cannot start the same HttpDownloader twice.");
-            }
-            _started = true;
 
             var validUrls = new List<string>(_urls);
             validUrls.Reverse();

@@ -32,9 +32,7 @@ namespace PatchKit.Unity.Patcher
 
         private PatcherConfiguration _configuration;
 
-        private ILocalData _localData;
-
-        private IRemoteData _remoteData;
+        private App _app;
 
         private bool _hasBeenDestroyed;
 
@@ -201,19 +199,10 @@ namespace PatchKit.Unity.Patcher
                 _data = commandLinePatcherDataReader.Read();
             }
 
-            if (_localData != null)
+            if (_app != null)
             {
-                _localData.TemporaryData.Dispose();
+                _app.Dispose();
             }
-
-            // Dispose previous instance
-            if (_localData != null)
-            {
-                _localData.Dispose();
-            }
-
-            _localData = new LocalData(_data.AppDataPath);
-            _remoteData = new RemoteData(_data.AppSecret);
         }
 
         private void CheckInternetConnection()
@@ -238,7 +227,7 @@ namespace PatchKit.Unity.Patcher
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            var appUpdater = new AppUpdater.AppUpdater(_localData, _remoteData, _configuration.AppUpdaterConfiguration);
+            var appUpdater = new AppUpdater.AppUpdater(_app, _configuration.AppUpdaterConfiguration);
 
             appUpdater.Context.StatusMonitor.OverallStatusChanged += OnUpdateAppStatusChanged;
 
@@ -249,7 +238,7 @@ namespace PatchKit.Unity.Patcher
         {
             State = PatcherState.StartingApp;
 
-            var appStarter = new AppStarter(_localData, _remoteData);
+            var appStarter = new AppStarter(_app);
 
             appStarter.Start();
         }
@@ -282,10 +271,10 @@ namespace PatchKit.Unity.Patcher
         {
             State = PatcherState.WaitingForUserDecision;
 
-            CanStartApp = _localData.IsInstalled();
+            CanStartApp = _app.IsInstalled();
 
-            CanUpdateApp = _hasInternetConnection && (!_localData.IsInstalled() ||
-                           _remoteData.MetaData.GetLatestVersionId() > _localData.GetInstalledVersion());
+            CanUpdateApp = _hasInternetConnection && (!_app.IsInstalled() ||
+                           _app.RemoteData.MetaData.GetLatestVersionId() > _app.GetInstalledVersion());
 
             if (CanUpdateApp && _configuration.UpdateAppAutomatically && !_triedToAutomaticallyUpdateApp)
             {

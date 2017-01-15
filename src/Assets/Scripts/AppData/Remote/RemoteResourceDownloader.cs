@@ -19,18 +19,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private readonly bool _useTorrents;
 
-        private bool _started;
+        private bool _downloadHasBeenCalled;
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public RemoteResourceDownloader(string destinationFilePath, RemoteResource resource, bool useTorrents)
         {
+            Checks.ArgumentParentDirectoryExists(destinationFilePath, "destinationFilePath");
+            Checks.ArgumentValidRemoteResource(resource, "resource");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
             DebugLogger.LogVariable(useTorrents, "useTorrents");
-
-            Checks.ArgumentDirectoryOfFileExists(destinationFilePath, "destinationFilePath");
-            Checks.ArgumentValidRemoteResource(resource, "resource");
 
             _destinationFilePath = destinationFilePath;
             _resource = resource;
@@ -87,13 +87,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public void Download(CancellationToken cancellationToken)
         {
-            DebugLogger.Log("Starting download.");
+            AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-            if (_started)
-            {
-                throw new InvalidOperationException("Cannot start the same RemoteResourceDownloader twice.");
-            }
-            _started = true;
+            DebugLogger.Log("Starting download.");
 
             if (_useTorrents)
             {

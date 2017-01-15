@@ -16,12 +16,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public RemoteMetaData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
         {
+            Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
+            AssertChecks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
+            AssertChecks.ArgumentNotNull(keysApiConnection, "keysApiConnection");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");
-
-            Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
-            Assert.IsNotNull(mainApiConnection, "mainApiConnection");
-            Assert.IsNotNull(keysApiConnection, "keysApiConnection");
 
             _appSecret = appSecret;
             _mainApiConnection = mainApiConnection;
@@ -34,7 +34,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return _mainApiConnection.GetAppLatestAppVersionId(_appSecret).Id;
         }
 
-        public App GetAppInfo()
+        public Api.Models.App GetAppInfo()
         {
             DebugLogger.Log("Getting app info.");
             return _mainApiConnection.GetApplicationInfo(_appSecret);
@@ -42,24 +42,24 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public AppContentSummary GetContentSummary(int versionId)
         {
-            DebugLogger.Log(string.Format("Getting content summary of version with id {0}.", versionId));
             Checks.ArgumentValidVersionId(versionId, "versionId");
+            DebugLogger.Log(string.Format("Getting content summary of version with id {0}.", versionId));
 
             return _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId);
         }
 
         public AppDiffSummary GetDiffSummary(int versionId)
         {
-            DebugLogger.Log(string.Format("Getting diff summary of version with id {0}.", versionId));
             Checks.ArgumentValidVersionId(versionId, "versionId");
+            DebugLogger.Log(string.Format("Getting diff summary of version with id {0}.", versionId));
 
             return _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
         }
 
         public string GetKeySecret(string key)
         {
-            DebugLogger.Log(string.Format("Getting key secret from key {0}.", key));
             Checks.ArgumentNotNullOrEmpty(key, "key");
+            DebugLogger.Log(string.Format("Getting key secret from key {0}.", key));
 
             string cachedKeySecret = PlayerPrefs.GetString(GetCachedKeySecretEntryName(key), null);
             //TODO : Use cached key secret

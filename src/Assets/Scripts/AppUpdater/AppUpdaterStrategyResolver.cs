@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.Log("Resolving best strategy for patcher.");
 
-            if (context.Data.LocalData.IsInstalled())
+            if (context.App.IsInstalled())
             {
                 var diffCost = GetDiffCost(context);
                 DebugLogger.LogVariable(diffCost, "diffCost");
@@ -44,9 +44,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             DebugLogger.Log("Calculating content cost.");
 
-            int latestVersionId = context.Data.RemoteData.MetaData.GetLatestVersionId();
+            int latestVersionId = context.App.RemoteData.MetaData.GetLatestVersionId();
 
-            var contentSummary = context.Data.RemoteData.MetaData.GetContentSummary(latestVersionId);
+            var contentSummary = context.App.RemoteData.MetaData.GetContentSummary(latestVersionId);
 
             return (ulong)contentSummary.Size;
         }
@@ -55,14 +55,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             DebugLogger.Log("Calculating diff cost.");
 
-            int latestVersionId = context.Data.RemoteData.MetaData.GetLatestVersionId();
-            int currentLocalVersionId = context.Data.LocalData.GetInstalledVersion();
+            int latestVersionId = context.App.RemoteData.MetaData.GetLatestVersionId();
+            int currentLocalVersionId = context.App.GetInstalledVersion();
 
             ulong cost = 0;
 
             for (int i = currentLocalVersionId + 1; i <= latestVersionId; i++)
             {
-                var diffSummary = context.Data.RemoteData.MetaData.GetDiffSummary(i);
+                var diffSummary = context.App.RemoteData.MetaData.GetDiffSummary(i);
                 cost += (ulong)diffSummary.Size;
             }
 

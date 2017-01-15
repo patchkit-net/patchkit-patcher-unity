@@ -11,10 +11,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public DownloadData(string path)
         {
+            Checks.ArgumentNotNullOrEmpty(path, "path");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(path, "path");
-
-            Checks.ArgumentNotNullOrEmpty(path, "path");
 
             _path = path;
 

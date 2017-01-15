@@ -25,7 +25,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             KeySecret = null;
 
-            var appInfo = _context.Data.RemoteData.MetaData.GetAppInfo();
+            var appInfo = _context.App.RemoteData.MetaData.GetAppInfo();
 
             if (!appInfo.UseKeys)
             {
@@ -42,7 +42,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 {
                     try
                     {
-                        KeySecret = _context.Data.RemoteData.MetaData.GetKeySecret(result.Key);
+                        KeySecret = _context.App.RemoteData.MetaData.GetKeySecret(result.Key);
                     }
                     catch (ApiResponseException apiResponseException)
                     {

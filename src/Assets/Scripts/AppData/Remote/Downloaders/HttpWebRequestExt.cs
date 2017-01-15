@@ -6,7 +6,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
     // http://stackoverflow.com/questions/6576397/how-to-specify-range-2gb-for-httpwebrequest-in-net-3-5
     public static class HttpWebRequestExt {
-        static MethodInfo httpWebRequestAddRangeHelper = typeof(WebHeaderCollection).GetMethod
+        static readonly MethodInfo HttpWebRequestAddRangeHelper = typeof(WebHeaderCollection).GetMethod
                                         ("AddWithoutValidate", BindingFlags.Instance | BindingFlags.NonPublic);
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             string key = "Range";
             string val = string.Format("bytes={0}-{1}", start, end == -1 ? "" : end.ToString());
 
-            httpWebRequestAddRangeHelper.Invoke(request.Headers, new object[] { key, val });
+            HttpWebRequestAddRangeHelper.Invoke(request.Headers, new object[] { key, val });
         }
     }
 }

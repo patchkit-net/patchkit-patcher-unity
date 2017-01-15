@@ -4,54 +4,69 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    public static class Checks
+    public class Checks : BaseChecks
     {
-        private static void Argument(bool condition, string name, string message)
+        private static ValidationFailedHandler ArgumentValidationFailed(string name)
         {
-            if (!condition)
+            return message =>
             {
-                throw new ArgumentException(message, name);
-            }
+                throw new ArgumentException(string.Format("Argument \"{0}\": {1}", name, message), name);
+            };
         }
 
         public static void ArgumentValidVersionId(int versionId, string name)
         {
-            Argument(versionId > 0, name, "Invalid version id.");
+            ValidVersionId(versionId, ArgumentValidationFailed(name));
         }
 
         public static void ArgumentValidRemoteResource(RemoteResource resource, string name)
         {
-            Argument(resource.Size > 0, name, "Resource size is not more than zero.");
-            Argument(!string.IsNullOrEmpty(resource.HashCode), name, "Resource hash code is null or empty.");
-            Argument(resource.Urls != null && resource.Urls.Length > 0, name, "Resource urls are null or empty.");
-            Argument(resource.TorrentUrls != null && resource.TorrentUrls.Length > 0, name, "Resource torrent urls are null or empty.");
+            ValidRemoteResource(resource, ArgumentValidationFailed(name));
         }
 
-        public static void ArgumentMoreThanZero(int value, string name)
+        public static void ArgumentMoreThanZero<T>(T value, string name) where T : IComparable
         {
-            Argument(value > 0, name, "Argument is not more than zero.");
+            MoreThanZero(value, ArgumentValidationFailed(name));
+        }
+
+        public static void ArgumentNotNull(object value, string name)
+        {
+            NotNull(value, ArgumentValidationFailed(name));
         }
 
         public static void ArgumentNotNullOrEmpty(string value, string name)
         {
-            Argument(!string.IsNullOrEmpty(value), name, "Argument is null or empty.");
+            NotNullOrEmpty(value, ArgumentValidationFailed(name));
+        }
+
+        public static void FileExists(string filePath)
+        {
+            FileExists(filePath, message => { throw new FileNotFoundException(message, filePath); });
         }
 
         public static void ArgumentFileExists(string filePath, string name)
         {
-            Argument(File.Exists(filePath), name, "File doesn't exists.");
+            FileExists(filePath, ArgumentValidationFailed(name));
         }
 
-        public static void ArgumentDirectoryOfFileExists(string filePath, string name)
+        public static void ParentDirectoryExists(string path)
         {
-            string dirPath = Path.GetDirectoryName(filePath);
+            ParentDirectoryExists(path, message => { throw new DirectoryNotFoundException(message); });
+        }
 
-            Argument(dirPath == null || Directory.Exists(dirPath), name, "Directory of file doesn't exists.");
+        public static void ArgumentParentDirectoryExists(string path, string name)
+        {
+            ParentDirectoryExists(path, ArgumentValidationFailed(name));
+        }
+
+        public static void DirectoryExists(string dirPath)
+        {
+            DirectoryExists(dirPath, message => { throw new DirectoryNotFoundException(message); });
         }
 
         public static void ArgumentDirectoryExists(string dirPath, string name)
         {
-            Argument(Directory.Exists(dirPath), name, "Directory doesn't exists.");
+            DirectoryExists(dirPath, ArgumentValidationFailed(name));
         }
     }
 }

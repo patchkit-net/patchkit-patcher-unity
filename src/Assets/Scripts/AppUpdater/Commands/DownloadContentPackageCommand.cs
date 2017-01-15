@@ -33,7 +33,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Downloading content package.");
 
-            string contentPath = _context.Data.LocalData.DownloadData.GetContentPackagePath(_versionId);
+            string contentPath = _context.App.LocalData.DownloadData.GetContentPackagePath(_versionId);
 
             var downloader = new RemoteResourceDownloader(contentPath, _resource, _context.Configuration.UseTorrents);
 
@@ -52,7 +52,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Preparing content package download.");
 
-            _resource = _context.Data.RemoteData.GetContentPackageResource(_versionId, _keySecret);
+            _resource = _context.App.RemoteData.GetContentPackageResource(_versionId, _keySecret);
 
             double weight = StatusWeightHelper.GetResourceDownloadWeight(_resource);
             _statusReporter = statusMonitor.CreateDownloadStatusReporter(weight);

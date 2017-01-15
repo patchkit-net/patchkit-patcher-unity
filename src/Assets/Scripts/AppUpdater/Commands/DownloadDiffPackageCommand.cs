@@ -33,9 +33,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Downloading diff package.");
 
-            string diffPath = _context.Data.LocalData.DownloadData.GetDiffPackagePath(_versionId);
+            string diffPath = _context.App.LocalData.DownloadData.GetDiffPackagePath(_versionId);
 
-            var resource = _context.Data.RemoteData.GetDiffPackageResource(_versionId, _keySecret);
+            var resource = _context.App.RemoteData.GetDiffPackageResource(_versionId, _keySecret);
 
             var downloader = new RemoteResourceDownloader(diffPath, resource, _context.Configuration.UseTorrents);
 
@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Preparing diff package download.");
 
-            _resource = _context.Data.RemoteData.GetContentPackageResource(_versionId, _keySecret);
+            _resource = _context.App.RemoteData.GetContentPackageResource(_versionId, _keySecret);
 
             double weight = StatusWeightHelper.GetResourceDownloadWeight(_resource);
             _statusReporter = statusMonitor.CreateDownloadStatusReporter(weight);

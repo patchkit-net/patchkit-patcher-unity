@@ -8,7 +8,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterContentStrategy));
 
         private readonly AppUpdaterContext _context;
-        private bool _patchCalled;
+
+        private bool _patchHasBeenCalled;
 
         public AppUpdaterContentStrategy(AppUpdaterContext context)
         {
@@ -21,13 +22,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public void Patch(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _patchCalled, "Patch");
+            AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
 
             DebugLogger.Log("Patching with content strategy.");
 
             var commandFactory = new Commands.AppUpdaterCommandFactory();
 
-            var latestVersionId = _context.Data.RemoteData.MetaData.GetLatestVersionId();
+            var latestVersionId = _context.App.RemoteData.MetaData.GetLatestVersionId();
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
             validateLicense.Prepare(_context.StatusMonitor);

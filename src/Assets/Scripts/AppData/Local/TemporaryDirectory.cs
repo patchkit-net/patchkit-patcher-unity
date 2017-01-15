@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -9,6 +10,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public TemporaryDirectory(string path)
         {
+            Checks.ArgumentNotNullOrEmpty(path, "path");
+
             Path = path;
 
             if (!Directory.Exists(Path))

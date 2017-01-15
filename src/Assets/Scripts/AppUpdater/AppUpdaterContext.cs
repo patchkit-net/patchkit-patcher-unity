@@ -1,15 +1,12 @@
-﻿using PatchKit.Unity.Patcher.AppData.Local;
-using PatchKit.Unity.Patcher.AppData.Remote;
-using PatchKit.Unity.Patcher.Debug;
+﻿using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Patcher.UI.Dialogs;
-using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
     public class AppUpdaterContext
     {
-        public readonly AppData.AppData Data;
+        public readonly App App;
 
         public readonly AppUpdaterConfiguration Configuration;
 
@@ -17,19 +14,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public readonly ILicenseDialog LicenseDialog;
 
-        public AppUpdaterContext(ILocalData localData, IRemoteData remoteData, AppUpdaterConfiguration configuration) :
-            this(localData, remoteData, configuration, new StatusMonitor(), UI.Dialogs.LicenseDialog.Instance)
+        public AppUpdaterContext(App app, AppUpdaterConfiguration configuration) :
+            this(app, configuration, new StatusMonitor(), UI.Dialogs.LicenseDialog.Instance)
         {
         }
 
-        public AppUpdaterContext(ILocalData localData, IRemoteData remoteData, AppUpdaterConfiguration configuration, IStatusMonitor statusMonitor, ILicenseDialog licenseDialog)
+        public AppUpdaterContext(App app, AppUpdaterConfiguration configuration, IStatusMonitor statusMonitor, ILicenseDialog licenseDialog)
         {
-            AssertChecks.ArgumentNotNull(localData, "localData");
-            AssertChecks.ArgumentNotNull(remoteData, "remoteData");
+            AssertChecks.ArgumentNotNull(app, "app");
             AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
             AssertChecks.ArgumentNotNull(licenseDialog, "licenseDialog");
 
-            Data = new AppData.AppData(localData, remoteData);
+            App = app;
             Configuration = configuration;
             StatusMonitor = statusMonitor;
             LicenseDialog = licenseDialog;

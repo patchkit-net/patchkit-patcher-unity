@@ -17,7 +17,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterDiffStrategy));
 
         private readonly AppUpdaterContext _context;
-        private bool _patchCalled;
+
+        private bool _patchHasBeenCalled;
 
         public AppUpdaterDiffStrategy(AppUpdaterContext context)
         {
@@ -30,13 +31,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public void Patch(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _patchCalled, "Patch");
-            AssertChecks.ApplicationIsInstalled(_context.Data.LocalData);
+            AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
+            AssertChecks.ApplicationIsInstalled(_context.App);
 
             DebugLogger.Log("Patching with diff strategy.");
 
-            var latestVersionId = _context.Data.RemoteData.MetaData.GetLatestVersionId();
-            var currentLocalVersionId = _context.Data.LocalData.GetInstalledVersion();
+            var latestVersionId = _context.App.RemoteData.MetaData.GetLatestVersionId();
+            var currentLocalVersionId = _context.App.GetInstalledVersion();
 
             var commandFactory = new AppUpdaterCommandFactory();
 
@@ -71,7 +72,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 diffCommands.InstallDiffPackage.SetPackagePath(diffCommands.DownloadDiffPackage.PackagePath);
                 diffCommands.InstallDiffPackage.Execute(cancellationToken);
 
-                AssertChecks.ApplicationVersionEquals(_context.Data.LocalData, diffCommands.VersionId);
+                AssertChecks.ApplicationVersionEquals(_context.App, diffCommands.VersionId);
             }
         }
     }

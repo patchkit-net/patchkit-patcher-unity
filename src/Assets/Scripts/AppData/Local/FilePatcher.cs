@@ -16,18 +16,18 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly string _diffPath;
         private readonly string _outputFilePath;
 
-        private bool _started;
+        private bool _patchHasBeenCalled;
 
         public FilePatcher(string filePath, string diffPath, string outputFilePath)
         {
+            Checks.ArgumentFileExists(filePath, "filePath");
+            Checks.ArgumentFileExists(diffPath, "diffPath");
+            Checks.ArgumentParentDirectoryExists(outputFilePath, "outputFilePath");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(filePath, "filePath");
             DebugLogger.LogVariable(diffPath, "diffPath");
             DebugLogger.LogVariable(outputFilePath, "outputFilePath");
-
-            Checks.ArgumentFileExists(filePath, "filePath");
-            Checks.ArgumentFileExists(diffPath, "diffPath");
-            Checks.ArgumentDirectoryOfFileExists(outputFilePath, "outputFilePath");
 
             _filePath = filePath;
             _diffPath = diffPath;
@@ -36,13 +36,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Patch()
         {
-            DebugLogger.Log("Starting file patching.");
+            AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
 
-            if (_started)
-            {
-                throw new InvalidOperationException("Cannot start the same FilePatcher twice.");
-            }
-            _started = true;
+            DebugLogger.Log("Starting file patching.");
 
             int status = rs_rdiff_patch(_filePath, _diffPath, _outputFilePath);
 
