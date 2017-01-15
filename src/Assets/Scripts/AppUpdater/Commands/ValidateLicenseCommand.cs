@@ -8,7 +8,7 @@ using PatchKit.Unity.Patcher.UI.Dialogs;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    public class ValidateLicenseCommand : IValidateLicenseCommand
+    public class ValidateLicenseCommand : BaseAppUpdaterCommand, IValidateLicenseCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ValidateLicenseCommand));
 
@@ -16,13 +16,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public ValidateLicenseCommand(AppUpdaterContext context)
         {
+            AssertChecks.ArgumentNotNull(context, "context");
+
             DebugLogger.LogConstructor();
 
             _context = context;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public override void Execute(CancellationToken cancellationToken)
         {
+            base.Execute(cancellationToken);
+
             KeySecret = null;
 
             var appInfo = _context.App.RemoteData.MetaData.GetAppInfo();
@@ -83,8 +87,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(IStatusMonitor statusMonitor)
         {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
         }
 
         public string KeySecret { get; private set; }

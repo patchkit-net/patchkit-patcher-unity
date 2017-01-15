@@ -2,9 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using PatchKit.Unity.Patcher.AppData.Local;
-using PatchKit.Unity.Patcher.AppData.Remote;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.AppUpdater;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Status;
@@ -117,11 +114,11 @@ namespace PatchKit.Unity.Patcher
         private void Awake()
         {
             Dispatcher.Initialize();
+            Application.runInBackground = true;
         }
 
         private void Start()
         {
-            TorrentClient.StreamingAssetsPath = Application.streamingAssetsPath;
             LoadPatcherData();
 
             _thread = new Thread(ThreadFunc);
@@ -172,6 +169,7 @@ namespace PatchKit.Unity.Patcher
                     catch (UnauthorizedAccessException)
                     {
                         RestartWithRequestForPermissions();
+                        Quit();
                     }
                     catch (Exception exception)
                     {
@@ -203,6 +201,8 @@ namespace PatchKit.Unity.Patcher
             {
                 _app.Dispose();
             }
+
+            _app = new App(_data.AppDataPath, _data.AppSecret);
         }
 
         private void CheckInternetConnection()

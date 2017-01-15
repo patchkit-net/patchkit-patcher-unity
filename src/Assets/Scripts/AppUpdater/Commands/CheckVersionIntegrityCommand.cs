@@ -2,11 +2,10 @@
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
-using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    public class CheckVersionIntegrityCommand : ICheckVersionIntegrityCommand
+    public class CheckVersionIntegrityCommand : BaseAppUpdaterCommand, ICheckVersionIntegrityCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CheckVersionIntegrityCommand));
 
@@ -18,18 +17,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public CheckVersionIntegrityCommand(int versionId, AppUpdaterContext context)
         {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            AssertChecks.ArgumentNotNull(context, "context");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(versionId, "versionId");
-
-            Checks.ArgumentValidVersionId(versionId, "versionId");
-            Assert.IsNotNull(context, "context");
 
             _versionId = versionId;
             _context = context;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public override void Execute(CancellationToken cancellationToken)
         {
+            base.Execute(cancellationToken);
+
             DebugLogger.Log("Checking version integrity.");
 
             var files = new FileIntegrity[_versionSummary.Files.Length];
@@ -44,8 +45,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             Results = new VersionIntegrity(files);
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(IStatusMonitor statusMonitor)
         {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
             DebugLogger.Log("Preparing version integrity check.");
 
             _versionSummary = _context.App.RemoteData.MetaData.GetContentSummary(_versionId);

@@ -9,7 +9,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    public class InstallDiffCommand : IInstallDiffCommand
+    public class InstallDiffCommand : BaseAppUpdaterCommand, IInstallDiffCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallDiffCommand));
 
@@ -25,12 +25,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public InstallDiffCommand(int versionId, AppUpdaterContext context)
         {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            AssertChecks.ArgumentNotNull(context, "context");
+
             _versionId = versionId;
             _context = context;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public override void Execute(CancellationToken cancellationToken)
         {
+            base.Execute(cancellationToken);
+
             DebugLogger.Log("Installing diff.");
 
             using (var packageDir = new TemporaryDirectory(_context.App.LocalData.TemporaryData.GetUniquePath()))
@@ -52,8 +57,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(IStatusMonitor statusMonitor)
         {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
             DebugLogger.Log("Preparing diff installation.");
 
             _diffSummary = _context.App.RemoteData.MetaData.GetDiffSummary(_versionId);
@@ -168,7 +177,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new InstallerException(string.Format("Couldn't patch file {0} - file doesn't exists.", fileName));
             }
 
-            Assert.AreEqual(_versionId - 1, _context.App.LocalData.MetaData.GetFileVersion(fileName),
+            AssertChecks.AreEqual(_versionId - 1, _context.App.LocalData.MetaData.GetFileVersion(fileName),
                 string.Format("Wrong file version {0}", fileName));
 
             string newFile = _context.App.LocalData.TemporaryData.GetUniquePath();

@@ -2,11 +2,10 @@
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
-using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    public class DownloadDiffPackageCommand : IDownloadDiffPackageCommand
+    public class DownloadDiffPackageCommand : BaseAppUpdaterCommand, IDownloadDiffPackageCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DownloadDiffPackageCommand));
 
@@ -19,18 +18,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public DownloadDiffPackageCommand(int versionId, AppUpdaterContext context)
         {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            AssertChecks.ArgumentNotNull(context, "context");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(versionId, "versionId");
-
-            Checks.ArgumentValidVersionId(versionId, "versionId");
-            Assert.IsNotNull(context, "context");
 
             _versionId = versionId;
             _context = context;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public override void Execute(CancellationToken cancellationToken)
         {
+            base.Execute(cancellationToken);
+
             DebugLogger.Log("Downloading diff package.");
 
             string diffPath = _context.App.LocalData.DownloadData.GetDiffPackagePath(_versionId);
@@ -50,8 +51,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             PackagePath = diffPath;
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(IStatusMonitor statusMonitor)
         {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
             DebugLogger.Log("Preparing diff package download.");
 
             _resource = _context.App.RemoteData.GetContentPackageResource(_versionId, _keySecret);

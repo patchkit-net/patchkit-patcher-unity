@@ -2,11 +2,10 @@
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
-using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    public class UninstallCommand : IUninstallCommand
+    public class UninstallCommand : BaseAppUpdaterCommand, IUninstallCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(UninstallCommand));
 
@@ -16,15 +15,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public UninstallCommand(AppUpdaterContext context)
         {
-            DebugLogger.LogConstructor();
+            AssertChecks.ArgumentNotNull(context, "context");
 
-            Assert.IsNotNull(context, "context");
+            DebugLogger.LogConstructor();
 
             _context = context;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public override void Execute(CancellationToken cancellationToken)
         {
+            base.Execute(cancellationToken);
+
             DebugLogger.Log("Uninstalling.");
 
             var fileNames = _context.App.LocalData.MetaData.GetFileNames();
@@ -45,8 +46,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(IStatusMonitor statusMonitor)
         {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
             DebugLogger.Log("Preparing uninstallation.");
 
             double weight = StatusWeightHelper.GetUninstallWeight();

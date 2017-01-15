@@ -8,7 +8,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    public class InstallContentCommand : IInstallContentCommand
+    public class InstallContentCommand : BaseAppUpdaterCommand, IInstallContentCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
 
@@ -22,21 +22,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public InstallContentCommand(int versionId, AppUpdaterContext context)
         {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            AssertChecks.ArgumentNotNull(context, "context");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(versionId, "versionId");
-
-            Checks.ArgumentValidVersionId(versionId, "versionId");
-            Assert.IsNotNull(context, "context");
 
             _versionId = versionId;
             _context = context;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public override void Execute(CancellationToken cancellationToken)
         {
+            base.Execute(cancellationToken);
+
             DebugLogger.Log("Installing content.");
 
-            Assert.IsTrue(_context.App.LocalData.MetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
+            AssertChecks.IsTrue(_context.App.LocalData.MetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
 
             using (var packageDir = new TemporaryDirectory(_context.App.LocalData.TemporaryData.GetUniquePath()))
             {
@@ -64,8 +66,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(IStatusMonitor statusMonitor)
         {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
             DebugLogger.Log("Preparing content installation.");
 
             _versionSummary = _context.App.RemoteData.MetaData.GetContentSummary(_versionId);

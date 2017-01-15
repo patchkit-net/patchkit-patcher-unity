@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
@@ -16,7 +17,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(TorrentClient));
 
-        public static string StreamingAssetsPath;
+        private string _streamingAssetsPath;
 
         private readonly Process _process;
 
@@ -27,6 +28,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         public TorrentClient()
         {
             DebugLogger.LogConstructor();
+
+            Dispatcher.Invoke(() =>
+            {
+                _streamingAssetsPath = Application.streamingAssetsPath;
+            }).WaitOne();
 
             _process = StartProcess();
             _stdOutput = CreateStdOutputStream();
@@ -109,7 +115,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(StreamingAssetsPath, "torrent-client/win/torrent-client.exe"),
+                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/win/torrent-client.exe"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -124,14 +130,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(StreamingAssetsPath, "torrent-client/osx64/torrent-client"),
+                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/osx64/torrent-client"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
 
-                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(StreamingAssetsPath, "torrent-client/osx64");
+                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/osx64");
 
                 return processStartInfo;
             }
@@ -140,14 +146,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(StreamingAssetsPath, "torrent-client/linux64/torrent-client"),
+                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/linux64/torrent-client"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
 
-                processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(StreamingAssetsPath, "torrent-client/linux64");
+                processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/linux64");
 
                 return processStartInfo;
             }

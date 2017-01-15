@@ -1,6 +1,4 @@
-﻿using PatchKit.Unity.Patcher.AppData.Local;
-using PatchKit.Unity.Patcher.AppData.Remote;
-using PatchKit.Unity.Patcher.Cancellation;
+﻿using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater

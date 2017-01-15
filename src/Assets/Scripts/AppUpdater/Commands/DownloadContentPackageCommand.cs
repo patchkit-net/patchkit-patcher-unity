@@ -2,11 +2,10 @@
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
-using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    public class DownloadContentPackageCommand : IDownloadContentPackageCommand
+    public class DownloadContentPackageCommand : BaseAppUpdaterCommand, IDownloadContentPackageCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DownloadContentPackageCommand));
 
@@ -19,18 +18,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public DownloadContentPackageCommand(int versionId, AppUpdaterContext context)
         {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            AssertChecks.ArgumentNotNull(context, "context");
+
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(versionId, "versionId");
-
-            Checks.ArgumentValidVersionId(versionId, "versionId");
-            Assert.IsNotNull(context, "context");
 
             _versionId = versionId;
             _context = context;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public override void Execute(CancellationToken cancellationToken)
         {
+            base.Execute(cancellationToken);
+
             DebugLogger.Log("Downloading content package.");
 
             string contentPath = _context.App.LocalData.DownloadData.GetContentPackagePath(_versionId);
@@ -48,8 +49,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             PackagePath = contentPath;
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(IStatusMonitor statusMonitor)
         {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
             DebugLogger.Log("Preparing content package download.");
 
             _resource = _context.App.RemoteData.GetContentPackageResource(_versionId, _keySecret);
