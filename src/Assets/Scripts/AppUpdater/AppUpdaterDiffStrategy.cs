@@ -5,7 +5,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    internal class AppUpdaterDiffStrategy : IAppUpdaterStrategy
+    public class AppUpdaterDiffStrategy : IAppUpdaterStrategy
     {
         private struct DiffCommands
         {

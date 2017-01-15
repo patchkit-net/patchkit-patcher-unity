@@ -5,7 +5,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
-    internal class RemoteResourceDownloader
+    public class RemoteResourceDownloader
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteResourceDownloader));
 

@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal interface IDownloadContentPackageCommand : IAppUpdaterCommand
+    public interface IDownloadContentPackageCommand : IAppUpdaterCommand
     {
         string PackagePath { get; }
 

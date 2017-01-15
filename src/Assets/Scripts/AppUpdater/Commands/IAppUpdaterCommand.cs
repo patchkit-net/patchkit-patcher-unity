@@ -3,7 +3,7 @@ using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal interface IAppUpdaterCommand
+    public interface IAppUpdaterCommand
     {
         void Execute(CancellationToken cancellationToken);
 

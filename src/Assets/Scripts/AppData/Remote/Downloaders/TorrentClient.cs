@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// Provides an easy access for torrent client program.
     /// </summary>
     /// <seealso cref="System.IDisposable" />
-    internal class TorrentClient : IDisposable
+    public class TorrentClient : IDisposable
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(TorrentClient));
 

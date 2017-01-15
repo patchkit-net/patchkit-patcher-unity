@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal class AppUpdaterCommandFactory
+    public class AppUpdaterCommandFactory
     {
         public IInstallDiffCommand CreateInstallDiffCommand(int versionId,
             AppUpdaterContext context)

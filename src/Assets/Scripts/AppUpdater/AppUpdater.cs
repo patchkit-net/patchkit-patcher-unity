@@ -5,7 +5,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    internal class AppUpdater
+    public class AppUpdater
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdater));
 

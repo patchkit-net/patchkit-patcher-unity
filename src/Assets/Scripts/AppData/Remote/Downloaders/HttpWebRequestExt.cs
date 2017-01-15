@@ -5,7 +5,7 @@ using System.Reflection;
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
     // http://stackoverflow.com/questions/6576397/how-to-specify-range-2gb-for-httpwebrequest-in-net-3-5
-    internal static class HttpWebRequestExt {
+    public static class HttpWebRequestExt {
         static MethodInfo httpWebRequestAddRangeHelper = typeof(WebHeaderCollection).GetMethod
                                         ("AddWithoutValidate", BindingFlags.Instance | BindingFlags.NonPublic);
 

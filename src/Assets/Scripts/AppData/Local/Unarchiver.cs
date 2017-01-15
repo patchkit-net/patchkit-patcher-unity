@@ -5,7 +5,7 @@ using PatchKit.Unity.Patcher.Cancellation;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal class Unarchiver
+    public class Unarchiver
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Unarchiver));
 

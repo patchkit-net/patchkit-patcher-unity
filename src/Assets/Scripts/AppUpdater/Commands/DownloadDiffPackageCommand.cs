@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal class DownloadDiffPackageCommand : IDownloadDiffPackageCommand
+    public class DownloadDiffPackageCommand : IDownloadDiffPackageCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DownloadDiffPackageCommand));
 

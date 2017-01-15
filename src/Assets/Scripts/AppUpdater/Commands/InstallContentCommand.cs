@@ -8,7 +8,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal class InstallContentCommand : IInstallContentCommand
+    public class InstallContentCommand : IInstallContentCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
 

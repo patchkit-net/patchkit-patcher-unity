@@ -3,7 +3,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal class DownloadData : IDownloadData
+    public class DownloadData : IDownloadData
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DownloadData));
 

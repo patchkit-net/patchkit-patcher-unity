@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
 {
-    internal class CommandLinePatcherDataReader
+    public class CommandLinePatcherDataReader
     {
         public PatcherData Read()
         {

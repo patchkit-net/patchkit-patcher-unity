@@ -3,7 +3,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    internal class AppUpdaterContentStrategy : IAppUpdaterStrategy
+    public class AppUpdaterContentStrategy : IAppUpdaterStrategy
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterContentStrategy));
 

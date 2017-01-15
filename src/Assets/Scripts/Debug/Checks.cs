@@ -4,7 +4,7 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    internal static class Checks
+    public static class Checks
     {
         private static void Argument(bool condition, string name, string message)
         {

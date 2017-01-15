@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PatchKit.Unity.Patcher.Status
 {
-    internal class DownloadSpeedCalculator
+    public class DownloadSpeedCalculator
     {
         private struct Sample
         {

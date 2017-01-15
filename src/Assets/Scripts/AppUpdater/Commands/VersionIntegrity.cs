@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal class VersionIntegrity
+    public class VersionIntegrity
     {
         public FileIntegrity[] Files { get; private set; }
 

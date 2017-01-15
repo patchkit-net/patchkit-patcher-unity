@@ -2,7 +2,7 @@
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    internal interface IAppUpdaterStrategy
+    public interface IAppUpdaterStrategy
     {
         void Patch(CancellationToken cancellationToken);
     }

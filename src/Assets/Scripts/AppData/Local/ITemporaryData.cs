@@ -2,7 +2,7 @@
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal interface ITemporaryData : IDisposable
+    public interface ITemporaryData : IDisposable
     {
         string GetUniquePath();
     }

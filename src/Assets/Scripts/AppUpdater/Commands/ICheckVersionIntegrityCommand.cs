@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal interface ICheckVersionIntegrityCommand : IAppUpdaterCommand
+    public interface ICheckVersionIntegrityCommand : IAppUpdaterCommand
     {
         VersionIntegrity Results { get; }
     }

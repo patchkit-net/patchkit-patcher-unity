@@ -3,7 +3,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.Status
 {
-    internal class GeneralStatusReporter : IGeneralStatusReporter
+    public class GeneralStatusReporter : IGeneralStatusReporter
     {
         private readonly GeneralStatusHolder _generalStatusHolder;
 

@@ -3,13 +3,13 @@ using JetBrains.Annotations;
 
 namespace PatchKit.Unity.Patcher.Cancellation
 {
-    internal struct CancellationToken
+    public struct CancellationToken
     {
         [CanBeNull] private readonly CancellationTokenSource _cancellationTokenSource;
 
         public static readonly CancellationToken Empty = new CancellationToken(null);
 
-        internal CancellationToken(CancellationTokenSource cancellationTokenSource)
+        public CancellationToken(CancellationTokenSource cancellationTokenSource)
         {
             _cancellationTokenSource = cancellationTokenSource;
         }

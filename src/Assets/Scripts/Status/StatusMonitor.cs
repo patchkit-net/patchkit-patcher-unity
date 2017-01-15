@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace PatchKit.Unity.Patcher.Status
 {
-    internal class StatusMonitor : IStatusMonitor
+    public class StatusMonitor : IStatusMonitor
     {
         private readonly List<IStatusHolder> _statusHolders = new List<IStatusHolder>();
 

@@ -8,7 +8,7 @@ using PatchKit.Unity.Patcher.UI.Dialogs;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal class ValidateLicenseCommand : IValidateLicenseCommand
+    public class ValidateLicenseCommand : IValidateLicenseCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ValidateLicenseCommand));
 

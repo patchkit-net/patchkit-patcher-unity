@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    internal class AppUpdaterContext
+    public class AppUpdaterContext
     {
         public readonly AppData.AppData Data;
 

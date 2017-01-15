@@ -3,7 +3,7 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher
 {
-    internal class AppStarter
+    public class AppStarter
     {
         private readonly ILocalData _localData;
         private readonly IRemoteData _remoteData;

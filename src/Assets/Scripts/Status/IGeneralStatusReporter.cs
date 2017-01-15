@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Status
 {
-    internal interface IGeneralStatusReporter
+    public interface IGeneralStatusReporter
     {
         void OnProgressChanged(double progress);
     }

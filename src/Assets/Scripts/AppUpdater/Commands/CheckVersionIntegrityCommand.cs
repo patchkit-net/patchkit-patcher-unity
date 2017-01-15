@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal class CheckVersionIntegrityCommand : ICheckVersionIntegrityCommand
+    public class CheckVersionIntegrityCommand : ICheckVersionIntegrityCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CheckVersionIntegrityCommand));
 

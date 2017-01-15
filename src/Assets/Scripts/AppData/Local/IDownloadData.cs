@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal interface IDownloadData
+    public interface IDownloadData
     {
         string GetFilePath(string fileName);
 

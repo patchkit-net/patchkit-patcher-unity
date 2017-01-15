@@ -3,7 +3,7 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher.Status
 {
-    internal static class StatusWeightHelper
+    public static class StatusWeightHelper
     {
         public static double GetUnarchivePackageWeight(long size)
         {

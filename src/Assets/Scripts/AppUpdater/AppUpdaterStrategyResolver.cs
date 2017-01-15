@@ -2,7 +2,7 @@
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    internal class AppUpdaterStrategyResolver : IAppUpdaterStrategyResolver
+    public class AppUpdaterStrategyResolver : IAppUpdaterStrategyResolver
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterStrategyResolver));
 

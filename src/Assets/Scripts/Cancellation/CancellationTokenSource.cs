@@ -2,7 +2,7 @@
 
 namespace PatchKit.Unity.Patcher.Cancellation
 {
-    internal class CancellationTokenSource
+    public class CancellationTokenSource
     {
         public bool IsCancelled { get; private set; }
 

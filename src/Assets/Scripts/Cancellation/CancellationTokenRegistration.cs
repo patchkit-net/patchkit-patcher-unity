@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace PatchKit.Unity.Patcher.Cancellation
 {
-    internal class CancellationTokenRegistration : IDisposable
+    public class CancellationTokenRegistration : IDisposable
     {
         [CanBeNull]
         private readonly CancellationTokenSource _cancellationTokenSource;

@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Status
 {
-    internal interface IDownloadStatusReporter
+    public interface IDownloadStatusReporter
     {
         void OnDownloadStarted();
 

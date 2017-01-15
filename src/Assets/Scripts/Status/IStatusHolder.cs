@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Status
 {
-    internal interface IStatusHolder
+    public interface IStatusHolder
     {
         double Progress { get; }
 

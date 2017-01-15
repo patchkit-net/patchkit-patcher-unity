@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal enum FileIntegrityStatus
+    public enum FileIntegrityStatus
     {
         Ok,
         MissingData,

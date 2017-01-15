@@ -4,7 +4,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData
 {
-    internal class AppData
+    public class AppData
     {
         public readonly ILocalData LocalData;
 

@@ -7,7 +7,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal class LocalData : ILocalData
+    public class LocalData : ILocalData
     {
         private static readonly List<string> CurrentInstances = new List<string>();
 

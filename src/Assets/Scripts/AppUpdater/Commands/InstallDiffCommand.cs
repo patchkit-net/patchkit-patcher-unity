@@ -9,7 +9,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal class InstallDiffCommand : IInstallDiffCommand
+    public class InstallDiffCommand : IInstallDiffCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallDiffCommand));
 

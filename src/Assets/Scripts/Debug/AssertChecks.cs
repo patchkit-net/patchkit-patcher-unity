@@ -3,7 +3,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    internal class AssertChecks
+    public class AssertChecks
     {
         private static void Argument(bool condition, string name, string message)
         {

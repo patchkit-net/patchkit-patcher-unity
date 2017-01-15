@@ -9,7 +9,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// <summary>
     /// Base HTTP downloader. Data is transfered through events.
     /// </summary>
-    internal sealed class BaseHttpDownloader
+    public sealed class BaseHttpDownloader
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(BaseHttpDownloader));
 

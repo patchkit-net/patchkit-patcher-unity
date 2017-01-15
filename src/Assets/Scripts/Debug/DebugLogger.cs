@@ -2,7 +2,7 @@
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    internal class DebugLogger
+    public class DebugLogger
     {
         private readonly string _context;
 

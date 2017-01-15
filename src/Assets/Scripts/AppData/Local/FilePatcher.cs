@@ -5,7 +5,7 @@ using PatchKit.Unity.Patcher.Debug;
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
     // TODO: Use rsync as executable.
-    internal class FilePatcher
+    public class FilePatcher
     {
         [DllImport("rsync", EntryPoint = "rs_rdiff_patch")]
         private static extern int rs_rdiff_patch(string basisFile, string deltaFile, string newFile);

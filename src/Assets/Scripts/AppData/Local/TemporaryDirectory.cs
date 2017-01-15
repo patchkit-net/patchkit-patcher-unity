@@ -3,7 +3,7 @@ using System.IO;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal class TemporaryDirectory : IDisposable
+    public class TemporaryDirectory : IDisposable
     {
         public readonly string Path;
 

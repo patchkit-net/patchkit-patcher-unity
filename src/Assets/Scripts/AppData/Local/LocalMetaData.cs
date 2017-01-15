@@ -7,7 +7,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal class LocalMetaData : ILocalMetaData
+    public class LocalMetaData : ILocalMetaData
     {
         private struct Data
         {

@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Status
 {
-    internal interface IStatusMonitor
+    public interface IStatusMonitor
     {
         event OverallStatusChangedHandler OverallStatusChanged;
 

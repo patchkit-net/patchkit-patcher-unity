@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.Status
 {
-    internal class DownloadStatusHolder : IStatusHolder
+    public class DownloadStatusHolder : IStatusHolder
     {
         public long Bytes;
 

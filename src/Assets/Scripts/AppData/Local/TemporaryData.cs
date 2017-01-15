@@ -4,7 +4,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    internal class TemporaryData : TemporaryDirectory, ITemporaryData
+    public class TemporaryData : TemporaryDirectory, ITemporaryData
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(TemporaryData));
 

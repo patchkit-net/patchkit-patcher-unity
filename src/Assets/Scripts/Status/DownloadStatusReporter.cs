@@ -3,7 +3,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.Status
 {
-    internal class DownloadStatusReporter : IDownloadStatusReporter
+    public class DownloadStatusReporter : IDownloadStatusReporter
     {
         private readonly DownloadStatusHolder _downloadStatusHolder;
 

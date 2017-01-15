@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    internal interface IAppUpdaterStrategyResolver
+    public interface IAppUpdaterStrategyResolver
     {
         IAppUpdaterStrategy Resolve(AppUpdaterContext context);
     }

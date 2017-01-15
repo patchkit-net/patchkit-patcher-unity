@@ -1,6 +1,6 @@
 ﻿namespace PatchKit.Unity.Patcher.AppData.Remote
 {
-    internal interface IRemoteData
+    public interface IRemoteData
     {
         IRemoteMetaData MetaData { get; }
 

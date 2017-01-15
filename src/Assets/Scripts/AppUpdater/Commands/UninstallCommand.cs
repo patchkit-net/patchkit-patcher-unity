@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    internal class UninstallCommand : IUninstallCommand
+    public class UninstallCommand : IUninstallCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(UninstallCommand));
 

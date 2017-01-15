@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
-    internal class RemoteMetaData : IRemoteMetaData
+    public class RemoteMetaData : IRemoteMetaData
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteMetaData));
 
