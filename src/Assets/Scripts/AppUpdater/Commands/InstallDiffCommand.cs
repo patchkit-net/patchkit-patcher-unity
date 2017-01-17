@@ -65,6 +65,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Preparing diff installation.");
 
+            _context.App.LocalData.EnableWriteAccess();
+
             _diffSummary = _context.App.RemoteData.MetaData.GetDiffSummary(_versionId);
 
             double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_diffSummary.Size);

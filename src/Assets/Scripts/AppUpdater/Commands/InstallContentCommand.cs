@@ -74,6 +74,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Preparing content installation.");
 
+            _context.App.LocalData.EnableWriteAccess();
+
             _versionSummary = _context.App.RemoteData.MetaData.GetContentSummary(_versionId);
 
             double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionSummary);

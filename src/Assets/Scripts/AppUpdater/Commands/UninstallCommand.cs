@@ -54,6 +54,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Preparing uninstallation.");
 
+            _context.App.LocalData.EnableWriteAccess();
+
             double weight = StatusWeightHelper.GetUninstallWeight();
             _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
         }

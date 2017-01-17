@@ -4,6 +4,11 @@ namespace PatchKit.Unity.Patcher.Debug
 {
     public class AssertChecks : BaseChecks
     {
+        static AssertChecks()
+        {
+            Assert.raiseExceptions = true;
+        }
+
         private static ValidationFailedHandler ArgumentValidationFailed(string name)
         {
             return message => Assert.IsTrue(true, string.Format("Argument \"{0}\": {1}", name, message));
