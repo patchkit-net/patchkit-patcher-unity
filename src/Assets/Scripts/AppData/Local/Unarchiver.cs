@@ -38,15 +38,17 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 int entry = 0;
 
+                OnUnarchiveProgressChanged(null, false, 0, zip.Count);
+
                 foreach (var zipEntry in zip)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    OnUnarchiveProgressChanged(zipEntry.FileName, entry, zip.Count);
-
                     UnarchiveEntry(zipEntry);
 
                     entry++;
+
+                    OnUnarchiveProgressChanged(zipEntry.FileName, !zipEntry.FileName.EndsWith("/"), entry, zip.Count);
                 }
             }
         }
@@ -58,9 +60,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             zipEntry.Extract(_destinationDirPath, ExtractExistingFileAction.OverwriteSilently);
         }
 
-        protected virtual void OnUnarchiveProgressChanged(string name, int entry, int amount)
+        protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount)
         {
-            if (UnarchiveProgressChanged != null) UnarchiveProgressChanged(name, entry, amount);
+            if (UnarchiveProgressChanged != null) UnarchiveProgressChanged(name, isFile, entry, amount);
         }
     }
 }

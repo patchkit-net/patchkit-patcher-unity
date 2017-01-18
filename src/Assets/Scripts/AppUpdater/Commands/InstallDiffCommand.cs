@@ -44,7 +44,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 var unarchiver = new Unarchiver(_packagePath, packageDir.Path);
 
-                unarchiver.UnarchiveProgressChanged += (name, entry, amount) =>
+                unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
                 {
                     _unarchivePackageStatusReporter.OnProgressChanged(entry / (double)amount);
                 };
