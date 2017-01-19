@@ -2,5 +2,5 @@
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
-    public delegate void RequestCreatedHandler(HttpWebRequest httpWebRequest);
+    public delegate void RequestCreatedHandler(IHttpWebRequestAdapter httpWebRequest);
 }

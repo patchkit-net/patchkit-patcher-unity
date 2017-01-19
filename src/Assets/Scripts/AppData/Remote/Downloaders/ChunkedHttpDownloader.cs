@@ -122,7 +122,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 request.AddRange(offset);
             };
 
-            baseHttpDownloader.DataDownloaded += (bytes, length) =>
+            baseHttpDownloader.DataAvailable += (bytes, length) =>
             {
                 bool retry = !_fileStream.Write(bytes, 0, length);
 

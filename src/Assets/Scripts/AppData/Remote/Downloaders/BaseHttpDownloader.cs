@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -8,26 +7,36 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
     public sealed class BaseHttpDownloader
     {
+        public delegate IHttpWebRequestAdapter CreateNewHttpWebRequest(string url);
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(BaseHttpDownloader));
 
         private readonly string _url;
         private readonly int _bufferSize;
+        private readonly CreateNewHttpWebRequest _createNewHttpWebRequest;
         private readonly byte[] _buffer;
         private readonly int _timeout;
 
-        private HttpWebRequest _request;
+        private IHttpWebRequestAdapter _request;
 
         private bool _downloadHasBeenCalled;
 
         public event RequestCreatedHandler RequestCreated;
 
-        public event DataDownloadedHandler DataDownloaded;
+        public event DataDownloadedHandler DataAvailable;
 
-        public BaseHttpDownloader(string url, int timeout, int bufferSize = 1024)
+        public BaseHttpDownloader(string url, int timeout, int bufferSize = 1024) : 
+            this(url, timeout, bufferSize, CreateDefaultHttpWebRequest)
+        {
+        }
+
+        public BaseHttpDownloader(string url, int timeout, int bufferSize,
+            CreateNewHttpWebRequest createNewHttpWebRequest)
         {
             Checks.ArgumentNotNullOrEmpty(url, "url");
             Checks.ArgumentMoreThanZero(timeout, "timeout");
             Checks.ArgumentMoreThanZero(bufferSize, "bufferSize");
+            AssertChecks.ArgumentNotNull(createNewHttpWebRequest, "createNewHttpWebRequest");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(url, "url");
@@ -37,6 +46,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _url = url;
             _timeout = timeout;
             _bufferSize = bufferSize;
+            _createNewHttpWebRequest = createNewHttpWebRequest;
             _buffer = new byte[_bufferSize];
 
             ServicePointManager.ServerCertificateValidationCallback =
@@ -48,14 +58,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             DebugLogger.Log("Creating request");
 
-            _request = (HttpWebRequest)WebRequest.Create(_url);
+            _request = _createNewHttpWebRequest(_url);
             _request.Method = "GET";
             _request.Timeout = _timeout;
 
             OnRequestCreated(_request);
         }
 
-        private void VerifyResponse(HttpWebResponse response)
+        private void VerifyResponse(IHttpWebResponseAdapter response)
         {
             DebugLogger.Log("Veryfing response");
 
@@ -66,11 +76,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.PartialContent)
             {
-                throw new DownloaderException("Resource request returned status code " + response.StatusCode + " - " + _url, DownloaderExceptionStatus.Other);
+                throw new DownloaderException(
+                    "Resource request returned status code " + response.StatusCode + " - " + _url,
+                    DownloaderExceptionStatus.Other);
             }
         }
 
-        private void ProcessResponse(HttpWebResponse response, CancellationToken cancellationToken)
+        private void ProcessResponse(IHttpWebResponseAdapter response, CancellationToken cancellationToken)
         {
             DebugLogger.Log("Processing response");
 
@@ -78,7 +90,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 if (responseStream == null)
                 {
-                    throw new DownloaderException("Resource response stream is null - " + _url, DownloaderExceptionStatus.EmptyStream);
+                    throw new DownloaderException("Resource response stream is null - " + _url,
+                        DownloaderExceptionStatus.EmptyStream);
                 }
 
                 ProcessStream(responseStream, cancellationToken);
@@ -94,14 +107,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                OnDataDownloaded(_buffer, bufferRead);
+                OnDataAvailable(_buffer, bufferRead);
             }
         }
 
         public void Download(CancellationToken cancellationToken)
         {
             AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
-            
+
             DebugLogger.Log("Starting download.");
 
             CreateRequest();
@@ -112,19 +125,24 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             using (var response = _request.GetResponse())
             {
-                VerifyResponse((HttpWebResponse) response);
-                ProcessResponse((HttpWebResponse) response, cancellationToken);
+                VerifyResponse(response);
+                ProcessResponse(response, cancellationToken);
             }
         }
 
-        private void OnRequestCreated(HttpWebRequest request)
+        private void OnRequestCreated(IHttpWebRequestAdapter request)
         {
             if (RequestCreated != null) RequestCreated(request);
         }
 
-        private void OnDataDownloaded(byte[] bytes, int length)
+        private void OnDataAvailable(byte[] bytes, int length)
         {
-            if (DataDownloaded != null) DataDownloaded(bytes, length);
+            if (DataAvailable != null) DataAvailable(bytes, length);
+        }
+
+        private static IHttpWebRequestAdapter CreateDefaultHttpWebRequest(string url)
+        {
+            return new HttpWebRequestAdapter((HttpWebRequest)WebRequest.Create(url));
         }
     }
 }

@@ -124,7 +124,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             long downloadedBytes = 0;
 
             BaseHttpDownloader baseHttpDownloader = new BaseHttpDownloader(url, _timeout);
-            baseHttpDownloader.DataDownloaded += (bytes, length) =>
+            baseHttpDownloader.DataAvailable += (bytes, length) =>
             {
                 _fileStream.Write(bytes, 0, length);
 
