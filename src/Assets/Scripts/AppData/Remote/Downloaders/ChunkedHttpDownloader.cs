@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// proven corrupted. In this way even on poor internet connection there's a possibility
     /// of downloading big files through http without the need of re-downloading it again.
     /// </summary>
-    public class ChunkedHttpDownloader : IDisposable
+    public class ChunkedHttpDownloader : IChunkedHttpDownloader
     {
         private const int RetriesAmount = 100;
 
@@ -117,10 +117,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             DebugLogger.LogVariable(offset, "offset");
 
             BaseHttpDownloader baseHttpDownloader = new BaseHttpDownloader(url, _timeout);
-            baseHttpDownloader.RequestCreated += request =>
-            {
-                request.AddRange(offset);
-            };
+            baseHttpDownloader.SetBytesRange(offset);
 
             baseHttpDownloader.DataAvailable += (bytes, length) =>
             {

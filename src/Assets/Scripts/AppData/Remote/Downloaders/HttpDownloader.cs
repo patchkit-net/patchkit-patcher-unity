@@ -11,15 +11,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// Downloads file through HTTP without any validation (such as hash checking).
     /// </summary>
     /// <seealso cref="System.IDisposable" />
-    public class HttpDownloader : IDisposable
+    public class HttpDownloader : IHttpDownloader
     {
         private const int RetriesAmount = 100;
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(HttpDownloader));
 
-        private readonly string[] _urls;
-
-        private readonly long _size;
+        private readonly RemoteResource _resource;
 
         private readonly int _timeout;
 
@@ -29,24 +27,17 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public HttpDownloader(string destinationFilePath, RemoteResource resource, int timeout) : 
-            this(destinationFilePath, resource.Urls, resource.Size, timeout)
+        public HttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
         {
             Checks.ArgumentValidRemoteResource(resource, "resource");
-        }
-
-        public HttpDownloader(string destinationFilePath, string[] urls, long size, int timeout)
-        {
             Checks.ArgumentParentDirectoryExists(destinationFilePath, "destinationFilePath");
-            AssertChecks.ArgumentNotNull(urls, "urls");
             Checks.ArgumentMoreThanZero(timeout, "timeout");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
             DebugLogger.LogVariable(timeout, "timeout");
 
-            _urls = urls;
-            _size = size;
+            _resource = resource;
             _timeout = timeout;
 
             _fileStream = new FileStream(destinationFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
@@ -58,7 +49,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             DebugLogger.Log("Starting download.");
 
-            var validUrls = new List<string>(_urls);
+            var validUrls = new List<string>(_resource.Urls);
             validUrls.Reverse();
 
             int retry = RetriesAmount;
@@ -129,7 +120,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 _fileStream.Write(bytes, 0, length);
 
                 downloadedBytes += length;
-                OnDownloadProgressChanged(downloadedBytes, _size);
+                OnDownloadProgressChanged(downloadedBytes, _resource.Size);
             };
 
             baseHttpDownloader.Download(cancellationToken);

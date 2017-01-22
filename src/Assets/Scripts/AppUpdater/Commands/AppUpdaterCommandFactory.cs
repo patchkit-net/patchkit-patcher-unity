@@ -15,9 +15,9 @@
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId,
-            AppUpdaterContext context)
+            App app)
         {
-            return new InstallContentCommand(versionId, context);
+            return new InstallContentCommand(versionId, app);
         }
 
         public IDownloadContentPackageCommand CreateDownloadContentPackageCommand(int versionId,

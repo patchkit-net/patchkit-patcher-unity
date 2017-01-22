@@ -4,7 +4,7 @@ using NUnit.Framework;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 
-public class ChunkedFileTest {
+public class ChunkedFileStreamTest {
     private string _fileName;
     private byte[] _invalidHash;
     private ChunksData _chunksData;

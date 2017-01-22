@@ -4,7 +4,6 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
-using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -13,23 +12,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
 
         private readonly int _versionId;
-        private readonly AppUpdaterContext _context;
+        private readonly App _app;
 
         private string _packagePath;
         private AppContentSummary _versionSummary;
         private IGeneralStatusReporter _copyFilesStatusReporter;
         private IGeneralStatusReporter _unarchivePackageStatusReporter;
 
-        public InstallContentCommand(int versionId, AppUpdaterContext context)
+        public InstallContentCommand(int versionId, App app)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
-            AssertChecks.ArgumentNotNull(context, "context");
+            AssertChecks.ArgumentNotNull(app, "app");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(versionId, "versionId");
 
             _versionId = versionId;
-            _context = context;
+            _app = app;
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -38,9 +37,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Installing content.");
 
-            AssertChecks.IsTrue(_context.App.LocalData.MetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
+            AssertChecks.IsTrue(_app.LocalData.MetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
 
-            using (var packageDir = new TemporaryDirectory(_context.App.LocalData.TemporaryData.GetUniquePath()))
+            using (var packageDir = new TemporaryDirectory(_app.LocalData.TemporaryData.GetUniquePath()))
             {
                 DebugLogger.Log("Unarchiving package.");
 
@@ -74,9 +73,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Preparing content installation.");
 
-            _context.App.LocalData.EnableWriteAccess();
+            _app.LocalData.EnableWriteAccess();
 
-            _versionSummary = _context.App.RemoteData.MetaData.GetContentSummary(_versionId);
+            _versionSummary = _app.RemoteData.MetaData.GetContentSummary(_versionId);
 
             double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionSummary);
             _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
@@ -101,8 +100,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new InstallerException(string.Format("Cannot find file {0} in content package.", fileName));
             }
 
-            _context.App.LocalData.CreateOrUpdateFile(fileName, sourceFilePath);
-            _context.App.LocalData.MetaData.AddOrUpdateFile(fileName, _versionId);
+            _app.LocalData.CreateOrUpdateFile(fileName, sourceFilePath);
+            _app.LocalData.MetaData.AddOrUpdateFile(fileName, _versionId);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// Downloads file through torrents by using <see cref="TorrentClient"/>.
     /// </summary>
     /// <seealso cref="System.IDisposable" />
-    public class TorrentDownloader : IDisposable
+    public class TorrentDownloader : ITorrentDownloader
     {
         private const int UpdateInterval = 1000;
 
@@ -74,9 +74,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             DebugLogger.Log("Downloading torrent file.");
 
-            using (var httpDownloader = new HttpDownloader(TorrentFilePath, _resource.TorrentUrls, -1, _timeout))
+            using (var torrentFileStream = new FileStream(TorrentFilePath, FileMode.Create))
             {
-                httpDownloader.Download(cancellationToken);
+                var baseHttpDownloader = new BaseHttpDownloader(TorrentFilePath, _timeout);
+                baseHttpDownloader.DataAvailable += (data, length) =>
+                {
+                    // ReSharper disable once AccessToDisposedClosure
+                    torrentFileStream.Write(data, 0, length);
+                };
+                baseHttpDownloader.Download(cancellationToken);
             }
         }
 

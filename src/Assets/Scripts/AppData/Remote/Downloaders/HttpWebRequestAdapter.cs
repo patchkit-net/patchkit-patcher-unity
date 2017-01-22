@@ -31,9 +31,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             set { _httpWebRequest.Timeout = value; }
         }
 
-        public void AddRange(long range)
+        public void AddRange(long start, long end)
         {
-            _httpWebRequest.AddRange(range);
+            _httpWebRequest.AddRange(start, end);
         }
     }
 }

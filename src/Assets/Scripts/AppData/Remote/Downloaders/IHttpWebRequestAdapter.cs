@@ -8,6 +8,6 @@
 
         int Timeout { get; set; }
 
-        void AddRange(long range);
+        void AddRange(long start, long end);
     }
 }

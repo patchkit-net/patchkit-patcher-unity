@@ -1,0 +1,1 @@
+{"size":6592,"encryption_method":"none","compression_method":"zip","hashing_method":"xxhash","hash_code":"24739c5c","chunks":{"size":524288,"hashes":["24739c5c"]},"added_files":["text3.txt"],"modified_files":["test.exe","logo.png","text2.txt","text.txt"],"removed_files":["logo2.png"]}

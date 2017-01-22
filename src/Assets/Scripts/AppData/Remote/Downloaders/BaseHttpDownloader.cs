@@ -5,7 +5,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
-    public sealed class BaseHttpDownloader
+    public sealed class BaseHttpDownloader : IBaseHttpDownloader
     {
         public delegate IHttpWebRequestAdapter CreateNewHttpWebRequest(string url);
 
@@ -20,10 +20,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private IHttpWebRequestAdapter _request;
 
         private bool _downloadHasBeenCalled;
+        private long _bytesRangeStart;
+        private long _bytesRangeEnd = -1;
 
-        public event RequestCreatedHandler RequestCreated;
-
-        public event DataDownloadedHandler DataAvailable;
+        public event DataAvailableHandler DataAvailable;
 
         public BaseHttpDownloader(string url, int timeout, int bufferSize = 1024) : 
             this(url, timeout, bufferSize, CreateDefaultHttpWebRequest)
@@ -61,8 +61,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _request = _createNewHttpWebRequest(_url);
             _request.Method = "GET";
             _request.Timeout = _timeout;
-
-            OnRequestCreated(_request);
+            _request.AddRange(_bytesRangeStart, _bytesRangeEnd);
         }
 
         private void VerifyResponse(IHttpWebResponseAdapter response)
@@ -111,6 +110,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
+        public void SetBytesRange(long start, long end = -1L)
+        {
+            _bytesRangeStart = start;
+            _bytesRangeEnd = end;
+        }
+
         public void Download(CancellationToken cancellationToken)
         {
             AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
@@ -128,11 +133,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 VerifyResponse(response);
                 ProcessResponse(response, cancellationToken);
             }
-        }
-
-        private void OnRequestCreated(IHttpWebRequestAdapter request)
-        {
-            if (RequestCreated != null) RequestCreated(request);
         }
 
         private void OnDataAvailable(byte[] bytes, int length)

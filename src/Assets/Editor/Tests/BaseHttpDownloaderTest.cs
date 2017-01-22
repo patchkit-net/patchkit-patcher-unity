@@ -8,77 +8,117 @@ using PatchKit.Unity.Patcher.Cancellation;
 
 public class BaseHttpDownloaderTest
 {
-    private byte[] _data;
-    private MemoryStream _dataStream;
-
-    [SetUp]
-    public void Setup()
+    private byte[] CreateRandomData(int length)
     {
-        _data = new byte[1024]; // 1 KB
-        new Random().NextBytes(_data);
-        _dataStream = new MemoryStream(_data, false);
+        byte[] data = new byte[length];
+        new Random().NextBytes(data);
+        return data;
     }
 
-    private IHttpWebResponseAdapter MockResponse(Stream responseStream, HttpStatusCode statusCode)
+    private IHttpWebRequestAdapter MockRequest(Stream responseStream, HttpStatusCode statusCode)
     {
+        var request = Substitute.For<IHttpWebRequestAdapter>();
         var response = Substitute.For<IHttpWebResponseAdapter>();
         response.GetResponseStream().Returns(responseStream);
         response.StatusCode.Returns(statusCode);
-
-        return response;
-    }
-
-    private IHttpWebRequestAdapter MockRequest(IHttpWebResponseAdapter response)
-    {
-        var request = Substitute.For<IHttpWebRequestAdapter>();
         request.GetResponse().Returns(response);
+        request.WhenForAnyArgs(adapter => adapter.AddRange(0, 0))
+            .Do(info =>
+            {
+                if (responseStream != null)
+                {
+                    responseStream.Seek((long) info[0], SeekOrigin.Begin);
+                }
+            });
 
         return request;
     }
 
-    private void ValidateData(MemoryStream stream)
+    private void ValidateOutput(byte[] inputData, MemoryStream outputDataStream, int bytesRangeStart, int bytesRangeEnd)
     {
         byte[] buffer = new byte[1];
 
-        for (int i = 0; i < _data.Length; i++)
+        for (int i = bytesRangeStart; i < bytesRangeEnd; i++)
         {
-            Assert.AreEqual(1, stream.Read(buffer, 0, 1), "Invalid data.");
-            Assert.AreEqual(_data[i], buffer[0], "Invalid data.");
+            Assert.AreEqual(1, outputDataStream.Read(buffer, 0, 1),
+                string.Format("Cannot read output data stream at byte {0}.", i));
+            Assert.AreEqual(inputData[i], buffer[0], string.Format("Output data is different at byte {0}.", i));
         }
     }
 
     [Test]
-    public void DataAvailable()
+    public void Download()
     {
-        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64, url =>
-        {
-            var response = MockResponse(_dataStream, HttpStatusCode.OK);
-            return MockRequest(response);
-        });
+        var inputData = CreateRandomData(1024);
+        var inputDataStream = new MemoryStream(inputData, false);
 
-        MemoryStream readStream = new MemoryStream(_data.Length);
+        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64,
+            url => MockRequest(inputDataStream, HttpStatusCode.OK));
+
+        var outputDataStream = new MemoryStream(inputData.Length);
 
         baseHttpDownloader.DataAvailable += (data, length) =>
         {
-            readStream.Write(data, 0, length);
+            Assert.IsTrue(length > 0, "Data length passed in DataAvailable event is not more than zero.");
+
+            outputDataStream.Write(data, 0, length);
         };
 
         baseHttpDownloader.Download(CancellationToken.Empty);
 
-        readStream.Seek(0, SeekOrigin.Begin);
+        outputDataStream.Seek(0, SeekOrigin.Begin);
 
-        ValidateData(readStream);
+        ValidateOutput(inputData, outputDataStream, 0, inputData.Length);
+    }
+
+    [Test]
+    public void DownloadRange()
+    {
+        const int bytesStartRange = 100;
+        const int bytesEndRange = 200;
+
+        var inputData = CreateRandomData(1024);
+        var inputDataStream = new MemoryStream(inputData, false);
+
+        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64,
+            url => MockRequest(inputDataStream, HttpStatusCode.OK));
+
+        var outputDataStream = new MemoryStream(inputData.Length);
+
+        baseHttpDownloader.DataAvailable += (data, length) =>
+        {
+            Assert.IsTrue(length > 0, "Data length passed in DataAvailable event is not more than zero.");
+
+            outputDataStream.Write(data, 0, length);
+        };
+
+        baseHttpDownloader.SetBytesRange(bytesStartRange, bytesEndRange);
+
+        baseHttpDownloader.Download(CancellationToken.Empty);
+
+        outputDataStream.Seek(0, SeekOrigin.Begin);
+
+        ValidateOutput(inputData, outputDataStream, bytesStartRange, bytesEndRange);
     }
 
     [Test]
     public void InvalidResponse()
     {
-        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64, url =>
-        {
-            var response = MockResponse(_dataStream, HttpStatusCode.BadRequest);
-            return MockRequest(response);
-        });
-        
+        var inputData = CreateRandomData(1024);
+        var inputDataStream = new MemoryStream(inputData, false);
+
+        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64,
+            url => MockRequest(inputDataStream, HttpStatusCode.BadRequest));
+
+        Assert.Catch<DownloaderException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
+    }
+
+    [Test]
+    public void EmptyDataStream()
+    {
+        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64,
+            url => MockRequest(null, HttpStatusCode.OK));
+
         Assert.Catch<DownloaderException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
     }
 }
