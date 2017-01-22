@@ -10,12 +10,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private readonly string _packagePath;
         private readonly string _destinationDirPath;
+        private readonly string _password;
 
         private bool _unarchiveHasBeenCalled;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
-        public Unarchiver(string packagePath, string destinationDirPath)
+        public Unarchiver(string packagePath, string destinationDirPath, string password = null)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
@@ -26,6 +27,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             _packagePath = packagePath;
             _destinationDirPath = destinationDirPath;
+            _password = password;
         }
 
         public void Unarchive(CancellationToken cancellationToken)
@@ -36,6 +38,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             using (var zip = ZipFile.Read(_packagePath))
             {
+                zip.Password = _password;
+
                 int entry = 0;
 
                 OnUnarchiveProgressChanged(null, false, 0, zip.Count);

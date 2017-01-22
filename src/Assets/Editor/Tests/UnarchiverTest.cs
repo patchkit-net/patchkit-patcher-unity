@@ -82,6 +82,18 @@ class UnarchiverTest
     }
 
     [Test]
+    public void UnarchiveWithPassword()
+    {
+        string password = "\x08\x07\x18\x24" + "123==";
+
+        var unarchiver = new Unarchiver(TestFixtures.GetFilePath("unarchiver-test/password-zip.zip"), _dirPath, password);
+
+        unarchiver.Unarchive(CancellationToken.Empty);
+
+        CheckConsistency(TestFixtures.GetDirectoryPath("unarchiver-test/password-zip"), _dirPath);
+    }
+
+    [Test]
     public void ProgressReporting()
     {
         var unarchiver = new Unarchiver(TestFixtures.GetFilePath("unarchiver-test/zip.zip"), _dirPath);
