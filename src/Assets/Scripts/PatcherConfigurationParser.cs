@@ -9,11 +9,21 @@ namespace PatchKit.Unity.Patcher
     {
         public void Parse(ref PatcherConfiguration configuration)
         {
-            string appSecret;
+            string forceAppSecret = Environment.GetEnvironmentVariable("PK_PATCHER_FORCE_SECRET");
 
-            if (TryReadArgument("--secret", out appSecret))
+            if (forceAppSecret != null)
             {
-                configuration.AppSecret = DecodeSecret(appSecret);
+                configuration.AppSecret = forceAppSecret;
+                Debug.Log(string.Format("Using forced app secret from environment variable PK_PATCHER_FORCE_SECRET - {0}", forceAppSecret));
+            }
+            else
+            {
+                string appSecret;
+
+                if (TryReadArgument("--secret", out appSecret))
+                {
+                    configuration.AppSecret = DecodeSecret(appSecret);
+                }
             }
 
             string applicationDataPath;
@@ -24,15 +34,16 @@ namespace PatchKit.Unity.Patcher
                 configuration.ApplicationDataPath = Path.Combine(GetBaseApplicationDataPath(), applicationDataPath);
             }
 
-            string forceVersionStr;
+            string forceAppVersionString = Environment.GetEnvironmentVariable("PK_PATCHER_FORCE_VERSION");
 
-            if (TryReadArgument("--forceversion", out forceVersionStr))
+            if (forceAppVersionString != null)
             {
-                int forceVersion;
+                int forceAppVersion;
 
-                if (int.TryParse(forceVersionStr, out forceVersion))
+                if (int.TryParse(forceAppVersionString, out forceAppVersion))
                 {
-                    configuration.ForceVersion = forceVersion;
+                    configuration.ForceAppVersion = forceAppVersion;
+                    Debug.Log(string.Format("Using forced app version from environment variable PK_PATCHER_FORCE_VERSION - {0}", forceAppVersion));
                 }
             }
         }

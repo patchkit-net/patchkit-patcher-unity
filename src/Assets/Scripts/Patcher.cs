@@ -271,13 +271,11 @@ namespace PatchKit.Unity.Patcher
             int latestVersionId = _remoteAppData.GetLatestVersionId();
             Debug.Log(string.Format("Latest version - {0}", latestVersionId));
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            if (_configuration.ForceVersion != 0)
+            if (_configuration.ForceAppVersion != 0)
             {
-                latestVersionId = _configuration.ForceVersion;
-                Debug.Log(string.Format("Forcing application version - {0}", _configuration.ForceVersion));
+                latestVersionId = _configuration.ForceAppVersion;
+                Debug.Log(string.Format("Forcing application version - {0}", _configuration.ForceAppVersion));
             }
-#endif
 
             if (localVersionId == null || localVersionId.Value != latestVersionId)
             {

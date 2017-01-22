@@ -20,7 +20,7 @@ namespace PatchKit.Unity.Patcher
         /// Forced application version to download. If equals to <c>0</c>, the newest application version is downloaded.
         /// Works only in editor/development build. 
         /// </summary>
-        public int ForceVersion;
+        public int ForceAppVersion;
 
         public bool AllowToPlayWithoutNewestVersion;
     }
