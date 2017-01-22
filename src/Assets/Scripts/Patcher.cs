@@ -83,7 +83,7 @@ namespace PatchKit.Unity.Patcher
                 throw new InvalidOperationException("Patching is already started.");
             }
 
-            _localAppData = new LocalAppData(_configuration.ApplicationDataPath, Path.Combine(_configuration.ApplicationDataPath, ".temp"));
+            _localAppData = new LocalAppData(_configuration.ApplicationDataPath, Path.Combine(_configuration.ApplicationDataPath, ".temp"), _configuration.AppSecret);
             var keysApiConnection = new KeysApiConnection(Settings.GetKeysApiConnectionSettings());
             var keyLicenseValidator = new KeyLicenseValidator(_configuration.AppSecret, keysApiConnection);
             _remoteAppData = new RemoteAppData(_configuration.AppSecret, _keyLicenseObtainer, keyLicenseValidator);

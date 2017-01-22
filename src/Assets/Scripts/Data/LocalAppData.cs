@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Diff;
@@ -26,13 +27,15 @@ namespace PatchKit.Unity.Patcher.Data
         private readonly string _path;
 
         public readonly string TemporaryPath;
+        private readonly string _appSecret;
 
-        public LocalAppData(string path, string temporaryPath)
+        public LocalAppData(string path, string temporaryPath, string appSecret)
         {
             this.Log(string.Format("Initializing local application data in {0}", path));
 
             _path = path;
             TemporaryPath = temporaryPath;
+            _appSecret = appSecret;
 
             _fileSystem = new Storage(_path);
 
@@ -262,6 +265,22 @@ namespace PatchKit.Unity.Patcher.Data
                 cancellationToken);
         }
 
+        private string GetResourcePassword(string appSecret, int versionId)
+        {
+            string hash = appSecret + versionId;
+            byte[] hashBytes = Encoding.UTF8.GetBytes(hash);
+            return '\x08'.ToString() + '\x07' + '\x18' + '\x24' + Convert.ToBase64String(hashBytes);
+        }
+
+        private string GetResourcePassword(JObject summary, string appSecret, int versionId)
+        {
+            if (summary.Value<string>("encryption_method") != "zip")
+            {
+                return null;
+            }
+            return GetResourcePassword(appSecret, versionId);
+        }
+
         /// <summary>
         /// Uninstalls the application.
         /// </summary>
@@ -299,7 +318,9 @@ namespace PatchKit.Unity.Patcher.Data
 
             using (var temporaryDirectory = new TemporaryStorage(Path.Combine(TemporaryPath, "install")))
             {
-                _unzipper.Unzip(contentPackagePath, temporaryDirectory.Path, unzipPackageProgressReporter,
+                _unzipper.Unzip(contentPackagePath, temporaryDirectory.Path, 
+                    GetResourcePassword(contentSummary, _appSecret, versionId), 
+                    unzipPackageProgressReporter,
                     cancellationToken);
 
                 ProcessContent(temporaryDirectory.Path, contentSummary, versionId, processContentProgressReporter,
@@ -344,7 +365,9 @@ namespace PatchKit.Unity.Patcher.Data
 
             using (var temporaryDirectory = new TemporaryStorage(Path.Combine(TemporaryPath, "patch")))
             {
-                _unzipper.Unzip(diffPackagePath, temporaryDirectory.Path, unzipPackageProgressReporter,
+                _unzipper.Unzip(diffPackagePath, temporaryDirectory.Path,
+                    GetResourcePassword(diffSummary, _appSecret, versionId),
+                    unzipPackageProgressReporter,
                     cancellationToken);
 
                 ProcessDiff(temporaryDirectory.Path, diffSummary, versionId, processDiffProgressReporter,

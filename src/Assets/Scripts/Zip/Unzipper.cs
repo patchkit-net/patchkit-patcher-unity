@@ -8,13 +8,14 @@ namespace PatchKit.Unity.Patcher.Zip
 {
     internal class Unzipper
     {
-        public void Unzip(string packageFilePath, string destinationDirPath,
+        public void Unzip(string packageFilePath, string destinationDirPath, string password,
             CustomProgressReporter<UnzipperProgress> progressReporter, CancellationToken cancellationToken)
         {
             Debug.Log(string.Format("Unzipping package {0} to {1}", packageFilePath, destinationDirPath));
 
             using (var zip = ZipFile.Read(packageFilePath))
             {
+                zip.Password = password;
                 int entryCounter = 0;
 
                 progressReporter.Progress = new UnzipperProgress
