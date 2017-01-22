@@ -82,7 +82,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return resource;
         }
 
-        private static ChunksData ConvertToChunksData(Api.Models.Chunks chunks)
+        private static ChunksData ConvertToChunksData(Api.Models.Main.Chunks chunks)
         {
             var chunksData = new ChunksData
             {

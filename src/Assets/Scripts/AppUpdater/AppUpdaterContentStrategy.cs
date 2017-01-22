@@ -39,7 +39,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId, _context);
             downloadContentPackage.Prepare(_context.StatusMonitor);
 
-            var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context);
+            var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context.App);
             installContent.Prepare(_context.StatusMonitor);
 
             validateLicense.Execute(cancellationToken);

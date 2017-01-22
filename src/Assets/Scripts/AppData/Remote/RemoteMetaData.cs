@@ -1,8 +1,7 @@
 ﻿using PatchKit.Api;
-using PatchKit.Api.Models;
+using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
@@ -34,7 +33,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return _mainApiConnection.GetAppLatestAppVersionId(_appSecret).Id;
         }
 
-        public Api.Models.App GetAppInfo()
+        public Api.Models.Main.App GetAppInfo()
         {
             DebugLogger.Log("Getting app info.");
             return _mainApiConnection.GetApplicationInfo(_appSecret);

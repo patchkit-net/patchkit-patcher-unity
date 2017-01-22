@@ -1,4 +1,4 @@
-﻿using PatchKit.Api.Models;
+﻿using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher.Status

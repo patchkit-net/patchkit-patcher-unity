@@ -33,6 +33,6 @@ class InstallContentCommandTest
 
         var remoteData = Substitute.For<IRemoteData>();
 
-        var command = new InstallContentCommand(1, )
+        //var command = new InstallContentCommand(1, )
     }
 }

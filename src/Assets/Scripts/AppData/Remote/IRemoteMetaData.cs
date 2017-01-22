@@ -1,4 +1,4 @@
-﻿using PatchKit.Api.Models;
+﻿using PatchKit.Api.Models.Main;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
@@ -6,7 +6,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
     {
         int GetLatestVersionId();
 
-        Api.Models.App GetAppInfo();
+        Api.Models.Main.App GetAppInfo();
 
         AppContentSummary GetContentSummary(int versionId);
 

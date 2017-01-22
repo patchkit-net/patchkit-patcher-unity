@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
-using PatchKit.Api.Models;
+using PatchKit.Api.Models.Main;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.Utilities;
 
