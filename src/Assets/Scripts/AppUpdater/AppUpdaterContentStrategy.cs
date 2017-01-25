@@ -28,7 +28,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var commandFactory = new Commands.AppUpdaterCommandFactory();
 
-            var latestVersionId = _context.App.RemoteData.MetaData.GetLatestVersionId();
+            var latestVersionId = _context.App.RemoteMetaData.GetLatestVersionId();
+
+            var latestVersionContentSummary = _context.App.RemoteMetaData.GetContentSummary(latestVersionId);
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
             validateLicense.Prepare(_context.StatusMonitor);
@@ -39,7 +41,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId, _context);
             downloadContentPackage.Prepare(_context.StatusMonitor);
 
-            var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context.App);
+            var installContent = commandFactory.CreateInstallContentCommand(latestVersionId,
+                latestVersionContentSummary,
+                _context.App.LocalData,
+                _context.App.LocalMetaData,
+                _context.App.TemporaryData);
             installContent.Prepare(_context.StatusMonitor);
 
             validateLicense.Execute(cancellationToken);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using PatchKit.Api;
+using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
@@ -12,15 +13,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ValidateLicenseCommand));
 
-        private readonly AppUpdaterContext _context;
+        private readonly ILicenseDialog _licenseDialog;
+        private readonly IRemoteMetaData _remoteMetaData;
 
-        public ValidateLicenseCommand(AppUpdaterContext context)
+        public ValidateLicenseCommand(ILicenseDialog licenseDialog, IRemoteMetaData remoteMetaData)
         {
-            AssertChecks.ArgumentNotNull(context, "context");
+            AssertChecks.ArgumentNotNull(licenseDialog, "licenseDialog");
+            AssertChecks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
 
             DebugLogger.LogConstructor();
 
-            _context = context;
+            _licenseDialog = licenseDialog;
+            _remoteMetaData = remoteMetaData;
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -29,7 +33,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             KeySecret = null;
 
-            var appInfo = _context.App.RemoteData.MetaData.GetAppInfo();
+            var appInfo = _remoteMetaData.GetAppInfo();
 
             if (!appInfo.UseKeys)
             {
@@ -40,13 +44,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             while (KeySecret == null)
             {
-                var result = _context.LicenseDialog.Display(messageType);
+                var result = _licenseDialog.Display(messageType);
 
                 if (result.Type == LicenseDialogResultType.Confirmed)
                 {
                     try
                     {
-                        KeySecret = _context.App.RemoteData.MetaData.GetKeySecret(result.Key);
+                        KeySecret = _remoteMetaData.GetKeySecret(result.Key);
                     }
                     catch (ApiResponseException apiResponseException)
                     {

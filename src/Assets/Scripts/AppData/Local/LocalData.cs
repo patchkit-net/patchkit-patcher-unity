@@ -9,21 +9,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     {
         private static readonly List<string> CurrentInstances = new List<string>();
 
-        private const string MetaDataFileName = "patcher_cache.json";
-
-        private const string TemporaryDataDirectoryName = "temp";
-
-        private const string DownloadDataDirectoryName = "downloads";
-
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(LocalData));
 
-        private ITemporaryData _temporaryData;
+        private readonly string _path;
 
-        private IDownloadData _downloadData;
+        private bool _disposed;
 
         private bool _writeAccess;
-
-        public readonly string Path;
 
         public LocalData(string path)
         {
@@ -34,30 +26,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(path, "path");
 
-            Path = path;
-            MetaData = new LocalMetaData(System.IO.Path.Combine(Path, MetaDataFileName));
+            _path = path;
             
-            CurrentInstances.Add(Path);
-        }
-
-        public ILocalMetaData MetaData { get; private set; }
-
-        public ITemporaryData TemporaryData
-        {
-            get
-            {
-                AssertChecks.IsTrue(_writeAccess, "Cannot use TemporaryData without write access.");
-                return _temporaryData;
-            }
-        }
-
-        public IDownloadData DownloadData
-        {
-            get
-            {
-                AssertChecks.IsTrue(_writeAccess, "Cannot use DownloadData without write access.");
-                return _downloadData;
-            }
+            CurrentInstances.Add(_path);
         }
 
         public void EnableWriteAccess()
@@ -66,19 +37,20 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             if (!_writeAccess)
             {
-                if (!Directory.Exists(Path))
-                {
-                    Directory.CreateDirectory(Path);
-                }
+                Directory.CreateDirectory(_path);
 
-                _temporaryData = new TemporaryData(System.IO.Path.Combine(Path, TemporaryDataDirectoryName));
-                _downloadData = new DownloadData(System.IO.Path.Combine(Path, DownloadDataDirectoryName));
                 _writeAccess = true;
             }
         }
 
+        private void CheckWriteAccess()
+        {
+            AssertChecks.IsTrue(_writeAccess, "Write access is required for this operation.");
+        }
+
         public virtual void CreateDirectory(string dirName)
         {
+            CheckWriteAccess();
             Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
 
             if (FileExists(dirName))
@@ -98,6 +70,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public virtual void DeleteDirectory(string dirName)
         {
+            CheckWriteAccess();
             Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
 
             DebugLogger.Log(string.Format("Deleting directory {0}", dirName));
@@ -132,6 +105,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public virtual void CreateOrUpdateFile(string fileName, string sourceFilePath)
         {
+            CheckWriteAccess();
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
             Checks.ArgumentFileExists(sourceFilePath, "sourceFilePath");
 
@@ -144,7 +118,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             string filePath = GetEntryPath(fileName);
 
-            string fileDirectoryPath = System.IO.Path.GetDirectoryName(filePath);
+            string fileDirectoryPath = Path.GetDirectoryName(filePath);
 
             if (fileDirectoryPath != null && !Directory.Exists(fileDirectoryPath))
             {
@@ -156,6 +130,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public virtual void DeleteFile(string fileName)
         {
+            CheckWriteAccess();
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
 
             DebugLogger.Log(string.Format("Deleting file {0}", fileName));
@@ -193,13 +168,34 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private string GetEntryPath(string entryName)
         {
-            return System.IO.Path.Combine(Path, entryName);
+            return Path.Combine(_path, entryName);
         }
 
         public void Dispose()
         {
-            CurrentInstances.Remove(Path);
-            TemporaryData.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~LocalData()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            CurrentInstances.Remove(_path);
+            if (Directory.Exists(_path))
+            {
+                Directory.Delete(_path, true);
+            }
+
+            _disposed = true;
         }
     }
 }

@@ -34,7 +34,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Downloading diff package.");
 
-            string diffPath = _context.App.LocalData.DownloadData.GetDiffPackagePath(_versionId);
+            string diffPath = _context.App.DownloadData.GetDiffPackagePath(_versionId);
 
             var resource = _context.App.RemoteData.GetDiffPackageResource(_versionId, _keySecret);
 

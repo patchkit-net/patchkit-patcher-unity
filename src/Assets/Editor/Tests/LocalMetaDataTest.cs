@@ -46,7 +46,7 @@ public class LocalMetaDataTest
         Assert.IsTrue(localMetaData2.FileExists("a"));
         Assert.IsTrue(localMetaData2.FileExists("b"));
 
-        Assert.AreEqual(1, localMetaData2.GetFileVersion("a"));
-        Assert.AreEqual(2, localMetaData2.GetFileVersion("b"));
+        Assert.AreEqual(1, localMetaData2.GetFileVersionId("a"));
+        Assert.AreEqual(2, localMetaData2.GetFileVersionId("b"));
     }
 }

@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             ApplicationIsInstalled(app);
 
-            AreEqual(app.GetInstalledVersion(), versionId, "Application versions don't match.");
+            AreEqual(app.GetInstalledVersionId(), versionId, "Application versions don't match.");
         }
     }
 }

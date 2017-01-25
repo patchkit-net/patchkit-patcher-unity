@@ -67,7 +67,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds.ContainsKey(fileName);
         }
 
-        public int GetFileVersion(string fileName)
+        public int GetFileVersionId(string fileName)
         {
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
             AssertChecks.IsTrue(FileExists(fileName), string.Format("File doesn't exist in meta data - {0}", fileName));

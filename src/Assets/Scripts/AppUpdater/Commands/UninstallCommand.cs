@@ -28,7 +28,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Uninstalling.");
 
-            var fileNames = _context.App.LocalData.MetaData.GetFileNames();
+            var fileNames = _context.App.LocalMetaData.GetFileNames();
 
             for (int i = 0; i < fileNames.Length; i++)
             {
@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     _context.App.LocalData.DeleteDirectory(directoryName);
                 }
 
-                _context.App.LocalData.MetaData.RemoveFile(fileName);
+                _context.App.LocalMetaData.RemoveFile(fileName);
 
                 _statusReporter.OnProgressChanged((i + 1)/(double) fileNames.Length);
             }

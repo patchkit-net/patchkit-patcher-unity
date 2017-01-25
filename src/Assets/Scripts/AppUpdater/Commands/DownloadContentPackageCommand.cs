@@ -34,7 +34,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Downloading content package.");
 
-            string contentPath = _context.App.LocalData.DownloadData.GetContentPackagePath(_versionId);
+            string contentPath = _context.App.DownloadData.GetContentPackagePath(_versionId);
 
             var downloader = new RemoteResourceDownloader(contentPath, _resource, _context.Configuration.UseTorrents);
 

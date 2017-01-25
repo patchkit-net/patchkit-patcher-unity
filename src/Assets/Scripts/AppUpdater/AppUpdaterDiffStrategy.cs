@@ -36,8 +36,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.Log("Patching with diff strategy.");
 
-            var latestVersionId = _context.App.RemoteData.MetaData.GetLatestVersionId();
-            var currentLocalVersionId = _context.App.GetInstalledVersion();
+            var latestVersionId = _context.App.RemoteMetaData.GetLatestVersionId();
+            var currentLocalVersionId = _context.App.GetInstalledVersionId();
 
             var commandFactory = new AppUpdaterCommandFactory();
 

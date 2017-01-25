@@ -1,4 +1,7 @@
-﻿namespace PatchKit.Unity.Patcher.AppUpdater.Commands
+﻿using PatchKit.Api.Models.Main;
+using PatchKit.Unity.Patcher.AppData.Local;
+
+namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class AppUpdaterCommandFactory
     {
@@ -15,9 +18,13 @@
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId,
-            App app)
+            AppContentSummary versionContentSummary,
+            ILocalData localData,
+            ILocalMetaData localMetaData,
+            ITemporaryData temporaryData)
         {
-            return new InstallContentCommand(versionId, app);
+            return new InstallContentCommand(versionId, versionContentSummary,
+                localData, localMetaData, temporaryData);
         }
 
         public IDownloadContentPackageCommand CreateDownloadContentPackageCommand(int versionId,
@@ -38,7 +45,7 @@
 
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)
         {
-            return new ValidateLicenseCommand(context);
+            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData);
         }
     }
 }

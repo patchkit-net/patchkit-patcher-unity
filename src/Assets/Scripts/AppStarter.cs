@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher
 
         private string FindExecutable(Func<string, bool> predicate)
         {
-            return _app.LocalData.MetaData.GetFileNames().FirstOrDefault(predicate);
+            return _app.LocalMetaData.GetFileNames().FirstOrDefault(predicate);
         }
 
         private bool IsLinuxExecutable(string fileName)
@@ -83,7 +83,7 @@ namespace PatchKit.Unity.Patcher
                 throw new InvalidOperationException("Couldn't find executable bundle for Mac OSX.");
             }
 
-            foreach (var fileName in _app.LocalData.MetaData.GetFileNames())
+            foreach (var fileName in _app.LocalMetaData.GetFileNames())
             {
                 Chmod(fileName, "+x");
             }

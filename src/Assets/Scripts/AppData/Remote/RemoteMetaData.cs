@@ -13,6 +13,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly MainApiConnection _mainApiConnection;
         private readonly KeysApiConnection _keysApiConnection;
 
+        public RemoteMetaData(string appSecret) : this(appSecret, 
+            new MainApiConnection(Settings.GetMainApiConnectionSettings()),
+            new KeysApiConnection(Settings.GetKeysApiConnectionSettings()))
+        {
+        }
+
         public RemoteMetaData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
         {
             Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");

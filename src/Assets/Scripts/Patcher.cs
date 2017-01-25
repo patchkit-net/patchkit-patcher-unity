@@ -274,7 +274,7 @@ namespace PatchKit.Unity.Patcher
             CanStartApp = _app.IsInstalled();
 
             CanUpdateApp = _hasInternetConnection && (!_app.IsInstalled() ||
-                           _app.RemoteData.MetaData.GetLatestVersionId() > _app.GetInstalledVersion());
+                           _app.RemoteMetaData.GetLatestVersionId() > _app.GetInstalledVersionId());
 
             if (CanUpdateApp && _configuration.UpdateAppAutomatically && !_triedToAutomaticallyUpdateApp)
             {

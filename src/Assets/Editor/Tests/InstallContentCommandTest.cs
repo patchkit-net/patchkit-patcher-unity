@@ -13,6 +13,7 @@ class InstallContentCommandTest
     public void Setup()
     {
         _dirPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(_dirPath);
     }
 
     [TearDown]
@@ -28,8 +29,14 @@ class InstallContentCommandTest
     public void Install()
     {
         var localData = Substitute.For<ILocalData>();
-        localData.DownloadData.Returns(new DownloadData(Path.Combine(_dirPath, "download")));
-        localData.TemporaryData.Returns(new TemporaryData(Path.Combine(_dirPath, "temp")));
+        localData.WhenForAnyArgs(data => data.CreateDirectory(null)).Do(info => Directory.CreateDirectory(Path.Combine(_dirPath, (string)info[0])));
+        localData.WhenForAnyArgs(data => data.CreateOrUpdateFile(null, null)).Do(info =>
+        {
+            
+        });
+
+        //localData.DownloadData.Returns(new DownloadData(Path.Combine(_dirPath, "download")));
+        //localData.TemporaryData.Returns(new TemporaryData(Path.Combine(_dirPath, "temp")));
 
         var remoteData = Substitute.For<IRemoteData>();
 

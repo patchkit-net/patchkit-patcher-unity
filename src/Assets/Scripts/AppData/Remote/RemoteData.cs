@@ -2,7 +2,6 @@
 using System.Linq;
 using PatchKit.Api;
 using PatchKit.Unity.Patcher.Debug;
-using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
@@ -13,27 +12,21 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly string _appSecret;
         private readonly MainApiConnection _mainApiConnection;
 
-        public IRemoteMetaData MetaData { get; private set; }
-
         public RemoteData(string appSecret) : this(appSecret,
-            new MainApiConnection(Settings.GetMainApiConnectionSettings()),
-            new KeysApiConnection(Settings.GetKeysApiConnectionSettings()))
+            new MainApiConnection(Settings.GetMainApiConnectionSettings()))
         {
         }
 
-        public RemoteData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
+        public RemoteData(string appSecret, MainApiConnection mainApiConnection)
         {
             Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
             AssertChecks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
-            AssertChecks.ArgumentNotNull(keysApiConnection, "keysApiConnection");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");
 
             _appSecret = appSecret;
             _mainApiConnection = mainApiConnection;
-
-            MetaData = new RemoteMetaData(_appSecret, _mainApiConnection, keysApiConnection);
         }
 
         public RemoteResource GetContentPackageResource(int versionId, string keySecret)
