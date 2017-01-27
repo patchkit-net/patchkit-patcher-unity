@@ -14,16 +14,15 @@ namespace PatchKit.Unity.Patcher.UI
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield break;
-            /*yield return
-                Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Configuration.AppSecret),
+            yield return
+                Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Data.AppSecret),
                     response =>
                     {
                         foreach (var version in response.OrderByDescending(version => version.Id))
                         {
                             CreateVersionChangelog(version);
                         }
-                    });*/
+                    });
         }
 
         private void CreateVersionChangelog(AppVersion version)

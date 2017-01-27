@@ -7,7 +7,7 @@
         LoadingPatcherConfiguration,
         UpdatingApp,
         StartingApp,
-        DisplayingErrorMessage,
+        HandlingErrorMessage,
         WaitingForUserDecision
     }
 }

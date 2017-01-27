@@ -27,6 +27,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private bool _downloadHasBeenCalled;
 
+        private bool _disposed;
+
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public ChunkedHttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
@@ -88,11 +90,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
-                    }
-                    catch (Exception exception)
-                    {
-                        DebugLogger.LogException(exception);
-                        // try another one
                     }
                 }
 
@@ -156,7 +153,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Dispose()
         {
-            _fileStream.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~ChunkedHttpDownloader()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+
+            if(disposing)
+            {
+                _fileStream.Dispose();
+            }
         }
 
         protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)

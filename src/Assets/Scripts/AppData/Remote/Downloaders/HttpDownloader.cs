@@ -25,6 +25,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private bool _downloadHasBeenCalled;
 
+        private bool _disposed;
+
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public HttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
@@ -87,11 +89,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                                 throw new ArgumentOutOfRangeException();
                         }
                     }
-                    catch (Exception exception)
-                    {
-                        DebugLogger.LogException(exception);
-                        // try another one
-                    }
                 }
 
                 DebugLogger.Log("Waiting 10 seconds before trying again...");
@@ -134,7 +131,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Dispose()
         {
-            _fileStream.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~HttpDownloader()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+
+            if(disposing)
+            {
+                _fileStream.Dispose();
+            }
         }
 
         protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)

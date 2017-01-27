@@ -74,6 +74,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DebugLogger.Log("Preparing diff installation.");
 
             _context.App.LocalData.EnableWriteAccess();
+            _context.App.TemporaryData.EnableWriteAccess();
 
             _diffSummary = _context.App.RemoteMetaData.GetDiffSummary(_versionId);
 

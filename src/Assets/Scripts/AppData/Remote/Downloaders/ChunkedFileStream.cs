@@ -31,6 +31,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private int _chunkIndex;
         private readonly FileStream _fileStream;
 
+        private bool _disposed;
+
         public long VerifiedLength
         {
             get { return Math.Min(_chunkIndex * _chunksData.ChunkSize, _fileSize); }
@@ -116,11 +118,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             return true;
         }
 
-        public void Dispose()
-        {
-            CloseFile();
-        }
-
         private bool ChunkFullyInBuffer()
         {
             return _bufferPos == Math.Min(_chunksData.ChunkSize, RemainingLength);
@@ -146,10 +143,28 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _bufferPos = 0;
         }
 
-        private void CloseFile()
+        public void Dispose()
         {
-            _fileStream.Close();
-            _fileStream.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~ChunkedFileStream()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+
+            if(disposing)
+            {
+                _fileStream.Dispose();
+            }
         }
     }
 }

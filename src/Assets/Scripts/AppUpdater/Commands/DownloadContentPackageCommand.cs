@@ -58,6 +58,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DebugLogger.Log("Preparing content package download.");
 
             _context.App.LocalData.EnableWriteAccess();
+            _context.App.DownloadData.EnableWriteAccess();
 
             _resource = _context.App.RemoteData.GetContentPackageResource(_versionId, _keySecret);
 

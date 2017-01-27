@@ -65,11 +65,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             {
                 try
                 {
+                    downloader.DownloadProgressChanged += OnDownloadProgressChanged;
+
                     downloader.Download(cancellationToken);
 
                     return true;
                 }
-                catch (Exception exception)
+                catch (TorrentClientException exception)
+                {
+                    DebugLogger.LogException(exception);
+                    return false;
+                }
+                catch (DownloaderException exception)
                 {
                     DebugLogger.LogException(exception);
                     return false;
@@ -84,6 +91,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             using (var downloader =
                 _createNewChunkedHttpDownloader(_destinationFilePath, _resource, ChunkedHttpDownloaderTimeout))
             {
+                downloader.DownloadProgressChanged += OnDownloadProgressChanged;
+
                 downloader.Download(cancellationToken);
             }
         }
@@ -95,6 +104,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             using (var downloader =
                 _createNewHttpDownloader(_destinationFilePath, _resource, HttpDownloaderTimeout))
             {
+                downloader.DownloadProgressChanged += OnDownloadProgressChanged;
+
                 downloader.Download(cancellationToken);
             }
         }

@@ -33,6 +33,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private bool _downloadHasBeenCalled;
 
+        private bool _disposed;
+
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public TorrentDownloader(string destinationFilePath, RemoteResource resource, int timeout)
@@ -71,12 +73,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         }
 
         private void DownloadTorrentFile(CancellationToken cancellationToken)
-        {
+        {            
             DebugLogger.Log("Downloading torrent file.");
 
             using (var torrentFileStream = new FileStream(TorrentFilePath, FileMode.Create))
             {
-                var baseHttpDownloader = new BaseHttpDownloader(TorrentFilePath, _timeout);
+                var baseHttpDownloader = new BaseHttpDownloader(_resource.TorrentUrls[0], _timeout);
                 baseHttpDownloader.DataAvailable += (data, length) =>
                 {
                     // ReSharper disable once AccessToDisposedClosure
@@ -262,7 +264,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Dispose()
         {
-            _torrentClient.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~TorrentDownloader()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+
+            if(disposing)
+            {
+                _torrentClient.Dispose();
+            }
         }
 
         protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)

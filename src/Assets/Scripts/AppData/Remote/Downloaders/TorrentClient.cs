@@ -25,6 +25,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly StreamWriter _stdInput;
 
+        private bool _disposed;
+
         public TorrentClient()
         {
             DebugLogger.LogConstructor();
@@ -163,12 +165,31 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Dispose()
         {
-            _stdOutput.Dispose();
-            _stdInput.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (!_process.HasExited)
+        ~TorrentClient()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(_disposed)
             {
-                _process.Kill();
+                return;
+            }
+
+            if(disposing)
+            {
+                _stdOutput.Dispose();
+                _stdInput.Dispose();
+
+                if (!_process.HasExited)
+                {
+                    _process.Kill();
+                }
             }
         }
     }

@@ -1,21 +1,12 @@
 ﻿using System;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
-    public class LicenseDialog : MonoBehaviour, ILicenseDialog
+    public class LicenseDialog : Dialog<LicenseDialog>, ILicenseDialog
     {
-        public static LicenseDialog Instance { get; private set; }
-
-        private readonly ManualResetEvent _dialogResultChangedEvent = new ManualResetEvent(false);
-
         private LicenseDialogResult _result;
-
-        private bool _isDisplaying;
-
-        private Animator _animator;
 
         public Text MessageText;
 
@@ -41,7 +32,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 Type = LicenseDialogResultType.Confirmed
             };
 
-            _dialogResultChangedEvent.Set();
+            base.OnDisplayed();
         }
 
         public void Abort()
@@ -52,26 +43,16 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 Type = LicenseDialogResultType.Aborted
             };
 
-            _dialogResultChangedEvent.Set();
+            base.OnDisplayed();
         }
 
         public LicenseDialogResult Display(LicenseDialogMessageType messageType)
         {
-            try
-            {
-                _isDisplaying = true;
+            UpdateMessage(messageType);
 
-                UpdateMessage(messageType);
+            base.Display();
 
-                _dialogResultChangedEvent.Reset();
-                _dialogResultChangedEvent.WaitOne();
-
-                return _result;
-            }
-            finally
-            {
-                _isDisplaying = false;
-            }
+            return _result;
         }
 
         private void UpdateMessage(LicenseDialogMessageType messageType)
@@ -93,17 +74,6 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);
             }
-        }
-
-        private void Awake()
-        {
-            Instance = this;
-            _animator = GetComponent<Animator>();
-        }
-
-        private void Update()
-        {
-            _animator.SetBool("IsOpened", _isDisplaying);
         }
     }
 }

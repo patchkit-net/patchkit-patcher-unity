@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private static string FormatExceptionLog(Exception exception)
         {
-            return string.Format("{0}\n\nStack trace:\n{1}", exception.Message, exception.StackTrace);
+            return string.Format("{0}: {1}\n\nStack trace:\n{2}", exception.GetType().ToString(), exception.Message, exception.StackTrace);
         }
 
         public void Log(object message)
@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public void LogException(Exception exception)
         {
-            UnityEngine.Debug.LogErrorFormat("[{0}] Exception: {1}", _context, FormatExceptionLog(exception));
+            UnityEngine.Debug.LogErrorFormat("[{0}] {1}", _context, FormatExceptionLog(exception));
             int innerExceptionCounter = 1;
             var innerException = exception.InnerException;
             while (innerException != null)

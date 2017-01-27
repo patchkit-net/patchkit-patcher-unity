@@ -9,37 +9,37 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            /*Patcher.Instance.Patcher.OnStateChanged += state =>
+            Patcher.Instance.StateChanged += state =>
             {
                 if (state == PatcherState.None)
                 {
                     Text.text = string.Empty;
                 }
-                else if (state == PatcherState.Error)
+                else if (state == PatcherState.CheckingInternetConnection)
                 {
-                    Text.text = "Patching has failed!";
+                    Text.text = "Checking internet connection...";
                 }
-                else if (state == PatcherState.Cancelled)
+                else if (state == PatcherState.HandlingErrorMessage)
                 {
-                    Text.text = "Patching has been cancelled.";
+                    Text.text = string.Empty;
                 }
-                else if (state == PatcherState.UnauthorizedAccess)
+                else if (state == PatcherState.LoadingPatcherConfiguration)
                 {
-                    Text.text = "Unauthorized access.";
+                    Text.text = "Loading configuration...";
                 }
-                else if (state == PatcherState.Processing)
+                else if (state == PatcherState.StartingApp)
                 {
-                    Text.text = "Initializing...";
+                    Text.text = "Starting application...";
                 }
-                else if (state == PatcherState.Processing)
+                else if (state == PatcherState.UpdatingApp)
                 {
-                    Text.text = "Patching...";
+                    Text.text = "Updating application...";
                 }
-                else if (state == PatcherState.Success)
+                else if (state == PatcherState.WaitingForUserDecision)
                 {
-                    Text.text = "Ready!";
+                    Text.text = string.Empty;
                 }
-            };*/
+            };
         }
     }
 }

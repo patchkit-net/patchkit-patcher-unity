@@ -9,27 +9,4 @@ using UnityEngine;
 
 class ValidateLicenseCommandTest
 {
-    [Test]
-    public void Execute()
-    {
-        var licenseDialog = Substitute.For<ILicenseDialog>();
-        licenseDialog.Display(Arg.Any<LicenseDialogMessageType>()).Returns(info => new LicenseDialogResult
-        {
-            Key = "correct_key",
-            Type = LicenseDialogResultType.Confirmed
-        });
-
-        var remoteMetaData = Substitute.For<IRemoteMetaData>();
-        remoteMetaData.GetKeySecret("correct_key").Returns("correct_key_secret");
-
-        var progressMonitor = Substitute.For<IStatusMonitor>();
-        progressMonitor.CreateGeneralStatusReporter(Arg.Any<double>()).Returns(info =>
-        {
-            var generalStatusRepo
-        })
-
-        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData);
-
-
-    }
 }

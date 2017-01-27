@@ -6,7 +6,15 @@ namespace PatchKit.Unity.Patcher.UI
     [RequireComponent(typeof(Animator))]
     public class MessagePanel : MonoBehaviour
     {
-        public Text ButtonText;
+        public Button PlayButton;
+
+        public Button CheckButton;
+
+        public Text CheckButtonText;
+
+        private bool _canUpdateApp;
+
+        private bool _canCheckInternetConnection;
 
         private Animator _animator;
 
@@ -17,35 +25,55 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            /*Patcher.Instance.Patcher.OnStateChanged += state =>
+            Patcher.Instance.StateChanged += state =>
             {
-                if (state == PatcherState.Processing)
+                _animator.SetBool("IsOpened", state == PatcherState.WaitingForUserDecision);
+            };
+
+            Patcher.Instance.CanStartAppChanged += canStartApp =>
+            {
+                PlayButton.interactable = canStartApp;
+            };
+
+            Patcher.Instance.CanUpdateAppChanged += canUpdateApp =>
+            {
+                _canUpdateApp = canUpdateApp;
+                if(_canUpdateApp)
                 {
-                    _animator.SetBool("IsOpened", false);
+                    CheckButtonText.text = "Check for updates";
                 }
-                else if (Patcher.Instance.Patcher.CanPlay)
+                CheckButton.interactable = _canUpdateApp || _canCheckInternetConnection;
+            };
+
+            Patcher.Instance.CanCheckInternetConnectionChanged += canCheckInternetConnection =>
+            {
+                _canCheckInternetConnection = canCheckInternetConnection;
+                if(_canCheckInternetConnection)
                 {
-                    _animator.SetBool("IsOpened", true);
-                    ButtonText.text = "Play";
+                    CheckButtonText.text = "Check internet connection";
                 }
-                else
-                {
-                    _animator.SetBool("IsOpened", true);
-                    ButtonText.text = "Retry";
-                }
-            };*/
+                CheckButton.interactable = _canUpdateApp || _canCheckInternetConnection;
+            };
+
+            PlayButton.onClick.AddListener(OnPlayButtonClicked);
+            CheckButton.onClick.AddListener(OnCheckButtonClicked);
         }
 
-        public void Action()
+        private void OnPlayButtonClicked()
         {
-            /*if (Patcher.Instance.Patcher.CanPlay)
+            Patcher.Instance.SetUserDecision(Patcher.UserDecision.StartApp);
+        }
+
+        private void OnCheckButtonClicked()
+        {
+            if(_canUpdateApp)
             {
-                Patcher.Instance.StartApplicationAndQuit();
+                Patcher.Instance.SetUserDecision(Patcher.UserDecision.UpdateApp);
             }
-            else
+            else if(_canCheckInternetConnection)
             {
-                Patcher.Instance.RetryPatching();
-            }*/
+                Patcher.Instance.SetUserDecision(Patcher.UserDecision.CheckInternetConnection);
+            }
         }
     }
 }
