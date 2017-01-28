@@ -2,21 +2,30 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
 {
     public class AppStarter
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppStarter));
+
         private readonly App _app;
 
         public AppStarter(App app)
         {
+            AssertChecks.ArgumentNotNull(app, "app");
+
+            DebugLogger.LogConstructor();
+
             _app = app;
         }
 
         public void Start()
         {
+            DebugLogger.Log("Starting.");
+
             if (Application.platform == RuntimePlatform.OSXPlayer ||
                 Application.platform == RuntimePlatform.OSXEditor)
             {
@@ -76,6 +85,8 @@ namespace PatchKit.Unity.Patcher
 
         private void StartOSXApplication()
         {
+            DebugLogger.Log("Starting OSX application.");
+
             var appFileName = FindExecutable(fileName => fileName.EndsWith(".app") && IsInsideRootDirectory(fileName));
 
             if (appFileName == null)
@@ -91,6 +102,8 @@ namespace PatchKit.Unity.Patcher
             string appFilePath = _app.LocalData.GetFilePath(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
 
+            DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
+
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "open",
@@ -103,6 +116,8 @@ namespace PatchKit.Unity.Patcher
 
         private void StartLinuxApplication()
         {
+            DebugLogger.Log("Starting Linux application.");
+
             var appFileName = FindExecutable(fileName => IsInsideRootDirectory(fileName) && IsLinuxExecutable(fileName));
 
             if (appFileName == null)
@@ -112,6 +127,8 @@ namespace PatchKit.Unity.Patcher
 
             string appFilePath = _app.LocalData.GetFilePath(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
+
+            DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
 
             Chmod(appFilePath, "+x");
 
@@ -126,6 +143,8 @@ namespace PatchKit.Unity.Patcher
 
         private void StartWindowsApplication()
         {
+            DebugLogger.Log("Starting Windows application.");
+
             var appFileName = FindExecutable(fileName => fileName.EndsWith(".exe") && IsInsideRootDirectory(fileName));
 
             if (appFileName == null)
@@ -135,6 +154,8 @@ namespace PatchKit.Unity.Patcher
 
             string appFilePath = _app.LocalData.GetFilePath(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
+
+            DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
 
             var processStartInfo = new ProcessStartInfo
             {

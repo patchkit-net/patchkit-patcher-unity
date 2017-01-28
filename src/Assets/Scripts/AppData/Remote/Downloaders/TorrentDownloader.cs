@@ -45,6 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
+            DebugLogger.LogVariable(resource, "resource");
             DebugLogger.LogVariable(timeout, "timeout");
 
             _destinationFilePath = destinationFilePath;
@@ -230,6 +231,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private void Cleanup()
         {
+            DebugLogger.Log("Cleaning up.");
+
             if (Directory.Exists(DownloadDirectoryPath))
             {
                 Directory.Delete(DownloadDirectoryPath, true);
@@ -245,7 +248,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-            DebugLogger.Log("Starting download.");
+            DebugLogger.Log("Downloading.");
 
             _lastProgress = 0.0;
 
@@ -280,10 +283,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return;
             }
 
+            DebugLogger.LogDispose();
+
             if(disposing)
             {
                 _torrentClient.Dispose();
             }
+
+            _disposed = true;
         }
 
         protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)

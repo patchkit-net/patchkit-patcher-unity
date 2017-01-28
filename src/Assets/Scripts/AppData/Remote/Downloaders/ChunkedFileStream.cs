@@ -161,10 +161,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return;
             }
 
+            DebugLogger.LogDispose();
+
             if(disposing)
             {
                 _fileStream.Dispose();
             }
+
+            _disposed = true;
         }
     }
 }

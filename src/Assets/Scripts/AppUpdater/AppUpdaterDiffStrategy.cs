@@ -18,7 +18,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly AppUpdaterContext _context;
 
-        private bool _patchHasBeenCalled;
+        private bool _updateHasBeenCalled;
 
         public AppUpdaterDiffStrategy(AppUpdaterContext context)
         {
@@ -29,15 +29,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             _context = context;
         }
 
-        public void Patch(CancellationToken cancellationToken)
+        public void Update(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
+            AssertChecks.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
             AssertChecks.ApplicationIsInstalled(_context.App);
 
-            DebugLogger.Log("Patching with diff strategy.");
+            DebugLogger.Log("Updating with diff strategy.");
 
-            var latestVersionId = _context.App.RemoteMetaData.GetLatestVersionId();
+            var latestVersionId = _context.App.GetLatestVersionId();
             var currentLocalVersionId = _context.App.GetInstalledVersionId();
+
+            DebugLogger.LogVariable(latestVersionId, "latestVersionId");
+            DebugLogger.LogVariable(currentLocalVersionId, "currentLocalVersionId");
 
             var commandFactory = new AppUpdaterCommandFactory();
 
@@ -52,11 +55,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                 diffCommands.VersionId = i;
 
-                diffCommands.DownloadDiffPackage = commandFactory.CreateDownloadDiffPackageCommand(latestVersionId,
+                diffCommands.DownloadDiffPackage = commandFactory.CreateDownloadDiffPackageCommand(i,
                     _context);
                 diffCommands.DownloadDiffPackage.Prepare(_context.StatusMonitor);
 
-                diffCommands.InstallDiffPackage = commandFactory.CreateInstallDiffCommand(latestVersionId, _context);
+                var diffSummary = _context.App.RemoteMetaData.GetDiffSummary(i);
+
+                diffCommands.InstallDiffPackage = commandFactory.CreateInstallDiffCommand(i, diffSummary,
+                    _context.App.LocalData, _context.App.LocalMetaData, _context.App.TemporaryData);
                 diffCommands.InstallDiffPackage.Prepare(_context.StatusMonitor);
 
                 diffCommandsList.Add(diffCommands);
@@ -74,6 +80,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                 AssertChecks.ApplicationVersionEquals(_context.App, diffCommands.VersionId);
             }
+
+            _context.App.DownloadData.Clear();
         }
     }
 }

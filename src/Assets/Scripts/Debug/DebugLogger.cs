@@ -28,6 +28,11 @@ namespace PatchKit.Unity.Patcher.Debug
             UnityEngine.Debug.LogFormat("[{0}] Constructor.", _context);
         }
 
+        public void LogDispose()
+        {
+            UnityEngine.Debug.LogFormat("[{0}] Disposing.", _context);
+        }
+
         public void LogVariable(object value, string name)
         {
             UnityEngine.Debug.LogFormat("[{0}] {1} = {2}", _context, name, value);

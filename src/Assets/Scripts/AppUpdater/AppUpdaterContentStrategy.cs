@@ -9,7 +9,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly AppUpdaterContext _context;
 
-        private bool _patchHasBeenCalled;
+        private bool _updateHasBeenCalled;
 
         public AppUpdaterContentStrategy(AppUpdaterContext context)
         {
@@ -20,22 +20,24 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             _context = context;
         }
 
-        public void Patch(CancellationToken cancellationToken)
+        public void Update(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
+            AssertChecks.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
 
-            DebugLogger.Log("Patching with content strategy.");
+            DebugLogger.Log("Updating with content strategy.");
 
             var commandFactory = new Commands.AppUpdaterCommandFactory();
 
-            var latestVersionId = _context.App.RemoteMetaData.GetLatestVersionId();
+            var latestVersionId = _context.App.GetLatestVersionId();
+
+            DebugLogger.LogVariable(latestVersionId, "latestVersionId");
 
             var latestVersionContentSummary = _context.App.RemoteMetaData.GetContentSummary(latestVersionId);
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
             validateLicense.Prepare(_context.StatusMonitor);
 
-            var uninstall = commandFactory.CreateUninstallCommand(_context);
+            var uninstall = commandFactory.CreateUninstallCommand(_context.App.LocalData, _context.App.LocalMetaData);
             uninstall.Prepare(_context.StatusMonitor);
 
             var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId, _context);
@@ -57,6 +59,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             installContent.SetPackagePath(downloadContentPackage.PackagePath);
             installContent.Execute(cancellationToken);
+
+            _context.App.DownloadData.Clear();
         }
     }
 }

@@ -66,9 +66,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             Checks.ArgumentNotNullOrEmpty(key, "key");
             DebugLogger.Log(string.Format("Getting key secret from key {0}.", key));
 
-            string cachedKeySecret = PlayerPrefs.GetString(GetCachedKeySecretEntryName(key), null);
-            //TODO : Use cached key secret
-            return _keysApiConnection.GetKeyInfo(key, _appSecret).KeySecret;
+            var cachedKeySecret = PlayerPrefs.GetString(GetCachedKeySecretEntryName(key), null);
+
+            var keySecret = _keysApiConnection.GetKeyInfo(key, _appSecret, cachedKeySecret).KeySecret;
+
+            PlayerPrefs.SetString(GetCachedKeySecretEntryName(key), keySecret);
+
+            return keySecret;
         }
 
         private string GetCachedKeySecretEntryName(string key)

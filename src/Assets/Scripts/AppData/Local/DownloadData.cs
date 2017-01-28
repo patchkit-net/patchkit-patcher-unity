@@ -7,15 +7,19 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 {
     public class DownloadData : IDownloadData
     {
-        private static readonly List<string> CurrentInstances = new List<string>();
-
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DownloadData));
+
+        /// <summary>
+        /// Keeps currently used paths. 
+        /// Prevents from creating two instances that points to the same directory.
+        /// </summary>
+        private static readonly List<string> CurrentInstances = new List<string>();
 
         private readonly string _path;
 
         private bool _disposed;
 
-        private bool _writeAccess;
+        private bool _hasWriteAccess;
 
         public DownloadData(string path)
         {
@@ -35,16 +39,18 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             DebugLogger.Log("Enabling write access.");
 
-            if (!_writeAccess)
+            if (!_hasWriteAccess)
             {
+                DebugLogger.Log(string.Format("Creating root directory {0}", _path));
+
                 Directory.CreateDirectory(_path);
-                _writeAccess = true;
+                _hasWriteAccess = true;
             }
         }
 
         private void CheckWriteAccess()
         {
-            AssertChecks.IsTrue(_writeAccess, "Write access is required for this operation.");
+            AssertChecks.IsTrue(_hasWriteAccess, "Write access is required for this operation (it chould be obtained with EnableWriteAccess method).");
         }
 
         public string GetFilePath(string fileName)
@@ -97,6 +103,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 return;
             }
+
+            DebugLogger.LogDispose();
 
             CurrentInstances.Remove(_path);
 

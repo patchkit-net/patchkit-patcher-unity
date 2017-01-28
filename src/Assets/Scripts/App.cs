@@ -21,17 +21,21 @@ namespace PatchKit.Unity.Patcher
 
         public readonly IRemoteMetaData RemoteMetaData;
 
-        public App(string appDataPath, string appSecret) : this(
+        private int _overrideLatestVersionId;
+
+        private bool _disposed;
+
+        public App(string appDataPath, string appSecret, int overrideLatestVersionId) : this(
             CreateDefaultLocalData(appDataPath),
             CreateDefaultLocalMetaData(appDataPath),
             CreateDefaultTemporaryData(appDataPath),
             CreateDefaultDownloadData(appDataPath),
             CreateDefaultRemoteData(appSecret),
-            CreateDefaultRemoteMetaData(appSecret))
+            CreateDefaultRemoteMetaData(appSecret), overrideLatestVersionId)
         {
         }
 
-        public App(ILocalData localData, ILocalMetaData localMetaData, ITemporaryData temporaryData, IDownloadData downloadData, IRemoteData remoteData, IRemoteMetaData remoteMetaData)
+        public App(ILocalData localData, ILocalMetaData localMetaData, ITemporaryData temporaryData, IDownloadData downloadData, IRemoteData remoteData, IRemoteMetaData remoteMetaData, int overrideLatestVersionId)
         {
             AssertChecks.ArgumentNotNull(localData, "localData");
             AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
@@ -46,6 +50,7 @@ namespace PatchKit.Unity.Patcher
             DownloadData = downloadData;
             RemoteData = remoteData;
             RemoteMetaData = remoteMetaData;
+            _overrideLatestVersionId = overrideLatestVersionId;
         }
 
         public bool IsInstalled()
@@ -70,9 +75,39 @@ namespace PatchKit.Unity.Patcher
             return LocalMetaData.GetFileVersionId(LocalMetaData.GetFileNames()[0]);
         }
 
+        public int GetLatestVersionId()
+        {
+            if (_overrideLatestVersionId > 0)
+            {
+                return _overrideLatestVersionId;
+            }
+
+            return RemoteMetaData.GetLatestVersionId();
+        }
+
         public void Dispose()
         {
-            LocalData.Dispose();
+            Dispose(false);
+        }
+
+        ~App()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                LocalData.Dispose();
+            }
+
+            _disposed = true;
         }
 
         private static ILocalData CreateDefaultLocalData(string appDataPath)

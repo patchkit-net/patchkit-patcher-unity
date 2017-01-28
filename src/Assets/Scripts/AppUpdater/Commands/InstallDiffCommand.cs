@@ -13,22 +13,34 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallDiffCommand));
 
         private readonly int _versionId;
-        private readonly AppUpdaterContext _context;
+        private readonly AppDiffSummary _versionDiffSummary;
+        private readonly ILocalData _localData;
+        private readonly ILocalMetaData _localMetaData;
+        private readonly ITemporaryData _temporaryData;
 
         private string _packagePath;
-        private AppDiffSummary _diffSummary;
         private IGeneralStatusReporter _addFilesStatusReporter;
         private IGeneralStatusReporter _modifiedFilesStatusReporter;
         private IGeneralStatusReporter _removeFilesStatusReporter;
         private IGeneralStatusReporter _unarchivePackageStatusReporter;
 
-        public InstallDiffCommand(int versionId, AppUpdaterContext context)
+        public InstallDiffCommand(int versionId,
+            AppDiffSummary versionDiffSummary,
+            ILocalData localData,
+            ILocalMetaData localMetaData,
+            ITemporaryData temporaryData)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
-            AssertChecks.ArgumentNotNull(context, "context");
+            // TODO: Check whether version diff summary is correct
+            AssertChecks.ArgumentNotNull(localData, "localData");
+            AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
+            AssertChecks.ArgumentNotNull(temporaryData, "temporaryData");
 
             _versionId = versionId;
-            _context = context;
+            _versionDiffSummary = versionDiffSummary;
+            _localData = localData;
+            _localMetaData = localMetaData;
+            _temporaryData = temporaryData;
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -37,7 +49,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Installing diff.");
 
-            var packageDirPath = _context.App.TemporaryData.GetUniquePath();
+            var packageDirPath = _temporaryData.GetUniquePath();
+            DebugLogger.LogVariable(packageDirPath, "packageDirPath");
+
+            DebugLogger.Log("Creating package directory.");
             Directory.CreateDirectory(packageDirPath);
             try
             {
@@ -58,6 +73,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
             finally
             {
+                DebugLogger.Log("Deleting package directory.");
                 if (Directory.Exists(packageDirPath))
                 {
                     Directory.Delete(packageDirPath, true);
@@ -73,26 +89,27 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Preparing diff installation.");
 
-            _context.App.LocalData.EnableWriteAccess();
-            _context.App.TemporaryData.EnableWriteAccess();
+            _localData.EnableWriteAccess();
+            _temporaryData.EnableWriteAccess();
 
-            _diffSummary = _context.App.RemoteMetaData.GetDiffSummary(_versionId);
-
-            double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_diffSummary.Size);
+            double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_versionDiffSummary.Size);
             _unarchivePackageStatusReporter = statusMonitor.CreateGeneralStatusReporter(unarchivePackageWeight);
 
-            double addFilesWeight = StatusWeightHelper.GetAddDiffFilesWeight(_diffSummary);
+            double addFilesWeight = StatusWeightHelper.GetAddDiffFilesWeight(_versionDiffSummary);
             _addFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(addFilesWeight);
 
-            double modifiedFilesWeight = StatusWeightHelper.GetModifyDiffFilesWeight(_diffSummary);
+            double modifiedFilesWeight = StatusWeightHelper.GetModifyDiffFilesWeight(_versionDiffSummary);
             _modifiedFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(modifiedFilesWeight);
 
-            double removeFilesWeight = StatusWeightHelper.GetRemoveDiffFilesWeight(_diffSummary);
+            double removeFilesWeight = StatusWeightHelper.GetRemoveDiffFilesWeight(_versionDiffSummary);
             _removeFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(removeFilesWeight);
         }
 
         public void SetPackagePath(string packagePath)
         {
+            DebugLogger.Log("Setting package path.");
+            DebugLogger.LogVariable(packagePath, "packagePath");
+
             _packagePath = packagePath;
         }
 
@@ -100,8 +117,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Processing removed files.");
 
-            var removedFiles = _diffSummary.RemovedFiles.Where(s => !s.EndsWith("/"));
-            var removedDirectories = _diffSummary.RemovedFiles.Where(s => s.EndsWith("/"));
+            var removedFiles = _versionDiffSummary.RemovedFiles.Where(s => !s.EndsWith("/"));
+            var removedDirectories = _versionDiffSummary.RemovedFiles.Where(s => s.EndsWith("/"));
 
             int counter = 0;
 
@@ -109,25 +126,25 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _context.App.LocalData.DeleteFile(fileName);
-                _context.App.LocalMetaData.RemoveFile(fileName);
+                _localData.DeleteFile(fileName);
+                _localMetaData.RemoveFile(fileName);
 
                 counter++;
 
-                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_diffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_versionDiffSummary.RemovedFiles.Length);
             }
 
             foreach (var dirName in removedDirectories)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (_context.App.LocalData.IsDirectoryEmpty(dirName))
+                if (_localData.IsDirectoryEmpty(dirName))
                 {
-                    _context.App.LocalData.DeleteDirectory(dirName);
+                    _localData.DeleteDirectory(dirName);
                 }
 
                 counter++;
-                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_diffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_versionDiffSummary.RemovedFiles.Length);
             }
         }
 
@@ -136,14 +153,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Processing added files.");
 
-            for (int i = 0; i < _diffSummary.AddedFiles.Length; i++)
+            for (int i = 0; i < _versionDiffSummary.AddedFiles.Length; i++)
             {
-                var fileName = _diffSummary.AddedFiles[i];
+                var fileName = _versionDiffSummary.AddedFiles[i];
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (fileName.EndsWith("/"))
                 {
-                    _context.App.LocalData.CreateDirectory(fileName);
+                    _localData.CreateDirectory(fileName);
                 }
                 else
                 {
@@ -154,11 +171,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         throw new InstallerException(string.Format("Cannot find file {0} in content package.", fileName));
                     }
 
-                    _context.App.LocalData.CreateOrUpdateFile(fileName, sourceFilePath);
-                    _context.App.LocalMetaData.AddOrUpdateFile(fileName, _versionId);
+                    _localData.CreateOrUpdateFile(fileName, sourceFilePath);
+                    _localMetaData.AddOrUpdateFile(fileName, _versionId);
                 }
 
-                _addFilesStatusReporter.OnProgressChanged((i + 1)/(double)_diffSummary.AddedFiles.Length);
+                _addFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionDiffSummary.AddedFiles.Length);
             }
         }
 
@@ -167,9 +184,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Processing modified files.");
 
-            for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
+            for (int i = 0; i < _versionDiffSummary.ModifiedFiles.Length; i++)
             {
-                var fileName = _diffSummary.ModifiedFiles[i];
+                var fileName = _versionDiffSummary.ModifiedFiles[i];
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (!fileName.EndsWith("/"))
@@ -177,30 +194,30 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     PatchFile(fileName, packageDirPath);
                 }
 
-                _modifiedFilesStatusReporter.OnProgressChanged((i + 1)/(double)_diffSummary.ModifiedFiles.Length);
+                _modifiedFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionDiffSummary.ModifiedFiles.Length);
             }
         }
 
         private void PatchFile(string fileName, string packageDirPath)
         {
-            if (!_context.App.LocalData.FileExists(fileName) || !_context.App.LocalMetaData.FileExists(fileName))
+            if (!_localData.FileExists(fileName) || !_localMetaData.FileExists(fileName))
             {
                 throw new InstallerException(string.Format("Couldn't patch file {0} - file doesn't exists.", fileName));
             }
 
-            AssertChecks.AreEqual(_versionId - 1, _context.App.LocalMetaData.GetFileVersionId(fileName),
+            AssertChecks.AreEqual(_versionId - 1, _localMetaData.GetFileVersionId(fileName),
                 string.Format("Wrong file version {0}", fileName));
 
-            string newFile = _context.App.TemporaryData.GetUniquePath();
+            string newFile = _temporaryData.GetUniquePath();
 
             try
             {
-                var filePatcher = new FilePatcher(_context.App.LocalData.GetFilePath(fileName),
+                var filePatcher = new FilePatcher(_localData.GetFilePath(fileName),
                     Path.Combine(packageDirPath, fileName), newFile);
                 filePatcher.Patch();
 
-                _context.App.LocalData.CreateOrUpdateFile(fileName, newFile);
-                _context.App.LocalMetaData.AddOrUpdateFile(fileName, _versionId);
+                _localData.CreateOrUpdateFile(fileName, newFile);
+                _localMetaData.AddOrUpdateFile(fileName, _versionId);
             }
             finally
             {

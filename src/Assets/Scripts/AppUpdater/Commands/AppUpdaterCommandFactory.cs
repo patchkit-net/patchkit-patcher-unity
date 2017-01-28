@@ -6,9 +6,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     public class AppUpdaterCommandFactory
     {
         public IInstallDiffCommand CreateInstallDiffCommand(int versionId,
-            AppUpdaterContext context)
+            AppDiffSummary versionDiffSummary,
+            ILocalData localData,
+            ILocalMetaData localMetaData,
+            ITemporaryData temporaryData)
         {
-            return new InstallDiffCommand(versionId, context);
+            return new InstallDiffCommand(versionId,
+                versionDiffSummary,
+                localData,
+                localMetaData,
+                temporaryData);
         }
 
         public IDownloadDiffPackageCommand CreateDownloadDiffPackageCommand(int versionId,
@@ -38,9 +45,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return new CheckVersionIntegrityCommand(versionId, context);
         }
 
-        public IUninstallCommand CreateUninstallCommand(AppUpdaterContext context)
+        public IUninstallCommand CreateUninstallCommand(ILocalData localData, ILocalMetaData localMetaData)
         {
-            return new UninstallCommand(context);
+            return new UninstallCommand(localData, localMetaData);
         }
 
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)

@@ -37,6 +37,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
+            DebugLogger.LogVariable(resource, "resource");
             DebugLogger.LogVariable(timeout, "timeout");
 
             _resource = resource;
@@ -49,7 +50,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-            DebugLogger.Log("Starting download.");
+            DebugLogger.Log("Downloading.");
 
             var validUrls = new List<string>(_resource.Urls);
             validUrls.Reverse();
@@ -105,7 +106,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private void Download(string url, CancellationToken cancellationToken)
         {
-            DebugLogger.Log("Trying to download from " + url);
+            DebugLogger.Log(string.Format("Trying to download from {0}", url));
 
             ClearFileStream();
 
@@ -147,10 +148,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return;
             }
 
+            DebugLogger.LogDispose();
+
             if(disposing)
             {
                 _fileStream.Dispose();
             }
+
+            _disposed = true;
         }
 
         protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)

@@ -36,9 +36,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             string diffPath = _context.App.DownloadData.GetDiffPackagePath(_versionId);
 
-            var resource = _context.App.RemoteData.GetDiffPackageResource(_versionId, _keySecret);
+            DebugLogger.LogVariable(diffPath, "diffPath");
 
-            var downloader = new RemoteResourceDownloader(diffPath, resource, _context.Configuration.UseTorrents);
+            var downloader = new RemoteResourceDownloader(diffPath, _resource, _context.Configuration.UseTorrents);
 
             downloader.DownloadProgressChanged += _statusReporter.OnDownloadProgressChanged;
 
@@ -62,7 +62,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _context.App.LocalData.EnableWriteAccess();
             _context.App.DownloadData.EnableWriteAccess();
 
-            _resource = _context.App.RemoteData.GetContentPackageResource(_versionId, _keySecret);
+            _resource = _context.App.RemoteData.GetDiffPackageResource(_versionId, _keySecret);
+            DebugLogger.LogVariable(_resource, "_resource");
 
             double weight = StatusWeightHelper.GetResourceDownloadWeight(_resource);
             _statusReporter = statusMonitor.CreateDownloadStatusReporter(weight);
@@ -70,6 +71,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public void SetKeySecret(string keySecret)
         {
+            DebugLogger.Log("Setting key secret.");
+            DebugLogger.LogVariable(keySecret, "keySecret");
+
             _keySecret = keySecret;
         }
 

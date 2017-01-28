@@ -110,17 +110,22 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        public void SetBytesRange(long start, long end = -1L)
+        public void SetBytesRange(long bytesRangeStart, long bytesRangeEnd = -1L)
         {
-            _bytesRangeStart = start;
-            _bytesRangeEnd = end;
+            DebugLogger.Log("Setting bytes range.");
+
+            DebugLogger.LogVariable(bytesRangeStart, "bytesRangeStart");
+            DebugLogger.LogVariable(bytesRangeEnd, "bytesRangeEnd");
+
+            _bytesRangeStart = bytesRangeStart;
+            _bytesRangeEnd = bytesRangeEnd;
         }
 
         public void Download(CancellationToken cancellationToken)
         {
             AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-            DebugLogger.Log("Starting download.");
+            DebugLogger.Log("Downloading.");
 
             CreateRequest();
 

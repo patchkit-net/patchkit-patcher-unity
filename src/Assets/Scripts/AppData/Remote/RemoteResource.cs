@@ -11,5 +11,13 @@
         public string HashCode;
 
         public ChunksData ChunksData;
+
+        public override string ToString()
+        {
+            return "urls: {" + string.Join(", ", Urls) + "}\n" +
+                   "torrent urls: {" + string.Join(", ", TorrentUrls) + "}\n" +
+                   "size: " + Size + "\n" +
+                   "hashcode: " + HashCode;
+        }
     }
 }

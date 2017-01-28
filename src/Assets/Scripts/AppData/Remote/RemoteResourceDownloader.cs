@@ -1,5 +1,4 @@
-﻿using System;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
+﻿using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -46,6 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
+            DebugLogger.LogVariable(resource, "resource");
             DebugLogger.LogVariable(useTorrents, "useTorrents");
 
             _destinationFilePath = destinationFilePath;
@@ -119,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         {
             AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-            DebugLogger.Log("Starting download.");
+            DebugLogger.Log("Downloading.");
 
             if (_useTorrents)
             {
@@ -133,10 +133,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             if (AreChunksAvailable())
             {
+                DebugLogger.Log("Chunsk data is available.");
                 DownloadWithChunkedHttp(cancellationToken);
             }
             else
             {
+                DebugLogger.Log("Chunks data is not available.");
                 DownloadWithHttp(cancellationToken);
             }
         }

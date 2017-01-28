@@ -31,12 +31,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Execute(cancellationToken);
 
+            DebugLogger.Log("Validating license.");
+
             KeySecret = null;
 
             var appInfo = _remoteMetaData.GetAppInfo();
 
             if (!appInfo.UseKeys)
             {
+                DebugLogger.Log("Application is not using license keys.");
                 return;
             }
 
@@ -44,13 +47,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             while (KeySecret == null)
             {
+                DebugLogger.Log("Displaying license dialog.");
+
                 var result = _licenseDialog.Display(messageType);
+
+                DebugLogger.Log("Processing dialog result.");
 
                 if (result.Type == LicenseDialogResultType.Confirmed)
                 {
                     try
                     {
                         KeySecret = _remoteMetaData.GetKeySecret(result.Key);
+
+                        DebugLogger.LogVariable(KeySecret, "KeySecret");
+                        DebugLogger.Log("License key has been validated");
                     }
                     catch (ApiResponseException apiResponseException)
                     {

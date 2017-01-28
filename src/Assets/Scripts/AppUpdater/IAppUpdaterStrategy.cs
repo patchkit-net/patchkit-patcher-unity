@@ -4,6 +4,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 {
     public interface IAppUpdaterStrategy
     {
-        void Patch(CancellationToken cancellationToken);
+        void Update(CancellationToken cancellationToken);
     }
 }

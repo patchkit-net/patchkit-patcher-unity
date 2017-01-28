@@ -52,6 +52,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DebugLogger.Log("Installing content.");
             
             var packageDirPath = _temporaryData.GetUniquePath();
+            DebugLogger.LogVariable(packageDirPath, "packageDirPath");
+
+            DebugLogger.Log("Creating package directory.");
             Directory.CreateDirectory(packageDirPath);
             try
             {
@@ -79,6 +82,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
             finally
             {
+                DebugLogger.Log("Deleting package directory.");
                 if (Directory.Exists(packageDirPath))
                 {
                     Directory.Delete(packageDirPath, true);
@@ -106,6 +110,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public void SetPackagePath(string packagePath)
         {
+            DebugLogger.Log("Setting package path.");
+            DebugLogger.LogVariable(packagePath, "packagePath");
+
             _packagePath = packagePath;
         }
 

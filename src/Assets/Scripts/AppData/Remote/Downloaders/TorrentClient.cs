@@ -181,6 +181,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return;
             }
 
+            DebugLogger.LogDispose();
+
             if(disposing)
             {
                 _stdOutput.Dispose();
@@ -191,6 +193,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     _process.Kill();
                 }
             }
+
+            _disposed = true;
         }
     }
 }

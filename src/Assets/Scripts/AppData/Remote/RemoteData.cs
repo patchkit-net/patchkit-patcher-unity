@@ -77,6 +77,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private static ChunksData ConvertToChunksData(Api.Models.Main.Chunks chunks)
         {
+            if (chunks.Size == 0 || chunks.Hashes == null)
+            {
+                return new ChunksData
+                {
+                    ChunkSize = 0,
+                    Chunks = new Chunk[] {}
+                };
+            }
+
             var chunksData = new ChunksData
             {
                 ChunkSize = chunks.Size,

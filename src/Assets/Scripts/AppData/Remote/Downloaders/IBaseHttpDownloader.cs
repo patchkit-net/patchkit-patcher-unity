@@ -6,7 +6,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         event DataAvailableHandler DataAvailable;
 
-        void SetBytesRange(long start, long end = -1L);
+        void SetBytesRange(long bytesRangeStart, long bytesRangeEnd = -1L);
 
         void Download(CancellationToken cancellationToken);
     }

@@ -19,18 +19,35 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             if (context.App.IsInstalled())
             {
-                var diffCost = GetDiffCost(context);
-                DebugLogger.LogVariable(diffCost, "diffCost");
+                DebugLogger.Log("Application is installed.");
 
-                var contentCost = GetContentCost(context);
-                DebugLogger.LogVariable(contentCost, "contentCost");
+                int installedVersionId = context.App.GetInstalledVersionId();
+                int latestVersionId = context.App.GetLatestVersionId();
 
-                if (diffCost < contentCost)
+                AssertChecks.AreNotEqual(latestVersionId, installedVersionId,
+                    "Cannot update if application versions are the same.");
+
+                if (installedVersionId < latestVersionId)
                 {
-                    DebugLogger.Log("Diff cost is lower than content cost - using diff strategy.");
-                    return new AppUpdaterDiffStrategy(context);
+                    DebugLogger.Log("Installed version is older than the latest version.");
+
+                    var diffCost = GetDiffCost(context);
+                    DebugLogger.LogVariable(diffCost, "diffCost");
+
+                    var contentCost = GetContentCost(context);
+                    DebugLogger.LogVariable(contentCost, "contentCost");
+
+                    if (diffCost < contentCost)
+                    {
+                        DebugLogger.Log("Diff cost is lower than content cost - using diff strategy.");
+                        return new AppUpdaterDiffStrategy(context);
+                    }
+                    DebugLogger.Log("Diff cost is higher than content cost - using content strategy.");
                 }
-                DebugLogger.Log("Diff cost is higher than content cost - using content strategy.");
+                else
+                {
+                    DebugLogger.Log("Installed version is newer than the latest version - using content strategy.");
+                }
             }
             else
             {
@@ -44,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             DebugLogger.Log("Calculating content cost.");
 
-            int latestVersionId = context.App.RemoteMetaData.GetLatestVersionId();
+            int latestVersionId = context.App.GetLatestVersionId();
 
             var contentSummary = context.App.RemoteMetaData.GetContentSummary(latestVersionId);
 
@@ -55,7 +72,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             DebugLogger.Log("Calculating diff cost.");
 
-            int latestVersionId = context.App.RemoteMetaData.GetLatestVersionId();
+            int latestVersionId = context.App.GetLatestVersionId();
+
             int currentLocalVersionId = context.App.GetInstalledVersionId();
 
             ulong cost = 0;

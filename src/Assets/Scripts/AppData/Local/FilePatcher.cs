@@ -38,7 +38,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
 
-            DebugLogger.Log("Starting file patching.");
+            DebugLogger.Log("Patching.");
 
             int status = rs_rdiff_patch(_filePath, _diffPath, _outputFilePath);
 

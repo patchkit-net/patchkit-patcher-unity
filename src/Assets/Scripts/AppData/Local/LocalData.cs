@@ -7,6 +7,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 {
     public class LocalData : ILocalData
     {
+        /// <summary>
+        /// Keeps currently used paths. 
+        /// Prevents from creating two instances that points to the same directory.
+        /// </summary>
         private static readonly List<string> CurrentInstances = new List<string>();
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(LocalData));
@@ -15,7 +19,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private bool _disposed;
 
-        private bool _writeAccess;
+        private bool _hasWriteAccess;
 
         public LocalData(string path)
         {
@@ -35,17 +39,19 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             DebugLogger.Log("Enabling write access.");
 
-            if (!_writeAccess)
+            if (!_hasWriteAccess)
             {
+                DebugLogger.Log(string.Format("Creating root directory {0}", _path));
+
                 Directory.CreateDirectory(_path);
 
-                _writeAccess = true;
+                _hasWriteAccess = true;
             }
         }
 
         private void CheckWriteAccess()
         {
-            AssertChecks.IsTrue(_writeAccess, "Write access is required for this operation.");
+            AssertChecks.IsTrue(_hasWriteAccess, "Write access is required for this operation.");
         }
 
         public virtual void CreateDirectory(string dirName)
@@ -55,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             if (FileExists(dirName))
             {
-                throw new InvalidOperationException("File exists - " + dirName);
+                throw new InvalidOperationException(string.Format("File exists {0}", dirName));
             }
 
             DebugLogger.Log(string.Format("Creating directory {0}", dirName));
@@ -74,7 +80,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Checks.ArgumentNotNullOrEmpty(dirName, "dirName");
 
             DebugLogger.Log(string.Format("Deleting directory {0}", dirName));
-
+            
             string dirPath = GetEntryPath(dirName);
 
             if (Directory.Exists(dirPath))
@@ -100,7 +106,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             Checks.DirectoryExists(dirPath);
 
-            return Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0;
+            return Directory.GetFiles(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0 &&
+                   Directory.GetDirectories(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0;
         }
 
         public virtual void CreateOrUpdateFile(string fileName, string sourceFilePath)
@@ -111,7 +118,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             if (DirectoryExists(fileName))
             {
-                throw new InvalidOperationException("Directory exists - " + fileName);
+                throw new InvalidOperationException(string.Format("Directory exists {0}", fileName));
             }
 
             DebugLogger.Log(string.Format("Copying file {0} from {1}", fileName, sourceFilePath));
@@ -189,11 +196,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 return;
             }
 
+            DebugLogger.LogDispose();
+
             CurrentInstances.Remove(_path);
-            if (Directory.Exists(_path))
-            {
-                Directory.Delete(_path, true);
-            }
 
             _disposed = true;
         }

@@ -9,7 +9,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly IAppUpdaterStrategyResolver _strategyResolver;
 
-        private bool _patchHasBeenCalled;
+        private bool _updateHasBeenCalled;
 
         public readonly AppUpdaterContext Context;
 
@@ -29,14 +29,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             Context = context;
         }
 
-        public void Patch(CancellationToken cancellationToken)
+        public void Update(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
+            AssertChecks.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
 
-            DebugLogger.Log("Patching.");
+            DebugLogger.Log("Updating.");
 
             var strategy = _strategyResolver.Resolve(Context);
-            strategy.Patch(cancellationToken);
+            strategy.Update(cancellationToken);
         }
     }
 }

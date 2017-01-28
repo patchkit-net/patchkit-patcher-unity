@@ -82,12 +82,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void LoadData()
         {
-            if (File.Exists(_filePath) && LoadDataFromFile())
-            {
-                return;
-            }
+            DebugLogger.Log("Loading data.");
 
-            LoadEmptyData();
+            if (!TryLoadDataFromFile())
+            {
+                DebugLogger.Log("Cannot load data from file.");
+
+                LoadEmptyData();
+            }
         }
 
         private void LoadEmptyData()
@@ -98,8 +100,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             };
         }
 
-        private bool LoadDataFromFile()
+        private bool TryLoadDataFromFile()
         {
+            DebugLogger.Log("Trying to load data from file.");
+
+            if (!File.Exists(_filePath)) return false;
+
             _data = new Data();
 
             try

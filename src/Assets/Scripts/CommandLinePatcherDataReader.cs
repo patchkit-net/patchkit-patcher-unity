@@ -1,24 +1,58 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
 {
     public class CommandLinePatcherDataReader
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CommandLinePatcherDataReader));
+
+        public CommandLinePatcherDataReader()
+        {
+            DebugLogger.LogConstructor();
+        }
+
         public PatcherData Read()
         {
-            PatcherData data;
+            DebugLogger.Log("Reading.");
 
-            string encodedAppSecret;
+            PatcherData data = new PatcherData();
 
-            if (!TryReadArgument("--secret", out encodedAppSecret))
+            string forceAppSecret;
+            if (TryReadDebugArgument("PK_PATCHER_FORCE_SECRET", out forceAppSecret))
             {
-                throw new ApplicationException("Unable to parse secret from command line.");
+                DebugLogger.Log(string.Format("Setting forced app secret {0}", forceAppSecret));
+                data.AppSecret = forceAppSecret;
+            }
+            else
+            {
+                string encodedAppSecret;
+
+                if (!TryReadArgument("--secret", out encodedAppSecret))
+                {
+                    throw new ApplicationException("Unable to parse secret from command line.");
+                }
+                data.AppSecret = DecodeSecret(encodedAppSecret);
             }
 
-            data.AppSecret = DecodeSecret(encodedAppSecret);
+            string forceOverrideLatestVersionIdString;
+            if (TryReadDebugArgument("PK_PATCHER_FORCE_VERSION", out forceOverrideLatestVersionIdString))
+            {
+                int forceOverrideLatestVersionId;
+
+                if (int.TryParse(forceOverrideLatestVersionIdString, out forceOverrideLatestVersionId))
+                {
+                    DebugLogger.Log(string.Format("Setting forced version id {0}", forceOverrideLatestVersionId));
+                    data.OverrideLatestVersionId = forceOverrideLatestVersionId;
+                }
+            }
+            else
+            {
+                data.OverrideLatestVersionId = 0;
+            }
 
             string relativeAppDataPath;
 
@@ -61,6 +95,13 @@ namespace PatchKit.Unity.Patcher
             value = null;
 
             return false;
+        }
+
+        private static bool TryReadDebugArgument(string argumentName, out string value)
+        {
+            value = Environment.GetEnvironmentVariable(argumentName);
+
+            return value != null;
         }
 
         private static string DecodeSecret(string encodedSecret)
