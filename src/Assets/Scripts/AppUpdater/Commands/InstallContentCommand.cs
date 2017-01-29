@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using PatchKit.Api.Models.Main;
+using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -11,31 +12,33 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
 
+        private readonly string _packagePath;
         private readonly int _versionId;
         private readonly AppContentSummary _versionContentSummary;
-        private readonly ILocalData _localData;
+        private readonly ILocalDirectory _localData;
         private readonly ILocalMetaData _localMetaData;
-        private readonly ITemporaryData _temporaryData;
+        private readonly ITemporaryDirectory _temporaryData;
 
-        private string _packagePath;
         private IGeneralStatusReporter _copyFilesStatusReporter;
         private IGeneralStatusReporter _unarchivePackageStatusReporter;
 
-        public InstallContentCommand(int versionId,
+        public InstallContentCommand(string packagePath, int versionId,
             AppContentSummary versionContentSummary,
-            ILocalData localData,
+            ILocalDirectory localData,
             ILocalMetaData localMetaData,
-            ITemporaryData temporaryData)
+            ITemporaryDirectory temporaryData)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
-            // TODO: Check whether version content summary is correct
+            // TODO: Validate the content summary.
             AssertChecks.ArgumentNotNull(localData, "localData");
             AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
             AssertChecks.ArgumentNotNull(temporaryData, "temporaryData");
 
             DebugLogger.LogConstructor();
+            DebugLogger.LogVariable(packagePath, "packagePath");
             DebugLogger.LogVariable(versionId, "versionId");
 
+            _packagePath = packagePath;
             _versionId = versionId;
             _versionContentSummary = versionContentSummary;
             _localData = localData;
@@ -43,11 +46,30 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _temporaryData = temporaryData;
         }
 
+        public override void Prepare(IStatusMonitor statusMonitor)
+        {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
+            DebugLogger.Log("Preparing content installation.");
+
+            _localData.PrepareForWriting();
+            _temporaryData.PrepareForWriting();
+
+            double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionContentSummary);
+            _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
+
+            double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size);
+            _unarchivePackageStatusReporter = statusMonitor.CreateGeneralStatusReporter(unarchivePackageWeight);
+        }
+
         public override void Execute(CancellationToken cancellationToken)
         {
-            AssertChecks.IsTrue(_localMetaData.GetFileNames().Length == 0, "Cannot install content if previous version is still present.");
-
             base.Execute(cancellationToken);
+
+            Checks.FileExists(_packagePath);
+            AssertChecks.IsTrue(_localMetaData.GetRegisteredEntries().Length == 0, "Cannot install content if previous version is still present.");
 
             DebugLogger.Log("Installing content.");
             
@@ -55,7 +77,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DebugLogger.LogVariable(packageDirPath, "packageDirPath");
 
             DebugLogger.Log("Creating package directory.");
-            Directory.CreateDirectory(packageDirPath);
+            DirectoryOperations.CreateDirectory(packageDirPath);
             try
             {
                 DebugLogger.Log("Unarchiving package.");
@@ -85,35 +107,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Deleting package directory.");
                 if (Directory.Exists(packageDirPath))
                 {
-                    Directory.Delete(packageDirPath, true);
+                    DirectoryOperations.Delete(packageDirPath, true);
                 }
             }
-        }
-
-        public override void Prepare(IStatusMonitor statusMonitor)
-        {
-            base.Prepare(statusMonitor);
-
-            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
-
-            DebugLogger.Log("Preparing content installation.");
-
-            _localData.EnableWriteAccess();
-            _temporaryData.EnableWriteAccess();
-
-            double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionContentSummary);
-            _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
-
-            double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size);
-            _unarchivePackageStatusReporter = statusMonitor.CreateGeneralStatusReporter(unarchivePackageWeight);
-        }
-
-        public void SetPackagePath(string packagePath)
-        {
-            DebugLogger.Log("Setting package path.");
-            DebugLogger.LogVariable(packagePath, "packagePath");
-
-            _packagePath = packagePath;
         }
 
         private void InstallFile(string fileName, string packageDirPath)
@@ -127,8 +123,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new InstallerException(string.Format("Cannot find file {0} in content package.", fileName));
             }
 
-            _localData.CreateOrUpdateFile(fileName, sourceFilePath);
-            _localMetaData.AddOrUpdateFile(fileName, _versionId);
+            string filePath = _localData.Path.PathCombine(fileName);
+            DirectoryOperations.CreateParentDirectory(filePath);
+            FileOperations.Copy(sourceFilePath, filePath, true);
+            _localMetaData.RegisterEntry(fileName, _versionId);
         }
     }
 }

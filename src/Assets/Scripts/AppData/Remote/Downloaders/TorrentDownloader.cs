@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Newtonsoft.Json.Linq;
+using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
@@ -221,12 +222,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             if (File.Exists(_destinationFilePath))
             {
-                File.Delete(_destinationFilePath);
+                FileOperations.Delete(_destinationFilePath);
             }
 
             DebugLogger.LogVariable(dirFiles[0].FullName, "dirFiles[0].FullName");
 
-            File.Move(dirFiles[0].FullName, _destinationFilePath);
+            FileOperations.Move(dirFiles[0].FullName, _destinationFilePath);
         }
 
         private void Cleanup()
@@ -235,12 +236,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             if (Directory.Exists(DownloadDirectoryPath))
             {
-                Directory.Delete(DownloadDirectoryPath, true);
+                DirectoryOperations.Delete(DownloadDirectoryPath, true);
             }
 
             if (File.Exists(TorrentFilePath))
             {
-                File.Delete(TorrentFilePath);
+                FileOperations.Delete(TorrentFilePath);
             }
         }
 

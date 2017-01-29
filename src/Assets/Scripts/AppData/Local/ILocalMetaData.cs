@@ -1,35 +1,39 @@
 ﻿namespace PatchKit.Unity.Patcher.AppData.Local
 {
+    /// <summary>
+    /// Meta information about local applciation data.
+    /// </summary>
     public interface ILocalMetaData
     {
         /// <summary>
-        /// Returns list of all file names.
+        /// Returns names of all registered entries.
         /// </summary>
-        string[] GetFileNames();
+        string[] GetRegisteredEntries();
 
         /// <summary>
-        /// Adds or updates the file with specified version id.
+        /// Registers the entry with specified version id.
+        /// If entry is already registered then it is overwritten.
         /// </summary>
-        /// <param name="fileName">Name of the file.</param>
+        /// <param name="entryName">Name of the entry.</param>
         /// <param name="versionId">The version id.</param>
-        void AddOrUpdateFile(string fileName, int versionId);
+        void RegisterEntry(string entryName, int versionId);
 
         /// <summary>
-        /// Removes the file if it exists.
+        /// Unregisters the entry.
         /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        void RemoveFile(string fileName);
+        /// <param name="entryName">Name of the entry.</param>
+        void UnregisterEntry(string entryName);
 
         /// <summary>
-        /// Determines whether file exists.
+        /// Determines whether entry exists.
         /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        bool FileExists(string fileName);
+        /// <param name="entryName">Name of the entry.</param>
+        bool IsEntryRegistered(string entryName);
 
         /// <summary>
-        /// Returns the version id of file.
+        /// Returns the version id of the entry.
         /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        int GetFileVersionId(string fileName);
+        /// <param name="entryName">Name of the entry.</param>
+        int GetEntryVersionId(string entryName);
     }
 }

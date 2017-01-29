@@ -32,35 +32,25 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.LogVariable(latestVersionId, "latestVersionId");
 
-            var latestVersionContentSummary = _context.App.RemoteMetaData.GetContentSummary(latestVersionId);
-
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
             validateLicense.Prepare(_context.StatusMonitor);
-
-            var uninstall = commandFactory.CreateUninstallCommand(_context.App.LocalData, _context.App.LocalMetaData);
-            uninstall.Prepare(_context.StatusMonitor);
-
-            var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId, _context);
-            downloadContentPackage.Prepare(_context.StatusMonitor);
-
-            var installContent = commandFactory.CreateInstallContentCommand(latestVersionId,
-                latestVersionContentSummary,
-                _context.App.LocalData,
-                _context.App.LocalMetaData,
-                _context.App.TemporaryData);
-            installContent.Prepare(_context.StatusMonitor);
-
             validateLicense.Execute(cancellationToken);
 
+            var uninstall = commandFactory.CreateUninstallCommand(_context);
+            uninstall.Prepare(_context.StatusMonitor);
+
+            var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId,
+                validateLicense.KeySecret, _context);
+            downloadContentPackage.Prepare(_context.StatusMonitor);
+
+            var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context);
+            installContent.Prepare(_context.StatusMonitor);
+
             uninstall.Execute(cancellationToken);
-
-            downloadContentPackage.SetKeySecret(validateLicense.KeySecret);
             downloadContentPackage.Execute(cancellationToken);
-
-            installContent.SetPackagePath(downloadContentPackage.PackagePath);
             installContent.Execute(cancellationToken);
 
-            _context.App.DownloadData.Clear();
+            _context.App.DownloadDirectory.Clear();
         }
     }
 }

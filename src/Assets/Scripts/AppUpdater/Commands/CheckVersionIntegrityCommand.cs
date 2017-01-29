@@ -1,4 +1,7 @@
-﻿using PatchKit.Api.Models.Main;
+﻿using System.IO;
+using PatchKit.Api.Models.Main;
+using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
@@ -10,21 +13,39 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CheckVersionIntegrityCommand));
 
         private readonly int _versionId;
-        private readonly AppUpdaterContext _context;
+        private readonly AppContentSummary _versionSummary;
+        private readonly ILocalDirectory _localDirectory;
+        private readonly ILocalMetaData _localMetaData;
 
-        private AppContentSummary _versionSummary;
         private IGeneralStatusReporter _statusReporter;
 
-        public CheckVersionIntegrityCommand(int versionId, AppUpdaterContext context)
+        public CheckVersionIntegrityCommand(int versionId, AppContentSummary versionSummary, ILocalDirectory localDirectory, ILocalMetaData localMetaData)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
-            AssertChecks.ArgumentNotNull(context, "context");
+            // TODO: Validate the content summary.
+            AssertChecks.ArgumentNotNull(localDirectory, "localDirectory");
+            AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
+            
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(versionId, "versionId");
 
             _versionId = versionId;
-            _context = context;
+            _versionSummary = versionSummary;
+            _localDirectory = localDirectory;
+            _localMetaData = localMetaData;
+        }
+
+        public override void Prepare(IStatusMonitor statusMonitor)
+        {
+            base.Prepare(statusMonitor);
+
+            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+
+            DebugLogger.Log("Preparing version integrity check.");
+
+            double weight = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary);
+            _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -45,33 +66,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             Results = new VersionIntegrity(files);
         }
 
-        public override void Prepare(IStatusMonitor statusMonitor)
-        {
-            base.Prepare(statusMonitor);
-
-            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
-
-            DebugLogger.Log("Preparing version integrity check.");
-
-            _versionSummary = _context.App.RemoteMetaData.GetContentSummary(_versionId);
-
-            double weight = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary);
-            _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
-        }
-
         private FileIntegrity CheckFile(AppContentSummaryFile file)
         {
-            if (!_context.App.LocalData.FileExists(file.Path))
+            if(!File.Exists(_localDirectory.Path.PathCombine(file.Path)))
             {
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingData);
             }
 
-            if (!_context.App.LocalMetaData.FileExists(file.Path))
+            if (!_localMetaData.IsEntryRegistered(file.Path))
             {
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingMetaData);
             }
 
-            if (_context.App.LocalMetaData.GetFileVersionId(file.Path) != _versionId)
+            if (_localMetaData.GetEntryVersionId(file.Path) != _versionId)
             {
                 return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidVersion);
             }

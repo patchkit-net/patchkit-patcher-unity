@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.Debug;
@@ -9,45 +10,45 @@ namespace PatchKit.Unity.Patcher
 {
     public class App : IDisposable
     {
-        public readonly ILocalData LocalData;
+        public readonly ILocalDirectory LocalDirectory;
 
         public readonly ILocalMetaData LocalMetaData;
 
-        public readonly ITemporaryData TemporaryData;
+        public readonly ITemporaryDirectory TemporaryDirectory;
 
-        public readonly IDownloadData DownloadData;
+        public readonly IDownloadDirectory DownloadDirectory;
 
         public readonly IRemoteData RemoteData;
 
         public readonly IRemoteMetaData RemoteMetaData;
 
-        private int _overrideLatestVersionId;
+        private readonly int _overrideLatestVersionId;
 
         private bool _disposed;
 
         public App(string appDataPath, string appSecret, int overrideLatestVersionId) : this(
-            CreateDefaultLocalData(appDataPath),
+            CreateDefaultLocalDirectory(appDataPath),
             CreateDefaultLocalMetaData(appDataPath),
-            CreateDefaultTemporaryData(appDataPath),
-            CreateDefaultDownloadData(appDataPath),
+            CreateDefaultTemporaryDirectory(appDataPath),
+            CreateDefaultDownloadDirectory(appDataPath),
             CreateDefaultRemoteData(appSecret),
             CreateDefaultRemoteMetaData(appSecret), overrideLatestVersionId)
         {
         }
 
-        public App(ILocalData localData, ILocalMetaData localMetaData, ITemporaryData temporaryData, IDownloadData downloadData, IRemoteData remoteData, IRemoteMetaData remoteMetaData, int overrideLatestVersionId)
+        public App(ILocalDirectory localDirectory, ILocalMetaData localMetaData, ITemporaryDirectory temporaryDirectory, IDownloadDirectory downloadDirectory, IRemoteData remoteData, IRemoteMetaData remoteMetaData, int overrideLatestVersionId)
         {
-            AssertChecks.ArgumentNotNull(localData, "localData");
+            AssertChecks.ArgumentNotNull(localDirectory, "localData");
             AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
-            AssertChecks.ArgumentNotNull(temporaryData, "temporaryData");
-            AssertChecks.ArgumentNotNull(downloadData, "downloadData");
+            AssertChecks.ArgumentNotNull(temporaryDirectory, "temporaryData");
+            AssertChecks.ArgumentNotNull(downloadDirectory, "downloadData");
             AssertChecks.ArgumentNotNull(remoteData, "remoteData");
             AssertChecks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
 
-            LocalData = localData;
+            LocalDirectory = localDirectory;
             LocalMetaData = localMetaData;
-            TemporaryData = temporaryData;
-            DownloadData = downloadData;
+            TemporaryDirectory = temporaryDirectory;
+            DownloadDirectory = downloadDirectory;
             RemoteData = remoteData;
             RemoteMetaData = remoteMetaData;
             _overrideLatestVersionId = overrideLatestVersionId;
@@ -55,24 +56,24 @@ namespace PatchKit.Unity.Patcher
 
         public bool IsInstalled()
         {
-            var fileNames = LocalMetaData.GetFileNames();
+            var fileNames = LocalMetaData.GetRegisteredEntries();
 
             if (fileNames.Length == 0)
             {
                 return false;
             }
 
-            int installedVersion = LocalMetaData.GetFileVersionId(fileNames[0]);
+            int installedVersion = LocalMetaData.GetEntryVersionId(fileNames[0]);
 
-            return fileNames.All(LocalData.FileExists) &&
-                   fileNames.All(fileName => LocalMetaData.GetFileVersionId(fileName) == installedVersion);
+            return fileNames.All(fileName => File.Exists(LocalDirectory.Path.PathCombine(fileName)) &&
+                                             LocalMetaData.GetEntryVersionId(fileName) == installedVersion);
         }
 
         public int GetInstalledVersionId()
         {
             AssertChecks.ApplicationIsInstalled(this);
 
-            return LocalMetaData.GetFileVersionId(LocalMetaData.GetFileNames()[0]);
+            return LocalMetaData.GetEntryVersionId(LocalMetaData.GetRegisteredEntries()[0]);
         }
 
         public int GetLatestVersionId()
@@ -104,30 +105,30 @@ namespace PatchKit.Unity.Patcher
 
             if (disposing)
             {
-                LocalData.Dispose();
+                TemporaryDirectory.Dispose();
             }
 
             _disposed = true;
         }
 
-        private static ILocalData CreateDefaultLocalData(string appDataPath)
+        private static ILocalDirectory CreateDefaultLocalDirectory(string appDataPath)
         {
-            return new LocalData(appDataPath);
+            return new LocalDirectory(appDataPath);
         }
 
-        private static ITemporaryData CreateDefaultTemporaryData(string appDataPath)
+        private static ITemporaryDirectory CreateDefaultTemporaryDirectory(string appDataPath)
         {
-            return new TemporaryData(Path.Combine(appDataPath, ".temp"));
+            return new TemporaryDirectory(appDataPath.PathCombine(".temp"));
         }
 
-        private static IDownloadData CreateDefaultDownloadData(string appDataPath)
+        private static IDownloadDirectory CreateDefaultDownloadDirectory(string appDataPath)
         {
-            return new DownloadData(Path.Combine(appDataPath, ".downloads"));
+            return new DownloadDirectory(appDataPath.PathCombine(".downloads"));
         }
 
         private static ILocalMetaData CreateDefaultLocalMetaData(string appDataPath)
         {
-            return new LocalMetaData(Path.Combine(appDataPath, "patcher_cache.json"));
+            return new LocalMetaData(appDataPath.PathCombine("patcher_cache.json"));
         }
 
         private static IRemoteData CreateDefaultRemoteData(string appSecret)

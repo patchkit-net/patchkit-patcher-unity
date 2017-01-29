@@ -117,7 +117,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/win/torrent-client.exe"),
+                    FileName = _streamingAssetsPath.PathCombine("torrent-client/win/torrent-client.exe"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -132,7 +132,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/osx64/torrent-client"),
+                    FileName = _streamingAssetsPath.PathCombine("torrent-client/osx64/torrent-client"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -148,7 +148,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = Path.Combine(_streamingAssetsPath, "torrent-client/linux64/torrent-client"),
+                    FileName = _streamingAssetsPath.PathCombine("torrent-client/linux64/torrent-client"),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,

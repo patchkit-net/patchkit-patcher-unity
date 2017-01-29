@@ -381,10 +381,19 @@ namespace PatchKit.Unity.Patcher
 
             State = PatcherState.WaitingForUserDecision;
 
-            CanStartApp = _app.IsInstalled();
+            bool isInstalled = _app.IsInstalled();
 
-            CanUpdateApp = _hasInternetConnection && (!_app.IsInstalled() ||
-                           _app.GetLatestVersionId() != _app.GetInstalledVersionId());
+            int? installedVersionId = isInstalled ? (int?)_app.GetInstalledVersionId() : null;
+            int latestVersionId = _app.GetLatestVersionId();
+
+            DebugLogger.LogVariable(isInstalled, "isInstalled");
+            DebugLogger.LogVariable(_hasInternetConnection, "_hasInternetConnection");
+            DebugLogger.LogVariable(installedVersionId, "installedVersionId");
+            DebugLogger.LogVariable(latestVersionId, "latestVersionId");
+
+            CanStartApp = isInstalled;
+
+            CanUpdateApp = _hasInternetConnection && (!isInstalled || latestVersionId != installedVersionId.Value);
 
             CanCheckInternetConnection = !_hasInternetConnection;
 

@@ -7,8 +7,15 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
+    /// <summary>
+    /// Implementation of <see cref="ILocalMetaData"/>.
+    /// </summary>
+    /// <seealso cref="ILocalMetaData" />
     public class LocalMetaData : ILocalMetaData
     {
+        /// <summary>
+        /// Data structure stored in file.
+        /// </summary>
         private struct Data
         {
             [JsonProperty("_fileVersions")]
@@ -32,24 +39,24 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             LoadData();
         }
 
-        public string[] GetFileNames()
+        public string[] GetRegisteredEntries()
         {
             return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
-        public void AddOrUpdateFile(string fileName, int versionId)
+        public void RegisterEntry(string entryName, int versionId)
         {
-            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+            Checks.ArgumentNotNullOrEmpty(entryName, "fileName");
             Checks.ArgumentValidVersionId(versionId, "versionId");
 
-            DebugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", fileName, versionId));
+            DebugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", entryName, versionId));
 
-            _data.FileVersionIds[fileName] = versionId;
+            _data.FileVersionIds[entryName] = versionId;
 
             SaveData();
         }
 
-        public void RemoveFile(string fileName)
+        public void UnregisterEntry(string fileName)
         {
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
 
@@ -60,35 +67,42 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             SaveData();
         }
 
-        public bool FileExists(string fileName)
+        public bool IsEntryRegistered(string fileName)
         {
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
 
             return _data.FileVersionIds.ContainsKey(fileName);
         }
 
-        public int GetFileVersionId(string fileName)
+        public int GetEntryVersionId(string fileName)
         {
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
-            AssertChecks.IsTrue(FileExists(fileName), string.Format("File doesn't exist in meta data - {0}", fileName));
+            AssertChecks.IsTrue(IsEntryRegistered(fileName), string.Format("File doesn't exist in meta data - {0}", fileName));
 
             return _data.FileVersionIds[fileName];
         }
 
         private void SaveData()
         {
+            DebugLogger.Log("Saving.");
+
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(_data, Formatting.None));
         }
 
         private void LoadData()
         {
-            DebugLogger.Log("Loading data.");
+            DebugLogger.Log("Loading.");
 
-            if (!TryLoadDataFromFile())
+            if (TryLoadDataFromFile())
             {
-                DebugLogger.Log("Cannot load data from file.");
+                DebugLogger.Log("Loaded from file.");
+            }
+            else
+            {
+                DebugLogger.Log("Cannot load from file.");
 
                 LoadEmptyData();
+
             }
         }
 
@@ -102,7 +116,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private bool TryLoadDataFromFile()
         {
-            DebugLogger.Log("Trying to load data from file.");
+            DebugLogger.Log("Trying to load from file.");
 
             if (!File.Exists(_filePath)) return false;
 

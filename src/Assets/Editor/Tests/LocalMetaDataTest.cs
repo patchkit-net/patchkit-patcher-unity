@@ -28,7 +28,7 @@ public class LocalMetaDataTest
 
         var localMetaData = new LocalMetaData(_filePath);
 
-        localMetaData.AddOrUpdateFile("test", 1);
+        localMetaData.RegisterEntry("test", 1);
 
         Assert.True(File.Exists(_filePath));
     }
@@ -38,15 +38,15 @@ public class LocalMetaDataTest
     {
         var localMetaData = new LocalMetaData(_filePath);
 
-        localMetaData.AddOrUpdateFile("a", 1);
-        localMetaData.AddOrUpdateFile("b", 2);
+        localMetaData.RegisterEntry("a", 1);
+        localMetaData.RegisterEntry("b", 2);
 
         var localMetaData2 = new LocalMetaData(_filePath);
 
-        Assert.IsTrue(localMetaData2.FileExists("a"));
-        Assert.IsTrue(localMetaData2.FileExists("b"));
+        Assert.IsTrue(localMetaData2.IsEntryRegistered("a"));
+        Assert.IsTrue(localMetaData2.IsEntryRegistered("b"));
 
-        Assert.AreEqual(1, localMetaData2.GetFileVersionId("a"));
-        Assert.AreEqual(2, localMetaData2.GetFileVersionId("b"));
+        Assert.AreEqual(1, localMetaData2.GetEntryVersionId("a"));
+        Assert.AreEqual(2, localMetaData2.GetEntryVersionId("b"));
     }
 }

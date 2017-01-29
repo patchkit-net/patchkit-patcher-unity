@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 
@@ -54,12 +55,12 @@ namespace PatchKit.Unity.Patcher
 
         private string FindExecutable(Func<string, bool> predicate)
         {
-            return _app.LocalMetaData.GetFileNames().FirstOrDefault(predicate);
+            return _app.LocalMetaData.GetRegisteredEntries().FirstOrDefault(predicate);
         }
 
         private bool IsLinuxExecutable(string fileName)
         {
-            string filePath = _app.LocalData.GetFilePath(fileName);
+            string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
 
             using (FileStream executableFileStream = File.OpenRead(filePath))
             {
@@ -94,12 +95,12 @@ namespace PatchKit.Unity.Patcher
                 throw new InvalidOperationException("Couldn't find executable bundle for Mac OSX.");
             }
 
-            foreach (var fileName in _app.LocalMetaData.GetFileNames())
+            foreach (var fileName in _app.LocalMetaData.GetRegisteredEntries())
             {
                 Chmod(fileName, "+x");
             }
 
-            string appFilePath = _app.LocalData.GetFilePath(appFileName);
+            string appFilePath = _app.LocalDirectory.Path.PathCombine(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
 
             DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
@@ -107,7 +108,7 @@ namespace PatchKit.Unity.Patcher
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "open",
-                Arguments = string.Format("\"{0}\"", _app.LocalData.GetFilePath(appFileName)),
+                Arguments = string.Format("\"{0}\"", _app.LocalDirectory.Path.PathCombine(appFileName)),
                 WorkingDirectory = appDirPath
             };
 
@@ -125,7 +126,7 @@ namespace PatchKit.Unity.Patcher
                 throw new InvalidOperationException("Couldn\'t find executable file for Linux.");
             }
 
-            string appFilePath = _app.LocalData.GetFilePath(appFileName);
+            string appFilePath = _app.LocalDirectory.Path.PathCombine(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
 
             DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
@@ -152,7 +153,7 @@ namespace PatchKit.Unity.Patcher
                 throw new InvalidOperationException("Couldn't find executable bundle for Windows.");
             }
 
-            string appFilePath = _app.LocalData.GetFilePath(appFileName);
+            string appFilePath = _app.LocalDirectory.Path.PathCombine(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
 
             DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
@@ -168,7 +169,7 @@ namespace PatchKit.Unity.Patcher
 
         private void Chmod(string fileName, string permissions)
         {
-            string filePath = _app.LocalData.GetFilePath(fileName);
+            string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
 
             var process = new Process
             {

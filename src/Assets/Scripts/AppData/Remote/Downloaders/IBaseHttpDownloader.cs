@@ -2,6 +2,9 @@
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
+    /// <summary>
+    /// Base HTTP downloader.
+    /// </summary>
     public interface IBaseHttpDownloader
     {
         event DataAvailableHandler DataAvailable;

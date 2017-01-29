@@ -1,53 +1,66 @@
-﻿using PatchKit.Api.Models.Main;
-using PatchKit.Unity.Patcher.AppData.Local;
-
-namespace PatchKit.Unity.Patcher.AppUpdater.Commands
+﻿namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class AppUpdaterCommandFactory
     {
-        public IInstallDiffCommand CreateInstallDiffCommand(int versionId,
-            AppDiffSummary versionDiffSummary,
-            ILocalData localData,
-            ILocalMetaData localMetaData,
-            ITemporaryData temporaryData)
+        public IDownloadPackageCommand CreateDownloadContentPackageCommand(int versionId, string keySecret, AppUpdaterContext context)
         {
-            return new InstallDiffCommand(versionId,
+            var resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret);
+            var destinationFilePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
+
+            context.App.DownloadDirectory.PrepareForWriting();
+
+            return new DownloadPackageCommand(resource, destinationFilePath, context.Configuration.UseTorrents);
+        }
+
+        public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret, AppUpdaterContext context)
+        {
+            var resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret);
+            var destinationFilePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
+
+            context.App.DownloadDirectory.PrepareForWriting();
+
+            return new DownloadPackageCommand(resource, destinationFilePath, context.Configuration.UseTorrents);
+        }
+
+        public IInstallContentCommand CreateInstallContentCommand(int versionId, AppUpdaterContext context)
+        {
+            var packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
+            var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
+
+            return new InstallContentCommand(packagePath,
+                versionId,
+                versionContentSummary,
+                context.App.LocalDirectory,
+                context.App.LocalMetaData,
+                context.App.TemporaryDirectory);
+        }
+
+        public IInstallDiffCommand CreateInstallDiffCommand(int versionId, AppUpdaterContext context)
+        {
+            var packagePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
+            var versionDiffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId);
+
+            return new InstallDiffCommand(packagePath,
+                versionId,
                 versionDiffSummary,
-                localData,
-                localMetaData,
-                temporaryData);
-        }
-
-        public IDownloadDiffPackageCommand CreateDownloadDiffPackageCommand(int versionId,
-            AppUpdaterContext context)
-        {
-            return new DownloadDiffPackageCommand(versionId, context);
-        }
-
-        public IInstallContentCommand CreateInstallContentCommand(int versionId,
-            AppContentSummary versionContentSummary,
-            ILocalData localData,
-            ILocalMetaData localMetaData,
-            ITemporaryData temporaryData)
-        {
-            return new InstallContentCommand(versionId, versionContentSummary,
-                localData, localMetaData, temporaryData);
-        }
-
-        public IDownloadContentPackageCommand CreateDownloadContentPackageCommand(int versionId,
-            AppUpdaterContext context)
-        {
-            return new DownloadContentPackageCommand(versionId, context);
+                context.App.LocalDirectory,
+                context.App.LocalMetaData,
+                context.App.TemporaryDirectory);
         }
 
         public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context)
         {
-            return new CheckVersionIntegrityCommand(versionId, context);
+            var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
+
+            return new CheckVersionIntegrityCommand(versionId,
+                versionContentSummary,
+                context.App.LocalDirectory,
+                context.App.LocalMetaData);
         }
 
-        public IUninstallCommand CreateUninstallCommand(ILocalData localData, ILocalMetaData localMetaData)
+        public IUninstallCommand CreateUninstallCommand(AppUpdaterContext context)
         {
-            return new UninstallCommand(localData, localMetaData);
+            return new UninstallCommand(context.App.LocalDirectory, context.App.LocalMetaData);
         }
 
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)

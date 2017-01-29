@@ -9,9 +9,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     {
         private struct DiffCommands
         {
-            public IDownloadDiffPackageCommand DownloadDiffPackage;
-            public IInstallDiffCommand InstallDiffPackage;
-            public int VersionId;
+            public IDownloadPackageCommand Download;
+            public IInstallDiffCommand Install;
         }
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterDiffStrategy));
@@ -46,6 +45,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
             validateLicense.Prepare(_context.StatusMonitor);
+            validateLicense.Execute(cancellationToken);
 
             var diffCommandsList = new List<DiffCommands>();
 
@@ -53,35 +53,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             {
                 DiffCommands diffCommands;
 
-                diffCommands.VersionId = i;
-
-                diffCommands.DownloadDiffPackage = commandFactory.CreateDownloadDiffPackageCommand(i,
+                diffCommands.Download = commandFactory.CreateDownloadDiffPackageCommand(i, validateLicense.KeySecret,
                     _context);
-                diffCommands.DownloadDiffPackage.Prepare(_context.StatusMonitor);
+                diffCommands.Download.Prepare(_context.StatusMonitor);
 
-                var diffSummary = _context.App.RemoteMetaData.GetDiffSummary(i);
-
-                diffCommands.InstallDiffPackage = commandFactory.CreateInstallDiffCommand(i, diffSummary,
-                    _context.App.LocalData, _context.App.LocalMetaData, _context.App.TemporaryData);
-                diffCommands.InstallDiffPackage.Prepare(_context.StatusMonitor);
+                diffCommands.Install = commandFactory.CreateInstallDiffCommand(i, _context);
+                diffCommands.Install.Prepare(_context.StatusMonitor);
 
                 diffCommandsList.Add(diffCommands);
             }
 
-            validateLicense.Execute(cancellationToken);
-
             foreach (var diffCommands in diffCommandsList)
             {
-                diffCommands.DownloadDiffPackage.SetKeySecret(validateLicense.KeySecret);
-                diffCommands.DownloadDiffPackage.Execute(cancellationToken);
-
-                diffCommands.InstallDiffPackage.SetPackagePath(diffCommands.DownloadDiffPackage.PackagePath);
-                diffCommands.InstallDiffPackage.Execute(cancellationToken);
-
-                AssertChecks.ApplicationVersionEquals(_context.App, diffCommands.VersionId);
+                diffCommands.Download.Execute(cancellationToken);
+                diffCommands.Install.Execute(cancellationToken);
             }
 
-            _context.App.DownloadData.Clear();
+            _context.App.DownloadDirectory.Clear();
         }
     }
 }

@@ -2,6 +2,5 @@
 {
     public interface IInstallContentCommand : IAppUpdaterCommand
     {
-        void SetPackagePath(string packagePath);
     }
 }

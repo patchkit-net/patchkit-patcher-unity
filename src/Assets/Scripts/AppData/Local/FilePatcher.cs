@@ -1,12 +1,15 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    // TODO: Use rsync as executable.
+    /// <summary>
+    /// The file patcher.
+    /// TODO: Create an interface and cleanup this class.
+    /// </summary>
     public class FilePatcher
     {
+        // TODO: Use rsync as executable.
         [DllImport("rsync", EntryPoint = "rs_rdiff_patch")]
         private static extern int rs_rdiff_patch(string basisFile, string deltaFile, string newFile);
 

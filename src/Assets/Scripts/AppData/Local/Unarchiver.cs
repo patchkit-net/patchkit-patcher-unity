@@ -4,6 +4,10 @@ using PatchKit.Unity.Patcher.Cancellation;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
+    /// <summary>
+    /// The unarchiver.
+    /// TODO: Create an interface and cleanup this class.
+    /// </summary>
     public class Unarchiver
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Unarchiver));
