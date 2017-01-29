@@ -17,6 +17,8 @@ namespace PatchKit.Unity.Patcher.Status
 
         private const long SampleLifeTime = 10000;
 
+        private const long MinimumDelayBetweenSamples = 1000;
+
         private readonly List<Sample> _samples = new List<Sample>();
 
         private long _lastBytes;
@@ -37,12 +39,19 @@ namespace PatchKit.Unity.Patcher.Status
 
         public void AddSample(long bytes, DateTime time)
         {
+            long duration = (long) (time - _lastTime).TotalMilliseconds;
+
+            if (duration < MinimumDelayBetweenSamples)
+            {
+                return;
+            }
+
             CleanOldSamples(time);
 
             _samples.Add(new Sample
             {
                 Bytes = bytes - _lastBytes,
-                Duration = (long)(time - _lastTime).TotalMilliseconds,
+                Duration = duration,
                 AddTime = time
             });
 

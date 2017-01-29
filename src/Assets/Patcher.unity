@@ -846,13 +846,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 177215dfa0b474d44a8288b12b5c0642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EditorAppSecret: 9ede559714b8fdca3747aa30f3219569
+  EditorAppSecret: ac20fc855b75a7ea5f3e936dfd38ccd8
   EditorOverrideLatestVersionId: 0
   DefaultConfiguration:
     AppUpdaterConfiguration:
-      UseTorrents: 1
+      UseTorrents: 0
     StartAppAutomatically: 0
-    UpdateAppAutomatically: 1
+    UpdateAppAutomatically: 0
 --- !u!1 &421519242
 GameObject:
   m_ObjectHideFlags: 0
