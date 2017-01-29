@@ -22,10 +22,11 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 validationFailed("Resource size is not more than zero - " + resource.Size);
             }
-            else if (string.IsNullOrEmpty(resource.HashCode))
+            // TODO: Sometimes it is...
+            /*else if (string.IsNullOrEmpty(resource.HashCode))
             {
                 validationFailed("Resource hash code is null or empty.");
-            }
+            }*/ 
             else if (resource.Urls == null || resource.Urls.Length == 0)
             {
                 validationFailed("Resource urls are null or empty.");

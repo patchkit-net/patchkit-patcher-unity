@@ -49,6 +49,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Checks.ArgumentNotNullOrEmpty(entryName, "fileName");
             Checks.ArgumentValidVersionId(versionId, "versionId");
 
+            // TODO: Uncomment this after fixing directory registration in install content command
+            AssertChecks.IsFalse(entryName.EndsWith("/"),
+                "Cannot register directory as entry due to problem with content installation command. See code to learn more.");
+
             DebugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", entryName, versionId));
 
             _data.FileVersionIds[entryName] = versionId;

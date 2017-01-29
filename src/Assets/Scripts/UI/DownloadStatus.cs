@@ -9,6 +9,14 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
+            Patcher.Instance.StateChanged += state =>
+            {
+                if (state != PatcherState.UpdatingApp)
+                {
+                    Text.text = string.Empty;
+                }
+            };
+
             Patcher.Instance.UpdateAppStatusChanged += status =>
             {
                 if(status.IsDownloading)
@@ -21,6 +29,8 @@ namespace PatchKit.Unity.Patcher.UI
                     Text.text = string.Empty;
                 }
             };
+
+            Text.text = string.Empty;
         }
     }
 }

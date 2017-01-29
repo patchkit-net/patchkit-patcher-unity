@@ -846,7 +846,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 177215dfa0b474d44a8288b12b5c0642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EditorAppSecret: 160297d28469aa4db543b6451b6dba85
+  EditorAppSecret: 9ede559714b8fdca3747aa30f3219569
   EditorOverrideLatestVersionId: 0
   DefaultConfiguration:
     AppUpdaterConfiguration:
@@ -1713,6 +1713,7 @@ GameObject:
   - 114: {fileID: 776156506}
   - 114: {fileID: 776156505}
   - 114: {fileID: 776156509}
+  - 114: {fileID: 776156510}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1825,6 +1826,19 @@ MonoBehaviour:
     y: 340
     width: 600
     height: 60
+--- !u!114 &776156510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 776156504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5c2d34f7191b614ba5f21f653bf0475, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CloseButton: {fileID: 591607409}
+  MinimizeButton: {fileID: 835868113}
 --- !u!1 &787731903
 GameObject:
   m_ObjectHideFlags: 0
@@ -2695,7 +2709,7 @@ Animator:
   m_GameObject: {fileID: 1026572723}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: e6be27dc075c5934eaf91c8db614fffd, type: 2}
+  m_Controller: {fileID: 9100000, guid: ac06ef0fec9baf34c92979253f322007, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

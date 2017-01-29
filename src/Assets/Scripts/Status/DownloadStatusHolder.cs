@@ -6,7 +6,7 @@
 
         public long TotalBytes;
 
-        public double Speed;
+        public double BytesPerSecond;
 
         public bool IsDownloading;
 
@@ -14,7 +14,15 @@
 
         public double Progress
         {
-            get { return Bytes/(double) TotalBytes; }
+            get
+            {
+                if (TotalBytes == 0)
+                {
+                    return 0.0;
+                }
+
+                return Bytes/(double) TotalBytes;
+            }
         }
 
         public DownloadStatusHolder(double weight)

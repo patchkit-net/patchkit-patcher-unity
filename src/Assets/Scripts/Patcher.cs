@@ -215,13 +215,24 @@ namespace PatchKit.Unity.Patcher
             {
                 while(_thread.IsAlive)
                 {
-                    DebugLogger.Log("Interrupting thread.");
-
                     Cancel();
+
+                    DebugLogger.Log("Interrupting thread.");
 
                     _thread.Interrupt();
                     
-                    _thread.Join(5000);
+                    _thread.Join(1000);
+
+                    if (_thread.IsAlive)
+                    {
+                        while (_thread.IsAlive)
+                        {
+                            DebugLogger.Log("Aborting thread.");
+
+                            _thread.Abort();
+                            _thread.Join(1000);
+                        }
+                    }
                 }
             }
         }
@@ -379,8 +390,6 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Waiting for user decision.");
 
-            State = PatcherState.WaitingForUserDecision;
-
             bool isInstalled = _app.IsInstalled();
 
             int? installedVersionId = isInstalled ? (int?)_app.GetInstalledVersionId() : null;
@@ -390,6 +399,8 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.LogVariable(_hasInternetConnection, "_hasInternetConnection");
             DebugLogger.LogVariable(installedVersionId, "installedVersionId");
             DebugLogger.LogVariable(latestVersionId, "latestVersionId");
+
+            State = PatcherState.WaitingForUserDecision;
 
             CanStartApp = isInstalled;
 

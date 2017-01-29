@@ -57,6 +57,11 @@ namespace PatchKit.Unity.Patcher.UI
 
             PlayButton.onClick.AddListener(OnPlayButtonClicked);
             CheckButton.onClick.AddListener(OnCheckButtonClicked);
+
+            _animator.SetBool("IsOpened", false);
+            PlayButton.interactable = false;
+            CheckButton.interactable = false;
+            CheckButtonText.text = "Check for updates";
         }
 
         private void OnPlayButtonClicked()

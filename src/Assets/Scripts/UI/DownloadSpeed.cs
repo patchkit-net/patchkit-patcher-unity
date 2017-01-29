@@ -11,15 +11,10 @@ namespace PatchKit.Unity.Patcher.UI
         {
             Patcher.Instance.UpdateAppStatusChanged += status =>
             {
-                if(status.IsDownloading)
-                {
-                    Text.text = status.DownloadSpeed.ToString("0.0 kB/sec.");
-                }
-                else
-                {
-                    Text.text = string.Empty;
-                }
+                Text.text = status.IsDownloading ? (status.DownloadBytesPerSecond / 1024.0).ToString("0.0 kB/sec.") : string.Empty;
             };
+
+            Text.text = string.Empty;
         }
     }
 }

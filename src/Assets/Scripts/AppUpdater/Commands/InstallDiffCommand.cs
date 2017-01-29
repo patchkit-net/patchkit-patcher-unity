@@ -97,6 +97,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 unarchiver.Unarchive(cancellationToken);
 
+                _unarchivePackageStatusReporter.OnProgressChanged(1.0);
+
                 ProcessAddedFiles(packageDirPath, cancellationToken);
                 ProcessRemovedFiles(cancellationToken);
                 ProcessModifiedFiles(packageDirPath, cancellationToken);
@@ -148,11 +150,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     DirectoryOperations.Delete(dirPath, false);
                 }
 
-                _localMetaData.UnregisterEntry(dirName);
+                // TODO: Uncomment this after fixing directory registration in install content command
+                //_localMetaData.UnregisterEntry(dirName);
 
                 counter++;
                 _removeFilesStatusReporter.OnProgressChanged(counter/(double)_versionDiffSummary.RemovedFiles.Length);
             }
+
+            _removeFilesStatusReporter.OnProgressChanged(1.0);
         }
 
         private void ProcessAddedFiles(string packageDirPath,
@@ -171,6 +176,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 if (entryName.EndsWith("/"))
                 {
                     DirectoryOperations.CreateDirectory(entryPath);
+
+                    // TODO: Uncomment this after fixing directory registration in install content command
+                    //_localMetaData.RegisterEntry(entryName, _versionId);
                 }
                 else
                 {
@@ -183,12 +191,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     DirectoryOperations.CreateParentDirectory(entryPath);
                     FileOperations.Copy(sourceFilePath, entryPath, true);
-                }
 
-                _localMetaData.RegisterEntry(entryName, _versionId);
+                    _localMetaData.RegisterEntry(entryName, _versionId);
+                }
 
                 _addFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionDiffSummary.AddedFiles.Length);
             }
+
+            _addFilesStatusReporter.OnProgressChanged(1.0);
         }
 
         private void ProcessModifiedFiles(string packageDirPath,
@@ -205,12 +215,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 if (!entryName.EndsWith("/"))
                 {
                     PatchFile(entryName, packageDirPath);
-                }
 
-                _localMetaData.RegisterEntry(entryName, _versionId);
+                    _localMetaData.RegisterEntry(entryName, _versionId);
+                }
+                else
+                {
+                    // TODO: Uncomment this after fixing directory registration in install content command
+                    //_localMetaData.RegisterEntry(entryName, _versionId);
+                }
 
                 _modifiedFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionDiffSummary.ModifiedFiles.Length);
             }
+
+            _modifiedFilesStatusReporter.OnProgressChanged(1.0);
         }
 
         private void PatchFile(string fileName, string packageDirPath)

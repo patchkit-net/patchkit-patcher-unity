@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher.Status
         private void ProcessDownloadStatus(DownloadStatusHolder downloadStatusHolder)
         {
             _overallStatus.IsDownloading = downloadStatusHolder.IsDownloading;
-            _overallStatus.DownloadSpeed = downloadStatusHolder.Speed;
+            _overallStatus.DownloadBytesPerSecond = downloadStatusHolder.BytesPerSecond;
             _overallStatus.DownloadBytes = downloadStatusHolder.Bytes;
             _overallStatus.DownloadTotalBytes = downloadStatusHolder.TotalBytes;
 

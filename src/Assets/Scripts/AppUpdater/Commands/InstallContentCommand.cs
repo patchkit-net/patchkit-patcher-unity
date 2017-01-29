@@ -8,6 +8,10 @@ using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
+    /*
+     * TODO: Content installation is not registering directories because they are not listed in content summary.
+     * The only solution would be to include directories in content summary. Waits for API update.
+     */
     public class InstallContentCommand : BaseAppUpdaterCommand, IInstallContentCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
@@ -91,6 +95,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 unarchiver.Unarchive(cancellationToken);
 
+                _unarchivePackageStatusReporter.OnProgressChanged(1.0);
+
                 DebugLogger.Log("Copying files.");
 
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
@@ -101,6 +107,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     _copyFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionContentSummary.Files.Length);
                 }
+
+                _copyFilesStatusReporter.OnProgressChanged(1.0);
             }
             finally
             {

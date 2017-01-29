@@ -6,7 +6,7 @@
 
         public bool IsDownloading;
 
-        public double DownloadSpeed;
+        public double DownloadBytesPerSecond;
 
         public long DownloadBytes;
 

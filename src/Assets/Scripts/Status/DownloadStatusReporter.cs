@@ -9,8 +9,6 @@ namespace PatchKit.Unity.Patcher.Status
 
         private readonly DownloadSpeedCalculator _downloadSpeedCalculator = new DownloadSpeedCalculator();
 
-        private DateTime _lastProgress;
-
         public event Action<DownloadStatusHolder> StatusReported;
 
         public DownloadStatusReporter(DownloadStatusHolder downloadStatusHolder)
@@ -22,21 +20,23 @@ namespace PatchKit.Unity.Patcher.Status
 
         public void OnDownloadStarted()
         {
+            _downloadSpeedCalculator.Restart(DateTime.Now);
+
             _downloadStatusHolder.Bytes = 0;
             _downloadStatusHolder.TotalBytes = 0;
-            _downloadStatusHolder.Speed = 0.0;
+            _downloadStatusHolder.BytesPerSecond = 0.0;
             _downloadStatusHolder.IsDownloading = true;
-
-            _lastProgress = DateTime.Now;
 
             OnStatusReported();
         }
 
         public void OnDownloadProgressChanged(long bytes, long totalBytes)
         {
+            _downloadSpeedCalculator.AddSample(bytes, DateTime.Now);
+
             _downloadStatusHolder.Bytes = bytes;
             _downloadStatusHolder.TotalBytes = totalBytes;
-            _downloadStatusHolder.Speed = CalculateDownloadSpeed(bytes);
+            _downloadStatusHolder.BytesPerSecond = _downloadSpeedCalculator.BytesPerSecond;
 
             OnStatusReported();
         }
@@ -44,19 +44,10 @@ namespace PatchKit.Unity.Patcher.Status
         public void OnDownloadEnded()
         {
             _downloadStatusHolder.Bytes = _downloadStatusHolder.TotalBytes;
-            _downloadStatusHolder.Speed = 0.0;
+            _downloadStatusHolder.BytesPerSecond = 0.0;
             _downloadStatusHolder.IsDownloading = false;
 
             OnStatusReported();
-        }
-
-        private double CalculateDownloadSpeed(long bytes)
-        {
-            long duration = (long) ((DateTime.Now - _lastProgress).TotalMilliseconds);
-            _downloadSpeedCalculator.AddSample(bytes, duration);
-            _lastProgress = DateTime.Now;
-
-            return _downloadStatusHolder.Speed;
         }
 
         protected virtual void OnStatusReported()

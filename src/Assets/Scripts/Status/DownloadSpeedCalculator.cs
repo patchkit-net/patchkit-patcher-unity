@@ -19,27 +19,41 @@ namespace PatchKit.Unity.Patcher.Status
 
         private readonly List<Sample> _samples = new List<Sample>();
 
-        private void CleanOldSamples()
+        private long _lastBytes;
+
+        private DateTime _lastTime;
+
+        private void CleanOldSamples(DateTime time)
         {
-            _samples.RemoveAll(s => (DateTime.Now - s.AddTime).TotalMilliseconds > SampleLifeTime);
+            _samples.RemoveAll(s => (time - s.AddTime).TotalMilliseconds > SampleLifeTime);
         }
 
-        public void AddSample(long bytes, long duration)
+        public void Restart(DateTime time)
         {
+            _lastBytes = 0;
+            _lastTime = time;
+            _samples.Clear();
+        }
+
+        public void AddSample(long bytes, DateTime time)
+        {
+            CleanOldSamples(time);
+
             _samples.Add(new Sample
             {
-                Bytes = bytes,
-                Duration = duration,
-                AddTime = DateTime.Now
+                Bytes = bytes - _lastBytes,
+                Duration = (long)(time - _lastTime).TotalMilliseconds,
+                AddTime = time
             });
+
+            _lastBytes = bytes;
+            _lastTime = time;
         }
 
-        public double DownloadSpeed
+        public double BytesPerSecond
         {
             get
             {
-                CleanOldSamples();
-
                 long bytes = _samples.Sum(s => s.Bytes);
                 long duration = _samples.Sum(s => s.Duration);
 
@@ -48,7 +62,7 @@ namespace PatchKit.Unity.Patcher.Status
                     return 0.0;
                 }
 
-                return bytes/1024.0/duration;
+                return bytes / (duration / 1000.0);
             }
         }
     }

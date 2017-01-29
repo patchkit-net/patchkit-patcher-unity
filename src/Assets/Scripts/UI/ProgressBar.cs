@@ -19,10 +19,20 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
+            Patcher.Instance.StateChanged += state =>
+            {
+                if (state != PatcherState.UpdatingApp)
+                {
+                    SetProgress(1.0);
+                }
+            };
+
             Patcher.Instance.UpdateAppStatusChanged += status =>
             {
                 SetProgress(status.Progress);
             };
+
+            SetProgress(1.0);
         }
     }
 }

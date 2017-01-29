@@ -50,8 +50,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             var entries = _localMetaData.GetRegisteredEntries();
 
-            var files = entries.Where(s => !s.EndsWith("/"));
-            var directories = entries.Where(s => s.EndsWith("/"));
+            var files = entries.Where(s => !s.EndsWith("/")).ToArray();
+            // TODO: Uncomment this after fixing directory registration in install content command
+            //var directories = entries.Where(s => s.EndsWith("/"));
 
             int counter = 0;
 
@@ -72,6 +73,36 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _statusReporter.OnProgressChanged(counter / (double)entries.Length);
             }
 
+            // TODO: Delete this after fixing directory registration in install content command
+            // Temporary solution for deleting directories during uninstallation.
+            foreach (var fileName in files)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                string parentDirName = fileName;
+
+                do
+                {
+                    parentDirName = Path.GetDirectoryName(parentDirName);
+
+                    var parentDirPath = _localData.Path.PathCombine(parentDirName);
+
+                    if (Directory.Exists(parentDirPath))
+                    {
+                        if (DirectoryOperations.IsDirectoryEmpty(parentDirPath))
+                        {
+                            DirectoryOperations.Delete(parentDirPath, false);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                } while (parentDirName != null);
+            }
+
+            // TODO: Uncomment this after fixing directory registration in install content command
+            /*
             foreach (var dirName in directories)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -87,7 +118,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 counter++;
                 _statusReporter.OnProgressChanged(counter / (double)entries.Length);
-            }
+            }*/
         }
     }
 }
