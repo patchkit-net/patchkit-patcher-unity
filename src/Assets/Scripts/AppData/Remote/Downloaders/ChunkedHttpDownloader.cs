@@ -19,11 +19,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ChunkedHttpDownloader));
 
+        private readonly string _destinationFilePath;
+
         private readonly RemoteResource _resource;
 
         private readonly int _timeout;
 
-        private readonly ChunkedFileStream _fileStream;
+        private ChunkedFileStream _fileStream;
 
         private bool _downloadHasBeenCalled;
 
@@ -42,10 +44,27 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             DebugLogger.LogVariable(resource, "resource");
             DebugLogger.LogVariable(timeout, "timeout");
 
+            _destinationFilePath = destinationFilePath;
             _resource = resource;
             _timeout = timeout;
+        }
 
-            _fileStream = new ChunkedFileStream(destinationFilePath, resource.Size, resource.ChunksData, HashFunction);
+        private void OpenFileStream()
+        {
+            if (_fileStream == null)
+            {
+                _fileStream = new ChunkedFileStream(_destinationFilePath, _resource.Size, _resource.ChunksData,
+                    HashFunction);
+            }
+        }
+
+        private void CloseFileStream()
+        {
+            if (_fileStream != null)
+            {
+                _fileStream.Dispose();
+                _fileStream = null;
+            }
         }
 
         public void Download(CancellationToken cancellationToken)
@@ -67,7 +86,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     try
                     {
+                        OpenFileStream();
+
                         Download(url, cancellationToken);
+
+                        CloseFileStream();
+
+                        var validator = new DownloadedResourceValidator();
+                        validator.Validate(_destinationFilePath, _resource);
+
                         return;
                     }
                     catch (DownloaderException downloaderException)
@@ -91,6 +118,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
+                    }
+                    finally
+                    {
+                        CloseFileStream();
                     }
                 }
 
@@ -174,7 +205,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             if(disposing)
             {
-                _fileStream.Dispose();
+                CloseFileStream();
             }
 
             _disposed = true;

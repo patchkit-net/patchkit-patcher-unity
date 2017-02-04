@@ -17,11 +17,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(HttpDownloader));
 
+        private readonly string _destinationFilePath;
+
         private readonly RemoteResource _resource;
 
         private readonly int _timeout;
 
-        private readonly FileStream _fileStream;
+        private FileStream _fileStream;
 
         private bool _downloadHasBeenCalled;
 
@@ -40,10 +42,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             DebugLogger.LogVariable(resource, "resource");
             DebugLogger.LogVariable(timeout, "timeout");
 
+            _destinationFilePath = destinationFilePath;
             _resource = resource;
             _timeout = timeout;
+        }
 
-            _fileStream = new FileStream(destinationFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        private void OpenFileStream()
+        {
+            if (_fileStream == null)
+            {
+                _fileStream = new FileStream(_destinationFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            }
+        }
+
+        private void CloseFileStream()
+        {
+            if (_fileStream != null)
+            {
+                _fileStream.Dispose();
+                _fileStream = null;
+            }
         }
 
         public void Download(CancellationToken cancellationToken)
@@ -65,8 +83,21 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     try
                     {
+                        OpenFileStream();
+
                         Download(url, cancellationToken);
+
+                        CloseFileStream();
+
+                        var validator = new DownloadedResourceValidator();
+                        validator.Validate(_destinationFilePath, _resource);
+
                         return;
+                    }
+                    catch (DownloadedResourceValidationException validationException)
+                    {
+                        DebugLogger.LogException(validationException);
+                        validUrls.Remove(url);
                     }
                     catch (DownloaderException downloaderException)
                     {
@@ -89,6 +120,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
+                    }
+                    finally
+                    {
+                        CloseFileStream();
                     }
                 }
 
@@ -152,7 +187,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             if(disposing)
             {
-                _fileStream.Dispose();
+                CloseFileStream();
             }
 
             _disposed = true;
