@@ -14,12 +14,16 @@ public class MagicBytes
     public static FileType MachO32Reverse = new FileType(new byte[] {0xCE, 0xFA, 0xED, 0xFE}, 0);
     public static FileType MachO64Reverse = new FileType(new byte[] {0xCF, 0xFA, 0xED, 0xFE}, 0);
 
+    // ReSharper disable once InconsistentNaming
+    public static FileType ELF = new FileType(new byte[] {0x7F, 0x45, 0x4C, 0x46}, 0);
+
     public static FileType[] AllKnown =
     {
         MachO32,
         MachO64,
         MachO32Reverse,
         MachO64Reverse,
+        ELF
     };
 
     public static FileType[] MacExecutables =
@@ -28,6 +32,11 @@ public class MagicBytes
         MachO64,
         MachO32Reverse,
         MachO64Reverse,
+    };
+
+    public static FileType[] LinuxExecutables =
+    {
+        ELF
     };
 
     #endregion
@@ -40,6 +49,12 @@ public class MagicBytes
         return IsWithin(MacExecutables, fileType);
     }
 
+    public static bool IsLinuxExecutable(string filename)
+    {
+        FileType fileType = ReadFileType(filename);
+        return IsWithin(LinuxExecutables, fileType);
+    }
+
     private static bool IsWithin(FileType[] types, FileType needle)
     {
         if (needle == null)
@@ -47,7 +62,7 @@ public class MagicBytes
             return false;
         }
 
-        return Array.IndexOf(MacExecutables, needle) != -1;
+        return Array.IndexOf(types, needle) != -1;
     }
 
     public static FileType ReadFileType(string filename)
