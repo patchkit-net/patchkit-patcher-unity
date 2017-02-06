@@ -51,30 +51,9 @@ namespace PatchKit.Unity.Patcher
         {
             var directoryInfo = new DirectoryInfo(_path);
 
-            var executableFile = directoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly).Where(info =>
-            {
-                // Read magic bytes
-                using (FileStream executableFileStream = File.OpenRead(info.FullName))
-                {
-                    using (BinaryReader executableBinaryReader = new BinaryReader(executableFileStream))
-                    {
-                        byte[] magicBytes = executableBinaryReader.ReadBytes(4);
-
-                        if (magicBytes.Length == 4)
-                        {
-                            if (magicBytes[0] == 127 && // 7F
-                                magicBytes[1] == 69 && // 45 - 'E'
-                                magicBytes[2] == 76 && // 4c - 'L'
-                                magicBytes[3] == 70) // 46 - 'F'
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-
-                return false;
-            }).FirstOrDefault();
+            var executableFile =
+                directoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly)
+                             .FirstOrDefault(info => MagicBytes.IsLinuxExecutable(info.FullName));
 
             if (executableFile == null)
             {
