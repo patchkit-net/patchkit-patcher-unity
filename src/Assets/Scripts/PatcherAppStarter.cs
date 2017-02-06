@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using PatchKit.Unity.Patcher.Data;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
