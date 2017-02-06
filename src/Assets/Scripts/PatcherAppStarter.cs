@@ -31,7 +31,10 @@ namespace PatchKit.Unity.Patcher
 
             foreach (var file in executableApp.GetFiles("*", SearchOption.AllDirectories))
             {
-                Chmod(file.FullName, "+x");
+                if (MagicBytes.IsMacExecutable(file.FullName))
+                {
+                    Chmod(file.FullName, "+x");
+                }
             }
 
             var processStartInfo = new ProcessStartInfo
