@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 
@@ -58,32 +59,6 @@ namespace PatchKit.Unity.Patcher
             return _app.LocalMetaData.GetRegisteredEntries().FirstOrDefault(predicate);
         }
 
-        private bool IsLinuxExecutable(string fileName)
-        {
-            string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
-
-            using (FileStream executableFileStream = File.OpenRead(filePath))
-            {
-                using (BinaryReader executableBinaryReader = new BinaryReader(executableFileStream))
-                {
-                    byte[] magicBytes = executableBinaryReader.ReadBytes(4);
-
-                    if (magicBytes.Length == 4)
-                    {
-                        if (magicBytes[0] == 127 && // 7F
-                            magicBytes[1] == 69 && // 45 - 'E'
-                            magicBytes[2] == 76 && // 4c - 'L'
-                            magicBytes[3] == 70) // 46 - 'F'
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
         private void StartOSXApplication()
         {
             DebugLogger.Log("Starting OSX application.");
@@ -97,7 +72,12 @@ namespace PatchKit.Unity.Patcher
 
             foreach (var fileName in _app.LocalMetaData.GetRegisteredEntries())
             {
-                Chmod(fileName, "+x");
+                string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
+
+                if (MagicBytes.IsMacExecutable(filePath))
+                {
+                    Chmod(filePath, "+x");
+                }
             }
 
             string appFilePath = _app.LocalDirectory.Path.PathCombine(appFileName);
@@ -119,7 +99,8 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Starting Linux application.");
 
-            var appFileName = FindExecutable(fileName => IsInsideRootDirectory(fileName) && IsLinuxExecutable(fileName));
+            var appFileName = FindExecutable(fileName => IsInsideRootDirectory(fileName) && 
+                MagicBytes.IsLinuxExecutable(_app.LocalDirectory.Path.PathCombine(fileName)));
 
             if (appFileName == null)
             {
@@ -167,10 +148,8 @@ namespace PatchKit.Unity.Patcher
             Process.Start(processStartInfo);
         }
 
-        private void Chmod(string fileName, string permissions)
+        private void Chmod(string filePath, string permissions)
         {
-            string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
-
             var process = new Process
             {
                 StartInfo =
