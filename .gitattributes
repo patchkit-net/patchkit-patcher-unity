@@ -10,4 +10,3 @@
 *.bundle binary
 *.png binary
 *.ttf binary
-/src/TextFixtures/**/* binary
