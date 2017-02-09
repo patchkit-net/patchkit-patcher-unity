@@ -850,9 +850,9 @@ MonoBehaviour:
   EditorOverrideLatestVersionId: 0
   DefaultConfiguration:
     AppUpdaterConfiguration:
-      UseTorrents: 0
+      UseTorrents: 1
     StartAppAutomatically: 0
-    UpdateAppAutomatically: 0
+    UpdateAppAutomatically: 1
 --- !u!1 &421519242
 GameObject:
   m_ObjectHideFlags: 0
