@@ -14,6 +14,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallDiffCommand));
 
         private readonly string _packagePath;
+        private readonly string _packagePassword;
         private readonly int _versionId;
         private readonly AppDiffSummary _versionDiffSummary;
         private readonly ILocalDirectory _localData;
@@ -27,6 +28,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public InstallDiffCommand(
             string packagePath,
+            string packagePassword,
             int versionId,
             AppDiffSummary versionDiffSummary,
             ILocalDirectory localData,
@@ -40,6 +42,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             AssertChecks.ArgumentNotNull(temporaryData, "temporaryData");
 
             _packagePath = packagePath;
+            _packagePassword = packagePassword;
             _versionId = versionId;
             _versionDiffSummary = versionDiffSummary;
             _localData = localData;
@@ -88,7 +91,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 DebugLogger.Log("Unarchiving files.");
 
-                var unarchiver = new Unarchiver(_packagePath, packageDirPath);
+                var unarchiver = new Unarchiver(_packagePath, packageDirPath, _packagePassword);
 
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
                 {

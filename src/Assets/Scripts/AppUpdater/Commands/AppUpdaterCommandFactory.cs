@@ -26,8 +26,10 @@
         {
             var packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
             var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
+            var packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
 
             return new InstallContentCommand(packagePath,
+                packagePassword,
                 versionId,
                 versionContentSummary,
                 context.App.LocalDirectory,
@@ -39,8 +41,10 @@
         {
             var packagePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
             var versionDiffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId);
+            var packagePassword = context.App.RemoteData.GetDiffPackageResourcePassword(versionId);
 
             return new InstallDiffCommand(packagePath,
+                packagePassword,
                 versionId,
                 versionDiffSummary,
                 context.App.LocalDirectory,

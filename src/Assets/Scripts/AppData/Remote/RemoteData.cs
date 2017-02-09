@@ -75,6 +75,16 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return resource;
         }
 
+        public string GetContentPackageResourcePassword(int versionId)
+        {
+            return new RemoteResourcePasswordGenerator().Generate(_appSecret, versionId);
+        }
+
+        public string GetDiffPackageResourcePassword(int versionId)
+        {
+            return new RemoteResourcePasswordGenerator().Generate(_appSecret, versionId);
+        }
+
         private static ChunksData ConvertToChunksData(Api.Models.Main.Chunks chunks)
         {
             if (chunks.Size == 0 || chunks.Hashes == null)

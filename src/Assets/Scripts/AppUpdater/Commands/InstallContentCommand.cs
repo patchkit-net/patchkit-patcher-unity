@@ -17,6 +17,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
 
         private readonly string _packagePath;
+        private readonly string _packagePassword;
         private readonly int _versionId;
         private readonly AppContentSummary _versionContentSummary;
         private readonly ILocalDirectory _localData;
@@ -26,7 +27,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private IGeneralStatusReporter _copyFilesStatusReporter;
         private IGeneralStatusReporter _unarchivePackageStatusReporter;
 
-        public InstallContentCommand(string packagePath, int versionId,
+        public InstallContentCommand(string packagePath, string packagePassword, int versionId,
             AppContentSummary versionContentSummary,
             ILocalDirectory localData,
             ILocalMetaData localMetaData,
@@ -43,6 +44,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DebugLogger.LogVariable(versionId, "versionId");
 
             _packagePath = packagePath;
+            _packagePassword = packagePassword;
             _versionId = versionId;
             _versionContentSummary = versionContentSummary;
             _localData = localData;
@@ -86,7 +88,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 DebugLogger.Log("Unarchiving package.");
 
-                var unarchiver = new Unarchiver(_packagePath, packageDirPath);
+                var unarchiver = new Unarchiver(_packagePath, packageDirPath, _packagePassword);
 
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
                 {
