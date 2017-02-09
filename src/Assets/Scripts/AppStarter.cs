@@ -112,7 +112,15 @@ namespace PatchKit.Unity.Patcher
 
             DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
 
-            Chmod(appFilePath, "+x");
+            foreach (var fileName in _app.LocalMetaData.GetRegisteredEntries())
+            {
+                string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
+
+                if (MagicBytes.IsLinuxExecutable(filePath))
+                {
+                    Chmod(filePath, "+x");
+                }
+            }
 
             var processStartInfo = new ProcessStartInfo
             {
