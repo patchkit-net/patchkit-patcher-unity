@@ -56,7 +56,7 @@ namespace PatchKit.Unity.Patcher
 
             string relativeAppDataPath;
 
-            if (!TryReadArgument("--installDir", out relativeAppDataPath))
+            if (!TryReadArgument("--installdir", out relativeAppDataPath))
             {
                 throw new ApplicationException("Unable to parse app data path from command line.");
             }
