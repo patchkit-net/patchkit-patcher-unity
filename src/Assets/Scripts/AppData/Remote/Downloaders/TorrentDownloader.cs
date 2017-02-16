@@ -138,7 +138,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             if (_timeoutWatch.ElapsedMilliseconds > _timeout)
             {
-                throw new TimeoutException("Torrent download has timed out.");
+                throw new DownloaderException("Torrent download has timed out.", DownloaderExceptionStatus.Other);
             }
         }
 
