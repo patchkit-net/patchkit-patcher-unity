@@ -27,9 +27,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly int _timeout;
 
-        private readonly TorrentClient _torrentClient;
-
         private readonly Stopwatch _timeoutWatch;
+
+        private TorrentClient _torrentClient;
 
         private double _lastProgress;
 
@@ -53,8 +53,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _destinationFilePath = destinationFilePath;
             _resource = resource;
             _timeout = timeout;
-
-            _torrentClient = new TorrentClient();
 
             _timeoutWatch = new Stopwatch();
         }
@@ -264,6 +262,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             try
             {
+                _torrentClient = new TorrentClient();
                 DownloadTorrentFile(cancellationToken);
                 AddTorrent();
                 WaitForTorrentDownload(cancellationToken);
@@ -271,6 +270,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
             finally
             {
+                _torrentClient.Dispose();
                 Cleanup();
             }
         }
