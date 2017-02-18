@@ -69,6 +69,8 @@ namespace PatchKit.Unity.Editor
 
         public static void Build(BuildTarget target, bool development)
         {
+            PatcherVersionInfoCreator.SaveVersionInfo();
+
             BuildPipeline.BuildPlayer(GetScenes(), Environment.GetCommandLineArgs().Last(), target,
                 development ? BuildOptions.Development : BuildOptions.None);
         }
