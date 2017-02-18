@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using PatchKit.Unity.Patcher.AppUpdater;
@@ -179,9 +180,35 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
+        private void LogSystemInfo()
+        {
+            DebugLogger.LogVariable(Environment.Version, "Environment.Version");
+            DebugLogger.LogVariable(Environment.OSVersion, "Environment.OSVersion");
+        }
+
+        private string GetPatcherVersion()
+        {
+            string versionFilePath = Path.Combine(Application.streamingAssetsPath, "patcher.versioninfo");
+
+            if (File.Exists(versionFilePath))
+            {
+                return File.ReadAllText(versionFilePath);
+            }
+
+            return "unknown";
+        }
+
+        private void LogPatcherInfo()
+        {
+            DebugLogger.Log(string.Format("Patcher version - {0}", GetPatcherVersion()));
+        }
+
         private void Awake()
         {
             DebugLogger.Log("Awake Unity event.");
+
+            LogSystemInfo();
+            LogPatcherInfo();
 
             Instance = this;
             Dispatcher.Initialize();
