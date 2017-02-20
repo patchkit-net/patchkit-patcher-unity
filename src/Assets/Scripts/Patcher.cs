@@ -297,6 +297,10 @@ namespace PatchKit.Unity.Patcher
                     catch (OperationCanceledException)
                     {
                     }
+                    catch (UnauthorizedAccessException)
+                    {
+                        throw;
+                    }
                     catch (ThreadInterruptedException)
                     {
                         throw;
