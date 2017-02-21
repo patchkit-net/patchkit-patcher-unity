@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -377,8 +378,43 @@ namespace PatchKit.Unity.Patcher
 
             State = PatcherState.CheckingInternetConnection;
 
-            // TODO: Check whether internet connection is available
-            _hasInternetConnection = true;
+            Ping ping = null;
+
+            try
+            {
+                Dispatcher.Invoke(() => ping = new Ping("8.8.8.8")).WaitOne();
+
+                var watch = new Stopwatch();
+                watch.Reset();
+                watch.Start();
+
+                bool isDone = false;
+
+                do
+                {
+                    Dispatcher.Invoke(() => isDone = ping.isDone);
+
+                    // 15 seconds timeout
+                    if (watch.ElapsedMilliseconds > 15000)
+                    {
+                        throw new TimeoutException("Ping has timed out.");
+                    }
+                } while (!isDone);
+
+                _hasInternetConnection = true;
+            }
+            catch (Exception exception)
+            {
+                DebugLogger.LogException(exception);
+                _hasInternetConnection = false;
+            }
+            finally
+            {
+                if (ping != null)
+                {
+                    Dispatcher.Invoke(() => ping.DestroyPing());
+                }
+            }
         }
 
         private void LoadPatcherConfiguration()
@@ -424,7 +460,7 @@ namespace PatchKit.Unity.Patcher
             bool isInstalled = _app.IsInstalled();
 
             int? installedVersionId = isInstalled ? (int?)_app.GetInstalledVersionId() : null;
-            int latestVersionId = _app.GetLatestVersionId();
+            int? latestVersionId = _hasInternetConnection ? (int?)_app.GetLatestVersionId() : null;
 
             DebugLogger.LogVariable(isInstalled, "isInstalled");
             DebugLogger.LogVariable(_hasInternetConnection, "_hasInternetConnection");
