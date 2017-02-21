@@ -48,24 +48,18 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
-        private bool IsInsideRootDirectory(string fileName)
-        {
-            string dirName = Path.GetDirectoryName(fileName);
-            return string.IsNullOrEmpty(dirName);
-        }
-
         private string FindExecutable(Func<string, bool> predicate)
         {
-            return _app.LocalMetaData.GetRegisteredEntries().FirstOrDefault(predicate);
+            return Directory.GetFileSystemEntries(_app.LocalDirectory.Path).First(predicate);
         }
 
         private void StartOSXApplication()
         {
             DebugLogger.Log("Starting OSX application.");
 
-            var appFileName = FindExecutable(fileName => fileName.EndsWith(".app") && IsInsideRootDirectory(fileName));
+            var appFilePath = FindExecutable(s => s.EndsWith(".app"));
 
-            if (appFileName == null)
+            if (appFilePath == null)
             {
                 throw new InvalidOperationException("Couldn't find executable bundle for Mac OSX.");
             }
@@ -80,7 +74,6 @@ namespace PatchKit.Unity.Patcher
                 }
             }
 
-            string appFilePath = _app.LocalDirectory.Path.PathCombine(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
 
             DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
@@ -88,7 +81,7 @@ namespace PatchKit.Unity.Patcher
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "open",
-                Arguments = string.Format("\"{0}\"", _app.LocalDirectory.Path.PathCombine(appFileName)),
+                Arguments = string.Format("\"{0}\"", appFilePath),
                 WorkingDirectory = appDirPath
             };
 
@@ -99,15 +92,13 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Starting Linux application.");
 
-            var appFileName = FindExecutable(fileName => IsInsideRootDirectory(fileName) && 
-                MagicBytes.IsLinuxExecutable(_app.LocalDirectory.Path.PathCombine(fileName)));
+            var appFilePath = FindExecutable(MagicBytes.IsLinuxExecutable);
 
-            if (appFileName == null)
+            if (appFilePath == null)
             {
                 throw new InvalidOperationException("Couldn\'t find executable file for Linux.");
             }
 
-            string appFilePath = _app.LocalDirectory.Path.PathCombine(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
 
             DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
@@ -135,14 +126,13 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Starting Windows application.");
 
-            var appFileName = FindExecutable(fileName => fileName.EndsWith(".exe") && IsInsideRootDirectory(fileName));
+            var appFilePath = FindExecutable(fileName => fileName.EndsWith(".exe"));
 
-            if (appFileName == null)
+            if (appFilePath == null)
             {
                 throw new InvalidOperationException("Couldn't find executable bundle for Windows.");
             }
 
-            string appFilePath = _app.LocalDirectory.Path.PathCombine(appFileName);
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
 
             DebugLogger.Log(string.Format("Found executable {0}", appFilePath));
