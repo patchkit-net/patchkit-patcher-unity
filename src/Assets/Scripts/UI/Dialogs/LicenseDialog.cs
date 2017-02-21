@@ -1,4 +1,5 @@
 ﻿using System;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,7 +9,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
     {
         private LicenseDialogResult _result;
 
-        public Text MessageText;
+        public Text ErrorMessageText;
 
         public InputField KeyInputField;
 
@@ -25,6 +26,11 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         {
             string key = KeyInputField.text;
             key = key.ToUpper().Trim();
+
+            if (string.IsNullOrEmpty(key))
+            {
+                return;
+            }
 
             _result = new LicenseDialogResult
             {
@@ -48,7 +54,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         public LicenseDialogResult Display(LicenseDialogMessageType messageType)
         {
-            UpdateMessage(messageType);
+            Dispatcher.Invoke(() => UpdateMessage(messageType));
 
             base.Display();
 
@@ -60,16 +66,16 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             switch (messageType)
             {
                 case LicenseDialogMessageType.None:
-                    MessageText.text = string.Empty;
+                    ErrorMessageText.text = string.Empty;
                     break;
                 case LicenseDialogMessageType.InvalidLicense:
-                    MessageText.text = InvalidLicenseMessageText;
+                    ErrorMessageText.text = InvalidLicenseMessageText;
                     break;
                 case LicenseDialogMessageType.BlockedLicense:
-                    MessageText.text = BlockedLicenseMessageText;
+                    ErrorMessageText.text = BlockedLicenseMessageText;
                     break;
                 case LicenseDialogMessageType.ServiceUnavailable:
-                    MessageText.text = ServiceUnavailableMessageText;
+                    ErrorMessageText.text = ServiceUnavailableMessageText;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);

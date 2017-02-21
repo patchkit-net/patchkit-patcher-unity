@@ -1,6 +1,7 @@
 ﻿using PatchKit.Api;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
@@ -66,11 +67,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             Checks.ArgumentNotNullOrEmpty(key, "key");
             DebugLogger.Log(string.Format("Getting key secret from key {0}.", key));
 
-            var cachedKeySecret = PlayerPrefs.GetString(GetCachedKeySecretEntryName(key), null);
+            string cachedKeySecret = null;
+
+            Dispatcher.Invoke(() => cachedKeySecret = PlayerPrefs.GetString(GetCachedKeySecretEntryName(key), null));
 
             var keySecret = _keysApiConnection.GetKeyInfo(key, _appSecret, cachedKeySecret).KeySecret;
 
-            PlayerPrefs.SetString(GetCachedKeySecretEntryName(key), keySecret);
+            Dispatcher.Invoke(() => PlayerPrefs.SetString(GetCachedKeySecretEntryName(key), keySecret));
 
             return keySecret;
         }

@@ -846,7 +846,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 177215dfa0b474d44a8288b12b5c0642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EditorAppSecret: ac20fc855b75a7ea5f3e936dfd38ccd8
+  EditorAppSecret: fccf154bf2f0eb8be78f8e54a10dc066
   EditorOverrideLatestVersionId: 0
   DefaultConfiguration:
     AppUpdaterConfiguration:
@@ -1260,7 +1260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21ccdb095f6b3b845b4ee117c495d61a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MessageText: {fileID: 818770297}
+  ErrorMessageText: {fileID: 988190025}
   KeyInputField: {fileID: 498869792}
   InvalidLicenseMessageText: Invalid license.
   BlockedLicenseMessageText: Blocked license.
@@ -3899,8 +3899,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: Cancel
+      - m_Target: {fileID: 589436523}
+        m_MethodName: Abort
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5013,7 +5013,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 589436523}
         m_MethodName: Confirm
         m_Mode: 1
         m_Arguments:

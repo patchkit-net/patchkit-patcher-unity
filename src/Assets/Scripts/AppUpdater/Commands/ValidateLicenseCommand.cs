@@ -92,6 +92,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                         KeySecret = null;
                         messageType = LicenseDialogMessageType.ServiceUnavailable;
+
+                        if (webException.Status == WebExceptionStatus.ProtocolError)
+                        {
+                            var response = (HttpWebResponse) webException.Response;
+                            if ((int)response.StatusCode == 404)
+                            {
+                                messageType = LicenseDialogMessageType.InvalidLicense;
+                            }
+                            else if ((int)response.StatusCode == 410)
+                            {
+                                messageType = LicenseDialogMessageType.BlockedLicense;
+                            }
+                            else if ((int)response.StatusCode == 403)
+                            {
+                                messageType = LicenseDialogMessageType.ServiceUnavailable;
+                            }
+                        }
                     }
                 }
                 else if (result.Type == LicenseDialogResultType.Aborted)
