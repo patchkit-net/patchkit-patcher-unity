@@ -24,8 +24,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 int installedVersionId = context.App.GetInstalledVersionId();
                 int latestVersionId = context.App.GetLatestVersionId();
 
-                AssertChecks.AreNotEqual(latestVersionId, installedVersionId,
-                    "Cannot update if application versions are the same.");
+                if (installedVersionId == latestVersionId)
+                {
+                    DebugLogger.Log("Installed version is the same as the latest version.");
+
+                    return new AppUpdaterEmptyStrategy();
+                }
 
                 if (installedVersionId < latestVersionId)
                 {
