@@ -214,7 +214,17 @@ namespace PatchKit.Unity.Patcher
             Instance = this;
             Dispatcher.Initialize();
             Application.runInBackground = true;
-            LoadPatcherData();
+            try
+            {
+                LoadPatcherData();
+            }
+            catch (Exception exception)
+            {
+                DebugLogger.LogException(exception);
+                DebugLogger.LogError("Unable to load patcher data. Terminating application.");
+
+                Application.Quit();
+            }
         }
 
         private void Start()
