@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -78,15 +79,23 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {            
             DebugLogger.Log("Downloading torrent file.");
 
-            using (var torrentFileStream = new FileStream(TorrentFilePath, FileMode.Create))
+            try
             {
-                var baseHttpDownloader = new BaseHttpDownloader(_resource.TorrentUrls[0], _timeout);
-                baseHttpDownloader.DataAvailable += (data, length) =>
+                using (var torrentFileStream = new FileStream(TorrentFilePath, FileMode.Create))
                 {
-                    // ReSharper disable once AccessToDisposedClosure
-                    torrentFileStream.Write(data, 0, length);
-                };
-                baseHttpDownloader.Download(cancellationToken);
+                    var baseHttpDownloader = new BaseHttpDownloader(_resource.TorrentUrls[0], _timeout);
+                    baseHttpDownloader.DataAvailable += (data, length) =>
+                    {
+                        // ReSharper disable once AccessToDisposedClosure
+                        torrentFileStream.Write(data, 0, length);
+                    };
+                    baseHttpDownloader.Download(cancellationToken);
+                }
+            }
+            catch (WebException exception)
+            {
+                DebugLogger.LogException(exception);
+                throw new DownloaderException("Unable to download torrent file.", DownloaderExceptionStatus.Other);
             }
         }
 
