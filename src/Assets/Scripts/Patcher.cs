@@ -23,6 +23,8 @@ namespace PatchKit.Unity.Patcher
             StartApp
         }
 
+        #region Private fields
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Patcher));
 
         public static Patcher Instance { get; private set; }
@@ -35,7 +37,9 @@ namespace PatchKit.Unity.Patcher
 
         private App _app;
 
-        private bool _hasBeenDestroyed;
+        private bool _keepThreadAlive;
+
+        private bool _isThreadBeingDestroyed;
 
         private UserDecision _userDecision = UserDecision.None;
 
@@ -49,10 +53,9 @@ namespace PatchKit.Unity.Patcher
 
         private CancellationTokenSource _cancellationTokenSource;
 
-        public PatcherData Data
-        {
-            get { return _data; }
-        }
+        #endregion
+
+        #region Events
 
         public event Action<OverallStatus> UpdateAppStatusChanged;
 
@@ -66,23 +69,21 @@ namespace PatchKit.Unity.Patcher
 
         public event Action<bool> CanCheckInternetConnectionChanged;
 
+        #endregion
+
+        #region Public fields
+
         public string EditorAppSecret;
 
         public int EditorOverrideLatestVersionId;
 
         public PatcherConfiguration DefaultConfiguration;
 
-        private PatcherState _state = PatcherState.None;
+        #endregion
 
-        public PatcherState State
-        {
-            get { return _state; }
-            set
-            {
-                _state = value;
-                OnStateChanged(_state);
-            }
-        }
+        #region Public properties
+
+        #region Decisions availability
 
         private bool _canUpdateApp;
 
@@ -123,8 +124,28 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
-        private PatcherError _error;
+        #endregion
+
+        private PatcherState _state = PatcherState.None;
+
+        public PatcherState State
+        {
+            get { return _state; }
+            set
+            {
+                _state = value;
+                OnStateChanged(_state);
+            }
+        }
+
         private PatcherData _data;
+
+        public PatcherData Data
+        {
+            get { return _data; }
+        }
+
+        private PatcherError _error;
 
         public PatcherError Error
         {
@@ -135,6 +156,10 @@ namespace PatchKit.Unity.Patcher
                 OnErrorChanged(_error);
             }
         }
+
+        #endregion
+
+        #region Public methods
 
         public void SetUserDecision(UserDecision userDecision)
         {
@@ -181,6 +206,10 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
+        #endregion
+
+        #region Logging operations
+
         private void LogSystemInfo()
         {
             DebugLogger.LogVariable(Environment.Version, "Environment.Version");
@@ -204,16 +233,21 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.Log(string.Format("Patcher version - {0}", GetPatcherVersion()));
         }
 
+        #endregion
+
+        #region Unity events
+
         private void Awake()
         {
             DebugLogger.Log("Awake Unity event.");
 
-            LogSystemInfo();
-            LogPatcherInfo();
-
             Instance = this;
             Dispatcher.Initialize();
             Application.runInBackground = true;
+
+            LogSystemInfo();
+            LogPatcherInfo();
+
             try
             {
                 LoadPatcherData();
@@ -232,48 +266,107 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.Log("Start Unity event.");
 
             DebugLogger.Log("Starting patcher thread.");
+
+            _keepThreadAlive = true;
             _thread = new Thread(ThreadFunc);
             _thread.Start();
+        }
+
+        private void OnApplicationQuit()
+        {
+            DebugLogger.Log("OnApplicationQuit Unity event.");
+
+            if (_thread != null && _thread.IsAlive)
+            {
+                DebugLogger.Log("Cancelling quit because patcher thread is still alive.");
+
+                Application.CancelQuit();
+                StartCoroutine(DestroyPatcherThreadAndQuit());
+            }
         }
 
         private void OnDestroy()
         {
             DebugLogger.Log("OnDestroy Unity event.");
 
-            if(_app != null)
-            {
-                _app.Dispose();
-            }
-
-            DebugLogger.Log("Cleaning up thread.");
-
-            _hasBeenDestroyed = true;
-
             if (_thread != null && _thread.IsAlive)
             {
-                while(_thread.IsAlive)
+                DestroyPatcherThread();
+            }
+        }
+
+        private void DestroyPatcherThread()
+        {
+            DebugLogger.Log("Destroying patcher thread.");
+
+            while (_thread != null && _thread.IsAlive)
+            {
+                DebugLogger.Log("Trying to safely destroy patcher thread.");
+
+                _keepThreadAlive = false;
+                Cancel();
+                _thread.Interrupt();
+
+                _thread.Join(1000);
+
+                if (_thread.IsAlive)
                 {
-                    Cancel();
+                    DebugLogger.Log("Trying to force destroy patcher thread.");
 
-                    DebugLogger.Log("Interrupting thread.");
-
-                    _thread.Interrupt();
-                    
+                    _thread.Abort();
                     _thread.Join(1000);
+                }
+            }
 
-                    if (_thread.IsAlive)
+            DebugLogger.Log("Patcher thread has been destroyed.");
+        }
+
+        private IEnumerator DestroyPatcherThreadAndQuit()
+        {
+            DebugLogger.Log("Destroying patcher thread.");
+
+            if (_isThreadBeingDestroyed)
+            {
+                DebugLogger.Log("Patcher thread is already being destroyed.");
+                yield break;
+            }
+
+            _isThreadBeingDestroyed = true;
+
+            while (_thread != null && _thread.IsAlive)
+            {
+                DebugLogger.Log("Trying to safely destroy patcher thread.");
+
+                _keepThreadAlive = false;
+                Cancel();
+                _thread.Interrupt();
+
+                float startTime = Time.unscaledTime;
+                while (Time.unscaledTime - startTime < 1.0f && _thread.IsAlive)
+                {
+                    yield return null;
+                }
+
+                if (_thread.IsAlive)
+                {
+                    DebugLogger.Log("Trying to force destroy patcher thread.");
+
+                    _thread.Abort();
+                    startTime = Time.unscaledTime;
+                    while (Time.unscaledTime - startTime < 1.0f && _thread.IsAlive)
                     {
-                        while (_thread.IsAlive)
-                        {
-                            DebugLogger.Log("Aborting thread.");
-
-                            _thread.Abort();
-                            _thread.Join(1000);
-                        }
+                        yield return null;
                     }
                 }
             }
+
+            DebugLogger.Log("Patcher thread has been destroyed. Quitting application.");
+            Application.Quit();
         }
+
+        #endregion
+
+        #region Thread
 
         private void ThreadFunc()
         {
@@ -282,7 +375,7 @@ namespace PatchKit.Unity.Patcher
                 CheckInternetConnection();
                 LoadPatcherConfiguration();
 
-                while (!_hasBeenDestroyed)
+                while (_keepThreadAlive)
                 {
                     try
                     {
@@ -307,6 +400,7 @@ namespace PatchKit.Unity.Patcher
                     }
                     catch (OperationCanceledException)
                     {
+                        DebugLogger.Log("Patcher has been cancelled.");
                     }
                     catch (UnauthorizedAccessException)
                     {
@@ -336,15 +430,24 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.Log("Thread has been interrupted.");
             }
-            catch(ThreadAbortException)
+            catch (ThreadAbortException)
             {
                 DebugLogger.Log("Thread has been aborted.");
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 DebugLogger.LogException(exception);
                 DebugLogger.LogError("Exception in patcher thread.");
                 Quit();
+            }
+            finally
+            {
+                if (_app != null)
+                {
+                    _app.Dispose();
+                }
+
+                DebugLogger.Log("Patcher thread has been destroyed.");
             }
         }
 
@@ -501,6 +604,10 @@ namespace PatchKit.Unity.Patcher
             _errorMessageHandled.WaitOne();
         }
 
+        #endregion
+
+        #region Event invokers
+
         protected virtual void OnUpdateAppStatusChanged(OverallStatus obj)
         {
             Dispatcher.Invoke(() =>
@@ -548,5 +655,7 @@ namespace PatchKit.Unity.Patcher
                 if (CanCheckInternetConnectionChanged != null) CanCheckInternetConnectionChanged(obj);
             });
         }
+
+        #endregion
     }
 }
