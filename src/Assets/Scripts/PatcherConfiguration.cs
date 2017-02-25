@@ -7,8 +7,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     {
         public AppUpdaterConfiguration AppUpdaterConfiguration;
 
-        public bool StartAppAutomatically;
+        public bool AutomaticallyStartApp;
 
-        public bool UpdateAppAutomatically;
+        public bool AutomaticallyCheckForAppUpdates;
+
+        public bool AutomaticallyInstallApp;
     }
 }

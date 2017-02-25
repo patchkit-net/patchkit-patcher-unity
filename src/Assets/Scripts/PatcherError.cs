@@ -1,9 +1,9 @@
-using System;
-
-namespace PatchKit.Unity.Patcher
+﻿namespace PatchKit.Unity.Patcher
 {
-    public class PatcherError
+    public enum PatcherError
     {
-        public Exception Exception;
+        NoInternetConnection,
+        NoPermissions,
+        Other
     }
 }

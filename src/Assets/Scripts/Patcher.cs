@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using PatchKit.Unity.Patcher.AppUpdater;
@@ -9,6 +8,7 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.UI.Dialogs;
 using UniRx;
 using UnityEngine;
 
@@ -19,9 +19,10 @@ namespace PatchKit.Unity.Patcher
         public enum UserDecision
         {
             None,
-            CheckInternetConnection,
-            UpdateApp,
-            StartApp
+            RepairApp,
+            StartApp,
+            InstallApp,
+            CheckForAppUpdates
         }
 
         #region Private fields
@@ -31,8 +32,6 @@ namespace PatchKit.Unity.Patcher
         public static Patcher Instance { get; private set; }
 
         private Thread _thread;
-
-        private bool _hasInternetConnection;
 
         private PatcherConfiguration _configuration;
 
@@ -46,9 +45,9 @@ namespace PatchKit.Unity.Patcher
 
         private readonly ManualResetEvent _userDecisionSetEvent = new ManualResetEvent(false);
 
-        private readonly ManualResetEvent _errorMessageHandled = new ManualResetEvent(false);
+        private bool _triedToAutomaticallyInstallApp;
 
-        private bool _triedToAutomaticallyUpdateApp;
+        private bool _triedToAutomaticallyCheckForAppUpdates;
 
         private bool _triedToAutomaticallyStartApp;
 
@@ -64,6 +63,8 @@ namespace PatchKit.Unity.Patcher
 
         #region Public fields
 
+        public ErrorDialog ErrorDialog;
+
         public string EditorAppSecret;
 
         public int EditorOverrideLatestVersionId;
@@ -74,11 +75,11 @@ namespace PatchKit.Unity.Patcher
 
         #region Public properties
 
-        private readonly BoolReactiveProperty _canUpdateApp = new BoolReactiveProperty(false);
+        private readonly BoolReactiveProperty _canRepairApp = new BoolReactiveProperty(false);
 
-        public IReadOnlyReactiveProperty<bool> CanUpdateApp
+        public IReadOnlyReactiveProperty<bool> CanRepairApp
         {
-            get { return _canUpdateApp; }
+            get { return _canRepairApp; }
         }
 
         private readonly BoolReactiveProperty _canStartApp = new BoolReactiveProperty(false);
@@ -88,11 +89,18 @@ namespace PatchKit.Unity.Patcher
             get { return _canStartApp; }
         }
 
-        private readonly BoolReactiveProperty _canCheckInternetConnection = new BoolReactiveProperty(false);
+        private readonly BoolReactiveProperty _canInstallApp = new BoolReactiveProperty(false);
 
-        public IReadOnlyReactiveProperty<bool> CanCheckInternetConnection
+        public IReadOnlyReactiveProperty<bool> CanInstallApp
         {
-            get { return _canCheckInternetConnection; }
+            get { return _canInstallApp; }
+        }
+
+        private readonly BoolReactiveProperty _canCheckForAppUpdates = new BoolReactiveProperty(false);
+
+        public IReadOnlyReactiveProperty<bool> CanCheckForAppUpdates
+        {
+            get { return _canCheckForAppUpdates; }
         }
 
         private readonly ReactiveProperty<PatcherState> _state = new ReactiveProperty<PatcherState>(PatcherState.None);
@@ -109,13 +117,6 @@ namespace PatchKit.Unity.Patcher
             get { return _data; }
         }
 
-        private readonly ReactiveProperty<PatcherError> _error = new ReactiveProperty<PatcherError>();
-
-        public IReadOnlyReactiveProperty<PatcherError> Error
-        {
-            get { return _error; }
-        }
-
         #endregion
 
         #region Public methods
@@ -127,13 +128,6 @@ namespace PatchKit.Unity.Patcher
             _userDecision = userDecision;
             DebugLogger.LogVariable(_userDecision, "_userDecision");
             _userDecisionSetEvent.Set();
-        }
-
-        public void SetErrorMessageHandled()
-        {
-            DebugLogger.Log("Setting error message as handled.");
-
-            _errorMessageHandled.Set();
         }
 
         public void Quit()
@@ -167,57 +161,34 @@ namespace PatchKit.Unity.Patcher
 
         #endregion
 
-        #region Logging operations
-
-        private void LogSystemInfo()
-        {
-            DebugLogger.LogVariable(Environment.Version, "Environment.Version");
-            DebugLogger.LogVariable(Environment.OSVersion, "Environment.OSVersion");
-        }
-
-        private string GetPatcherVersion()
-        {
-            string versionFilePath = Path.Combine(Application.streamingAssetsPath, "patcher.versioninfo");
-
-            if (File.Exists(versionFilePath))
-            {
-                return File.ReadAllText(versionFilePath);
-            }
-
-            return "unknown";
-        }
-
-        private void LogPatcherInfo()
-        {
-            DebugLogger.Log(string.Format("Patcher version - {0}", GetPatcherVersion()));
-        }
-
-        #endregion
-
         #region Unity events
 
         private void Awake()
         {
-            DebugLogger.Log("Awake Unity event.");
-
-            Instance = this;
-            Dispatcher.Initialize();
-            Application.runInBackground = true;
-
-            LogSystemInfo();
-            LogPatcherInfo();
-
             try
             {
-                LoadPatcherData();
+                Instance = this;
+                Dispatcher.Initialize();
+
+                DebugLogger.Log(string.Format("patchkit-patcher-unity: {0}", PatcherInfo.GetVersion()));
+                DebugLogger.Log(string.Format("System version: {0}", EnvironmentInfo.GetSystemVersion()));
+                DebugLogger.Log(string.Format("Runtime version: {0}", EnvironmentInfo.GetSystemVersion()));
+
+                DebugLogger.Log("Initializing patcher...");
+            
+                
+                Application.runInBackground = true;
             }
             catch (Exception exception)
             {
+                DebugLogger.Log("Error while initializing patcher: an exception has occured.");
                 DebugLogger.LogException(exception);
                 DebugLogger.LogError("Unable to load patcher data. Terminating application.");
 
                 Application.Quit();
             }
+            
+            DebugLogger.Log("Patcher initialized.");
         }
 
         private void Start()
@@ -331,7 +302,8 @@ namespace PatchKit.Unity.Patcher
         {
             try
             {
-                CheckInternetConnection();
+                LoadPatcherData();
+
                 LoadPatcherConfiguration();
 
                 while (_keepThreadAlive)
@@ -342,17 +314,16 @@ namespace PatchKit.Unity.Patcher
 
                         DebugLogger.Log(string.Format("Executing user decision - {0}", _userDecision));
 
-                        if (_canCheckInternetConnection.Value && _userDecision == UserDecision.CheckInternetConnection)
-                        {
-                            CheckInternetConnection();
-                            LoadPatcherConfiguration();
-                        }
-                        else if (_canStartApp.Value && _userDecision == UserDecision.StartApp)
+                        if (_canStartApp.Value && _userDecision == UserDecision.StartApp)
                         {
                             StartApp();
                             Quit();
                         }
-                        else if (_canUpdateApp.Value && _userDecision == UserDecision.UpdateApp)
+                        else if (_canInstallApp.Value && _userDecision == UserDecision.InstallApp)
+                        {
+                            UpdateApp();
+                        }
+                        else if (_canCheckForAppUpdates.Value && _userDecision == UserDecision.CheckForAppUpdates)
                         {
                             UpdateApp();
                         }
@@ -414,43 +385,37 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Loading patcher data.");
 
-            if (Application.isEditor)
+            Dispatcher.Invoke(() =>
             {
-                DebugLogger.Log("Using Unity Editor patcher data.");
-                _data.Value = new PatcherData
+                if (Application.isEditor)
                 {
-                    AppSecret = EditorAppSecret,
-                    AppDataPath = Application.dataPath.Replace("/Assets",
-                        string.Format("/Temp/PatcherApp{0}", EditorAppSecret)),
-                    OverrideLatestVersionId = EditorOverrideLatestVersionId
-                };
-            }
-            else
-            {
-                DebugLogger.Log("Loading patcher data from command line.");
-                var commandLinePatcherDataReader = new CommandLinePatcherDataReader();
-                _data.Value = commandLinePatcherDataReader.Read();
-            }
+                    DebugLogger.Log("Using Unity Editor patcher data.");
+                    _data.Value = new PatcherData
+                    {
+                        AppSecret = EditorAppSecret,
+                        AppDataPath = Application.dataPath.Replace("/Assets",
+                            string.Format("/Temp/PatcherApp{0}", EditorAppSecret)),
+                        OverrideLatestVersionId = EditorOverrideLatestVersionId
+                    };
+                }
+                else
+                {
+                    DebugLogger.Log("Loading patcher data from command line.");
+                    var commandLinePatcherDataReader = new CommandLinePatcherDataReader();
+                    _data.Value = commandLinePatcherDataReader.Read();
+                }
 
-            DebugLogger.LogVariable(_data.Value.AppSecret, "Data.AppSecret");
-            DebugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");
-            DebugLogger.LogVariable(_data.Value.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
+                DebugLogger.LogVariable(_data.Value.AppSecret, "Data.AppSecret");
+                DebugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");
+                DebugLogger.LogVariable(_data.Value.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
 
-            if (_app != null)
-            {
-                _app.Dispose();
-            }
+                if (_app != null)
+                {
+                    _app.Dispose();
+                }
 
-            _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId);
-        }
-
-        private void CheckInternetConnection()
-        {
-            DebugLogger.Log("Checking internet connection.");
-
-            _state.Value = PatcherState.CheckingInternetConnection;
-
-            _hasInternetConnection = true;
+                _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId);
+            }).WaitOne();
         }
 
         private void LoadPatcherConfiguration()
@@ -495,29 +460,32 @@ namespace PatchKit.Unity.Patcher
 
             bool isInstalled = _app.IsInstalled();
 
-            int? installedVersionId = isInstalled ? (int?)_app.GetInstalledVersionId() : null;
-
             DebugLogger.LogVariable(isInstalled, "isInstalled");
-            DebugLogger.LogVariable(_hasInternetConnection, "_hasInternetConnection");
-            DebugLogger.LogVariable(installedVersionId, "installedVersionId");
 
             _state.Value = PatcherState.WaitingForUserDecision;
 
+            _canRepairApp.Value = false; // not implemented
+            _canInstallApp.Value = !isInstalled;
+            _canCheckForAppUpdates.Value = isInstalled;
             _canStartApp.Value = isInstalled;
 
-            _canUpdateApp.Value = _hasInternetConnection;
-
-            _canCheckInternetConnection.Value = !_hasInternetConnection;
-
-            if (_canUpdateApp.Value && _configuration.UpdateAppAutomatically && !_triedToAutomaticallyUpdateApp)
+            if (_canInstallApp.Value && _configuration.AutomaticallyInstallApp && !_triedToAutomaticallyInstallApp)
             {
-                DebugLogger.Log("Updating app automatically.");
-                _triedToAutomaticallyUpdateApp = true;
-                _userDecision = UserDecision.UpdateApp;
+                DebugLogger.Log("Installing app automatically.");
+                _triedToAutomaticallyInstallApp = true;
+                _userDecision = UserDecision.InstallApp;
                 return;
             }
 
-            if (_canStartApp.Value && _configuration.StartAppAutomatically && !_triedToAutomaticallyStartApp)
+            if (_canCheckForAppUpdates.Value && _configuration.AutomaticallyCheckForAppUpdates && !_triedToAutomaticallyCheckForAppUpdates)
+            {
+                DebugLogger.Log("Checking for app updates automatically.");
+                _triedToAutomaticallyCheckForAppUpdates = true;
+                _userDecision = UserDecision.CheckForAppUpdates;
+                return;
+            }
+
+            if (_canStartApp.Value && _configuration.AutomaticallyStartApp && !_triedToAutomaticallyStartApp)
             {
                 DebugLogger.Log("Starting app automatically.");
                 _triedToAutomaticallyStartApp = true;
@@ -554,13 +522,7 @@ namespace PatchKit.Unity.Patcher
 
             _state.Value = PatcherState.HandlingErrorMessage;
 
-            _error.Value = new PatcherError
-            {
-                Exception = exception
-            };
-
-            _errorMessageHandled.Reset();
-            _errorMessageHandled.WaitOne();
+            ErrorDialog.Display(PatcherError.Other);
         }
 
         #endregion

@@ -3,7 +3,6 @@
     public enum PatcherState
     {
         None,
-        CheckingInternetConnection,
         LoadingPatcherConfiguration,
         UpdatingApp,
         StartingApp,

@@ -13,9 +13,9 @@ namespace PatchKit.Unity.Patcher.UI
 
         public Text CheckButtonText;
 
-        private bool _canUpdateApp;
+        private bool _canInstallApp;
 
-        private bool _canCheckInternetConnection;
+        private bool _canCheckForAppUpdates;
 
         private Animator _animator;
 
@@ -36,24 +36,24 @@ namespace PatchKit.Unity.Patcher.UI
                 PlayButton.interactable = canStartApp;
             }).AddTo(this);
 
-            Patcher.Instance.CanUpdateApp.ObserveOnMainThread().Subscribe(canUpdateApp =>
+            Patcher.Instance.CanInstallApp.ObserveOnMainThread().Subscribe(canInstallApp =>
             {
-                _canUpdateApp = canUpdateApp;
-                if (_canUpdateApp)
+                _canInstallApp = canInstallApp;
+                if (_canInstallApp)
+                {
+                    CheckButtonText.text = "Install";
+                }
+                CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
+            }).AddTo(this);
+
+            Patcher.Instance.CanCheckForAppUpdates.ObserveOnMainThread().Subscribe(canCheckForAppUpdates =>
+            {
+                _canCheckForAppUpdates = canCheckForAppUpdates;
+                if (_canCheckForAppUpdates)
                 {
                     CheckButtonText.text = "Check for updates";
                 }
-                CheckButton.interactable = _canUpdateApp || _canCheckInternetConnection;
-            }).AddTo(this);
-
-            Patcher.Instance.CanCheckInternetConnection.ObserveOnMainThread().Subscribe(canCheckInternetConnection =>
-            {
-                _canCheckInternetConnection = canCheckInternetConnection;
-                if (_canCheckInternetConnection)
-                {
-                    CheckButtonText.text = "Check internet connection";
-                }
-                CheckButton.interactable = _canUpdateApp || _canCheckInternetConnection;
+                CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
             }).AddTo(this);
 
             PlayButton.onClick.AddListener(OnPlayButtonClicked);
@@ -72,13 +72,13 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void OnCheckButtonClicked()
         {
-            if(_canUpdateApp)
+            if(_canInstallApp)
             {
-                Patcher.Instance.SetUserDecision(Patcher.UserDecision.UpdateApp);
+                Patcher.Instance.SetUserDecision(Patcher.UserDecision.InstallApp);
             }
-            else if(_canCheckInternetConnection)
+            else if(_canCheckForAppUpdates)
             {
-                Patcher.Instance.SetUserDecision(Patcher.UserDecision.CheckInternetConnection);
+                Patcher.Instance.SetUserDecision(Patcher.UserDecision.CheckForAppUpdates);
             }
         }
     }

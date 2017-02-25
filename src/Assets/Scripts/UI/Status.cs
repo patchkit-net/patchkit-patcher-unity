@@ -16,10 +16,6 @@ namespace PatchKit.Unity.Patcher.UI
                 {
                     Text.text = string.Empty;
                 }
-                else if (state == PatcherState.CheckingInternetConnection)
-                {
-                    Text.text = "Checking internet connection...";
-                }
                 else if (state == PatcherState.HandlingErrorMessage)
                 {
                     Text.text = string.Empty;
