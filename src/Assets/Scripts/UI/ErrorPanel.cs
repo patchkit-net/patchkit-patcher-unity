@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UniRx;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
@@ -17,15 +18,15 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.StateChanged += state =>
+            Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
                 _animator.SetBool("IsOpened", state == PatcherState.HandlingErrorMessage);
-            };
+            }).AddTo(this);
 
-            Patcher.Instance.ErrorChanged += error =>
+            Patcher.Instance.Error.ObserveOnMainThread().Subscribe(error =>
             {
                 ErrorText.text = error == null ? string.Empty : "An error has occurred!";
-            };
+            }).AddTo(this);
 
             _animator.SetBool("IsOpened", false);
             ErrorText.text = string.Empty;

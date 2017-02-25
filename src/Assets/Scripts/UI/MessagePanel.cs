@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UniRx;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
@@ -25,35 +26,35 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.StateChanged += state =>
+            Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
                 _animator.SetBool("IsOpened", state == PatcherState.WaitingForUserDecision);
-            };
+            }).AddTo(this);
 
-            Patcher.Instance.CanStartAppChanged += canStartApp =>
+            Patcher.Instance.CanStartApp.ObserveOnMainThread().Subscribe(canStartApp =>
             {
                 PlayButton.interactable = canStartApp;
-            };
+            }).AddTo(this);
 
-            Patcher.Instance.CanUpdateAppChanged += canUpdateApp =>
+            Patcher.Instance.CanUpdateApp.ObserveOnMainThread().Subscribe(canUpdateApp =>
             {
                 _canUpdateApp = canUpdateApp;
-                if(_canUpdateApp)
+                if (_canUpdateApp)
                 {
                     CheckButtonText.text = "Check for updates";
                 }
                 CheckButton.interactable = _canUpdateApp || _canCheckInternetConnection;
-            };
+            }).AddTo(this);
 
-            Patcher.Instance.CanCheckInternetConnectionChanged += canCheckInternetConnection =>
+            Patcher.Instance.CanCheckInternetConnection.ObserveOnMainThread().Subscribe(canCheckInternetConnection =>
             {
                 _canCheckInternetConnection = canCheckInternetConnection;
-                if(_canCheckInternetConnection)
+                if (_canCheckInternetConnection)
                 {
                     CheckButtonText.text = "Check internet connection";
                 }
                 CheckButton.interactable = _canUpdateApp || _canCheckInternetConnection;
-            };
+            }).AddTo(this);
 
             PlayButton.onClick.AddListener(OnPlayButtonClicked);
             CheckButton.onClick.AddListener(OnCheckButtonClicked);

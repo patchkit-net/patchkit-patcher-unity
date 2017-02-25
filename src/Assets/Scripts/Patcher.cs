@@ -9,6 +9,7 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher.Debug;
+using UniRx;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
@@ -59,16 +60,6 @@ namespace PatchKit.Unity.Patcher
 
         public event Action<OverallStatus> UpdateAppStatusChanged;
 
-        public event Action<PatcherState> StateChanged;
-
-        public event Action<PatcherError> ErrorChanged;
-
-        public event Action<bool> CanUpdateAppChanged;
-
-        public event Action<bool> CanStartAppChanged;
-
-        public event Action<bool> CanCheckInternetConnectionChanged;
-
         #endregion
 
         #region Public fields
@@ -83,78 +74,46 @@ namespace PatchKit.Unity.Patcher
 
         #region Public properties
 
-        #region Decisions availability
+        private readonly BoolReactiveProperty _canUpdateApp = new BoolReactiveProperty(false);
 
-        private bool _canUpdateApp;
-
-        public bool CanUpdateApp
+        public IReadOnlyReactiveProperty<bool> CanUpdateApp
         {
             get { return _canUpdateApp; }
-            set
-            {
-                _canUpdateApp = value;
-                DebugLogger.LogVariable(_canUpdateApp, "_canUpdateApp");
-                OnCanUpdateAppChanged(_canUpdateApp);
-            }
         }
 
-        private bool _canStartApp;
+        private readonly BoolReactiveProperty _canStartApp = new BoolReactiveProperty(false);
 
-        public bool CanStartApp
+        public IReadOnlyReactiveProperty<bool> CanStartApp
         {
             get { return _canStartApp; }
-            set
-            {
-                _canStartApp = value;
-                DebugLogger.LogVariable(_canStartApp, "_canStartApp");
-                OnCanStartAppChanged(_canStartApp);
-            }
         }
 
-        private bool _canCheckInternetConnection;
+        private readonly BoolReactiveProperty _canCheckInternetConnection = new BoolReactiveProperty(false);
 
-        public bool CanCheckInternetConnection
+        public IReadOnlyReactiveProperty<bool> CanCheckInternetConnection
         {
             get { return _canCheckInternetConnection; }
-            set
-            {
-                _canCheckInternetConnection = value;
-                DebugLogger.LogVariable(_canCheckInternetConnection, "_canCheckInternetConnection");
-                OnCanCheckInternetConnectionChanged(_canCheckInternetConnection);
-            }
         }
 
-        #endregion
+        private readonly ReactiveProperty<PatcherState> _state = new ReactiveProperty<PatcherState>(PatcherState.None);
 
-        private PatcherState _state = PatcherState.None;
-
-        public PatcherState State
+        public IReadOnlyReactiveProperty<PatcherState> State
         {
             get { return _state; }
-            set
-            {
-                _state = value;
-                OnStateChanged(_state);
-            }
         }
 
-        private PatcherData _data;
+        private readonly ReactiveProperty<PatcherData> _data = new ReactiveProperty<PatcherData>();
 
-        public PatcherData Data
+        public IReadOnlyReactiveProperty<PatcherData> Data
         {
             get { return _data; }
         }
 
-        private PatcherError _error;
+        private readonly ReactiveProperty<PatcherError> _error = new ReactiveProperty<PatcherError>();
 
-        public PatcherError Error
+        public IReadOnlyReactiveProperty<PatcherError> Error
         {
             get { return _error; }
-            set
-            {
-                _error = value;
-                OnErrorChanged(_error);
-            }
         }
 
         #endregion
@@ -383,17 +342,17 @@ namespace PatchKit.Unity.Patcher
 
                         DebugLogger.Log(string.Format("Executing user decision - {0}", _userDecision));
 
-                        if (CanCheckInternetConnection && _userDecision == UserDecision.CheckInternetConnection)
+                        if (_canCheckInternetConnection.Value && _userDecision == UserDecision.CheckInternetConnection)
                         {
                             CheckInternetConnection();
                             LoadPatcherConfiguration();
                         }
-                        else if (CanStartApp && _userDecision == UserDecision.StartApp)
+                        else if (_canStartApp.Value && _userDecision == UserDecision.StartApp)
                         {
                             StartApp();
                             Quit();
                         }
-                        else if (CanUpdateApp && _userDecision == UserDecision.UpdateApp)
+                        else if (_canUpdateApp.Value && _userDecision == UserDecision.UpdateApp)
                         {
                             UpdateApp();
                         }
@@ -458,7 +417,7 @@ namespace PatchKit.Unity.Patcher
             if (Application.isEditor)
             {
                 DebugLogger.Log("Using Unity Editor patcher data.");
-                _data = new PatcherData
+                _data.Value = new PatcherData
                 {
                     AppSecret = EditorAppSecret,
                     AppDataPath = Application.dataPath.Replace("/Assets",
@@ -470,26 +429,26 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.Log("Loading patcher data from command line.");
                 var commandLinePatcherDataReader = new CommandLinePatcherDataReader();
-                _data = commandLinePatcherDataReader.Read();
+                _data.Value = commandLinePatcherDataReader.Read();
             }
 
-            DebugLogger.LogVariable(Data.AppSecret, "Data.AppSecret");
-            DebugLogger.LogVariable(Data.AppDataPath, "Data.AppDataPath");
-            DebugLogger.LogVariable(Data.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
+            DebugLogger.LogVariable(_data.Value.AppSecret, "Data.AppSecret");
+            DebugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");
+            DebugLogger.LogVariable(_data.Value.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
 
             if (_app != null)
             {
                 _app.Dispose();
             }
 
-            _app = new App(Data.AppDataPath, Data.AppSecret, Data.OverrideLatestVersionId);
+            _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId);
         }
 
         private void CheckInternetConnection()
         {
             DebugLogger.Log("Checking internet connection.");
 
-            State = PatcherState.CheckingInternetConnection;
+            _state.Value = PatcherState.CheckingInternetConnection;
 
             _hasInternetConnection = true;
         }
@@ -498,7 +457,7 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Loading patcher configuration.");
 
-            State = PatcherState.LoadingPatcherConfiguration;
+            _state.Value = PatcherState.LoadingPatcherConfiguration;
 
             // TODO: Use PatcherConfigurationReader
             _configuration = DefaultConfiguration;
@@ -507,8 +466,8 @@ namespace PatchKit.Unity.Patcher
         private void UpdateApp()
         {
             DebugLogger.Log("Updating app.");
-            
-            State = PatcherState.UpdatingApp;
+
+            _state.Value = PatcherState.UpdatingApp;
 
             _cancellationTokenSource = new CancellationTokenSource();
 
@@ -523,7 +482,7 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Starting app.");
 
-            State = PatcherState.StartingApp;
+            _state.Value = PatcherState.StartingApp;
 
             var appStarter = new AppStarter(_app);
 
@@ -542,15 +501,15 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.LogVariable(_hasInternetConnection, "_hasInternetConnection");
             DebugLogger.LogVariable(installedVersionId, "installedVersionId");
 
-            State = PatcherState.WaitingForUserDecision;
+            _state.Value = PatcherState.WaitingForUserDecision;
 
-            CanStartApp = isInstalled;
+            _canStartApp.Value = isInstalled;
 
-            CanUpdateApp = _hasInternetConnection;
+            _canUpdateApp.Value = _hasInternetConnection;
 
-            CanCheckInternetConnection = !_hasInternetConnection;
+            _canCheckInternetConnection.Value = !_hasInternetConnection;
 
-            if (CanUpdateApp && _configuration.UpdateAppAutomatically && !_triedToAutomaticallyUpdateApp)
+            if (_canUpdateApp.Value && _configuration.UpdateAppAutomatically && !_triedToAutomaticallyUpdateApp)
             {
                 DebugLogger.Log("Updating app automatically.");
                 _triedToAutomaticallyUpdateApp = true;
@@ -558,7 +517,7 @@ namespace PatchKit.Unity.Patcher
                 return;
             }
 
-            if (CanStartApp && _configuration.StartAppAutomatically && !_triedToAutomaticallyStartApp)
+            if (_canStartApp.Value && _configuration.StartAppAutomatically && !_triedToAutomaticallyStartApp)
             {
                 DebugLogger.Log("Starting app automatically.");
                 _triedToAutomaticallyStartApp = true;
@@ -593,9 +552,9 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Handling error message.");
 
-            State = PatcherState.HandlingErrorMessage;
+            _state.Value = PatcherState.HandlingErrorMessage;
 
-            Error = new PatcherError
+            _error.Value = new PatcherError
             {
                 Exception = exception
             };
@@ -606,8 +565,6 @@ namespace PatchKit.Unity.Patcher
 
         #endregion
 
-        #region Event invokers
-
         protected virtual void OnUpdateAppStatusChanged(OverallStatus obj)
         {
             Dispatcher.Invoke(() =>
@@ -615,47 +572,5 @@ namespace PatchKit.Unity.Patcher
                 if (UpdateAppStatusChanged != null) UpdateAppStatusChanged(obj);
             });
         }
-
-        protected virtual void OnErrorChanged(PatcherError obj)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (ErrorChanged != null) ErrorChanged(obj);
-            });
-        }
-
-        protected virtual void OnStateChanged(PatcherState obj)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (StateChanged != null) StateChanged(obj);
-            });
-        }
-
-        protected virtual void OnCanUpdateAppChanged(bool obj)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (CanUpdateAppChanged != null) CanUpdateAppChanged(obj);
-            });
-        }
-
-        protected virtual void OnCanStartAppChanged(bool obj)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (CanStartAppChanged != null) CanStartAppChanged(obj);
-            });
-        }
-
-        protected virtual void OnCanCheckInternetConnectionChanged(bool obj)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (CanCheckInternetConnectionChanged != null) CanCheckInternetConnectionChanged(obj);
-            });
-        }
-
-        #endregion
     }
 }

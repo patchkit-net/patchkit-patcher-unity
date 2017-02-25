@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UniRx;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
@@ -9,7 +10,7 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.StateChanged += state =>
+            Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
                 if (state == PatcherState.None)
                 {
@@ -39,7 +40,7 @@ namespace PatchKit.Unity.Patcher.UI
                 {
                     Text.text = string.Empty;
                 }
-            };
+            }).AddTo(this);
         }
     }
 }
