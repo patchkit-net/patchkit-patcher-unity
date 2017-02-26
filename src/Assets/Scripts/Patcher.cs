@@ -31,7 +31,19 @@ namespace PatchKit.Unity.Patcher
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Patcher));
 
-        public static Patcher Instance { get; private set; }
+        private static Patcher _instance;
+
+        public static Patcher Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindObjectOfType<Patcher>();
+                }
+                return _instance;
+            }
+        }
 
         private readonly CancellationTokenSource _threadCancellationTokenSource = new CancellationTokenSource();
 
@@ -143,7 +155,7 @@ namespace PatchKit.Unity.Patcher
 
         private void Awake()
         {
-            Instance = this;
+            _instance = this;
             Dispatcher.Initialize();
             Application.runInBackground = true;
 
