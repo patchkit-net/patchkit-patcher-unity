@@ -14,6 +14,11 @@ namespace PatchKit.Unity.Patcher.UI
 
         protected override IEnumerator LoadCoroutine()
         {
+            while (!Patcher.Instance.Data.HasValue || Patcher.Instance.Data.Value.AppSecret == null)
+            {
+                yield return null;
+            }
+
             yield return
                 Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Data.Value.AppSecret),
                     response =>
