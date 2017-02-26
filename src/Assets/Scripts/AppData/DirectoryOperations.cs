@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData
@@ -21,13 +22,23 @@ namespace PatchKit.Unity.Patcher.AppData
         {
             Checks.ArgumentNotNullOrEmpty(path, "path");
 
-            DebugLogger.Log(string.Format("Creating parent directory for <{0}>.", path));
-
-            string dirPath = Path.GetDirectoryName(path);
-
-            if (!string.IsNullOrEmpty(dirPath))
+            try
             {
-                CreateDirectory(dirPath);
+                DebugLogger.Log(string.Format("Creating parent directory for <{0}>.", path));
+
+                string dirPath = Path.GetDirectoryName(path);
+
+                if (!string.IsNullOrEmpty(dirPath))
+                {
+                    CreateDirectory(dirPath);
+                }
+
+                DebugLogger.Log("Parent directory created.");
+            }
+            catch (Exception)
+            {
+                DebugLogger.Log("Error while creating parent directory: an exception occured. Rethrowing exception.");
+                throw;
             }
         }
 
@@ -35,9 +46,19 @@ namespace PatchKit.Unity.Patcher.AppData
         {
             Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
 
-            DebugLogger.Log(string.Format("Creating directory <{0}>.", dirPath));
+            try
+            {
+                DebugLogger.Log(string.Format("Creating directory <{0}>.", dirPath));
 
-            Directory.CreateDirectory(dirPath);
+                Directory.CreateDirectory(dirPath);
+
+                DebugLogger.Log("Directory created.");
+            }
+            catch (Exception)
+            {
+                DebugLogger.Log("Error while creating directory: an exception occured. Rethrowing exception.");
+                throw;
+            }
         }
 
         public static void Delete(string dirPath, bool recursive)
@@ -45,11 +66,21 @@ namespace PatchKit.Unity.Patcher.AppData
             Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
             Checks.DirectoryExists(dirPath);
 
-            DebugLogger.Log(string.Format("Deleting directory {0}<{1}>.",
-                recursive ? "recursively " : string.Empty, 
-                dirPath));
+            try
+            {
+                DebugLogger.Log(string.Format("Deleting directory {0}<{1}>.",
+                    recursive ? "recursively " : string.Empty,
+                    dirPath));
 
-            Directory.Delete(dirPath, recursive);
+                Directory.Delete(dirPath, recursive);
+
+                DebugLogger.Log("Directory deleted.");
+            }
+            catch (Exception)
+            {
+                DebugLogger.Log("Error while deleting directory: an exception occured. Rethrowing exception.");
+                throw;
+            }
         }
     }
 }
