@@ -34,6 +34,16 @@ namespace PatchKit.Unity.Patcher.Debug
             Assert.AreNotEqual(expected, actual, message);
         }
 
+        public static void IsNotNull<T>(T value, string message) where T : class
+        {
+            Assert.IsNotNull(value, message);
+        }
+
+        public static void IsNull<T>(T value, string message) where T : class
+        {
+            Assert.IsNull(value, message);
+        }
+
         public static void ArgumentNotNull(object value, string name)
         {
             NotNull(value, ArgumentValidationFailed(name));
