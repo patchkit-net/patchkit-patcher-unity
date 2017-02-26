@@ -11,54 +11,61 @@ namespace PatchKit.Unity.Patcher.Debug
             _context = context.FullName;
         }
 
-        // TODO: Unify logging format and add date time.
-
-        private static string FormatExceptionLog(Exception exception)
+        private static string FormatMessage(string type, string message)
         {
-            return string.Format("{0}: {1}\n\nStack trace:\n{2}", exception.GetType().ToString(), exception.Message, exception.StackTrace);
+            return string.Format("{0} {1}: {2}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss zzz"), type, message);
         }
 
-        public void Log(object message)
+        private static string FormatExceptionMessage(Exception exception)
         {
-            UnityEngine.Debug.LogFormat("[{0}] {1}", _context, message);
+            return string.Format("{0}: {1}\n\nStack trace:\n{2}", exception.GetType(), exception.Message, exception.StackTrace);
         }
 
-        public void LogConstructor()
+        // [LOG      ]
+        // [WARNING  ]
+        // [ERROR    ]
+        // [EXCEPTION]
+
+        public void Log(string message)
         {
-            UnityEngine.Debug.LogFormat("[{0}] Constructor.", _context);
+            UnityEngine.Debug.Log(FormatMessage("[   Log   ]", message));
         }
 
-        public void LogDispose()
+        public void LogWarning(string message)
         {
-            UnityEngine.Debug.LogFormat("[{0}] Disposing.", _context);
+            UnityEngine.Debug.LogWarning(FormatMessage("[ Warning ]", message));
         }
 
-        public void LogVariable(object value, string name)
+        public void LogError(string message)
         {
-            UnityEngine.Debug.LogFormat("[{0}] {1} = {2}", _context, name, value);
-        }
-
-        public void LogWarning(object message)
-        {
-            UnityEngine.Debug.LogWarningFormat("[{0}] {1}", _context, message);
-        }
-
-        public void LogError(object message)
-        {
-            UnityEngine.Debug.LogErrorFormat("[{0}] {1}", _context, message);
+            UnityEngine.Debug.LogError(FormatMessage("[  Error  ]", message));
         }
 
         public void LogException(Exception exception)
         {
-            UnityEngine.Debug.LogErrorFormat("[{0}] {1}", _context, FormatExceptionLog(exception));
+            UnityEngine.Debug.LogErrorFormat(FormatMessage("[Exception]", FormatExceptionMessage(exception)));
             int innerExceptionCounter = 1;
             var innerException = exception.InnerException;
             while (innerException != null)
             {
-                UnityEngine.Debug.LogErrorFormat("[{0}] Inner Exception {1}: {2}", _context,
-                    innerExceptionCounter, FormatExceptionLog(exception));
+                UnityEngine.Debug.LogErrorFormat("Inner Exception {0}: {1}", innerExceptionCounter, FormatExceptionMessage(innerException));
                 innerException = innerException.InnerException;
             }
+        }
+
+        public void LogConstructor()
+        {
+            Log(string.Format("{0} constructor.", _context));
+        }
+
+        public void LogDispose()
+        {
+            Log(string.Format("{0} dispose.", _context));
+        }
+
+        public void LogVariable(object value, string name)
+        {
+            Log(string.Format("{0} = {1}", name, value));
         }
     }
 }
