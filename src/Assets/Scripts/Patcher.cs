@@ -463,8 +463,13 @@ namespace PatchKit.Unity.Patcher
                     cancellationToken.ThrowIfCancellationRequested();
                     _userDecisionSetEvent.WaitOne();
                 }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 DebugLogger.Log(string.Format("Waiting for user decision result: {0}.", _userDecision));
+            }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log("Waiting for user decision cancelled.");
             }
             catch (ThreadInterruptedException)
             {
