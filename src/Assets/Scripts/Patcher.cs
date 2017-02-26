@@ -165,10 +165,7 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.Log(string.Format("patchkit-patcher-unity: {0}", PatcherInfo.GetVersion()));
             DebugLogger.Log(string.Format("System version: {0}", EnvironmentInfo.GetSystemVersion()));
             DebugLogger.Log(string.Format("Runtime version: {0}", EnvironmentInfo.GetSystemVersion()));
-        }
 
-        private void Start()
-        {
             StartThread();
         }
 
