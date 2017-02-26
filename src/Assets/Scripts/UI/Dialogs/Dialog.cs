@@ -1,4 +1,5 @@
 using System.Threading;
+using PatchKit.Unity.Patcher.Cancellation;
 using UnityEngine;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -21,7 +22,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             _dialogDisplayed.Set();
         }
 
-        protected void Display()
+        protected void Display(CancellationToken cancellationToken)
         {
             AssertChecks.IsFalse(_unityThread == Thread.CurrentThread, 
                 "Display dialog can be only used on separate thread.");
@@ -31,7 +32,11 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 _isDisplaying = true;
 
                 _dialogDisplayed.Reset();
-                _dialogDisplayed.WaitOne();
+                using (cancellationToken.Register(() => _dialogDisplayed.Set()))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    _dialogDisplayed.WaitOne();
+                }
             }
             finally
             {

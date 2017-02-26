@@ -1,4 +1,5 @@
-﻿using PatchKit.Unity.Utilities;
+﻿using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Utilities;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
@@ -12,11 +13,11 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             OnDisplayed();
         }
 
-        public void Display(PatcherError error)
+        public void Display(PatcherError error, CancellationToken cancellationToken)
         {
             Dispatcher.Invoke(() => UpdateMessage(error)).WaitOne();
 
-            Display();
+            Display(cancellationToken);
         }
 
         private void UpdateMessage(PatcherError error)

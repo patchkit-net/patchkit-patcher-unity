@@ -1,4 +1,5 @@
 ﻿using System;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -56,7 +57,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         {
             Dispatcher.Invoke(() => UpdateMessage(messageType));
 
-            base.Display();
+            base.Display(CancellationToken.Empty);
 
             return _result;
         }

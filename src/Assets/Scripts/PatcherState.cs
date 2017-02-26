@@ -3,10 +3,11 @@
     public enum PatcherState
     {
         None,
+        LoadingPatcherData,
         LoadingPatcherConfiguration,
         UpdatingApp,
         StartingApp,
         HandlingErrorMessage,
-        WaitingForUserDecision
+        WaitingForUserDecision,
     }
 }
