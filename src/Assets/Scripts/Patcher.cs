@@ -109,7 +109,7 @@ namespace PatchKit.Unity.Patcher
 
         public void SetUserDecision(UserDecision userDecision)
         {
-            DebugLogger.Log(string.Format("Setting user deicision to {0}.", userDecision));
+            DebugLogger.Log(string.Format("User deicision set to {0}.", userDecision));
 
             _userDecision = userDecision;
             _userDecisionSetEvent.Set();
@@ -438,9 +438,10 @@ namespace PatchKit.Unity.Patcher
                     return;
                 }
 
+                _userDecisionSetEvent.Reset();
                 using (cancellationToken.Register(() => _userDecisionSetEvent.Set()))
                 {
-                    _userDecisionSetEvent.Reset();
+                    cancellationToken.ThrowIfCancellationRequested();
                     _userDecisionSetEvent.WaitOne();
                 }
             }
@@ -488,7 +489,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (_userDecision == UserDecision.StartApp)
                 {
-                    throw new OperationCanceledException();
+                    Dispatcher.Invoke(Application.Quit);
                 }
             }
             catch (OperationCanceledException)
@@ -501,10 +502,12 @@ namespace PatchKit.Unity.Patcher
 
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
-                    throw new OperationCanceledException();
+                    Dispatcher.Invoke(Application.Quit);
                 }
-
-                ThreadDisplayError(PatcherError.NoPermissions, cancellationToken);
+                else
+                {
+                    ThreadDisplayError(PatcherError.NoPermissions, cancellationToken);
+                }
             }
             catch (ThreadInterruptedException)
             {
@@ -518,7 +521,7 @@ namespace PatchKit.Unity.Patcher
             }
             catch (Exception exception)
             {
-                DebugLogger.LogWarning(string.Format("User decision {0} execution failed: an exception has occured.", _userDecision));
+                DebugLogger.LogWarning(string.Format("Error while executing user decision {0}: an exception has occured.", _userDecision));
                 DebugLogger.LogException(exception);
 
                 ThreadDisplayError(PatcherError.Other, cancellationToken);
@@ -535,6 +538,10 @@ namespace PatchKit.Unity.Patcher
 
                 DebugLogger.Log(string.Format("Patcher error {0} displayed.", error));
             }
+            catch (OperationCanceledException)
+            {
+                DebugLogger.Log(string.Format("Displaying patcher error {0} cancelled.", _userDecision));
+            }
             catch (ThreadInterruptedException)
             {
                 DebugLogger.Log(string.Format("Displaying patcher error {0} interrupted: thread has been interrupted. Rethrowing exception.", error));
@@ -543,6 +550,11 @@ namespace PatchKit.Unity.Patcher
             catch (ThreadAbortException)
             {
                 DebugLogger.Log(string.Format("Displaying patcher error {0} aborted: thread has been aborted. Rethrowing exception.", error));
+                throw;
+            }
+            catch (Exception)
+            {
+                DebugLogger.LogWarning(string.Format("Error while displaying patcher error {0}: an exception has occured. Rethrowing exception.", error));
                 throw;
             }
         }
