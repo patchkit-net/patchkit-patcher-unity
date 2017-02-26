@@ -30,48 +30,63 @@ namespace PatchKit.Unity.Patcher.Debug
             }
         }
 
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLogSender));
+
         private readonly object _lock = new object();
 
-        private readonly Subject<Log> _logs = new Subject<Log>();
+        private readonly Subject<Log> _logStream = new Subject<Log>();
 
         private readonly List<string> _logBuffer = new List<string>();
+
+        private bool _hasApplicationQuit;
+
+        private bool _shouldLogBeSent;
+
+        private bool _isLogBeingSent;
+
+        private int? _sendLogKind;
 
         private Guid _guid;
 
         private string _logFilePath;
 
-        private bool _shouldBeSent;
-
-        private int _kind;
-
-        private bool _isBeingSent;
-
         public string LogServerUrl;
 
         public float SendDelaySeconds;
+
+        [ContextMenu("Test error")]
+        public void TestError()
+        {
+            DebugLogger.LogError("Test error");
+        }
 
         private void Awake()
         {
             _guid = Guid.NewGuid();
             _logFilePath = GetUniqueTemporaryFilePath();
 
-            _logs.Where(log => log.Type != LogType.Log).Throttle(TimeSpan.FromSeconds(5)).Subscribe(log =>
-            {
-                lock (_lock)
-                {
-                    if (!_shouldBeSent)
-                    {
-                        _shouldBeSent = true;
-                        _kind = log.GetKind();
-                    }
-                    else
-                    {
-                        _kind = Mathf.Min(_kind, log.GetKind());
-                    }
-                }
-            }).AddTo(this);
+            _hasApplicationQuit = false;
+            _shouldLogBeSent = false;
+            _isLogBeingSent = false;
+            _sendLogKind = null;
 
-            _logs.Subscribe(log =>
+            _logStream.Where(log => log.Type != LogType.Log)
+                .Do(log =>
+                {
+                    lock (_lock)
+                    {
+                        _sendLogKind = _sendLogKind.HasValue ? Mathf.Min(_sendLogKind.Value, log.GetKind()) : log.GetKind();
+                    }
+                })
+                .Throttle(TimeSpan.FromSeconds(5)).Subscribe(log =>
+                {
+                    lock (_lock)
+                    {
+                        _shouldLogBeSent = true;
+                    }
+                }).AddTo(this);
+
+            _logStream.Subscribe(log =>
             {
                 lock (_lock)
                 {
@@ -86,18 +101,19 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             lock (_lock)
             {
-                if (!_isBeingSent)
+                if (!_isLogBeingSent)
                 {
                     if (_logBuffer.Count > 0)
                     {
                         WriteLogBufferToFile();
                     }
 
-                    if (_shouldBeSent)
+                    if (_shouldLogBeSent && _sendLogKind.HasValue)
                     {
-                        _shouldBeSent = false;
-                        _isBeingSent = true;
-                        StartCoroutine(SendLogFile(_kind));
+                        _isLogBeingSent = true;
+                        StartCoroutine(SendLogFile(_sendLogKind.Value));
+                        _shouldLogBeSent = false;
+                        _sendLogKind = null;
                     }
                 }
             }
@@ -105,9 +121,14 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private void OnApplicationQuit()
         {
-            if (_isBeingSent)
+            lock (_lock)
             {
-                Application.CancelQuit();
+                if (_isLogBeingSent || _shouldLogBeSent)
+                {
+                    DebugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
+                    _hasApplicationQuit = true;
+                    Application.CancelQuit();
+                }
             }
         }
 
@@ -128,7 +149,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
         {
-            _logs.OnNext(new Log
+            _logStream.OnNext(new Log
             {
                 Message = string.Format("{0}\n{1}", condition, stackTrace), Type = type
             });
@@ -136,22 +157,50 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private IEnumerator SendLogFile(int kind)
         {
-            _isBeingSent = true;
+            _isLogBeingSent = true;
 
-            WWWForm wwwForm = new WWWForm();
-            wwwForm.AddField("kind", kind);
-            wwwForm.AddField("version", PatcherInfo.GetVersion());
-            wwwForm.AddField("file_guid", _guid.ToString());
-            wwwForm.AddField("compression", "gzip");
-            wwwForm.AddBinaryData("content", GetCompressedLogFileData());
+            DebugLogger.Log("Sending log...");
 
-            var www = new WWW(string.Format("{0}/apps/{1}/logs", LogServerUrl, Patcher.Instance.Data.Value.AppSecret));
+            WWW www;
+
+            try
+            {
+                WWWForm wwwForm = new WWWForm();
+                wwwForm.AddField("kind", kind);
+                wwwForm.AddField("version", PatcherInfo.GetVersion());
+                wwwForm.AddField("file_guid", _guid.ToString());
+                wwwForm.AddField("compression", "gzip");
+                wwwForm.AddBinaryData("content", GetCompressedLogFileData());
+
+                www = new WWW(string.Format("{0}/1/apps/{1}/logs", LogServerUrl, Patcher.Instance.Data.Value.AppSecret), wwwForm);
+            }
+            catch(Exception)
+            {
+                _isLogBeingSent = false;
+                throw;
+            }
 
             yield return www;
 
-            yield return new WaitForSeconds(SendDelaySeconds);
+            var responseStatus = www.responseHeaders.ContainsKey("STATUS")
+                    ? www.responseHeaders["STATUS"]
+                    : "unknown";
 
-            _isBeingSent = false;
+            DebugLogger.Log(string.IsNullOrEmpty(www.error)
+                ? string.Format("Log sent (response status: {0}).", responseStatus)
+                : string.Format("Sending log failed: {0} (response status: {1}).\n{2}", www.error, responseStatus, www.text));
+
+            DebugLogger.Log(string.Format("Waiting {0} seconds before next log could be sent...", SendDelaySeconds));
+
+            float startWaitTime = Time.unscaledTime;
+            while (Time.unscaledTime - startWaitTime < SendDelaySeconds && !_hasApplicationQuit)
+            {
+                yield return null;
+            }
+
+            DebugLogger.Log("Next log could be sent.");
+
+            _isLogBeingSent = false;
         }
 
         private byte[] GetCompressedLogFileData()
