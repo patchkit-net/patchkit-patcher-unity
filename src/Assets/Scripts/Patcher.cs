@@ -119,9 +119,25 @@ namespace PatchKit.Unity.Patcher
         {
             if (_updateAppCancellationTokenSource != null)
             {
-                DebugLogger.Log("Cancelling update app execution...");
+                DebugLogger.Log("Cancelling update app execution.");
 
                 _updateAppCancellationTokenSource.Cancel();
+            }
+        }
+
+        public void Quit()
+        {
+            DebugLogger.Log("Quitting application.");
+
+#if UNITY_EDITOR
+            if (Application.isEditor)
+            {
+                UnityEditor.EditorApplication.isPlaying = false;
+            }
+            else
+#endif
+            {
+                Application.Quit();
             }
         }
 
@@ -145,17 +161,8 @@ namespace PatchKit.Unity.Patcher
         {
             if (_thread == null || !_thread.IsAlive)
             {
-                DebugLogger.Log("Qutting application because patcher thread is not alive.");
-#if UNITY_EDITOR
-                if (Application.isEditor)
-                {
-                    UnityEditor.EditorApplication.isPlaying = false;
-                }
-                else
-#endif
-                {
-                    Application.Quit();
-                }
+                DebugLogger.Log("Quitting application because patcher thread is not alive.");
+                Quit();
             }
         }
 
@@ -444,6 +451,8 @@ namespace PatchKit.Unity.Patcher
                     cancellationToken.ThrowIfCancellationRequested();
                     _userDecisionSetEvent.WaitOne();
                 }
+
+                DebugLogger.Log(string.Format("Waiting for user decision result: {0}.", _userDecision));
             }
             catch (ThreadInterruptedException)
             {
@@ -486,11 +495,6 @@ namespace PatchKit.Unity.Patcher
                 }
 
                 DebugLogger.Log(string.Format("User decision {0} execution done.", _userDecision));
-
-                if (_userDecision == UserDecision.StartApp)
-                {
-                    Dispatcher.Invoke(Application.Quit);
-                }
             }
             catch (OperationCanceledException)
             {
@@ -502,7 +506,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
-                    Dispatcher.Invoke(Application.Quit);
+                    Dispatcher.Invoke(Quit);
                 }
                 else
                 {
@@ -566,6 +570,8 @@ namespace PatchKit.Unity.Patcher
             var appStarter = new AppStarter(_app);
 
             appStarter.Start();
+
+            Dispatcher.Invoke(Quit);
         }
 
         private void ThreadUpdateApp(CancellationToken cancellationToken)

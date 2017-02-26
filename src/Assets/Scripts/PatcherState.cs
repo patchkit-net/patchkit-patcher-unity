@@ -5,9 +5,8 @@
         None,
         LoadingPatcherData,
         LoadingPatcherConfiguration,
-        UpdatingApp,
-        StartingApp,
-        HandlingErrorMessage,
         WaitingForUserDecision,
+        UpdatingApp,
+        StartingApp
     }
 }
