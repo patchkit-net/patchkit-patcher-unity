@@ -15,47 +15,51 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             AssertChecks.ArgumentNotNull(context, "context");
 
-            DebugLogger.Log("Resolving best strategy for patcher.");
+            DebugLogger.Log("Resolving best strategy for updating...");
 
             if (context.App.IsInstalled())
             {
-                DebugLogger.Log("Application is installed.");
-
                 int installedVersionId = context.App.GetInstalledVersionId();
                 int latestVersionId = context.App.GetLatestVersionId();
 
                 if (installedVersionId == latestVersionId)
                 {
-                    DebugLogger.Log("Installed version is the same as the latest version.");
+                    DebugLogger.Log("Installed version is the same as the latest version. Using empty strategy.");
 
                     return new AppUpdaterEmptyStrategy();
                 }
 
                 if (installedVersionId < latestVersionId)
                 {
-                    DebugLogger.Log("Installed version is older than the latest version.");
+                    DebugLogger.Log("Installed version is older than the latest version. Checking whether cost of updating with diff is lower than cost of updating with content...");
 
                     var diffCost = GetDiffCost(context);
                     DebugLogger.LogVariable(diffCost, "diffCost");
 
+                    DebugLogger.Log(string.Format("Cost of updating with diff equals {0}.", diffCost));
+
                     var contentCost = GetContentCost(context);
                     DebugLogger.LogVariable(contentCost, "contentCost");
 
+                    DebugLogger.Log(string.Format("Cost of updating with content equals {0}.", contentCost));
+
                     if (diffCost < contentCost)
                     {
-                        DebugLogger.Log("Diff cost is lower than content cost - using diff strategy.");
+                        DebugLogger.Log("Cost of updating with diff is lower than cost of updating with content. Using diff strategy.");
+
                         return new AppUpdaterDiffStrategy(context);
                     }
-                    DebugLogger.Log("Diff cost is higher than content cost - using content strategy.");
+
+                    DebugLogger.Log("Cost of updating with content is lower than cost of updating with diff. Using content strategy.");
                 }
                 else
                 {
-                    DebugLogger.Log("Installed version is newer than the latest version - using content strategy.");
+                    DebugLogger.Log("Installed version is newer than the latest version. Using content strategy.");
                 }
             }
             else
             {
-                DebugLogger.Log("Application is not installed - using content strategy.");
+                DebugLogger.Log("Application is not installed. Using content strategy.");
             }
 
             return new AppUpdaterContentStrategy(context);
@@ -63,8 +67,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private ulong GetContentCost(AppUpdaterContext context)
         {
-            DebugLogger.Log("Calculating content cost.");
-
             int latestVersionId = context.App.GetLatestVersionId();
 
             var contentSummary = context.App.RemoteMetaData.GetContentSummary(latestVersionId);
@@ -74,8 +76,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private ulong GetDiffCost(AppUpdaterContext context)
         {
-            DebugLogger.Log("Calculating diff cost.");
-
             int latestVersionId = context.App.GetLatestVersionId();
 
             int currentLocalVersionId = context.App.GetInstalledVersionId();
