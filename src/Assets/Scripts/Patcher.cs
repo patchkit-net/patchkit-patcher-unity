@@ -155,6 +155,9 @@ namespace PatchKit.Unity.Patcher
 
         private void Awake()
         {
+            AssertChecks.IsNull(_instance, "There must be only one instance of Patcher component.");
+            AssertChecks.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
+
             _instance = this;
             Dispatcher.Initialize();
             Application.runInBackground = true;
