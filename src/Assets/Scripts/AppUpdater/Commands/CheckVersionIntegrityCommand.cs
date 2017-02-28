@@ -23,8 +23,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
             // TODO: Validate the content summary.
-            AssertChecks.ArgumentNotNull(localDirectory, "localDirectory");
-            AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
+            Checks.ArgumentNotNull(localDirectory, "localDirectory");
+            Checks.ArgumentNotNull(localMetaData, "localMetaData");
             
 
             DebugLogger.LogConstructor();
@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Prepare(statusMonitor);
 
-            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
 
             DebugLogger.Log("Preparing version integrity check.");
 

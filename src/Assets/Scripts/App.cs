@@ -38,12 +38,12 @@ namespace PatchKit.Unity.Patcher
 
         public App(ILocalDirectory localDirectory, ILocalMetaData localMetaData, ITemporaryDirectory temporaryDirectory, IDownloadDirectory downloadDirectory, IRemoteData remoteData, IRemoteMetaData remoteMetaData, int overrideLatestVersionId)
         {
-            AssertChecks.ArgumentNotNull(localDirectory, "localData");
-            AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
-            AssertChecks.ArgumentNotNull(temporaryDirectory, "temporaryData");
-            AssertChecks.ArgumentNotNull(downloadDirectory, "downloadData");
-            AssertChecks.ArgumentNotNull(remoteData, "remoteData");
-            AssertChecks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
+            Checks.ArgumentNotNull(localDirectory, "localData");
+            Checks.ArgumentNotNull(localMetaData, "localMetaData");
+            Checks.ArgumentNotNull(temporaryDirectory, "temporaryData");
+            Checks.ArgumentNotNull(downloadDirectory, "downloadData");
+            Checks.ArgumentNotNull(remoteData, "remoteData");
+            Checks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
 
             LocalDirectory = localDirectory;
             LocalMetaData = localMetaData;

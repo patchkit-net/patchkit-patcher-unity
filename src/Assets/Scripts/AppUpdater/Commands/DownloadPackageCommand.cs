@@ -35,7 +35,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Prepare(statusMonitor);
 
-            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
 
             DebugLogger.Log("Preparing package download.");
 

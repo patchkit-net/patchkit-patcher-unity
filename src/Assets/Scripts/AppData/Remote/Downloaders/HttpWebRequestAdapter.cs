@@ -9,7 +9,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public HttpWebRequestAdapter(HttpWebRequest httpWebRequest)
         {
-            AssertChecks.ArgumentNotNull(httpWebRequest, "httpWebRequest");
+            Checks.ArgumentNotNull(httpWebRequest, "httpWebRequest");
 
             _httpWebRequest = httpWebRequest;
         }

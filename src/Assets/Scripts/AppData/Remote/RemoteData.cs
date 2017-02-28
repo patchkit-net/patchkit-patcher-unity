@@ -20,7 +20,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         public RemoteData(string appSecret, MainApiConnection mainApiConnection)
         {
             Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
-            AssertChecks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
+            Checks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");

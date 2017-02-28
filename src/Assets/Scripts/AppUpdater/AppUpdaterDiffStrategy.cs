@@ -21,9 +21,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public AppUpdaterDiffStrategy(AppUpdaterContext context)
         {
-            AssertChecks.ArgumentNotNull(context, "context");
 
             DebugLogger.LogConstructor();
+            Checks.ArgumentNotNull(context, "context");
 
             _context = context;
         }

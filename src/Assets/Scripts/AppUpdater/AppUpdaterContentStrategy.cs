@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public AppUpdaterContentStrategy(AppUpdaterContext context)
         {
-            AssertChecks.ArgumentNotNull(context, "context");
+            Checks.ArgumentNotNull(context, "context");
 
             DebugLogger.LogConstructor();
 

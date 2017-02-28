@@ -57,7 +57,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             Checks.ArgumentNotNullOrEmpty(path, "path");
             Checks.ArgumentMoreThanZero(fileSize, "fileSize");
-            AssertChecks.ArgumentNotNull(hashFunction, "hashFunction");
+            Checks.ArgumentNotNull(hashFunction, "hashFunction");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(path, "path");
@@ -82,7 +82,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         /// <returns></returns>
         public bool Write(byte[] buffer, int offset, int count)
         {
-            AssertChecks.ArgumentNotNull(buffer, "buffer");
+            Checks.ArgumentNotNull(buffer, "buffer");
             // TODO: Rest of assertions
 
             do

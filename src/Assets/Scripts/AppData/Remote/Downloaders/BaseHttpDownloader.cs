@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             Checks.ArgumentNotNullOrEmpty(url, "url");
             Checks.ArgumentMoreThanZero(timeout, "timeout");
             Checks.ArgumentMoreThanZero(bufferSize, "bufferSize");
-            AssertChecks.ArgumentNotNull(createNewHttpWebRequest, "createNewHttpWebRequest");
+            Checks.ArgumentNotNull(createNewHttpWebRequest, "createNewHttpWebRequest");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(url, "url");

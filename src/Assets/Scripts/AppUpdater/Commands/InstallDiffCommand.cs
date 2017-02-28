@@ -37,9 +37,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
             // TODO: Check whether version diff summary is correct
-            AssertChecks.ArgumentNotNull(localData, "localData");
-            AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
-            AssertChecks.ArgumentNotNull(temporaryData, "temporaryData");
+            Checks.ArgumentNotNull(localData, "localData");
+            Checks.ArgumentNotNull(localMetaData, "localMetaData");
+            Checks.ArgumentNotNull(temporaryData, "temporaryData");
 
             _packagePath = packagePath;
             _packagePassword = packagePassword;
@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Prepare(statusMonitor);
 
-            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
 
             DebugLogger.Log("Preparing diff installation.");
 

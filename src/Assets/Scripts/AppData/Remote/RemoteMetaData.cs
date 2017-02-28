@@ -23,8 +23,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         public RemoteMetaData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
         {
             Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
-            AssertChecks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
-            AssertChecks.ArgumentNotNull(keysApiConnection, "keysApiConnection");
+            Checks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
+            Checks.ArgumentNotNull(keysApiConnection, "keysApiConnection");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");

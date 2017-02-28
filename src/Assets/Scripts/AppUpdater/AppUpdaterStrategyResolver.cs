@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public IAppUpdaterStrategy Resolve(AppUpdaterContext context)
         {
-            AssertChecks.ArgumentNotNull(context, "context");
+            Checks.ArgumentNotNull(context, "context");
 
             DebugLogger.Log("Resolving best strategy for updating...");
 

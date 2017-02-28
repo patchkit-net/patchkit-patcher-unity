@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.Status
 
         public DownloadStatusReporter(DownloadStatusHolder downloadStatusHolder)
         {
-            AssertChecks.ArgumentNotNull(downloadStatusHolder, "downloadStatusHolder");
+            Checks.ArgumentNotNull(downloadStatusHolder, "downloadStatusHolder");
 
             _downloadStatusHolder = downloadStatusHolder;
         }

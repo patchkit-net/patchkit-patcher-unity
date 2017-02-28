@@ -2,16 +2,11 @@
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    public class AssertChecks : BaseChecks
+    public class AssertChecks
     {
         static AssertChecks()
         {
             Assert.raiseExceptions = true;
-        }
-
-        private static ValidationFailedHandler ArgumentValidationFailed(string name)
-        {
-            return message => Assert.IsTrue(true, string.Format("Argument \"{0}\": {1}", name, message));
         }
 
         public static void IsTrue(bool condition, string message)
@@ -42,11 +37,6 @@ namespace PatchKit.Unity.Patcher.Debug
         public static void IsNull<T>(T value, string message) where T : class
         {
             Assert.IsNull(value, message);
-        }
-
-        public static void ArgumentNotNull(object value, string name)
-        {
-            NotNull(value, ArgumentValidationFailed(name));
         }
 
         public static void MethodCalledOnlyOnce(ref bool hasBeenCalled, string methodName)

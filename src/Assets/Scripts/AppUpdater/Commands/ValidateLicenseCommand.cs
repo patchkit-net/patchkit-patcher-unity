@@ -18,8 +18,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public ValidateLicenseCommand(ILicenseDialog licenseDialog, IRemoteMetaData remoteMetaData)
         {
-            AssertChecks.ArgumentNotNull(licenseDialog, "licenseDialog");
-            AssertChecks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
+            Checks.ArgumentNotNull(licenseDialog, "licenseDialog");
+            Checks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
 
             DebugLogger.LogConstructor();
 
@@ -122,7 +122,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Prepare(statusMonitor);
 
-            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
         }
 
         public string KeySecret { get; private set; }

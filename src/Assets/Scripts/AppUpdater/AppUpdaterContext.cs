@@ -21,9 +21,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public AppUpdaterContext(App app, AppUpdaterConfiguration configuration, IStatusMonitor statusMonitor, ILicenseDialog licenseDialog)
         {
-            AssertChecks.ArgumentNotNull(app, "app");
-            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
-            AssertChecks.ArgumentNotNull(licenseDialog, "licenseDialog");
+            Checks.ArgumentNotNull(app, "app");
+            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(licenseDialog, "licenseDialog");
 
             App = app;
             Configuration = configuration;

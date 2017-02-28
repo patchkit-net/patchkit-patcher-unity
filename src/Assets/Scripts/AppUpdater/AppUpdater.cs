@@ -20,8 +20,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public AppUpdater(IAppUpdaterStrategyResolver strategyResolver, AppUpdaterContext context)
         {
-            AssertChecks.ArgumentNotNull(strategyResolver, "strategyResolver");
-            AssertChecks.ArgumentNotNull(context, "context");
+            Checks.ArgumentNotNull(strategyResolver, "strategyResolver");
+            Checks.ArgumentNotNull(context, "context");
 
             DebugLogger.LogConstructor();
 

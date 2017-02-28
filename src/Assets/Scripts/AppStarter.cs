@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher
 
         public AppStarter(App app)
         {
-            AssertChecks.ArgumentNotNull(app, "app");
+            Checks.ArgumentNotNull(app, "app");
 
             DebugLogger.LogConstructor();
 

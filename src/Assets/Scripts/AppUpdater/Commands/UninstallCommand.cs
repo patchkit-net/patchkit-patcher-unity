@@ -19,8 +19,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public UninstallCommand(ILocalDirectory localData, ILocalMetaData localMetaData)
         {
-            AssertChecks.ArgumentNotNull(localData, "localData");
-            AssertChecks.ArgumentNotNull(localMetaData, "localMetaData");
+            Checks.ArgumentNotNull(localData, "localData");
+            Checks.ArgumentNotNull(localMetaData, "localMetaData");
 
             DebugLogger.LogConstructor();
 
@@ -32,7 +32,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Prepare(statusMonitor);
 
-            AssertChecks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
 
             DebugLogger.Log("Preparing uninstallation.");
 
