@@ -9,6 +9,16 @@ namespace PatchKit.Unity.Patcher.AppData
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DirectoryOperations));
 
+        /// <summary>
+        /// Determines whether directory is empty (does not contain any files or directories).
+        /// </summary>
+        /// <param name="dirPath">The directory path.</param>
+        /// <returns>
+        ///   <c>true</c> if directory is empty; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentException"><paramref name="dirPath"/> is null or empty.</exception>
+        /// <exception cref="DirectoryNotFoundException"><paramref name="dirPath"/> doesn't exist.</exception>
+        /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static bool IsDirectoryEmpty(string dirPath)
         {
             Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
@@ -18,6 +28,12 @@ namespace PatchKit.Unity.Patcher.AppData
                    Directory.GetDirectories(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0;
         }
 
+        /// <summary>
+        /// Creates parent directory for specified <paramref name="path"/>.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <exception cref="ArgumentException"><paramref name="path"/> is null or empty.</exception>
+        /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void CreateParentDirectory(string path)
         {
             Checks.ArgumentNotNullOrEmpty(path, "path");
@@ -42,6 +58,12 @@ namespace PatchKit.Unity.Patcher.AppData
             }
         }
 
+        /// <summary>
+        /// Creates the directory.
+        /// </summary>
+        /// <param name="dirPath">The directory path.</param>
+        /// <exception cref="ArgumentException"><paramref name="dirPath"/> is null or empty.</exception>
+        /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void CreateDirectory(string dirPath)
         {
             Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
@@ -61,6 +83,14 @@ namespace PatchKit.Unity.Patcher.AppData
             }
         }
 
+        /// <summary>
+        /// Creates the directory.
+        /// </summary>
+        /// <param name="dirPath">The directory path.</param>
+        /// <param name="recursive">if set to <c>true</c> then directory content is also removed recursively.</param>
+        /// <exception cref="ArgumentException"><paramref name="dirPath" /> is null or empty.</exception>
+        /// <exception cref="DirectoryNotFoundException"><paramref name="dirPath" /> doesn't exist.</exception>
+        /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void Delete(string dirPath, bool recursive)
         {
             Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
