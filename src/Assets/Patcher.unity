@@ -742,7 +742,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 272161830}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab2e81eaed8a2446b81abce236ec263c, type: 3}
+  m_Script: {fileID: 11500000, guid: e39b61178cc8a0745b5f1df4592f5b42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ErrorText: {fileID: 1882944061}
@@ -816,6 +816,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 377531152}
   - 114: {fileID: 377531153}
+  - 114: {fileID: 377531154}
   m_Layer: 0
   m_Name: Patcher
   m_TagString: Untagged
@@ -846,13 +847,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 177215dfa0b474d44a8288b12b5c0642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EditorAppSecret: fccf154bf2f0eb8be78f8e54a10dc066
+  ErrorDialog: {fileID: 272161832}
+  EditorAppSecret: ac20fc855b75a7ea5f3e936dfd38ccd8
   EditorOverrideLatestVersionId: 0
   DefaultConfiguration:
     AppUpdaterConfiguration:
       UseTorrents: 1
-    StartAppAutomatically: 0
-    UpdateAppAutomatically: 1
+    AutomaticallyStartApp: 0
+    AutomaticallyCheckForAppUpdates: 0
+    AutomaticallyInstallApp: 0
+--- !u!114 &377531154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 377531151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa45eb377df974345b4c0af95b815d49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LogServerUrl: http://test.patchkit.net
+  SendDelaySeconds: 15
 --- !u!1 &421519242
 GameObject:
   m_ObjectHideFlags: 0
@@ -4552,8 +4568,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 377531153}
-        m_MethodName: SetErrorMessageHandled
+      - m_Target: {fileID: 272161832}
+        m_MethodName: Confirm
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
