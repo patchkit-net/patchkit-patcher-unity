@@ -9,6 +9,16 @@ namespace PatchKit.Unity.Patcher.AppData
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(FileOperations));
 
+        /// <summary>
+        /// Copies file from <paramref name="sourceFilePath" /> to <paramref name="destinationFilePath" />.
+        /// </summary>
+        /// <param name="sourceFilePath">The source file path.</param>
+        /// <param name="destinationFilePath">The destination file path.</param>
+        /// <param name="overwrite">if set to <c>true</c> and destination file exists then it is overwritten.</param>
+        /// <exception cref="ArgumentException"><paramref name="sourceFilePath"/> is null or empty.</exception>
+        /// <exception cref="ArgumentException"><paramref name="destinationFilePath"/> is null or empty.</exception>
+        /// <exception cref="FileNotFoundException"><paramref name="sourceFilePath"/> doesn't exist.</exception>
+        /// <exception cref="DirectoryNotFoundException"><paramref name="destinationFilePath"/> parent directory doesn't exist.</exception>
         public static void Copy(string sourceFilePath, string destinationFilePath, bool overwrite)
         {
             Checks.ArgumentNotNullOrEmpty(sourceFilePath, "sourceFilePath");
@@ -19,9 +29,9 @@ namespace PatchKit.Unity.Patcher.AppData
             try
             {
                 DebugLogger.Log(string.Format("Copying file from <{0}> to <{1}> {2}...",
-                sourceFilePath,
-                destinationFilePath,
-                overwrite ? "(overwriting)" : string.Empty));
+                    sourceFilePath,
+                    destinationFilePath,
+                    overwrite ? "(overwriting)" : string.Empty));
 
                 File.Copy(sourceFilePath, destinationFilePath, overwrite);
 
@@ -34,6 +44,12 @@ namespace PatchKit.Unity.Patcher.AppData
             }
         }
 
+        /// <summary>
+        /// Deletes file.
+        /// </summary>
+        /// <param name="filePath">The file path.</param>
+        /// <exception cref="ArgumentException"><paramref name="filePath"/> is null or empty.</exception>
+        /// <exception cref="FileNotFoundException"><paramref name="filePath"/> doesn't exist.</exception>
         public static void Delete(string filePath)
         {
             Checks.ArgumentNotNullOrEmpty(filePath, "filePath");
@@ -54,6 +70,15 @@ namespace PatchKit.Unity.Patcher.AppData
             }
         }
 
+        /// <summary>
+        /// Moves file from <paramref name="sourceFilePath" /> to <paramref name="destinationFilePath" />.
+        /// </summary>
+        /// <param name="sourceFilePath">The source file path.</param>
+        /// <param name="destinationFilePath">The destination file path.</param>
+        /// <exception cref="ArgumentException"><paramref name="sourceFilePath"/> is null or empty.</exception>
+        /// <exception cref="ArgumentException"><paramref name="destinationFilePath"/> is null or empty.</exception>
+        /// <exception cref="FileNotFoundException"><paramref name="sourceFilePath"/> doesn't exist.</exception>
+        /// <exception cref="DirectoryNotFoundException"><paramref name="destinationFilePath"/> parent directory doesn't exist.</exception>
         public static void Move(string sourceFilePath, string destinationFilePath)
         {
             Checks.ArgumentNotNullOrEmpty(sourceFilePath, "sourceFilePath");
