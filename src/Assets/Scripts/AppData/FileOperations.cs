@@ -19,6 +19,7 @@ namespace PatchKit.Unity.Patcher.AppData
         /// <exception cref="ArgumentException"><paramref name="destinationFilePath"/> is null or empty.</exception>
         /// <exception cref="FileNotFoundException"><paramref name="sourceFilePath"/> doesn't exist.</exception>
         /// <exception cref="DirectoryNotFoundException"><paramref name="destinationFilePath"/> parent directory doesn't exist.</exception>
+        /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void Copy(string sourceFilePath, string destinationFilePath, bool overwrite)
         {
             Checks.ArgumentNotNullOrEmpty(sourceFilePath, "sourceFilePath");
@@ -50,6 +51,7 @@ namespace PatchKit.Unity.Patcher.AppData
         /// <param name="filePath">The file path.</param>
         /// <exception cref="ArgumentException"><paramref name="filePath"/> is null or empty.</exception>
         /// <exception cref="FileNotFoundException"><paramref name="filePath"/> doesn't exist.</exception>
+        /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void Delete(string filePath)
         {
             Checks.ArgumentNotNullOrEmpty(filePath, "filePath");
@@ -79,6 +81,7 @@ namespace PatchKit.Unity.Patcher.AppData
         /// <exception cref="ArgumentException"><paramref name="destinationFilePath"/> is null or empty.</exception>
         /// <exception cref="FileNotFoundException"><paramref name="sourceFilePath"/> doesn't exist.</exception>
         /// <exception cref="DirectoryNotFoundException"><paramref name="destinationFilePath"/> parent directory doesn't exist.</exception>
+        /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void Move(string sourceFilePath, string destinationFilePath)
         {
             Checks.ArgumentNotNullOrEmpty(sourceFilePath, "sourceFilePath");
