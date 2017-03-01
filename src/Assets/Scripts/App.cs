@@ -71,7 +71,7 @@ namespace PatchKit.Unity.Patcher
 
         public int GetInstalledVersionId()
         {
-            AssertChecks.ApplicationIsInstalled(this);
+            Assert.ApplicationIsInstalled(this);
 
             return LocalMetaData.GetEntryVersionId(LocalMetaData.GetRegisteredEntries()[0]);
         }

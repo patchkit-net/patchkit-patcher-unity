@@ -11,13 +11,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public virtual void Execute(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _executeHasBeenCalled, "Execute");
-            AssertChecks.IsTrue(_prepareHasBeenCalled, "Command not prepared.");
+            Assert.MethodCalledOnlyOnce(ref _executeHasBeenCalled, "Execute");
+            Assert.IsTrue(_prepareHasBeenCalled, "Command not prepared.");
         }
 
         public virtual void Prepare(IStatusMonitor statusMonitor)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _prepareHasBeenCalled, "Prepare");
+            Assert.MethodCalledOnlyOnce(ref _prepareHasBeenCalled, "Prepare");
         }
     }
 }

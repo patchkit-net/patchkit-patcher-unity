@@ -1,42 +1,40 @@
-﻿using UnityEngine.Assertions;
-
-namespace PatchKit.Unity.Patcher.Debug
+﻿namespace PatchKit.Unity.Patcher.Debug
 {
-    public class AssertChecks
+    public class Assert
     {
-        static AssertChecks()
+        static Assert()
         {
-            Assert.raiseExceptions = true;
+            UnityEngine.Assertions.Assert.raiseExceptions = true;
         }
 
         public static void IsTrue(bool condition, string message)
         {
-            Assert.IsTrue(condition, message);
+            UnityEngine.Assertions.Assert.IsTrue(condition, message);
         }
 
         public static void IsFalse(bool condition, string message)
         {
-            Assert.IsFalse(condition, message);
+            UnityEngine.Assertions.Assert.IsFalse(condition, message);
         }
 
         public static void AreEqual<T>(T expected, T actual, string message)
         {
-            Assert.AreEqual(expected, actual, message);
+            UnityEngine.Assertions.Assert.AreEqual(expected, actual, message);
         }
 
         public static void AreNotEqual<T>(T expected, T actual, string message)
         {
-            Assert.AreNotEqual(expected, actual, message);
+            UnityEngine.Assertions.Assert.AreNotEqual(expected, actual, message);
         }
 
         public static void IsNotNull<T>(T value, string message) where T : class
         {
-            Assert.IsNotNull(value, message);
+            UnityEngine.Assertions.Assert.IsNotNull(value, message);
         }
 
         public static void IsNull<T>(T value, string message) where T : class
         {
-            Assert.IsNull(value, message);
+            UnityEngine.Assertions.Assert.IsNull(value, message);
         }
 
         public static void MethodCalledOnlyOnce(ref bool hasBeenCalled, string methodName)

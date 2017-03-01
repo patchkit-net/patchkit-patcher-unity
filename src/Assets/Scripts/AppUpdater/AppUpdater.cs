@@ -31,7 +31,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public void Update(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
+            Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
 
             DebugLogger.Log("Updating.");
 

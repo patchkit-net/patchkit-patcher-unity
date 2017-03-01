@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Unarchive(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _unarchiveHasBeenCalled, "Unarchive");
+            Assert.MethodCalledOnlyOnce(ref _unarchiveHasBeenCalled, "Unarchive");
 
             DebugLogger.Log("Unarchiving.");
 

@@ -75,7 +75,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             base.Execute(cancellationToken);
 
             Checks.FileExists(_packagePath);
-            AssertChecks.IsTrue(_localMetaData.GetRegisteredEntries().Length == 0, "Cannot install content if previous version is still present.");
+            Assert.IsTrue(_localMetaData.GetRegisteredEntries().Length == 0, "Cannot install content if previous version is still present.");
 
             DebugLogger.Log("Installing content.");
             

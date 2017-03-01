@@ -19,7 +19,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public string GetUniquePath()
         {
-            AssertChecks.IsFalse(_disposed, "Object has been disposed.");
+            Assert.IsFalse(_disposed, "Object has been disposed.");
 
             string uniquePath = string.Empty;
 
@@ -39,7 +39,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public override void PrepareForWriting()
         {
-            AssertChecks.IsFalse(_disposed, "Object has been disposed.");
+            Assert.IsFalse(_disposed, "Object has been disposed.");
 
             base.PrepareForWriting();
         }

@@ -39,7 +39,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Patch()
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
+            Assert.MethodCalledOnlyOnce(ref _patchHasBeenCalled, "Patch");
 
             DebugLogger.Log("Patching.");
 

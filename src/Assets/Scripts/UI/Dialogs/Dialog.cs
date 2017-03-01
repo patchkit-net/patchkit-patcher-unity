@@ -24,7 +24,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         protected void Display(CancellationToken cancellationToken)
         {
-            AssertChecks.IsFalse(_unityThread == Thread.CurrentThread, 
+            Assert.IsFalse(_unityThread == Thread.CurrentThread, 
                 "Display dialog can be only used on separate thread.");
 
             try

@@ -117,7 +117,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public void Download(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
+            Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
             DebugLogger.Log("Downloading.");
 

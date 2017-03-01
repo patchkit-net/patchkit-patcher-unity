@@ -30,8 +30,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public void Update(CancellationToken cancellationToken)
         {
-            AssertChecks.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
-            AssertChecks.ApplicationIsInstalled(_context.App);
+            Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
+            Assert.ApplicationIsInstalled(_context.App);
 
             DebugLogger.Log("Updating with diff strategy.");
 

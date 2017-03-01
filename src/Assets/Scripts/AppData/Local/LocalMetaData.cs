@@ -50,7 +50,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Checks.ArgumentValidVersionId(versionId, "versionId");
 
             // TODO: Uncomment this after fixing directory registration in install content command
-            AssertChecks.IsFalse(entryName.EndsWith("/"),
+            Assert.IsFalse(entryName.EndsWith("/"),
                 "Cannot register directory as entry due to problem with content installation command. See code to learn more.");
 
             DebugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", entryName, versionId));
@@ -81,7 +81,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public int GetEntryVersionId(string fileName)
         {
             Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
-            AssertChecks.IsTrue(IsEntryRegistered(fileName), string.Format("File doesn't exist in meta data - {0}", fileName));
+            Assert.IsTrue(IsEntryRegistered(fileName), string.Format("File doesn't exist in meta data - {0}", fileName));
 
             return _data.FileVersionIds[fileName];
         }
