@@ -8,3 +8,4 @@
 /src/*.csproj.user
 /src/_Resharper.src/
 /src/app/
+.idea
