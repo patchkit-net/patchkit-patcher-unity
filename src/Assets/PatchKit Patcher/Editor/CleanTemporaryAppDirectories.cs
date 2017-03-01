@@ -7,7 +7,6 @@ namespace PatchKit.Unity.Editor
 {
     public static class CleanTemporaryAppDirectories
     {
-        [MenuItem("Tools/PatchKit Patcher/Clean Temporary App Directories")]
         public static void Clean()
         {
             string tempPath = Application.dataPath.Replace("/Assets", "/Temp");
