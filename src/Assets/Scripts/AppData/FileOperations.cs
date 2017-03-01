@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.AppData
             }
             catch (Exception)
             {
-                DebugLogger.Log("Error while copying file: an exception occured. Rethrowing exception.");
+                DebugLogger.LogError("Error while copying file: an exception occured. Rethrowing exception.");
                 throw;
             }
         }
@@ -67,7 +67,7 @@ namespace PatchKit.Unity.Patcher.AppData
             }
             catch (Exception)
             {
-                DebugLogger.Log("Error while deleting file: an exception occured. Rethrowing exception.");
+                DebugLogger.LogError("Error while deleting file: an exception occured. Rethrowing exception.");
                 throw;
             }
         }
@@ -99,7 +99,7 @@ namespace PatchKit.Unity.Patcher.AppData
             }
             catch (Exception)
             {
-                DebugLogger.Log("Error while moving file: an exception occured. Rethrowing exception.");
+                DebugLogger.LogError("Error while moving file: an exception occured. Rethrowing exception.");
                 throw;
             }
         }

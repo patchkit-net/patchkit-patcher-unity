@@ -53,7 +53,7 @@ namespace PatchKit.Unity.Patcher.AppData
             }
             catch (Exception)
             {
-                DebugLogger.Log("Error while creating parent directory: an exception occured. Rethrowing exception.");
+                DebugLogger.LogError("Error while creating parent directory: an exception occured. Rethrowing exception.");
                 throw;
             }
         }
@@ -78,7 +78,7 @@ namespace PatchKit.Unity.Patcher.AppData
             }
             catch (Exception)
             {
-                DebugLogger.Log("Error while creating directory: an exception occured. Rethrowing exception.");
+                DebugLogger.LogError("Error while creating directory: an exception occured. Rethrowing exception.");
                 throw;
             }
         }
@@ -108,7 +108,7 @@ namespace PatchKit.Unity.Patcher.AppData
             }
             catch (Exception)
             {
-                DebugLogger.Log("Error while deleting directory: an exception occured. Rethrowing exception.");
+                DebugLogger.LogError("Error while deleting directory: an exception occured. Rethrowing exception.");
                 throw;
             }
         }
