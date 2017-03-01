@@ -24,8 +24,23 @@ namespace PatchKit.Unity.Patcher.AppData
             Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
             Checks.DirectoryExists(dirPath);
 
-            return Directory.GetFiles(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0 &&
-                   Directory.GetDirectories(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0;
+            try
+            {
+                DebugLogger.Log(string.Format("Checking whether directory is empty <{0}>...", dirPath));
+
+                bool isEmpty = Directory.GetFiles(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0 &&
+                    Directory.GetDirectories(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0;
+
+                DebugLogger.Log(string.Format("Check complete: directory is {0}.", isEmpty ? "empty" : "not empty"));
+
+                return isEmpty;
+            }
+            catch (Exception)
+            {
+                DebugLogger.LogError("Error while checking whether directory is empty: an exception occured. Rethrowing exception.");
+                throw;
+            }
+            
         }
 
         /// <summary>
