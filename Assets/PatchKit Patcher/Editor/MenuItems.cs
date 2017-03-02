@@ -11,7 +11,7 @@ public class MenuItems
     [MenuItem(Root + "/Getting Started...", false, 0)]
     public static void GettingStarted()
     {
-        Application.OpenURL("http://docs.patchkit.net/");
+        Application.OpenURL("http://docs.patchkit.net/unity_custom_patcher.html");
     }
 
     [MenuItem(Root + "/Clean All", false, 100)]
