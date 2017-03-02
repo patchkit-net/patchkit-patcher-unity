@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private readonly List<string> _logCache = new List<string>();
 
-        private readonly Guid _guid;
+        //private readonly Guid _guid;
 
         private readonly FileStream _logStream;
         
@@ -32,7 +32,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public DebugLogReporter(int sendDelayMillisecond)
         {
-            _guid = Guid.NewGuid();
+            //_guid = Guid.NewGuid();
             _logStream = new FileStream(Path.Combine(Path.GetTempPath(), Path.GetTempFileName()), FileMode.Create, FileAccess.Write);
             _logStreamWriter = new StreamWriter(_logStream);
             _sendDelayMillisecond = sendDelayMillisecond;
@@ -91,7 +91,7 @@ namespace PatchKit.Unity.Patcher.Debug
                             Send();
                             lastLogSentTime = DateTime.Now;
                         }
-                        catch (Exception exception)
+                        catch (Exception)
                         {
                             // Log exception?
                         }
