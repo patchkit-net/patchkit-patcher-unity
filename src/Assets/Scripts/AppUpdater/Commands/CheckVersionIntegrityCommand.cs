@@ -83,8 +83,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidVersion);
             }
 
+            string hash = HashCalculator.ComputeFileHash(_localDirectory.Path.PathCombine(file.Path));
+
+            if (hash != file.Hash)
+            {
+                return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash);
+            }
+
             // TODO: Check file size (always).
-            // TODO: Check file hash (only if enabled).
 
             return new FileIntegrity(file.Path, FileIntegrityStatus.Ok);
         }
