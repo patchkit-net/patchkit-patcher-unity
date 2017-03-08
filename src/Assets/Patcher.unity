@@ -851,6 +851,7 @@ MonoBehaviour:
   DefaultConfiguration:
     AppUpdaterConfiguration:
       UseTorrents: 1
+      CheckConsistencyBeforeDiffUpdate: 1
     StartAppAutomatically: 0
     UpdateAppAutomatically: 1
 --- !u!1 &421519242

@@ -6,5 +6,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     public struct AppUpdaterConfiguration
     {
         public bool UseTorrents;
+
+        public bool CheckConsistencyBeforeDiffUpdate;
     }
 }
