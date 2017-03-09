@@ -1,4 +1,7 @@
-﻿using PatchKit.Unity.Patcher.Debug;
+﻿using System.Linq;
+using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
@@ -32,6 +35,41 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 if (installedVersionId < latestVersionId)
                 {
                     DebugLogger.Log("Installed version is older than the latest version. Checking whether cost of updating with diff is lower than cost of updating with content...");
+
+                    if (context.Configuration.CheckConsistencyBeforeDiffUpdate)
+                    {
+                        DebugLogger.Log("Checking consitency before allowing diff update...");
+
+                        var commandFactory = new AppUpdaterCommandFactory();
+
+                        var checkVersionIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(
+                            installedVersionId, context);
+
+                        checkVersionIntegrity.Prepare(context.StatusMonitor);
+                        checkVersionIntegrity.Execute(CancellationToken.Empty);
+
+                        if (checkVersionIntegrity.Results.Files.All(
+                                fileIntegrity => fileIntegrity.Status == FileIntegrityStatus.Ok))
+                        {
+                            DebugLogger.Log("Version is consistent. Diff update is allowed.");
+                        }
+                        else
+                        {
+                            foreach (var fileIntegrity in checkVersionIntegrity.Results.Files)
+                            {
+                                if (fileIntegrity.Status != FileIntegrityStatus.Ok)
+                                {
+                                    DebugLogger.Log(string.Format("File {0} is not consistent - {1}",
+                                        fileIntegrity.FileName, fileIntegrity.Status));
+                                }
+                            }
+
+                            DebugLogger.Log(
+                                "Version is not consistent. Diff update is forbidden - using content strategy.");
+
+                            return new AppUpdaterContentStrategy(context);
+                        }
+                    }
 
                     var diffCost = GetDiffCost(context);
                     DebugLogger.LogVariable(diffCost, "diffCost");
