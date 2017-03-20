@@ -855,8 +855,8 @@ MonoBehaviour:
       UseTorrents: 1
       CheckConsistencyBeforeDiffUpdate: 1
     AutomaticallyStartApp: 0
-    AutomaticallyCheckForAppUpdates: 0
-    AutomaticallyInstallApp: 0
+    AutomaticallyCheckForAppUpdates: 1
+    AutomaticallyInstallApp: 1
 --- !u!114 &377531154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3275,8 +3275,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 836955704}
   m_HandleRect: {fileID: 836955703}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
