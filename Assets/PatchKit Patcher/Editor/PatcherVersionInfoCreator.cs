@@ -8,7 +8,6 @@ namespace PatchKit.Unity.Editor
 {
     public class PatcherVersionInfoCreator
     {
-        [MenuItem("Edit/Save Patcher Version Info")]
         public static void SaveVersionInfo()
         {
             try
