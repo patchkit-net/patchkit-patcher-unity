@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -156,8 +156,14 @@ namespace PatchKit.Unity.Patcher
                     Arguments = string.Format("{0} \"{1}\"", permissions, filePath)
                 }
             };
+
+            DebugLogger.Log(string.Format("Executing {0} {1}...", process.StartInfo.FileName,
+                process.StartInfo.Arguments));
+
             process.Start();
             process.WaitForExit();
+
+            DebugLogger.Log("Done");
         }
     }
 }
