@@ -11,3 +11,4 @@
 .idea
 *.DotSettings
 *.CSharp.ruleset
+_ReSharper*
