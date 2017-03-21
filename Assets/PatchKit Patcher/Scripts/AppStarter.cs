@@ -96,7 +96,7 @@ namespace PatchKit.Unity.Patcher
 
             if (appFilePath == null)
             {
-                throw new InvalidOperationException("Couldn\'t find executable file for Linux.");
+                throw new InvalidOperationException("Couldn't find executable file for Linux.");
             }
 
             string appDirPath = Path.GetDirectoryName(appFilePath) ?? string.Empty;
