@@ -517,9 +517,10 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.Log(string.Format("User decision {0} execution cancelled.", _userDecision));
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException e)
             {
                 DebugLogger.Log(string.Format("User decision {0} execution issue: permissions failure.", _userDecision));
+                DebugLogger.LogException(e);
 
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
