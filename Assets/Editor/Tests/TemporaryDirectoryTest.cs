@@ -9,16 +9,13 @@ class TemporaryDirectoryTest
     [SetUp]
     public void Setup()
     {
-        _dirPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        _dirPath = TestHelpers.CreateTemporaryDirectory();
     }
 
     [TearDown]
     public void TearDown()
     {
-        if (Directory.Exists(_dirPath))
-        {
-            Directory.Delete(_dirPath, true);
-        }
+        TestHelpers.DeleteTemporaryDirectory(_dirPath);
     }
 
     [Test]

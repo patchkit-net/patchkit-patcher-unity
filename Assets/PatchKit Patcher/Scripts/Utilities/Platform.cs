@@ -17,6 +17,23 @@ namespace PatchKit.Unity.Utilities
             return PlatformResolver.GetRuntimePlatform();
         }
 
+        public static PlatformType GetPlatformType()
+        {
+            if (IsWindows())
+            {
+                return PlatformType.Windows;
+            }
+            if (IsOSX())
+            {
+                return PlatformType.OSX;
+            }
+            if (IsLinux())
+            {
+                return PlatformType.Linux;
+            }
+            return PlatformType.Unknown;
+        }
+
         public static bool IsWindows()
         {
             return IsOneOf(RuntimePlatform.WindowsPlayer, RuntimePlatform.WindowsEditor);
@@ -42,9 +59,17 @@ namespace PatchKit.Unity.Utilities
 
     public class PlatformResolver
     {
-        public RuntimePlatform GetRuntimePlatform()
+        public virtual RuntimePlatform GetRuntimePlatform()
         {
             return Application.platform;
         }
+    }
+
+    public enum PlatformType
+    {
+        Unknown,
+        Windows,
+        OSX,
+        Linux,
     }
 }

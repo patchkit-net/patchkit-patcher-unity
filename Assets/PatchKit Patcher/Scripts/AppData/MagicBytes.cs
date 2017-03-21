@@ -64,12 +64,34 @@ namespace PatchKit.Unity.Patcher.Data
 
         public static bool IsMacExecutable(string filePath)
         {
+            if (!File.Exists(filePath))
+            {
+                return false;
+            }
+
+            if ((File.GetAttributes(filePath) & FileAttributes.Directory) != 0)
+            {
+                // not a file
+                return false;
+            }
+
             FileType fileType = ReadFileType(filePath);
             return IsWithin(MacExecutables, fileType);
         }
 
         public static bool IsLinuxExecutable(string filePath)
         {
+            if (!File.Exists(filePath))
+            {
+                return false;
+            }
+
+            if ((File.GetAttributes(filePath) & FileAttributes.Directory) != 0)
+            {
+                // not a file
+                return false;
+            }
+
             FileType fileType = ReadFileType(filePath);
             return IsWithin(LinuxExecutables, fileType);
         }
