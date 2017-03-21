@@ -5,6 +5,7 @@ using System.Linq;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
@@ -28,17 +29,15 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Starting.");
 
-            if (Application.platform == RuntimePlatform.OSXPlayer ||
-                Application.platform == RuntimePlatform.OSXEditor)
+            if (Platform.IsOSX())
             {
                 StartOSXApplication();
             }
-            else if (Application.platform == RuntimePlatform.LinuxPlayer)
+            else if (Platform.IsLinux())
             {
                 StartLinuxApplication();
             }
-            else if (Application.platform == RuntimePlatform.WindowsEditor ||
-                     Application.platform == RuntimePlatform.WindowsPlayer)
+            else if (Platform.IsWindows())
             {
                 StartWindowsApplication();
             }

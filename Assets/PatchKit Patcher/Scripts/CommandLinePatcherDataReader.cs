@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
@@ -70,7 +71,7 @@ namespace PatchKit.Unity.Patcher
         {
             string path = Path.GetDirectoryName(Application.dataPath);
 
-            if (Application.platform == RuntimePlatform.OSXPlayer)
+            if (Platform.GetRuntimePlatform() == RuntimePlatform.OSXPlayer)
             {
                 path = Path.GetDirectoryName(path);
             }

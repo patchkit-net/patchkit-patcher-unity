@@ -36,7 +36,9 @@ namespace PatchKit.Unity.Patcher
         {
         }
 
-        public App(ILocalDirectory localDirectory, ILocalMetaData localMetaData, ITemporaryDirectory temporaryDirectory, IDownloadDirectory downloadDirectory, IRemoteData remoteData, IRemoteMetaData remoteMetaData, int overrideLatestVersionId)
+        public App(ILocalDirectory localDirectory, ILocalMetaData localMetaData, ITemporaryDirectory temporaryDirectory,
+            IDownloadDirectory downloadDirectory, IRemoteData remoteData, IRemoteMetaData remoteMetaData,
+            int overrideLatestVersionId)
         {
             Checks.ArgumentNotNull(localDirectory, "localData");
             Checks.ArgumentNotNull(localMetaData, "localMetaData");
