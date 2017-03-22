@@ -7,3 +7,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.1]
 ### Fixed
 - Linux application were not started correctly
+- Version info tags reading

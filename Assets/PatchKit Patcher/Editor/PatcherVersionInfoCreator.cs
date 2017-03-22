@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace PatchKit.Unity.Editor
 {
@@ -12,19 +12,21 @@ namespace PatchKit.Unity.Editor
         {
             try
             {
-                File.WriteAllText(Path.Combine(Application.streamingAssetsPath, "patcher.versioninfo"), GetVersionInfo());
+                var versionInfo = GetVersionInfo();
+                Debug.Log("Writing version info: " + versionInfo);
+                File.WriteAllText(Path.Combine(Application.streamingAssetsPath, "patcher.versioninfo"), versionInfo);
             }
             catch (Exception exception)
             {
-                UnityEngine.Debug.LogException(exception);
-                UnityEngine.Debug.LogError("Unable to save patcher version info.");
+                Debug.LogException(exception);
+                Debug.LogError("Unable to save patcher version info.");
             }
         }
 
         private static string GetVersionInfo()
         {
             var commitHash = GetCommitHash();
-            var commitTags = GetCommitTags(commitHash);
+            var commitTags = GetCommitTags();
             var branchName = GetBranchName();
 
             return string.Format("{0} (tags: {1}, branch: {2})", commitHash, commitTags, branchName);
@@ -32,20 +34,38 @@ namespace PatchKit.Unity.Editor
 
         private static string GetBranchName()
         {
-            return RunGitCommand("symbolic-ref HEAD").TrimEnd('\n');
+            string output;
+            if (RunGitCommand("symbolic-ref HEAD", out output))
+            {
+                return output.TrimEnd('\n');
+            }
+
+            return "(unknown)";
         }
 
-        private static string GetCommitTags(string commitHash)
+        private static string GetCommitTags()
         {
-            return RunGitCommand(string.Format("tag -- contains {0}", commitHash)).TrimEnd('\n');
+            string output;
+            if (RunGitCommand("describe --abbrev=0 --tags --exact-match", out output))
+            {
+                return output.TrimEnd('\n');
+            }
+
+            return "(unknown)";
         }
 
         private static string GetCommitHash()
         {
-            return RunGitCommand("rev-parse HEAD").TrimEnd('\n');
+            string output;
+            if (RunGitCommand("rev-parse HEAD", out output))
+            {
+                return output.TrimEnd('\n');
+            }
+
+            return "(unknown)";
         }
 
-        private static string RunGitCommand(string command)
+        private static bool RunGitCommand(string command, out string output)
         {
             var process = new Process
             {
@@ -59,10 +79,10 @@ namespace PatchKit.Unity.Editor
             };
 
             process.Start();
-            string output = process.StandardOutput.ReadToEnd();
+            output = process.StandardOutput.ReadToEnd();
             process.WaitForExit(1000);
 
-            return output;
+            return process.ExitCode == 0;
         }
     }
 }
