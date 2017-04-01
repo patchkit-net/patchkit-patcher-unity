@@ -46,8 +46,7 @@ namespace PatchKit.Unity.Utilities
 
         public static bool IsLinux()
         {
-            // TODO: Why there's no Linux Editor?
-            return IsOneOf(RuntimePlatform.LinuxPlayer);
+            return IsOneOf(RuntimePlatform.LinuxPlayer, RuntimePlatform.LinuxEditor);
         }
 
         public static bool IsOneOf(params RuntimePlatform[] platforms)

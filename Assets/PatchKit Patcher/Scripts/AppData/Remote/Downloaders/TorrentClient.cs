@@ -112,8 +112,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private ProcessStartInfo GetProcessStartInfo()
         {
-            if (Application.platform == RuntimePlatform.WindowsPlayer ||
-                Application.platform == RuntimePlatform.WindowsEditor)
+            if (Platform.IsWindows())
             {
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -127,8 +126,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return processStartInfo;
             }
 
-            if(Application.platform == RuntimePlatform.OSXEditor ||
-                Application.platform == RuntimePlatform.OSXPlayer)
+            if (Platform.IsOSX())
             {
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -144,7 +142,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return processStartInfo;
             }
 
-            if(Application.platform == RuntimePlatform.LinuxPlayer && IntPtr.Size == 8) // Linux 64 bit
+            if (Platform.IsLinux() && IntPtr.Size == 8) // Linux 64 bit
             {
                 var processStartInfo = new ProcessStartInfo
                 {
