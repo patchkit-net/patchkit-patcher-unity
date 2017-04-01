@@ -15,6 +15,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// <seealso cref="System.IDisposable" />
     public class TorrentClient : IDisposable
     {
+        private const string TorrentClientWinPath = "torrent-client/win/torrent-client.exe";
+        private const string TorrentClientOsx64Path = "torrent-client/osx64/torrent-client";
+        private const string TorrentClientLinux64Path = "torrent-client/linux64/torrent-client";
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(TorrentClient));
 
         private string _streamingAssetsPath;
@@ -116,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = _streamingAssetsPath.PathCombine("torrent-client/win/torrent-client.exe"),
+                    FileName = _streamingAssetsPath.PathCombine(TorrentClientWinPath),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -130,12 +133,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = _streamingAssetsPath.PathCombine("torrent-client/osx64/torrent-client"),
+                    FileName = _streamingAssetsPath.PathCombine(TorrentClientOsx64Path),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
+
+                // make sure that binary can be executed
+                Chmod.SetExecutableFlag(processStartInfo.FileName);
 
                 processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/osx64");
 
@@ -146,12 +152,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = _streamingAssetsPath.PathCombine("torrent-client/linux64/torrent-client"),
+                    FileName = _streamingAssetsPath.PathCombine(TorrentClientLinux64Path),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
+
+                // make sure that binary can be executed
+                Chmod.SetExecutableFlag(processStartInfo.FileName);
 
                 processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/linux64");
 

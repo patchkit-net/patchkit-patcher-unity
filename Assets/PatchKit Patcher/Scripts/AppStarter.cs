@@ -46,7 +46,7 @@ namespace PatchKit.Unity.Patcher
                     string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
                     if (IsExecutable(filePath, platformType))
                     {
-                        Chmod(filePath, "+x");
+                        Chmod.SetExecutableFlag(filePath);
                     }
                 }
             }
@@ -106,26 +106,6 @@ namespace PatchKit.Unity.Patcher
                 default:
                     throw new ArgumentOutOfRangeException("platform", platform, null);
             }
-        }
-
-        private void Chmod(string filePath, string permissions)
-        {
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    FileName = "/bin/chmod",
-                    Arguments = string.Format("{0} \"{1}\"", permissions, filePath)
-                }
-            };
-
-            DebugLogger.Log(string.Format("Executing {0} {1}...", process.StartInfo.FileName,
-                process.StartInfo.Arguments));
-
-            process.Start();
-            process.WaitForExit();
-
-            DebugLogger.Log("Done");
         }
 
         private void StartAppProcess(ProcessStartInfo processStartInfo)

@@ -49,6 +49,11 @@ namespace PatchKit.Unity.Utilities
             return IsOneOf(RuntimePlatform.LinuxPlayer, RuntimePlatform.LinuxEditor);
         }
 
+        public static bool IsPosix()
+        {
+            return IsLinux() || IsOSX();
+        }
+
         public static bool IsOneOf(params RuntimePlatform[] platforms)
         {
             var runtimePlatform = GetRuntimePlatform();
