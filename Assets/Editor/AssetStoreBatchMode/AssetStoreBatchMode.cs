@@ -252,11 +252,11 @@ public static class AssetStoreBatchMode
 
         Debug.Log("[Asset Store Batch Mode] Uploading asset...");
 
-        /*if (!WaitForUpdate(ref s_AssetsUploadedDone, s_UploadTimeout))
+        if (!WaitForUpdate(ref s_AssetsUploadedDone, s_UploadTimeout))
         {
             Finish();
             return;
-        }*/
+        }
 
         if (MainAssetsUtil.CanGenerateBundles)
         {
