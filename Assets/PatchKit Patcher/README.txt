@@ -5,6 +5,15 @@ Unity Version
 http://patchkit.net
 --------------------
 
+!!! IMPORTANT !!!
+
+If you're seeing an error like this one:
+
+Unhandled Exception: System.TypeLoadException: Could not load type 'Newtonsoft.Json.Linq.JContainer' from assembly 'Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed'.
+
+Please read ERROR_FIX.txt how to deal with it!
+
+
 --         
 >> Thanks!
 --

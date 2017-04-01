@@ -1,0 +1,10 @@
+Don't stress out if you see the following error:
+
+Unhandled Exception: System.TypeLoadException: Could not load type 'Newtonsoft.Json.Linq.JContainer' from assembly 'Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed'.
+
+1. Go to Edit / Project Settings / Player
+2. Locate Api Compatibility Level option (it's under Optimization category)
+3. Switch it to ".NET 2.0"
+4. After a few seconds the error should be gone and everything should be working fine.
+
+If for some reason this did not fix your issue, please don't hesitate to contact me at contact@patchkit.net or support@madpixelmachine.com.
