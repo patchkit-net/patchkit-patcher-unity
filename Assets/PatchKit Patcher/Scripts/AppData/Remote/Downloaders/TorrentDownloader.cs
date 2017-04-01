@@ -270,7 +270,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
             finally
             {
-                _torrentClient.Dispose();
+                if (_torrentClient != null)
+                {
+                    _torrentClient.Dispose();
+                }
                 Cleanup();
             }
         }
@@ -295,7 +298,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             DebugLogger.LogDispose();
 
-            if(disposing)
+            if (disposing && _torrentClient != null)
             {
                 _torrentClient.Dispose();
             }
