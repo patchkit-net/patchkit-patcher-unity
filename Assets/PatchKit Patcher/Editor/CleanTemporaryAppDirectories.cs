@@ -1,6 +1,4 @@
 ﻿using System.IO;
-using Castle.Core.Internal;
-using UnityEditor;
 using UnityEngine;
 
 namespace PatchKit.Unity.Editor
@@ -11,10 +9,11 @@ namespace PatchKit.Unity.Editor
         {
             string tempPath = Application.dataPath.Replace("/Assets", "/Temp");
 
-            Directory.GetDirectories(tempPath, "PatcherApp*", SearchOption.TopDirectoryOnly).ForEach(s =>
+            string[] directories = Directory.GetDirectories(tempPath, "PatcherApp*", SearchOption.TopDirectoryOnly);
+            foreach (var directory in directories)
             {
-                Directory.Delete(s, true);
-            });
+                Directory.Delete(directory, true);
+            }
         }
     }
 }
