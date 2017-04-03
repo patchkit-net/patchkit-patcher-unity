@@ -2,14 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Ionic.Zlib;
+using Newtonsoft.Json;
 using UniRx;
 using UnityEngine;
+using UnityEngine.Experimental.Networking;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
     public class PatcherLogSender : MonoBehaviour
     {
+        private const string PutUrlRequestUrl = "https://se5ia30ji3.execute-api.us-west-2.amazonaws.com/production/request-put-url";
+
         private struct Log
         {
             public string Message;
@@ -161,34 +166,53 @@ namespace PatchKit.Unity.Patcher.Debug
 
             DebugLogger.Log("Sending log...");
 
-            WWW www;
+            DebugLogger.Log("Requesting PUT URL...");
 
-            try
+            var putLinkRequest = new PutLinkRequest()
             {
-                WWWForm wwwForm = new WWWForm();
-                wwwForm.AddField("kind", kind);
-                wwwForm.AddField("version", PatcherInfo.GetVersion());
-                wwwForm.AddField("file_guid", _guid.ToString());
-                wwwForm.AddField("compression", "gzip");
-                wwwForm.AddBinaryData("content", GetCompressedLogFileData());
+                AppId = "patcher-unity",
+                Version = PatcherInfo.GetVersion(),
+                Priority = kind.ToString(),
+                Guid = _guid.ToString(),
+                Compression = "gz"
+            };
 
-                www = new WWW(string.Format("{0}/1/apps/{1}/logs", LogServerUrl, Patcher.Instance.Data.Value.AppSecret), wwwForm);
-            }
-            catch(Exception)
+            string json = JsonConvert.SerializeObject(putLinkRequest);
+
+            UnityWebRequest putUrlRequest = new UnityWebRequest(PutUrlRequestUrl, "POST");
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+            putUrlRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            putUrlRequest.downloadHandler = new DownloadHandlerBuffer();
+            putUrlRequest.SetRequestHeader("Content-Type", "application/json");
+
+            yield return putUrlRequest.Send();
+
+            if (putUrlRequest.isError)
             {
+                DebugLogger.LogError("Error while requesting PUT URL: " + putUrlRequest.error);
                 _isLogBeingSent = false;
-                throw;
+                yield break;
             }
 
-            yield return www;
 
-            var responseStatus = www.responseHeaders.ContainsKey("STATUS")
-                    ? www.responseHeaders["STATUS"]
-                    : "unknown";
+            var responseText = putUrlRequest.downloadHandler.text;
+            DebugLogger.Log("Got response: " + responseText);
 
-            DebugLogger.Log(string.IsNullOrEmpty(www.error)
-                ? string.Format("Log sent (response status: {0}).", responseStatus)
-                : string.Format("Sending log failed: {0} (response status: {1}).\n{2}", www.error, responseStatus, www.text));
+            var requestPutUrlJson = JsonConvert.DeserializeObject<PutLinkResponse>(responseText);
+            var putUrl = requestPutUrlJson.Url;
+
+
+            UnityWebRequest putRequest = UnityWebRequest.Put(putUrl, GetCompressedLogFileData());
+            yield return putRequest.Send();
+
+            if (putRequest.isError)
+            {
+                DebugLogger.LogError("Error while sending log file: " + putRequest.error);
+                _isLogBeingSent = false;
+                yield break;
+            }
+
+            DebugLogger.Log("Log file sent!");
 
             DebugLogger.Log(string.Format("Waiting {0} seconds before next log could be sent...", SendDelaySeconds));
 
@@ -198,7 +222,7 @@ namespace PatchKit.Unity.Patcher.Debug
                 yield return null;
             }
 
-            DebugLogger.Log("Next log could be sent.");
+            DebugLogger.Log("Next log can be now send.");
 
             _isLogBeingSent = false;
         }
@@ -244,6 +268,25 @@ namespace PatchKit.Unity.Patcher.Debug
         private void OnDestroy()
         {
             Application.logMessageReceivedThreaded -= OnLogMessageReceived;
+        }
+
+        private struct PutLinkRequest
+        {
+            [JsonProperty("app_id")]
+            public string AppId { get; set; }
+            [JsonProperty("version")]
+            public string Version { get; set; }
+            [JsonProperty("priority")]
+            public string Priority { get; set; }
+            [JsonProperty("guid")]
+            public string Guid { get; set; }
+            [JsonProperty("compression")]
+            public string Compression { get; set; }
+        }
+
+        private struct PutLinkResponse
+        {
+            public string Url { get; set; }
         }
     }
 }
