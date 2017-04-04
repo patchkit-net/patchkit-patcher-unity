@@ -91,7 +91,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 DebugLogger.Log("Unarchiving files.");
 
-                var unarchiver = new Unarchiver(_packagePath, packageDirPath, _packagePassword);
+                var unarchiver = new ZipUnarchiver(_packagePath, packageDirPath, _packagePassword);
 
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
                 {
