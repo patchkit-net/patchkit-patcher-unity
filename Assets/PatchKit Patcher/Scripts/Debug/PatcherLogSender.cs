@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.Debug
 {
     public class PatcherLogSender : MonoBehaviour
     {
-        private const string PutUrlRequestUrl = "https://se5ia30ji3.execute-api.us-west-2.amazonaws.com/production/request-put-url";
+        private const string PutUrlRequestUrl = "https://se5ia30ji3.execute-api.us-west-2.amazonaws.com/production/v1/request-put-url";
 
         private struct Log
         {
