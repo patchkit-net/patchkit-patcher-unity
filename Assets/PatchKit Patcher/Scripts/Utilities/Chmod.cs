@@ -17,6 +17,11 @@ public class Chmod
         Execute(val ? "+x" : "-x", path);
     }
 
+    public static void SetMode(string path, string mode)
+    {
+        Execute(mode, path);
+    }
+
     private static void Execute(string param, string path)
     {
         Assert.IsTrue(Platform.IsPosix(), "Chmod can be run only on POSIX platforms");

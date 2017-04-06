@@ -1,0 +1,1 @@
+{"version":"1.0","iv":"waJenBHMjyovtpdy/6Ma3A==","files":[{"name":"dir","type":"directory","target":null,"mode":"100644","offset":0,"size":0},{"name":"dir/Rakefile","type":"regular","target":null,"mode":"100644","offset":9,"size":208},{"name":".rubocop.yml","type":"regular","target":null,"mode":"100644","offset":217,"size":10256}]}

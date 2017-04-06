@@ -40,13 +40,16 @@ namespace PatchKit.Unity.Patcher.Data
         // ReSharper disable once InconsistentNaming
         public static FileType ELF = new FileType(new byte[] {0x7F, 0x45, 0x4C, 0x46}, 0);
 
+        public static FileType Pack1 = new FileType(new byte[] {0x50, 0x61, 0x63, 0x6B, 0x31, 0x01, 0x02, 0x03, 0x04}, 0);
+
         public static FileType[] AllKnown =
         {
             MachO32,
             MachO64,
             MachO32Reverse,
             MachO64Reverse,
-            ELF
+            ELF,
+            Pack1
         };
 
         public static FileType[] MacExecutables =
