@@ -46,7 +46,11 @@ namespace PatchKit.Unity.Utilities
 
         public static bool IsLinux()
         {
-            return IsOneOf(RuntimePlatform.LinuxPlayer, RuntimePlatform.LinuxEditor);
+            return IsOneOf(RuntimePlatform.LinuxPlayer
+#if UNITY_5_5_OR_NEWER
+    , RuntimePlatform.LinuxEditor
+#endif
+            );
         }
 
         public static bool IsPosix()
