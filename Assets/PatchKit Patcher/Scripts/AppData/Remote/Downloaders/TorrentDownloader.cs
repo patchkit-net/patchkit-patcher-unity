@@ -75,7 +75,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private void DownloadTorrentFile(CancellationToken cancellationToken)
         {            
-            DebugLogger.Log("Downloading torrent file.");
+            DebugLogger.Log("Downloading torrent file");
 
             try
             {

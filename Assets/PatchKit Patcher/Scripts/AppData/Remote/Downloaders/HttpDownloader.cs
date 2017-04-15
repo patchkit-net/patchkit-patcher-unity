@@ -19,7 +19,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly string _destinationFilePath;
 
-        private readonly RemoteResource _resource;
+        private readonly RemoteResource? _resource;
+
+        private readonly string[] _mirrorUrls;
+
+        private readonly long _size;
 
         private readonly int _timeout;
 
@@ -32,18 +36,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public HttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
+            : this(destinationFilePath, resource.Urls, resource.Size, timeout)
         {
-            Checks.ArgumentValidRemoteResource(resource, "resource");
+            _resource = resource;
+        }
+
+        public HttpDownloader(string destinationFilePath, string[] mirrorUrls, long size, int timeout)
+        {
             Checks.ArgumentParentDirectoryExists(destinationFilePath, "destinationFilePath");
             Checks.ArgumentMoreThanZero(timeout, "timeout");
+            Checks.ArgumentNotNull(mirrorUrls, "mirrorUrls");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
-            DebugLogger.LogVariable(resource, "resource");
+            DebugLogger.LogVariable(mirrorUrls, "mirrorUrls");
+            DebugLogger.LogVariable(size, "size");
             DebugLogger.LogVariable(timeout, "timeout");
 
             _destinationFilePath = destinationFilePath;
-            _resource = resource;
+            _mirrorUrls = mirrorUrls;
+            _size = size;
             _timeout = timeout;
         }
 
@@ -70,7 +82,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             DebugLogger.Log("Downloading.");
 
-            var validUrls = new List<string>(_resource.Urls);
+            var validUrls = new List<string>(_mirrorUrls);
             validUrls.Reverse();
 
             int retry = RetriesAmount;
@@ -89,8 +101,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         CloseFileStream();
 
-                        var validator = new DownloadedResourceValidator();
-                        validator.Validate(_destinationFilePath, _resource);
+                        if (_resource.HasValue)
+                        {
+                            var validator = new DownloadedResourceValidator();
+                            validator.Validate(_destinationFilePath, _resource.Value);
+                        }
 
                         return;
                     }
@@ -153,7 +168,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 _fileStream.Write(bytes, 0, length);
 
                 downloadedBytes += length;
-                OnDownloadProgressChanged(downloadedBytes, _resource.Size);
+                OnDownloadProgressChanged(downloadedBytes, _size);
             };
 
             baseHttpDownloader.Download(cancellationToken);
@@ -195,7 +210,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)
         {
-            if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes, totalBytes);
+            if (DownloadProgressChanged != null)
+            {
+                DownloadProgressChanged(downloadedBytes, totalBytes);
+            }
         }
     }
 }

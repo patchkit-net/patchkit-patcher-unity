@@ -27,7 +27,8 @@ public class Pack1UnarchiverTest
     {
         string archivePath = TestFixtures.GetFilePath("pack1/test.pack1");
         string metaPath = TestFixtures.GetFilePath("pack1/test.pack1.meta");
-        string meta = File.ReadAllText(metaPath);
+        string metaString = File.ReadAllText(metaPath);
+        Pack1Meta meta = Pack1Meta.Parse(metaString);
 
         var pack1Unarchiver = new Pack1Unarchiver(archivePath, meta, _tempDir, Key);
         pack1Unarchiver.Unarchive(new CancellationToken());

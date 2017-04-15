@@ -6,7 +6,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 {
     /// <summary>
     /// The unarchiver.
-    /// TODO: Create an interface and cleanup this class.
     /// </summary>
     public class ZipUnarchiver : IUnarchiver
     {

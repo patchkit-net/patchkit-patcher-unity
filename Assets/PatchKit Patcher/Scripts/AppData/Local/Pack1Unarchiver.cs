@@ -21,20 +21,20 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Pack1Unarchiver));
 
         private readonly string _packagePath;
-        private readonly Pack1MetaData _metaData;
+        private readonly Pack1Meta _metaData;
         private readonly string _destinationDirPath;
         private readonly byte[] _key;
         private readonly byte[] _iv;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
-        public Pack1Unarchiver(string packagePath, string metaData, string destinationDirPath, string key)
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key)
             : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key))
         {
             // do nothing
         }
 
-        public Pack1Unarchiver(string packagePath, string metaData, string destinationDirPath, byte[] key)
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.LogVariable(destinationDirPath, "destinationDirPath");
 
             _packagePath = packagePath;
-            _metaData = JsonConvert.DeserializeObject<Pack1MetaData>(metaData);
+            _metaData = metaData;
             _destinationDirPath = destinationDirPath;
 
             using (var sha256 = SHA256.Create())
@@ -59,14 +59,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public void Unarchive(CancellationToken cancellationToken)
         {
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
-            foreach (Pack1MetaData.File file in _metaData.Files)
+            foreach (Pack1Meta.FileEntry file in _metaData.Files)
             {
                 Unpack(file);
             }
             DebugLogger.Log("Unpacking finished succesfully!");
         }
 
-        private void Unpack(Pack1MetaData.File file)
+        private void Unpack(Pack1Meta.FileEntry file)
         {
             switch (file.Type)
             {
@@ -86,7 +86,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         }
 
-        private void UnpackDirectory(Pack1MetaData.File file)
+        private void UnpackDirectory(Pack1Meta.FileEntry file)
         {
             string destPath = Path.Combine(_destinationDirPath, file.Name);
 
@@ -95,13 +95,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("Directory " + destPath + " created successfully!");
         }
 
-        private void UnpackSymlink(Pack1MetaData.File file)
+        private void UnpackSymlink(Pack1Meta.FileEntry file)
         {
             string destPath = Path.Combine(_destinationDirPath, file.Name);
             DebugLogger.Log("Creating symlink: " + destPath);
         }
 
-        private void UnpackRegularFile(Pack1MetaData.File file)
+        private void UnpackRegularFile(Pack1Meta.FileEntry file)
         {
             DebugLogger.Log("Unpacking regular file " + file);
 
@@ -114,9 +114,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             using (var fs = new FileStream(_packagePath, FileMode.Open))
             {
-                fs.Seek(file.Offset, SeekOrigin.Begin);
+                fs.Seek(file.Offset.Value, SeekOrigin.Begin);
 
-                using (var limitedStream = new LimitedStream(fs, file.Size))
+                using (var limitedStream = new LimitedStream(fs, file.Size.Value))
                 {
                     ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
                     using (var cryptoStream = new CryptoStream(limitedStream, decryptor, CryptoStreamMode.Read))
@@ -137,29 +137,5 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 
-        private class Pack1MetaData
-        {
-            public string Version { get; set; }
-            public string Encryption { get; set; }
-            public string Compression { get; set; }
-            public string Iv { get; set; }
-
-            public File[] Files { get; set; }
-
-            public class File
-            {
-                public string Name { get; set; }
-                public string Type { get; set; }
-                public string Target { get; set; }
-                public string Mode { get; set; }
-                public long Offset { get; set; }
-                public long Size { get; set; }
-
-                public override string ToString()
-                {
-                    return string.Format("Name: {0}, Type: {1}, Target: {2}, Mode: {3}", Name, Type, Target, Mode);
-                }
-            }
-        }
     }
 }

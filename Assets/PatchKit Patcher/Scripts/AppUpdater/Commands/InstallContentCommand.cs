@@ -17,6 +17,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
 
         private readonly string _packagePath;
+        private readonly string _packageMetaPath;
         private readonly string _packagePassword;
         private readonly int _versionId;
         private readonly AppContentSummary _versionContentSummary;
@@ -26,11 +27,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private IGeneralStatusReporter _copyFilesStatusReporter;
         private IGeneralStatusReporter _unarchivePackageStatusReporter;
+        private Pack1Meta _pack1Meta;
 
-        public InstallContentCommand(string packagePath, string packagePassword, int versionId,
-            AppContentSummary versionContentSummary,
-            ILocalDirectory localData,
-            ILocalMetaData localMetaData,
+        public InstallContentCommand(string packagePath, string packageMetaPath, string packagePassword, int versionId,
+            AppContentSummary versionContentSummary, ILocalDirectory localData, ILocalMetaData localMetaData,
             ITemporaryDirectory temporaryData)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
@@ -44,6 +44,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DebugLogger.LogVariable(versionId, "versionId");
 
             _packagePath = packagePath;
+            _packageMetaPath = packageMetaPath;
             _packagePassword = packagePassword;
             _versionId = versionId;
             _versionContentSummary = versionContentSummary;
@@ -75,12 +76,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             base.Execute(cancellationToken);
 
             Checks.FileExists(_packagePath);
-            Assert.IsTrue(_localMetaData.GetRegisteredEntries().Length == 0, "Cannot install content if previous version is still present.");
+            Assert.IsTrue(_localMetaData.GetRegisteredEntries().Length == 0,
+                "Cannot install content if previous version is still present.");
+
+            if (_versionContentSummary.CompressionMethod == "pack1")
+            {
+                Assert.IsTrue(File.Exists(_packageMetaPath),
+                    "Compression method is pack1, but meta file does not exist");
+
+                DebugLogger.Log("Parsing package meta file");
+                _pack1Meta = Pack1Meta.ParseFromFile(_packageMetaPath);
+                DebugLogger.Log("Package meta file parsed succesfully");
+            }
 
             DebugLogger.Log("Installing content.");
             
             var packageDirPath = _temporaryData.GetUniquePath();
-            DebugLogger.LogVariable(packageDirPath, "packageDirPath");
+            DebugLogger.LogVariable(packageDirPath, "destinationDir");
 
             DebugLogger.Log("Creating package directory.");
             DirectoryOperations.CreateDirectory(packageDirPath);
@@ -88,7 +100,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 DebugLogger.Log("Unarchiving package.");
 
-                var unarchiver = new ZipUnarchiver(_packagePath, packageDirPath, _packagePassword);
+                IUnarchiver unarchiver = CreateUnrachiver(packageDirPath);
 
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
                 {
@@ -120,6 +132,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     DirectoryOperations.Delete(packageDirPath, true);
                 }
             }
+        }
+
+        private IUnarchiver CreateUnrachiver(string destinationDir)
+        {
+            switch (_versionContentSummary.CompressionMethod)
+            {
+                case "zip":
+                    return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
+                case "pack1":
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword);
+                default:
+                    throw new InstallerException(string.Format("Unknown compression method: {0}",
+                        _versionContentSummary.CompressionMethod));
+            }
+
+
         }
 
         private void InstallFile(string fileName, string packageDirPath)

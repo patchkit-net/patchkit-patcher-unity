@@ -11,11 +11,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private readonly RemoteResource _resource;
         private readonly string _destinationPackagePath;
+        private readonly string _destinationMetaPath;
         private readonly bool _useTorrents;
 
         private IDownloadStatusReporter _statusReporter;
 
-        public DownloadPackageCommand(RemoteResource resource, string destinationPackagePath, bool useTorrents)
+        public DownloadPackageCommand(RemoteResource resource, string destinationPackagePath, string destinationMetaPath, bool useTorrents)
         {
             Checks.ArgumentValidRemoteResource(resource, "resource");
             Checks.ArgumentNotNullOrEmpty(destinationPackagePath, "destinationPackagePath");
@@ -28,6 +29,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _resource = resource;
             _destinationPackagePath = destinationPackagePath;
+            _destinationMetaPath = destinationMetaPath;
             _useTorrents = useTorrents;
         }
 
@@ -49,7 +51,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Downloading package.");
 
-            var downloader = new RemoteResourceDownloader(_destinationPackagePath, _resource, _useTorrents);
+            var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource,
+                _useTorrents);
 
             downloader.DownloadProgressChanged += _statusReporter.OnDownloadProgressChanged;
 

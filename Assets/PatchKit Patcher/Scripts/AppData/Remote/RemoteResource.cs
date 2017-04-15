@@ -1,10 +1,14 @@
-﻿namespace PatchKit.Unity.Patcher.AppData.Remote
+﻿using PatchKit.Unity.Patcher.Debug;
+
+namespace PatchKit.Unity.Patcher.AppData.Remote
 {
     public struct RemoteResource
     {
         public string[] TorrentUrls;
 
         public string[] Urls;
+
+        public string[] MetaUrls;
 
         public long Size;
 
@@ -18,6 +22,11 @@
                    "torrent urls: {" + string.Join(", ", TorrentUrls) + "}\n" +
                    "size: " + Size + "\n" +
                    "hashcode: " + HashCode;
+        }
+
+        public bool HasMetaUrls()
+        {
+            return MetaUrls != null && MetaUrls.Length > 0 && MetaUrls[0].Length > 0;
         }
     }
 }
