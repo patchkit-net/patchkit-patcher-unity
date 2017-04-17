@@ -26,6 +26,13 @@
         string GetDiffPackagePath(int versionId);
 
         /// <summary>
+        /// Return path to the version diff package meta file.
+        /// </summary>
+        /// <param name="versionId"></param>
+        /// <returns></returns>
+        string GetDiffPackageMetaPath(int versionId);
+
+        /// <summary>
         /// Clears the download data.
         /// </summary>
         void Clear();

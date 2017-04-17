@@ -23,6 +23,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public string GetContentPackageMetaPath(int versionId)
         {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
             return Path.PathCombine("-content-meta-" + versionId);
         }
 
@@ -31,6 +32,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Checks.ArgumentValidVersionId(versionId, "versionId");
 
             return Path.PathCombine("-diff-" + versionId);
+        }
+
+        public string GetDiffPackageMetaPath(int versionId)
+        {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            return Path.PathCombine("-diff-meta" + versionId);
         }
 
         public void Clear()

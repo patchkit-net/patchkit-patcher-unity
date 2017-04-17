@@ -22,7 +22,7 @@
 
             var appDownloadDirectory = context.App.DownloadDirectory;
             var destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
-            string destinationMetaPath = appDownloadDirectory.GetContentPackageMetaPath(versionId);
+            string destinationMetaPath = appDownloadDirectory.GetDiffPackageMetaPath(versionId);
 
             appDownloadDirectory.PrepareForWriting();
 
@@ -50,10 +50,12 @@
         public IInstallDiffCommand CreateInstallDiffCommand(int versionId, AppUpdaterContext context)
         {
             var packagePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
+            var packageMetaPath = context.App.DownloadDirectory.GetDiffPackageMetaPath(versionId);
             var versionDiffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId);
             var packagePassword = context.App.RemoteData.GetDiffPackageResourcePassword(versionId);
 
             return new InstallDiffCommand(packagePath,
+                packageMetaPath,
                 packagePassword,
                 versionId,
                 versionDiffSummary,

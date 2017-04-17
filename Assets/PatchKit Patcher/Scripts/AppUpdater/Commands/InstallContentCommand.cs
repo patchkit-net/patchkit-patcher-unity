@@ -146,8 +146,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     throw new InstallerException(string.Format("Unknown compression method: {0}",
                         _versionContentSummary.CompressionMethod));
             }
-
-
         }
 
         private void InstallFile(string fileName, string packageDirPath)

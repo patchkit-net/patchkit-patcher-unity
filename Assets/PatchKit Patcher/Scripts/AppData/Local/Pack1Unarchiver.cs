@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
-using Newtonsoft.Json;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
@@ -99,11 +98,15 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             string destPath = Path.Combine(_destinationDirPath, file.Name);
             DebugLogger.Log("Creating symlink: " + destPath);
+            // TODO: how to create a symlink?
         }
 
         private void UnpackRegularFile(Pack1Meta.FileEntry file)
         {
-            DebugLogger.Log("Unpacking regular file " + file);
+            string destPath = Path.Combine(_destinationDirPath, file.Name);
+            DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
+
+            Files.CreateParents(destPath);
 
             RijndaelManaged rijn = new RijndaelManaged
             {
@@ -123,7 +126,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     {
                         using (var gzipStream = new GZipStream(cryptoStream, CompressionMode.Decompress))
                         {
-                            string destPath = Path.Combine(_destinationDirPath, file.Name);
                             using (var fileWritter = new FileStream(destPath, FileMode.CreateNew))
                             {
                                 Streams.Copy(gzipStream, fileWritter);
