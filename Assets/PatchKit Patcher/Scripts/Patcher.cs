@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using PatchKit.Unity.Patcher.AppUpdater;
+using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
@@ -519,7 +520,8 @@ namespace PatchKit.Unity.Patcher
             }
             catch (UnauthorizedAccessException e)
             {
-                DebugLogger.Log(string.Format("User decision {0} execution issue: permissions failure.", _userDecision));
+                DebugLogger.Log(string.Format("User decision {0} execution issue: permissions failure.",
+                    _userDecision));
                 DebugLogger.LogException(e);
 
                 if (ThreadTryRestartWithRequestForPermissions())
@@ -531,19 +533,29 @@ namespace PatchKit.Unity.Patcher
                     ThreadDisplayError(PatcherError.NoPermissions, cancellationToken);
                 }
             }
+            catch (NotEnoughtDiskSpaceException e)
+            {
+                DebugLogger.LogException(e);
+                ThreadDisplayError(PatcherError.NotEnoughDiskSpace, cancellationToken);
+            }
             catch (ThreadInterruptedException)
             {
-                DebugLogger.Log(string.Format("User decision {0} execution interrupted: thread has been interrupted. Rethrowing exception.", _userDecision));
+                DebugLogger.Log(string.Format(
+                    "User decision {0} execution interrupted: thread has been interrupted. Rethrowing exception.",
+                    _userDecision));
                 throw;
             }
             catch (ThreadAbortException)
             {
-                DebugLogger.Log(string.Format("User decision {0} execution aborted: thread has been aborted. Rethrowing exception.", _userDecision));
+                DebugLogger.Log(string.Format(
+                    "User decision {0} execution aborted: thread has been aborted. Rethrowing exception.",
+                    _userDecision));
                 throw;
             }
             catch (Exception exception)
             {
-                DebugLogger.LogWarning(string.Format("Error while executing user decision {0}: an exception has occured.", _userDecision));
+                DebugLogger.LogWarning(string.Format(
+                    "Error while executing user decision {0}: an exception has occured.", _userDecision));
                 DebugLogger.LogException(exception);
 
                 ThreadDisplayError(PatcherError.Other, cancellationToken);

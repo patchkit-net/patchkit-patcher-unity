@@ -4,6 +4,7 @@
     {
         NoInternetConnection,
         NoPermissions,
+        NotEnoughDiskSpace,
         Other
     }
 }

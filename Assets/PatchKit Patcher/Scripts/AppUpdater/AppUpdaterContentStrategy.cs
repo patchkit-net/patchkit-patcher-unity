@@ -31,6 +31,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var latestVersionId = _context.App.GetLatestVersionId();
 
             DebugLogger.LogVariable(latestVersionId, "latestVersionId");
+            _context.App.RemoteMetaData.GetContentSummary(latestVersionId);
+
+            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommand(latestVersionId, _context);
+            checkDiskSpaceCommand.Prepare(_context.StatusMonitor);
+            checkDiskSpaceCommand.Execute(cancellationToken);
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
             validateLicense.Prepare(_context.StatusMonitor);

@@ -71,5 +71,11 @@
         {
             return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData);
         }
+
+        public ICheckDiskSpace CreateCheckDiskSpaceCommand(int versionId, AppUpdaterContext context)
+        {
+            var contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
+            return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path);
+        }
     }
 }

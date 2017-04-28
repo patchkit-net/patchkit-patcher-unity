@@ -30,8 +30,11 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 case PatcherError.NoPermissions:
                     ErrorText.text = "Please check write permissions in application directory.";
                     break;
+                case PatcherError.NotEnoughDiskSpace:
+                    ErrorText.text = "Not enough disk space.";
+                    break;
                 case PatcherError.Other:
-                    ErrorText.text = "An error has occured.";
+                    ErrorText.text = "Unknown error. Please try again.";
                     break;
             }
         }
