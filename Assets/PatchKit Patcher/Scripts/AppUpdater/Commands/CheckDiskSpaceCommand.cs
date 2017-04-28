@@ -56,15 +56,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private long GetRequiredDiskSpace()
         {
-            if (_contentSummary != null)
+            if (UseContentSummary())
             {
                 long requiredDiskSpaceForContent = GetRequiredDiskSpaceForContent();
                 return requiredDiskSpaceForContent;
             }
 
-            // diff
             long requiredDiskSpaceForDiff = GetRequiredDiskSpaceForDiff();
             return requiredDiskSpaceForDiff;
+        }
+
+        private bool UseContentSummary()
+        {
+            return _contentSummary != null;
         }
 
         private long GetRequiredDiskSpaceForContent()
