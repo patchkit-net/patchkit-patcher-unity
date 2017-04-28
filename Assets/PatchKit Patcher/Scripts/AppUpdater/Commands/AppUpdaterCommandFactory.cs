@@ -1,4 +1,8 @@
-﻿namespace PatchKit.Unity.Patcher.AppUpdater.Commands
+﻿using System.IO;
+using PatchKit.Api.Models.Main;
+using PatchKit.Unity.Patcher.AppData;
+
+namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class AppUpdaterCommandFactory
     {
@@ -74,8 +78,21 @@
 
         public ICheckDiskSpace CreateCheckDiskSpaceCommand(int versionId, AppUpdaterContext context)
         {
-            var contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
-            return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path);
+            // get project biggest file size
+            long biggestFileSize = 0;
+            string[] registeredEntries = context.App.LocalMetaData.GetRegisteredEntries();
+            foreach (string entry in registeredEntries)
+            {
+                string filePath = context.App.LocalDirectory.Path.PathCombine(entry);
+                var fileInfo = new FileInfo(filePath);
+                if (fileInfo.Exists && fileInfo.Length > biggestFileSize)
+                {
+                    biggestFileSize = fileInfo.Length;
+                }
+            }
+
+            AppDiffSummary diffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId);
+            return new CheckDiskSpaceCommand(diffSummary, context.App.LocalDirectory.Path, biggestFileSize);
         }
     }
 }
