@@ -21,6 +21,8 @@ namespace PatchKit.Unity.Patcher
     // - this component is destroyed only when application quits
     public class Patcher : MonoBehaviour
     {
+        private const string EditorAllowedSecret = "ac20fc855b75a7ea5f3e936dfd38ccd8";
+
         public enum UserDecision
         {
             None,
@@ -45,6 +47,8 @@ namespace PatchKit.Unity.Patcher
                 return _instance;
             }
         }
+
+        private bool _canStartThread = true;
 
         private readonly CancellationTokenSource _threadCancellationTokenSource = new CancellationTokenSource();
 
@@ -141,6 +145,7 @@ namespace PatchKit.Unity.Patcher
         public void Quit()
         {
             DebugLogger.Log("Quitting application.");
+            _canStartThread = false;
 
 #if UNITY_EDITOR
             if (Application.isEditor)
@@ -167,7 +172,30 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.Log(string.Format("System version: {0}", EnvironmentInfo.GetSystemVersion()));
             DebugLogger.Log(string.Format("Runtime version: {0}", EnvironmentInfo.GetSystemVersion()));
 
-            StartThread();
+            CheckEditorAppSecretSecure();
+
+            if (_canStartThread)
+            {
+                StartThread();
+            }
+        }
+
+        /// <summary>
+        /// During patcher testing somebody may replace the secret with real game secret. If that would happen,
+        /// patcher should quit immediatelly with following error.
+        /// </summary>
+        private void CheckEditorAppSecretSecure()
+        {
+            if (!Application.isEditor)
+            {
+                if (!string.IsNullOrEmpty(EditorAppSecret) && EditorAppSecret.Trim() != EditorAllowedSecret)
+                {
+                    DebugLogger.LogError("Security issue: EditorAppSecert is set to not allowed value. " +
+                                         "Please change it inside Unity editor to " + EditorAllowedSecret +
+                                         " and build the project again.");
+                    Quit();
+                }
+            }
         }
 
         private void Update()
