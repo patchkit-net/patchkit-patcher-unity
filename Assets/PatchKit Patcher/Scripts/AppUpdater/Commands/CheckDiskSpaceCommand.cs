@@ -52,10 +52,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                                                        "Available free space " + drive.AvailableFreeSpace +
                                                        " < required disk space " + requiredDiskSpace);
             }
-
-            throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
-                                                   "Available free space " + drive.AvailableFreeSpace +
-                                                   " < required disk space " + requiredDiskSpace);
         }
 
         private long GetRequiredDiskSpace()
