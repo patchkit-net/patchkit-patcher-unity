@@ -76,7 +76,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData);
         }
 
-        public ICheckDiskSpace CreateCheckDiskSpaceCommand(int versionId, AppUpdaterContext context)
+        public ICheckDiskSpace CreateCheckDiskSpaceCommandForDiff(int versionId, AppUpdaterContext context)
         {
             // get project biggest file size
             long biggestFileSize = 0;
@@ -93,6 +93,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             AppDiffSummary diffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId);
             return new CheckDiskSpaceCommand(diffSummary, context.App.LocalDirectory.Path, biggestFileSize);
+        }
+
+        public ICheckDiskSpace CreateCheckDiskSpaceCommandForContent(int versionId, AppUpdaterContext context)
+        {
+            AppContentSummary contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
+            return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path);
         }
     }
 }

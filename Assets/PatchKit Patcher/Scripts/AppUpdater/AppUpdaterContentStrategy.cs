@@ -32,7 +32,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.LogVariable(latestVersionId, "latestVersionId");
 
-            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommand(latestVersionId, _context);
+            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForContent(latestVersionId, _context);
             checkDiskSpaceCommand.Prepare(_context.StatusMonitor);
             checkDiskSpaceCommand.Execute(cancellationToken);
 
