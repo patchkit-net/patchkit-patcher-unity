@@ -36,7 +36,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public void Execute(CancellationToken cancellationToken)
         {
-            var requiredDiskSpace = GetRequiredDiskSpace();
+            // TODO: DriveInfo constructor is throwing NotImplementedException on Windows
+            // http://redmine.patchkit.net/issues/454?issue_count=25&issue_position=2&next_issue_id=322&prev_issue_id=455#note-3
+            // Will have to get around that somehow
+
+            /*var requiredDiskSpace = GetRequiredDiskSpace();
 
             var dir = new FileInfo(_localDirectoryPath);
             var drive = new DriveInfo(dir.Directory.Root.FullName);
@@ -51,7 +55,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
                                                        "Available free space " + drive.AvailableFreeSpace +
                                                        " < required disk space " + requiredDiskSpace);
-            }
+            }*/
         }
 
         private long GetRequiredDiskSpace()
