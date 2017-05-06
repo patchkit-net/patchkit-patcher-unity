@@ -10,6 +10,8 @@ namespace PatchKit.Unity.Patcher
 {
     public class App : IDisposable
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(App));
+
         public readonly ILocalDirectory LocalDirectory;
 
         public readonly ILocalMetaData LocalMetaData;
@@ -67,8 +69,25 @@ namespace PatchKit.Unity.Patcher
 
             int installedVersion = LocalMetaData.GetEntryVersionId(fileNames[0]);
 
-            return fileNames.All(fileName => File.Exists(LocalDirectory.Path.PathCombine(fileName)) &&
-                                             LocalMetaData.GetEntryVersionId(fileName) == installedVersion);
+            foreach (string fileName in fileNames)
+            {
+                string path = LocalDirectory.Path.PathCombine(fileName);
+                if (!File.Exists(path))
+                {
+                    DebugLogger.LogWarning("File in metadata, but not found on disk: " + fileName + ", search path: " + path);
+                    return false;
+                }
+
+                int fileVersion = LocalMetaData.GetEntryVersionId(fileName);
+                if (fileVersion != installedVersion)
+                {
+                    DebugLogger.LogWarning("File " + fileName + " installed version is " + fileVersion +
+                                           " but expected " + installedVersion);
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public int GetInstalledVersionId()

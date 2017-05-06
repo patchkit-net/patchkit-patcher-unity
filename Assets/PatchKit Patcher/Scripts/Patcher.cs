@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using PatchKit.Unity.Patcher.AppUpdater;
+using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
@@ -20,6 +21,8 @@ namespace PatchKit.Unity.Patcher
     // - this component is destroyed only when application quits
     public class Patcher : MonoBehaviour
     {
+        private const string EditorAllowedSecret = "ac20fc855b75a7ea5f3e936dfd38ccd8";
+
         public enum UserDecision
         {
             None,
@@ -44,6 +47,8 @@ namespace PatchKit.Unity.Patcher
                 return _instance;
             }
         }
+
+        private bool _canStartThread = true;
 
         private readonly CancellationTokenSource _threadCancellationTokenSource = new CancellationTokenSource();
 
@@ -140,6 +145,7 @@ namespace PatchKit.Unity.Patcher
         public void Quit()
         {
             DebugLogger.Log("Quitting application.");
+            _canStartThread = false;
 
 #if UNITY_EDITOR
             if (Application.isEditor)
@@ -166,7 +172,30 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.Log(string.Format("System version: {0}", EnvironmentInfo.GetSystemVersion()));
             DebugLogger.Log(string.Format("Runtime version: {0}", EnvironmentInfo.GetSystemVersion()));
 
-            StartThread();
+            CheckEditorAppSecretSecure();
+
+            if (_canStartThread)
+            {
+                StartThread();
+            }
+        }
+
+        /// <summary>
+        /// During patcher testing somebody may replace the secret with real game secret. If that would happen,
+        /// patcher should quit immediatelly with following error.
+        /// </summary>
+        private void CheckEditorAppSecretSecure()
+        {
+            if (!Application.isEditor)
+            {
+                if (!string.IsNullOrEmpty(EditorAppSecret) && EditorAppSecret.Trim() != EditorAllowedSecret)
+                {
+                    DebugLogger.LogError("Security issue: EditorAppSecert is set to not allowed value. " +
+                                         "Please change it inside Unity editor to " + EditorAllowedSecret +
+                                         " and build the project again.");
+                    Quit();
+                }
+            }
         }
 
         private void Update()
@@ -519,7 +548,8 @@ namespace PatchKit.Unity.Patcher
             }
             catch (UnauthorizedAccessException e)
             {
-                DebugLogger.Log(string.Format("User decision {0} execution issue: permissions failure.", _userDecision));
+                DebugLogger.Log(string.Format("User decision {0} execution issue: permissions failure.",
+                    _userDecision));
                 DebugLogger.LogException(e);
 
                 if (ThreadTryRestartWithRequestForPermissions())
@@ -531,19 +561,29 @@ namespace PatchKit.Unity.Patcher
                     ThreadDisplayError(PatcherError.NoPermissions, cancellationToken);
                 }
             }
+            catch (NotEnoughtDiskSpaceException e)
+            {
+                DebugLogger.LogException(e);
+                ThreadDisplayError(PatcherError.NotEnoughDiskSpace, cancellationToken);
+            }
             catch (ThreadInterruptedException)
             {
-                DebugLogger.Log(string.Format("User decision {0} execution interrupted: thread has been interrupted. Rethrowing exception.", _userDecision));
+                DebugLogger.Log(string.Format(
+                    "User decision {0} execution interrupted: thread has been interrupted. Rethrowing exception.",
+                    _userDecision));
                 throw;
             }
             catch (ThreadAbortException)
             {
-                DebugLogger.Log(string.Format("User decision {0} execution aborted: thread has been aborted. Rethrowing exception.", _userDecision));
+                DebugLogger.Log(string.Format(
+                    "User decision {0} execution aborted: thread has been aborted. Rethrowing exception.",
+                    _userDecision));
                 throw;
             }
             catch (Exception exception)
             {
-                DebugLogger.LogWarning(string.Format("Error while executing user decision {0}: an exception has occured.", _userDecision));
+                DebugLogger.LogWarning(string.Format(
+                    "Error while executing user decision {0}: an exception has occured.", _userDecision));
                 DebugLogger.LogException(exception);
 
                 ThreadDisplayError(PatcherError.Other, cancellationToken);

@@ -43,6 +43,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var commandFactory = new AppUpdaterCommandFactory();
 
+            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForDiff(latestVersionId, _context);
+            checkDiskSpaceCommand.Prepare(_context.StatusMonitor);
+            checkDiskSpaceCommand.Execute(cancellationToken);
+
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
             validateLicense.Prepare(_context.StatusMonitor);
             validateLicense.Execute(cancellationToken);
