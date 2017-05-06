@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Runtime.InteropServices;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -34,28 +35,43 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _bigestFileSize = bigestFileSize;
         }
 
+#if UNITY_STANDALONE_WIN
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetDiskFreeSpaceEx(string directoryName,
+            out ulong freeBytes,
+            out ulong totalBytes,
+            out ulong totalFreeBytes);
+#endif
+
         public void Execute(CancellationToken cancellationToken)
         {
-            // TODO: DriveInfo constructor is throwing NotImplementedException on Windows
-            // http://redmine.patchkit.net/issues/454?issue_count=25&issue_position=2&next_issue_id=322&prev_issue_id=455#note-3
-            // Will have to get around that somehow
+            long availableDiskSpace = -1;
+            long requiredDiskSpace = GetRequiredDiskSpace();
 
-            /*var requiredDiskSpace = GetRequiredDiskSpace();
+#if UNITY_STANDALONE_WIN
+            ulong freeBytes, totalBytes, totalFreeBytes;
+            GetDiskFreeSpaceEx(_localDirectoryPath, out freeBytes, out totalBytes, out totalFreeBytes);
 
+            availableDiskSpace = (long) freeBytes;
+#else
             var dir = new FileInfo(_localDirectoryPath);
             var drive = new DriveInfo(dir.Directory.Root.FullName);
 
-            if (drive.AvailableFreeSpace >= requiredDiskSpace)
+            availableDiskSpace = drive.AvailableFreeSpace;
+#endif
+
+            if (availableDiskSpace >= requiredDiskSpace)
             {
-                DebugLogger.Log("Available free space " + drive.AvailableFreeSpace + " >= required disk space " +
+                DebugLogger.Log("Available free space " + availableDiskSpace + " >= required disk space " +
                                 requiredDiskSpace);
             }
             else
             {
                 throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
-                                                       "Available free space " + drive.AvailableFreeSpace +
+                                                       "Available free space " + availableDiskSpace +
                                                        " < required disk space " + requiredDiskSpace);
-            }*/
+            }
         }
 
         private long GetRequiredDiskSpace()
