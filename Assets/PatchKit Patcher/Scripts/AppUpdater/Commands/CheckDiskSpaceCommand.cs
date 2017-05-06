@@ -49,13 +49,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             long availableDiskSpace = -1;
             long requiredDiskSpace = GetRequiredDiskSpace();
 
+            var dir = new FileInfo(_localDirectoryPath);
+
 #if UNITY_STANDALONE_WIN
             ulong freeBytes, totalBytes, totalFreeBytes;
-            GetDiskFreeSpaceEx(_localDirectoryPath, out freeBytes, out totalBytes, out totalFreeBytes);
+            GetDiskFreeSpaceEx(dir.Directory.Root.FullName, out freeBytes, out totalBytes, out totalFreeBytes);
 
             availableDiskSpace = (long) freeBytes;
 #else
-            var dir = new FileInfo(_localDirectoryPath);
             var drive = new DriveInfo(dir.Directory.Root.FullName);
 
             availableDiskSpace = drive.AvailableFreeSpace;
