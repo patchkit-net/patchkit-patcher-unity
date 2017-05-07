@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using PatchKit.Unity.Patcher.Debug;
@@ -7,11 +8,15 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
 {
-    public class CommandLinePatcherDataReader
+    public class InputArgumentsPatcherDataReader
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CommandLinePatcherDataReader));
+        private const string ForceSecretEnvironmentVariable = "PK_PATCHER_FORCE_SECRET";
+        private const string ForceVersionEnvironmentVariable = "PK_PATCHER_FORCE_VERSION";
 
-        public CommandLinePatcherDataReader()
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InputArgumentsPatcherDataReader));
+        private static readonly List<string> _commandLineArgs = Environment.GetCommandLineArgs().ToList();
+
+        public InputArgumentsPatcherDataReader()
         {
             DebugLogger.LogConstructor();
         }
@@ -23,24 +28,24 @@ namespace PatchKit.Unity.Patcher
             PatcherData data = new PatcherData();
 
             string forceAppSecret;
-            if (TryReadDebugArgument("PK_PATCHER_FORCE_SECRET", out forceAppSecret))
+            if (TryReadEnvironmentVariable(ForceSecretEnvironmentVariable, out forceAppSecret))
             {
                 DebugLogger.Log(string.Format("Setting forced app secret {0}", forceAppSecret));
                 data.AppSecret = forceAppSecret;
             }
             else
             {
-                string encodedAppSecret;
+                string appSecret;
 
-                if (!TryReadArgument("--secret", out encodedAppSecret))
+                if (!TryReadArgument("--secret", out appSecret))
                 {
                     throw new ApplicationException("Unable to parse secret from command line.");
                 }
-                data.AppSecret = DecodeSecret(encodedAppSecret);
+                data.AppSecret = IsReadable() ? appSecret : DecodeSecret(appSecret);
             }
 
             string forceOverrideLatestVersionIdString;
-            if (TryReadDebugArgument("PK_PATCHER_FORCE_VERSION", out forceOverrideLatestVersionIdString))
+            if (TryReadEnvironmentVariable(ForceVersionEnvironmentVariable, out forceOverrideLatestVersionIdString))
             {
                 int forceOverrideLatestVersionId;
 
@@ -82,13 +87,11 @@ namespace PatchKit.Unity.Patcher
 
         private static bool TryReadArgument(string argumentName, out string value)
         {
-            var args = Environment.GetCommandLineArgs().ToList();
+            int index = _commandLineArgs.IndexOf(argumentName);
 
-            int index = args.IndexOf(argumentName);
-
-            if (index != -1 && index < args.Count - 1)
+            if (index != -1 && index < _commandLineArgs.Count - 1)
             {
-                value = args[index + 1];
+                value = _commandLineArgs[index + 1];
 
                 return true;
             }
@@ -98,7 +101,17 @@ namespace PatchKit.Unity.Patcher
             return false;
         }
 
-        private static bool TryReadDebugArgument(string argumentName, out string value)
+        private static bool IsReadable()
+        {
+            return HasArgument("--readable");
+        }
+
+        private static bool HasArgument(string argumentName)
+        {
+            return _commandLineArgs.Contains(argumentName);
+        }
+
+        private static bool TryReadEnvironmentVariable(string argumentName, out string value)
         {
             value = Environment.GetEnvironmentVariable(argumentName);
 
