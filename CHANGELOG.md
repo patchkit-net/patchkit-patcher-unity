@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Sending logs to S3 on error
 - Error if there's no enough space on the device
 - Security check against application secret
+- Add Pack1 support
+- Add command line --readable to pass readable secret
 
 ## [3.0.2]
 ### Added
