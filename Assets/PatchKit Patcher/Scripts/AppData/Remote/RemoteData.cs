@@ -48,6 +48,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             resource.ChunksData = ConvertToChunksData(summary.Chunks);
             resource.TorrentUrls = new[] {torrentUrl.Url};
             resource.Urls = urls.Select(u => u.Url).ToArray();
+            resource.MetaUrls = urls.Select(u => u.MetaUrl).Where(u => u != null).ToArray();
 
             return resource;
         }
@@ -71,7 +72,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             resource.ChunksData = ConvertToChunksData(summary.Chunks);
             resource.TorrentUrls = new[] { torrentUrl.Url };
             resource.Urls = urls.Select(u => u.Url).ToArray();
-
+            resource.MetaUrls = urls.Select(u => u.MetaUrl).Where(u => u != null).ToArray();
             return resource;
         }
 

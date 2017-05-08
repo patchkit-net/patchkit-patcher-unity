@@ -59,6 +59,8 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public float SendDelaySeconds;
 
+        public bool IgnoreEditorErrors = true;
+
         [ContextMenu("Test error")]
         public void TestError()
         {
@@ -162,6 +164,12 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private IEnumerator SendLogFile(int kind)
         {
+            if (Application.isEditor && IgnoreEditorErrors)
+            {
+                DebugLogger.Log("Sending log... (not really, ignored by inspector property)");
+                yield break;
+            }
+
             _isLogBeingSent = true;
 
             DebugLogger.Log("Sending log...");

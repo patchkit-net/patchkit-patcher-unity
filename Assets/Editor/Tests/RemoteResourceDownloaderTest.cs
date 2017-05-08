@@ -10,6 +10,7 @@ public class RemoteResourceDownloaderTest
 {
     private string _dirPath;
     private string _filePath;
+    private string _metaFilePath;
     private byte[] _fileData;
 
     private ChunksData CreateTestChunksData()
@@ -44,6 +45,7 @@ public class RemoteResourceDownloaderTest
     {
         _dirPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         _filePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        _metaFilePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         _fileData = new byte[1024];
 
         new Random().NextBytes(_fileData);
@@ -57,6 +59,10 @@ public class RemoteResourceDownloaderTest
         if (File.Exists(_filePath))
         {
             File.Delete(_filePath);
+        }
+        if (File.Exists(_metaFilePath))
+        {
+            File.Delete(_metaFilePath);
         }
         if (Directory.Exists(_dirPath))
         {
@@ -73,7 +79,7 @@ public class RemoteResourceDownloaderTest
         var chunkedHttpDownloader = Substitute.For<IChunkedHttpDownloader>();
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
-        var downloader = new RemoteResourceDownloader(_filePath, resource, true,
+        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, true,
             (path, remoteResource, timeout) => httpDownloader,
             (path, remoteResource, timeout) => chunkedHttpDownloader,
             (path, remoteResource, timeout) => torrentDownloader);
@@ -96,7 +102,7 @@ public class RemoteResourceDownloaderTest
         torrentDownloader.When(t => t.Download(CancellationToken.Empty)).Do(
             info => { throw new DownloaderException("Test.", DownloaderExceptionStatus.Other); });
 
-        var downloader = new RemoteResourceDownloader(_filePath, resource, true,
+        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, true,
             (path, remoteResource, timeout) => httpDownloader,
             (path, remoteResource, timeout) => chunkedHttpDownloader,
             (path, remoteResource, timeout) => torrentDownloader);
@@ -117,7 +123,7 @@ public class RemoteResourceDownloaderTest
         var chunkedHttpDownloader = Substitute.For<IChunkedHttpDownloader>();
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
-        var downloader = new RemoteResourceDownloader(_filePath, resource, false,
+        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, false,
             (path, remoteResource, timeout) => httpDownloader,
             (path, remoteResource, timeout) => chunkedHttpDownloader,
             (path, remoteResource, timeout) => torrentDownloader);
@@ -139,7 +145,7 @@ public class RemoteResourceDownloaderTest
         var chunkedHttpDownloader = Substitute.For<IChunkedHttpDownloader>();
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
-        var downloader = new RemoteResourceDownloader(_filePath, resource, false,
+        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, false,
             (path, remoteResource, timeout) => httpDownloader,
             (path, remoteResource, timeout) => chunkedHttpDownloader,
             (path, remoteResource, timeout) => torrentDownloader);

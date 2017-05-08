@@ -14,6 +14,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallDiffCommand));
 
         private readonly string _packagePath;
+        private readonly string _packageMetaPath;
         private readonly string _packagePassword;
         private readonly int _versionId;
         private readonly AppDiffSummary _versionDiffSummary;
@@ -25,14 +26,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private IGeneralStatusReporter _modifiedFilesStatusReporter;
         private IGeneralStatusReporter _removeFilesStatusReporter;
         private IGeneralStatusReporter _unarchivePackageStatusReporter;
+        private Pack1Meta _pack1Meta;
 
-        public InstallDiffCommand(
-            string packagePath,
-            string packagePassword,
-            int versionId,
-            AppDiffSummary versionDiffSummary,
-            ILocalDirectory localData,
-            ILocalMetaData localMetaData,
+        public InstallDiffCommand(string packagePath, string packageMetaPath, string packagePassword, int versionId,
+            AppDiffSummary versionDiffSummary, ILocalDirectory localData, ILocalMetaData localMetaData,
             ITemporaryDirectory temporaryData)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
@@ -42,6 +39,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             Checks.ArgumentNotNull(temporaryData, "temporaryData");
 
             _packagePath = packagePath;
+            _packageMetaPath = packageMetaPath;
             _packagePassword = packagePassword;
             _versionId = versionId;
             _versionDiffSummary = versionDiffSummary;
@@ -79,6 +77,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             base.Execute(cancellationToken);
 
             Checks.FileExists(_packagePath);
+            
+            if (_versionDiffSummary.CompressionMethod == "pack1")
+            {
+                Assert.IsTrue(File.Exists(_packageMetaPath),
+                    "Compression method is pack1, but meta file does not exist");
+
+                DebugLogger.Log("Parsing package meta file");
+                _pack1Meta = Pack1Meta.ParseFromFile(_packageMetaPath);
+                DebugLogger.Log("Package meta file parsed succesfully");
+            }
 
             DebugLogger.Log("Installing diff.");
 
@@ -90,8 +98,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             try
             {
                 DebugLogger.Log("Unarchiving files.");
-
-                var unarchiver = new Unarchiver(_packagePath, packageDirPath, _packagePassword);
+                IUnarchiver unarchiver = CreateUnrachiver(packageDirPath);
 
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
                 {
@@ -113,6 +120,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 {
                     DirectoryOperations.Delete(packageDirPath, true);
                 }
+            }
+        }
+
+        private IUnarchiver CreateUnrachiver(string destinationDir)
+        {
+            switch (_versionDiffSummary.CompressionMethod)
+            {
+                case "zip":
+                    return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
+                case "pack1":
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword);
+                default:
+                    throw new InstallerException(string.Format("Unknown compression method: {0}",
+                        _versionDiffSummary.CompressionMethod));
             }
         }
 

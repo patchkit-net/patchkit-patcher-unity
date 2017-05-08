@@ -31,14 +31,29 @@ namespace PatchKit.Unity.Patcher.Debug
             UnityEngine.Debug.Log(FormatMessage("[   Log   ]", message));
         }
 
+        public void LogFormat(string message, params object[] args)
+        {
+            Log(string.Format(message, args));
+        }
+
         public void LogWarning(string message)
         {
             UnityEngine.Debug.LogWarning(FormatMessage("[ Warning ]", message));
         }
 
+        public void LogWarningFormat(string message, params object[] args)
+        {
+            LogWarning(string.Format(message, args));
+        }
+
         public void LogError(string message)
         {
             UnityEngine.Debug.LogError(FormatMessage("[  Error  ]", message));
+        }
+
+        public void LogErrorFormat(string message, params object[] args)
+        {
+            LogError(string.Format(message, args));
         }
 
         public void LogException(Exception exception)

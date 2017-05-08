@@ -6,11 +6,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 {
     /// <summary>
     /// The unarchiver.
-    /// TODO: Create an interface and cleanup this class.
     /// </summary>
-    public class Unarchiver
+    public class ZipUnarchiver : IUnarchiver
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Unarchiver));
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ZipUnarchiver));
 
         private readonly string _packagePath;
         private readonly string _destinationDirPath;
@@ -20,7 +19,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
-        public Unarchiver(string packagePath, string destinationDirPath, string password = null)
+        public ZipUnarchiver(string packagePath, string destinationDirPath, string password = null)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");

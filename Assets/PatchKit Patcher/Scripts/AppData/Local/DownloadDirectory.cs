@@ -21,11 +21,23 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return Path.PathCombine("-content-" + versionId);
         }
 
+        public string GetContentPackageMetaPath(int versionId)
+        {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            return Path.PathCombine("-content-meta-" + versionId);
+        }
+
         public string GetDiffPackagePath(int versionId)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
 
             return Path.PathCombine("-diff-" + versionId);
+        }
+
+        public string GetDiffPackageMetaPath(int versionId)
+        {
+            Checks.ArgumentValidVersionId(versionId, "versionId");
+            return Path.PathCombine("-diff-meta" + versionId);
         }
 
         public void Clear()

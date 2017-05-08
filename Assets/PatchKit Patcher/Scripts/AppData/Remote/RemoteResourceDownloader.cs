@@ -1,4 +1,5 @@
-﻿using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
+﻿using System.IO;
+using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -17,6 +18,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private const int HttpDownloaderTimeout = 10000;
 
         private readonly string _destinationFilePath;
+        private readonly string _destinationMetaPath;
 
         private readonly RemoteResource _resource;
 
@@ -29,13 +31,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public RemoteResourceDownloader(string destinationFilePath, RemoteResource resource, bool useTorrents) :
-            this(destinationFilePath, resource, useTorrents, CreateDefaultHttpDownloader,
+        public RemoteResourceDownloader(string destinationFilePath, string destinationMetaPath, RemoteResource resource, bool useTorrents) :
+            this(destinationFilePath, destinationMetaPath, resource, useTorrents, CreateDefaultHttpDownloader,
                 CreateDefaultChunkedHttpDownloader, CreateDefaultTorrentDownloader)
         {
         }
 
-        public RemoteResourceDownloader(string destinationFilePath, RemoteResource resource, bool useTorrents,
+        public RemoteResourceDownloader(string destinationFilePath, string destinationMetaPath, RemoteResource resource,
+            bool useTorrents,
             CreateNewHttpDownloader createNewHttpDownloader,
             CreateNewChunkedHttpDownloader createNewChunkedHttpDownloader,
             CreateNewTorrentDownloader createNewTorrentDownloader)
@@ -49,6 +52,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             DebugLogger.LogVariable(useTorrents, "useTorrents");
 
             _destinationFilePath = destinationFilePath;
+            _destinationMetaPath = destinationMetaPath;
             _resource = resource;
             _useTorrents = useTorrents;
             _createNewHttpDownloader = createNewHttpDownloader;
@@ -119,7 +123,23 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         {
             Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-            DebugLogger.Log("Downloading.");
+            if (_resource.HasMetaUrls())
+            {
+                DebugLogger.Log("Downloading meta data...");
+
+                if (File.Exists(_destinationMetaPath))
+                {
+                    DebugLogger.Log("Removing previous meta data file: " + _destinationMetaPath);
+                    File.Delete(_destinationMetaPath);
+                }
+
+                var httpDownloader = CreateDefaultHttpDownloader(_destinationMetaPath, _resource.MetaUrls, 0, HttpDownloaderTimeout);
+                httpDownloader.Download(cancellationToken);
+
+                DebugLogger.Log("Meta data downloaded");
+            }
+
+            DebugLogger.Log("Downloading content file");
 
             if (_useTorrents)
             {
@@ -152,6 +172,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             int timeout)
         {
             return new HttpDownloader(destinationFilePath, resource, timeout);
+        }
+
+        private static IHttpDownloader CreateDefaultHttpDownloader(string destinationFilePath, string[] mirrorUrls, long size,
+            int timeout)
+        {
+            return new HttpDownloader(destinationFilePath, mirrorUrls, size, timeout);
         }
 
         private static IChunkedHttpDownloader CreateDefaultChunkedHttpDownloader(string destinationFilePath, RemoteResource resource,

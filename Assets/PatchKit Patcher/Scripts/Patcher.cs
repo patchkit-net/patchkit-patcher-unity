@@ -370,7 +370,6 @@ namespace PatchKit.Unity.Patcher
             try
             {
                 DebugLogger.Log("Loading patcher data...");
-
                 _state.Value = PatcherState.LoadingPatcherData;
 
 #if UNITY_EDITOR
@@ -388,8 +387,8 @@ namespace PatchKit.Unity.Patcher
                 }).WaitOne();
 #else
                 DebugLogger.Log("Using command line patcher data reader.");
-                var commandLinePatcherDataReader = new CommandLinePatcherDataReader();
-                _data.Value = commandLinePatcherDataReader.Read();
+                var inputArgumentsPatcherDataReader = new InputArgumentsPatcherDataReader();
+                _data.Value = inputArgumentsPatcherDataReader.Read();
 #endif
                 DebugLogger.LogVariable(_data.Value.AppSecret, "Data.AppSecret");
                 DebugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");

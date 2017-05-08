@@ -46,11 +46,13 @@ namespace PatchKit.Unity.Utilities
 
         public static bool IsLinux()
         {
-            return IsOneOf(RuntimePlatform.LinuxPlayer
-#if UNITY_5_5_OR_NEWER
-    , RuntimePlatform.LinuxEditor
+            // use preprocessor for this check due to Unity bug in platform enum
+            // it is missing LinuxEditor entry
+#if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+            return true;
+#else
+            return false;
 #endif
-            );
         }
 
         public static bool IsPosix()
