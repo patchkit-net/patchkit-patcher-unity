@@ -130,7 +130,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                             using (var fileWritter = new FileStream(destPath, FileMode.CreateNew))
                             {
                                 Streams.Copy(gzipStream, fileWritter);
-                                Chmod.SetMode(file.Mode.Substring(3), destPath);
+                                if (Platform.IsPosix())
+                                {
+                                    Chmod.SetMode(file.Mode.Substring(3), destPath);
+                                }
                             }
                         }
                     }
