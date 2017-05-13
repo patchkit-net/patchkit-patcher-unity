@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
-using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
+using Ionic.Zlib;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
+using CompressionMode = System.IO.Compression.CompressionMode;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -124,7 +125,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
                     using (var cryptoStream = new CryptoStream(limitedStream, decryptor, CryptoStreamMode.Read))
                     {
-                        using (var gzipStream = new GZipStream(cryptoStream, CompressionMode.Decompress))
+                        using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
                         {
                             using (var fileWritter = new FileStream(destPath, FileMode.CreateNew))
                             {
