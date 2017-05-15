@@ -37,6 +37,8 @@ namespace PatchKit.Unity.Patcher.Data
 
         public static FileType MachO64Reverse = new FileType(new byte[] {0xCF, 0xFA, 0xED, 0xFE}, 0);
 
+        public static FileType MachOCafeBabe = new FileType(new byte[] {0xCA, 0xFE, 0xBA, 0xBE}, 0);
+
         // ReSharper disable once InconsistentNaming
         public static FileType ELF = new FileType(new byte[] {0x7F, 0x45, 0x4C, 0x46}, 0);
 
@@ -48,6 +50,7 @@ namespace PatchKit.Unity.Patcher.Data
             MachO64,
             MachO32Reverse,
             MachO64Reverse,
+            MachOCafeBabe,
             ELF,
             Pack1
         };
@@ -58,6 +61,7 @@ namespace PatchKit.Unity.Patcher.Data
             MachO64,
             MachO32Reverse,
             MachO64Reverse,
+            MachOCafeBabe
         };
 
         public static FileType[] LinuxExecutables =
