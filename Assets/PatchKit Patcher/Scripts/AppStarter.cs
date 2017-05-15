@@ -44,8 +44,10 @@ namespace PatchKit.Unity.Patcher
                 foreach (var fileName in _app.LocalMetaData.GetRegisteredEntries())
                 {
                     string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
+                    DebugLogger.LogFormat("Checking if executable: {0}", filePath);
                     if (IsExecutable(filePath, platformType))
                     {
+                        DebugLogger.LogFormat("File is executable {0}", filePath);
                         Chmod.SetExecutableFlag(filePath);
                     }
                 }
