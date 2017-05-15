@@ -17,12 +17,12 @@ public class Chmod
         Execute(val ? "+x" : "-x", path);
     }
 
-    public static void SetMode(string path, string mode)
+    public static void SetMode(string mode, string path)
     {
         Execute(mode, path);
     }
 
-    private static void Execute(string param, string path)
+    private static void Execute(string mode, string path)
     {
         Assert.IsTrue(Platform.IsPosix(), "Chmod can be run only on POSIX platforms");
         Assert.IsTrue(File.Exists(ChmodPath), "/bin/chmod should exist");
@@ -32,7 +32,7 @@ public class Chmod
             StartInfo =
             {
                 FileName = ChmodPath,
-                Arguments = string.Format("{0} \"{1}\"", param, path)
+                Arguments = string.Format("{0} \"{1}\"", mode, path)
             }
         };
 
