@@ -4360,7 +4360,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 377531153}
-        m_MethodName: Cancel
+        m_MethodName: CancelUpdateApp
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
