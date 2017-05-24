@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private static string FormatMessage(string type, string message)
         {
-            return string.Format("{0} {1}: {2}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss zzz"), type, message);
+            return string.Format("{0} {1}: {2}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff zzz"), type, message);
         }
 
         private static string FormatExceptionMessage(Exception exception)
