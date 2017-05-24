@@ -13,8 +13,10 @@ namespace PatchKit.Unity.Patcher.AppData
         public static byte[] ComputeHash(byte[] buffer, int offset, int length)
         {
             var xxHash = new xxHash(Seed);
-            var memoryStream = new MemoryStream(buffer, offset, length);
-            return xxHash.ComputeHash(memoryStream);
+            using (var memoryStream = new MemoryStream(buffer, offset, length))
+            {
+                return xxHash.ComputeHash(memoryStream);
+            }
         }
 
         public static string ComputeHashString(byte[] buffer, int offset, int length)
