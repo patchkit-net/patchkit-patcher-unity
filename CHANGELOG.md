@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.1.2]
+### Fixed
+- Fix situation when user was asked for license key once again
+
+### Changed
+- Add miliseconds information to log date and time
+- Improved overall stability
+
 ## [3.1.1]
 ### Fixed
 - torrent-client.exe required MSVCP140.dll to work correctly
