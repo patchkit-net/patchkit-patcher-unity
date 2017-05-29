@@ -85,7 +85,8 @@ namespace PatchKit.Unity.Patcher.Debug
                         _sendLogKind = _sendLogKind.HasValue ? Mathf.Min(_sendLogKind.Value, log.GetKind()) : log.GetKind();
                     }
                 })
-                .Throttle(TimeSpan.FromSeconds(5)).Subscribe(log =>
+                .Throttle(TimeSpan.FromSeconds(5))
+                .Subscribe(log =>
                 {
                     lock (_lock)
                     {
@@ -156,7 +157,7 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             _logStream.OnNext(new Log
             {
-                Message = string.Format("{0}\n{1}", condition, stackTrace), Type = type
+                Message = string.Format("{0}", condition), Type = type
             });
         }
 
