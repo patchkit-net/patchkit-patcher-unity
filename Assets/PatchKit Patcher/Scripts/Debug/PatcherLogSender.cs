@@ -128,14 +128,11 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private void OnApplicationQuit()
         {
-            lock (_lock)
+            if (_isLogBeingSent || _shouldLogBeSent)
             {
-                if (_isLogBeingSent || _shouldLogBeSent)
-                {
-                    DebugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
-                    _hasApplicationQuit = true;
-                    Application.CancelQuit();
-                }
+                DebugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
+                _hasApplicationQuit = true;
+                Application.CancelQuit();
             }
         }
 
