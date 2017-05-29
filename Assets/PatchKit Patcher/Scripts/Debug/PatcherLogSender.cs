@@ -140,6 +140,7 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             using (var logFileStream = new FileStream(_logFilePath, FileMode.OpenOrCreate, FileAccess.Write))
             {
+                logFileStream.Seek(0, SeekOrigin.End);
                 using (var logFileStreamWriter = new StreamWriter(logFileStream))
                 {
                     foreach (var message in _logBuffer)
