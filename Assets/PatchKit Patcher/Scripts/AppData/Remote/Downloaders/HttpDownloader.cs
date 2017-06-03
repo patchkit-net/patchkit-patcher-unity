@@ -63,7 +63,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             if (_fileStream == null)
             {
-                _fileStream = new FileStream(_destinationFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                _fileStream = new FileStream(_destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
             }
         }
 

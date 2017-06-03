@@ -127,7 +127,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     {
                         using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
                         {
-                            using (var fileWritter = new FileStream(destPath, FileMode.CreateNew))
+                            using (var fileWritter = new FileStream(destPath, FileMode.Create))
                             {
                                 Streams.Copy(gzipStream, fileWritter);
                                 if (Platform.IsPosix())
