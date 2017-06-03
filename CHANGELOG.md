@@ -5,9 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.1.3]
+### Added
+- Add miliseconds information to log date and time
+- Add KNOWNBUGS.md
+
+### Removed
+- Remove stack strace information from logs sent to server
+
+### Changed
+- Improved overall stability
+
 ### Fixed
 - Fix problem with resource validation
 - Fix problems with overwritting files by downloader and unarchiver
+- Fix situation when user was asked for license key once again
+- Fix sending patcher logs to server
 
 ## [3.1.2]
 ### Fixed
