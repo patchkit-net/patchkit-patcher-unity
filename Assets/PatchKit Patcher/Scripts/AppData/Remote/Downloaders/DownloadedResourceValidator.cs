@@ -21,7 +21,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             var hashCode = HashCalculator.ComputeFileHash(downloadedResourcePath);
 
-            if (hashCode != resource.HashCode)
+            if (!string.IsNullOrEmpty(resource.HashCode) && hashCode != resource.HashCode)
             {
                 throw new DownloadedResourceValidationException(string.Format("Downloaded resource hash is not correct. Should be {0} but is {1}.",
                     resource.HashCode, hashCode));
