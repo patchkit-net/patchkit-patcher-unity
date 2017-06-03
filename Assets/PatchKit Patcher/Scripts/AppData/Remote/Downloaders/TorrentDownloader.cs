@@ -4,9 +4,9 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using Newtonsoft.Json.Linq;
-using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
@@ -239,17 +239,25 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private void Cleanup()
         {
-            DebugLogger.Log("Cleaning up.");
+            DebugLogger.Log("Cleaning up...");
 
             if (Directory.Exists(DownloadDirectoryPath))
             {
-                DirectoryOperations.Delete(DownloadDirectoryPath, true);
+                SafeInvoker.Invoke(() => DirectoryOperations.Delete(DownloadDirectoryPath, true), null, _ =>
+                {
+                    DebugLogger.LogWarning("Unable to cleanup torrent download directory.");
+                });
             }
 
             if (File.Exists(TorrentFilePath))
             {
-                FileOperations.Delete(TorrentFilePath);
+                SafeInvoker.Invoke(() => FileOperations.Delete(TorrentFilePath), null, _ =>
+                {
+                    DebugLogger.LogWarning("Unable to cleanup torrent file.");
+                });
             }
+
+            DebugLogger.Log("Cleanup completed.");
         }
 
         public void Download(CancellationToken cancellationToken)

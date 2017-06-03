@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -81,6 +82,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                     return false;
                 }
                 catch (DownloaderException exception)
+                {
+                    DebugLogger.LogException(exception);
+                    return false;
+                }
+                catch (Exception exception)
                 {
                     DebugLogger.LogException(exception);
                     return false;

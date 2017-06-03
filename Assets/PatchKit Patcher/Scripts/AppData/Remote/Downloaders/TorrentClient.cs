@@ -197,7 +197,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 if (!_process.HasExited)
                 {
-                    _process.Kill();
+                    try
+                    {
+                        DebugLogger.Log("Killing torrent client process...");
+                        _process.Kill();
+                        _process.WaitForExit(1000);
+                        DebugLogger.Log("Torrent client process has been killed.");
+                    }
+                    catch (Exception exception)
+                    {
+                        DebugLogger.LogWarning("Killing torrent client process has failed: an exception has occured.");
+                        DebugLogger.LogException(exception);
+                    }
                 }
             }
 
