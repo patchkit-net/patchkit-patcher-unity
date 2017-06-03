@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add KNOWNBUGS.md
 
 ### Removed
-- Remove stack strace information from logs sent to server
+- Remove stack trace information from logs sent to server
 
 ### Changed
 - Improved overall stability
