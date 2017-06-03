@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix problems with overwritting files by downloader and unarchiver
 - Fix situation when user was asked for license key once again
 - Fix sending patcher logs to server
+- Fix problem with shared access violation when downloading torrents
 
 ## [3.1.2]
 ### Fixed
