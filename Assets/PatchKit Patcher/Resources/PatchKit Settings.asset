@@ -14,9 +14,9 @@ MonoBehaviour:
   MainApiConnectionSettings:
     MainServer: api.patchkit.net
     CacheServers:
-    - api-cache-node-1.patchkit.net:43230
-    - api-cache-node-2.patchkit.net:43230
-    - api-cache-node-3.patchkit.net:43230
+    - api-cache-1.patchkit.net:80
+    - api-cache-2.patchkit.net:80
+    - api-cache-3.patchkit.net:80
     Timeout: 5000
   KeysApiConnectionSettings:
     MainServer: keys.patchkit.net:43240
