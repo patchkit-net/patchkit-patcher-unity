@@ -5,8 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-### Changed
-- API Cache servers urls
+### Fixed
+- HTTP downloader resumes the download on error
 
 ## [3.1.3]
 ### Added
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Improved overall stability
+- API Cache servers urls
 
 ### Fixed
 - Fix problem with resource validation
