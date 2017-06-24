@@ -62,25 +62,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
         }
 
-        public string GetKeySecret(string key)
+        public string GetKeySecret(string key, string cachedKeySecret)
         {
             Checks.ArgumentNotNullOrEmpty(key, "key");
             DebugLogger.Log(string.Format("Getting key secret from key {0}.", key));
 
-            string cachedKeySecret = null;
-
-            Dispatcher.Invoke(() => cachedKeySecret = PlayerPrefs.GetString(GetCachedKeySecretEntryName(key), null));
-
             var keySecret = _keysApiConnection.GetKeyInfo(key, _appSecret, cachedKeySecret).KeySecret;
 
-            Dispatcher.Invoke(() => PlayerPrefs.SetString(GetCachedKeySecretEntryName(key), keySecret));
-
             return keySecret;
-        }
-
-        private string GetCachedKeySecretEntryName(string key)
-        {
-            return string.Format("patchkit-keysecret-{0}", key);
         }
     }
 }
