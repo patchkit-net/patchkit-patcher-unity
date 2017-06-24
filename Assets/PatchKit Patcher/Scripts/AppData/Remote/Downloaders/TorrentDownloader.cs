@@ -270,7 +270,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             try
             {
-                _torrentClient = new TorrentClient();
+                _torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider());
                 DownloadTorrentFile(cancellationToken);
                 AddTorrent();
                 WaitForTorrentDownload(cancellationToken);
