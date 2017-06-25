@@ -7,13 +7,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     {
         public void SetValue(string key, string value)
         {
-            Dispatcher.Invoke(() => PlayerPrefs.SetString(key, value)).WaitOne();
+            UnityDispatcher.Invoke(() => PlayerPrefs.SetString(key, value)).WaitOne();
         }
 
         public string GetValue(string key, string defaultValue = null)
         {
             string result = string.Empty;
-            Dispatcher.Invoke(() => result = PlayerPrefs.GetString(key, defaultValue)).WaitOne();
+            UnityDispatcher.Invoke(() => result = PlayerPrefs.GetString(key, defaultValue)).WaitOne();
             return result;
         }
     }

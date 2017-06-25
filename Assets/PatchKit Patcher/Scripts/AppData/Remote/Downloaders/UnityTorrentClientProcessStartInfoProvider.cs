@@ -16,7 +16,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public UnityTorrentClientProcessStartInfoProvider()
         {
-            Dispatcher.Invoke(() =>
+            UnityDispatcher.Invoke(() =>
             {
                 _streamingAssetsPath = Application.streamingAssetsPath;
             }).WaitOne();

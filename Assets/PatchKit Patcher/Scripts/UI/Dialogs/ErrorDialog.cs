@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         public void Display(PatcherError error, CancellationToken cancellationToken)
         {
-            Dispatcher.Invoke(() => UpdateMessage(error)).WaitOne();
+            UnityDispatcher.Invoke(() => UpdateMessage(error)).WaitOne();
 
             Display(cancellationToken);
         }
