@@ -151,7 +151,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private void UpdateTorrentProgress(double progress)
         {
-            OnDownloadProgressChanged(Mathf.CeilToInt(_resource.Size * (float)progress), _resource.Size);
+            OnDownloadProgressChanged((long)(_resource.Size * progress), _resource.Size);
         }
 
         private bool UpdateTorrentStatus()

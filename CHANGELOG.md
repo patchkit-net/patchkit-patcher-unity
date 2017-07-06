@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Fixed
 - HTTP downloader resumes the download on error
+- Fix TorrentDownloader progress reporting for big files
 
 ## [3.1.3]
 ### Added
