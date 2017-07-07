@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - HTTP downloader resumes the download on error
 
+## [3.1.4]
+### Fixed
+- Fix TorrentDownloader progress reporting for big files
+
 ## [3.1.3]
 ### Added
 - Add miliseconds information to log date and time
