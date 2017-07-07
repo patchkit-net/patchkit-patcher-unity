@@ -11,7 +11,7 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             string patcherVersion = "(unknown)";
 
-            Dispatcher.Invoke(() =>
+            UnityDispatcher.Invoke(() =>
             {
                 try
                 {

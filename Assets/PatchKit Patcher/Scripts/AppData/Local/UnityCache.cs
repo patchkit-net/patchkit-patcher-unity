@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using PatchKit.Unity.Utilities;
+using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -6,12 +7,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     {
         public void SetValue(string key, string value)
         {
-            PlayerPrefs.SetString(key, value);
+            UnityDispatcher.Invoke(() => PlayerPrefs.SetString(key, value)).WaitOne();
         }
 
         public string GetValue(string key, string defaultValue = null)
         {
-            return PlayerPrefs.GetString(key, defaultValue);
+            string result = string.Empty;
+            UnityDispatcher.Invoke(() => result = PlayerPrefs.GetString(key, defaultValue)).WaitOne();
+            return result;
         }
     }
 }

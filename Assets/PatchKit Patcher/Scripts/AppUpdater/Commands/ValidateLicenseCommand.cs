@@ -85,12 +85,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 try
                 {
-                    KeySecret = _remoteMetaData.GetKeySecret(key);
+                    KeySecret = _remoteMetaData.GetKeySecret(key, GetCachedKeySecret(key));
 
                     DebugLogger.LogVariable(KeySecret, "KeySecret");
                     DebugLogger.Log("License key has been validated");
 
                     SetCachedKey(key);
+                    SetCachedKeySecret(key, KeySecret);
                 }
                 catch (ApiResponseException apiResponseException)
                 {
@@ -160,6 +161,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private string GetCachedKey()
         {
             return _cache.GetValue("patchkit-key");
+        }
+
+        private void SetCachedKeySecret(string key, string value)
+        {
+            _cache.SetValue(string.Format("patchkit-keysecret-{0}", key), value);
+        }
+
+        private string GetCachedKeySecret(string key)
+        {
+            return _cache.GetValue(string.Format("patchkit-keysecret-{0}", key));
         }
     }
 }

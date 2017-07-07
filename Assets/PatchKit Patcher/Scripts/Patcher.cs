@@ -165,7 +165,7 @@ namespace PatchKit.Unity.Patcher
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 
             _instance = this;
-            Dispatcher.Initialize();
+            UnityDispatcher.Initialize();
             Application.runInBackground = true;
 
             DebugLogger.Log(string.Format("patchkit-patcher-unity: {0}", PatcherInfo.GetVersion()));
@@ -323,7 +323,7 @@ namespace PatchKit.Unity.Patcher
 
                 ThreadLoadPatcherConfiguration();
 
-                Dispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId)).WaitOne();
+                UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId)).WaitOne();
 
                 while (true)
                 {
@@ -373,7 +373,7 @@ namespace PatchKit.Unity.Patcher
                 _state.Value = PatcherState.LoadingPatcherData;
 
 #if UNITY_EDITOR
-                Dispatcher.Invoke(() =>
+                UnityDispatcher.Invoke(() =>
                 {
                     DebugLogger.Log("Using Unity Editor patcher data.");
                     _data.Value = new PatcherData
@@ -553,7 +553,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
-                    Dispatcher.Invoke(Quit);
+                    UnityDispatcher.Invoke(Quit);
                 }
                 else
                 {
@@ -628,7 +628,7 @@ namespace PatchKit.Unity.Patcher
 
             appStarter.Start();
 
-            Dispatcher.Invoke(Quit);
+            UnityDispatcher.Invoke(Quit);
         }
 
         private void ThreadUpdateApp(CancellationToken cancellationToken)
@@ -664,7 +664,7 @@ namespace PatchKit.Unity.Patcher
                 RuntimePlatform applicationPlatform = default(RuntimePlatform);
                 string applicationDataPath = string.Empty;
 
-                Dispatcher.Invoke(() =>
+                UnityDispatcher.Invoke(() =>
                 {
                     applicationPlatform = Application.platform;
                     applicationDataPath = Application.dataPath;
@@ -713,7 +713,7 @@ namespace PatchKit.Unity.Patcher
 
         protected virtual void OnUpdateAppStatusChanged(OverallStatus obj)
         {
-            Dispatcher.Invoke(() =>
+            UnityDispatcher.Invoke(() =>
             {
                 if (UpdateAppStatusChanged != null) UpdateAppStatusChanged(obj);
             });
