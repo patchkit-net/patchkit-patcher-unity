@@ -165,7 +165,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             if (File.Exists(destinationFilePath))
             {
                 DebugLogger.LogFormat("Destination file {0} already exists, removing it.", destinationFilePath);
-                File.Delete(destinationFilePath);
+                FileOperations.Delete(destinationFilePath);
             }
             
             FileOperations.Move(sourceFilePath, destinationFilePath);
