@@ -30,6 +30,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         /// Returns key secret for certain key.
         /// </summary>
         /// <param name="key">The key.</param>
-        string GetKeySecret(string key);
+        /// <param name="cachedKeySecret">Previously cached key secret.</param>
+        string GetKeySecret(string key, string cachedKeySecret);
     }
 }

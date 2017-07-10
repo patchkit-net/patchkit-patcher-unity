@@ -4,8 +4,6 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Utilities;
-using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -15,12 +13,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// <seealso cref="System.IDisposable" />
     public class TorrentClient : IDisposable
     {
-        private const string TorrentClientWinPath = "torrent-client/win/torrent-client.exe";
-        private const string TorrentClientOsx64Path = "torrent-client/osx64/torrent-client";
-        private const string TorrentClientLinux64Path = "torrent-client/linux64/torrent-client";
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(TorrentClient));
 
-        private string _streamingAssetsPath;
+        private readonly ITorrentClientProcessStartInfoProvider _processStartInfoProvider;
 
         private readonly Process _process;
 
@@ -30,14 +25,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private bool _disposed;
 
-        public TorrentClient()
+        public TorrentClient(ITorrentClientProcessStartInfoProvider processStartInfoProvider)
         {
             DebugLogger.LogConstructor();
 
-            Dispatcher.Invoke(() =>
-            {
-                _streamingAssetsPath = Application.streamingAssetsPath;
-            }).WaitOne();
+            _processStartInfoProvider = processStartInfoProvider;
 
             _process = StartProcess();
             _stdOutput = CreateStdOutputStream();
@@ -108,66 +100,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private Process StartProcess()
         {
-            var processStartInfo = GetProcessStartInfo();
-            
+            var processStartInfo = _processStartInfoProvider.GetProcessStartInfo();
+
             return Process.Start(processStartInfo);
-        }
-
-        private ProcessStartInfo GetProcessStartInfo()
-        {
-            if (Platform.IsWindows())
-            {
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = _streamingAssetsPath.PathCombine(TorrentClientWinPath),
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                return processStartInfo;
-            }
-
-            if (Platform.IsOSX())
-            {
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = _streamingAssetsPath.PathCombine(TorrentClientOsx64Path),
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                // make sure that binary can be executed
-                Chmod.SetExecutableFlag(processStartInfo.FileName);
-
-                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/osx64");
-
-                return processStartInfo;
-            }
-
-            if (Platform.IsLinux() && IntPtr.Size == 8) // Linux 64 bit
-            {
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = _streamingAssetsPath.PathCombine(TorrentClientLinux64Path),
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                // make sure that binary can be executed
-                Chmod.SetExecutableFlag(processStartInfo.FileName);
-
-                processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/linux64");
-
-                return processStartInfo;
-            }
-
-            throw new TorrentClientException("Unsupported platform by torrent-client.");
         }
 
         public void Dispose()

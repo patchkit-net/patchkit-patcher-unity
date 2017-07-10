@@ -18,6 +18,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// </summary>
     public class ChunkedFileStream : IDisposable
     {
+        [Flags]
+        public enum WorkFlags
+        {
+            None = 0,
+            PreservePreviousFile = 1
+        }
+        
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ChunkedFileStream));
 
         public delegate byte[] HashFunction(byte[] buffer, int offset, int length);
@@ -53,7 +60,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             get { return _fileSize; }
         }
 
-        public ChunkedFileStream(string path, long fileSize, ChunksData chunksData, HashFunction hashFunction)
+        public ChunkedFileStream(string path, long fileSize, ChunksData chunksData, HashFunction hashFunction,
+            WorkFlags workFlags = WorkFlags.None)
         {
             Checks.ArgumentNotNullOrEmpty(path, "path");
             Checks.ArgumentMoreThanZero(fileSize, "fileSize");
@@ -69,7 +77,39 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             _buffer = new byte[_chunksData.ChunkSize];
 
-            _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            if ((workFlags | WorkFlags.PreservePreviousFile) != 0)
+            {
+                // Often you may want to continue downloading of a file if this exists
+                // It tries to open a file and re-download it from the verified position.
+                // It does not check the hash of the file. It trusts that the file is already valid up to that point.
+                // Because the only way to download the file should be using Chunked Downloader.
+                
+                _fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+                _fileStream.Seek(0, SeekOrigin.End); // seek and stay at the end, so we can append
+                long currentFileSize = _fileStream.Position;
+
+                // Let's make sure that file size is a multiply of chunk size.
+                // If not, something is wrong with the file.
+                if (currentFileSize % chunksData.ChunkSize == 0)
+                {
+                    _chunkIndex = (int) (currentFileSize / chunksData.ChunkSize);
+                }
+                else
+                {
+                    DebugLogger.LogWarningFormat(
+                        "File {0} size {1} is not a multiply of chunk size: {2}. Will recreate it.", path,
+                        currentFileSize, chunksData.ChunkSize);
+                    
+                    _fileStream.Close();
+                    _fileStream.Dispose();
+                    
+                    _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+                }
+            }
+            else
+            {
+                _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            }
         }
 
         /// <summary>

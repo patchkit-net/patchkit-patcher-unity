@@ -159,9 +159,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new InstallerException(string.Format("Cannot find file {0} in content package.", fileName));
             }
 
-            string filePath = _localData.Path.PathCombine(fileName);
-            DirectoryOperations.CreateParentDirectory(filePath);
-            FileOperations.Copy(sourceFilePath, filePath, true);
+            string destinationFilePath = _localData.Path.PathCombine(fileName);
+            DirectoryOperations.CreateParentDirectory(destinationFilePath);
+
+            if (File.Exists(destinationFilePath))
+            {
+                DebugLogger.LogFormat("Destination file {0} already exists, removing it.", destinationFilePath);
+                FileOperations.Delete(destinationFilePath);
+            }
+            
+            FileOperations.Move(sourceFilePath, destinationFilePath);
             _localMetaData.RegisterEntry(fileName, _versionId);
         }
     }

@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         public LicenseDialogResult Display(LicenseDialogMessageType messageType)
         {
-            Dispatcher.Invoke(() => UpdateMessage(messageType));
+            UnityDispatcher.Invoke(() => UpdateMessage(messageType));
 
             base.Display(CancellationToken.Empty);
 

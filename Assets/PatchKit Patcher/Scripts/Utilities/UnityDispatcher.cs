@@ -7,15 +7,15 @@ using System.Threading;
 namespace PatchKit.Unity.Utilities
 {
     [AddComponentMenu("")]
-    public class Dispatcher : MonoBehaviour
+    public class UnityDispatcher : MonoBehaviour
     {
-        private static Dispatcher _instance;
+        private static UnityDispatcher _instance;
 
         private static Thread _mainThread;
 
         private readonly Queue<Action> _pendingActions = new Queue<Action>();
 
-        /// <summary>Validates that <see cref="Dispatcher"/> has been created. Otherwise throws exception.</summary>
+        /// <summary>Validates that <see cref="UnityDispatcher"/> has been created. Otherwise throws exception.</summary>
         /// <exception cref="InvalidOperationException">Dispatcher hasn't been created.</exception>
         private static void ValidateInstance()
         {
@@ -26,7 +26,7 @@ namespace PatchKit.Unity.Utilities
         }
 
         /// <summary>
-        /// Initializes instance of <see cref="Dispatcher"/>.
+        /// Initializes instance of <see cref="UnityDispatcher"/>.
         /// </summary>
         public static void Initialize()
         {
@@ -42,7 +42,7 @@ namespace PatchKit.Unity.Utilities
 
             DontDestroyOnLoad(gameObject);
 
-            _instance = gameObject.AddComponent<Dispatcher>();
+            _instance = gameObject.AddComponent<UnityDispatcher>();
 
             _mainThread = Thread.CurrentThread;
         }

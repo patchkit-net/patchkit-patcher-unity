@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             if (_fileStream == null)
             {
                 _fileStream = new ChunkedFileStream(_destinationFilePath, _resource.Size, _resource.ChunksData,
-                    HashFunction);
+                    HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile);
             }
         }
 
@@ -161,7 +161,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             };
 
             baseHttpDownloader.Download(cancellationToken);
-
+            
             if (_fileStream.RemainingLength > 0)
             {
                 throw new DownloaderException("Data download hasn't been completed.", DownloaderExceptionStatus.Other);
