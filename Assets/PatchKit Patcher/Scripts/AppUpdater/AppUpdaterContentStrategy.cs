@@ -27,6 +27,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.Log("Updating with content strategy.");
 
             var commandFactory = new Commands.AppUpdaterCommandFactory();
+            var geolocateCommand = commandFactory.CreateGeolocateCommand();
+            
+            geolocateCommand.Prepare(_context.StatusMonitor);
+            geolocateCommand.Execute(cancellationToken);
 
             var latestVersionId = _context.App.GetLatestVersionId();
 

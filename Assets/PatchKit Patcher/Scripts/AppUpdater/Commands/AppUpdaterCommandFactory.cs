@@ -113,5 +113,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             AppContentSummary contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
             return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path);
         }
+
+        public IGeolocateCommand CreateGeolocateCommand()
+        {
+            var geolocateCommand = new GeolocateCommand();
+            return geolocateCommand;
+        }
     }
 }
