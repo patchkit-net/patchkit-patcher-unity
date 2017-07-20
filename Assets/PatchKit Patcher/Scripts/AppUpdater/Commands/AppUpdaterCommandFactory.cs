@@ -7,9 +7,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class AppUpdaterCommandFactory
     {
-        public IDownloadPackageCommand CreateDownloadContentPackageCommand(int versionId, string keySecret, AppUpdaterContext context)
+        public IDownloadPackageCommand CreateDownloadContentPackageCommand(int versionId, string keySecret,
+            string countryCode, AppUpdaterContext context)
         {
-            var resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret);
+            var resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret, countryCode);
 
             var appDownloadDirectory = context.App.DownloadDirectory;
             var destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);

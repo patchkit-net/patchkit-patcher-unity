@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             uninstall.Prepare(_context.StatusMonitor);
 
             var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId,
-                validateLicense.KeySecret, _context);
+                validateLicense.KeySecret, geolocateCommand.CountryCode, _context);
             downloadContentPackage.Prepare(_context.StatusMonitor);
 
             var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context);

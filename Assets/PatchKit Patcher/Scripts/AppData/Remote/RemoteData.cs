@@ -29,7 +29,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _mainApiConnection = mainApiConnection;
         }
 
-        public RemoteResource GetContentPackageResource(int versionId, string keySecret)
+        public RemoteResource GetContentPackageResource(int versionId, string keySecret, string countryCode)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
 
