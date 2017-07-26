@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Using geolocation to find closest http server available
+
 ### Fixed
 - HTTP downloader resumes the download on error
 - Moving files after installation instead of copying them
