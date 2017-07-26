@@ -15,7 +15,7 @@
         /// </summary>
         /// <param name="versionId">The version id.</param>
         /// <param name="keySecret">The key secret.</param>
-        RemoteResource GetDiffPackageResource(int versionId, string keySecret);
+        RemoteResource GetDiffPackageResource(int versionId, string keySecret, string countryCode);
 
         /// <summary>
         /// Returns password of the content package resource.

@@ -42,6 +42,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.LogVariable(currentLocalVersionId, "currentLocalVersionId");
 
             var commandFactory = new AppUpdaterCommandFactory();
+            var geolocateCommand = commandFactory.CreateGeolocateCommand();
+            
+            geolocateCommand.Prepare(_context.StatusMonitor);
+            geolocateCommand.Execute(cancellationToken);
 
             var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForDiff(latestVersionId, _context);
             checkDiskSpaceCommand.Prepare(_context.StatusMonitor);
@@ -58,7 +62,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 DiffCommands diffCommands;
 
                 diffCommands.Download = commandFactory.CreateDownloadDiffPackageCommand(i, validateLicense.KeySecret,
-                    _context);
+                    geolocateCommand.CountryCode, _context);
                 diffCommands.Download.Prepare(_context.StatusMonitor);
 
                 diffCommands.Install = commandFactory.CreateInstallDiffCommand(i, _context);

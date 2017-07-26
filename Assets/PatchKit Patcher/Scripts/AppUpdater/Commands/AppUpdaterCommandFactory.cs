@@ -22,9 +22,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 context.Configuration.UseTorrents);
         }
 
-        public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret, AppUpdaterContext context)
+        public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret,
+            string countryCode, AppUpdaterContext context)
         {
-            var resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret);
+            var resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret, countryCode);
 
             var appDownloadDirectory = context.App.DownloadDirectory;
             var destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
