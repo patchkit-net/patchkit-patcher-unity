@@ -9,6 +9,6 @@
 /_Resharper.src/
 /app/
 .idea
-*.DotSettings
+*.DotSettings*
 *.CSharp.ruleset
 _ReSharper*
