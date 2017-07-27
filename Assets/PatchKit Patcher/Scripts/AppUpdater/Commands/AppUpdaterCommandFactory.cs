@@ -18,8 +18,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             appDownloadDirectory.PrepareForWriting();
 
-            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath,
-                context.Configuration.UseTorrents);
+            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "any" &&
+                               context.Configuration.UseTorrents;
+            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
         }
 
         public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret,
@@ -33,8 +34,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             appDownloadDirectory.PrepareForWriting();
 
-            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath,
-                context.Configuration.UseTorrents);
+            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "any" &&
+                               context.Configuration.UseTorrents;
+            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId, AppUpdaterContext context)
