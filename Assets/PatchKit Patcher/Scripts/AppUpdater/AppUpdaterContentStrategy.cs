@@ -27,6 +27,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.Log("Updating with content strategy.");
 
             var commandFactory = new Commands.AppUpdaterCommandFactory();
+            var geolocateCommand = commandFactory.CreateGeolocateCommand();
+            
+            geolocateCommand.Prepare(_context.StatusMonitor);
+            geolocateCommand.Execute(cancellationToken);
 
             var latestVersionId = _context.App.GetLatestVersionId();
 
@@ -44,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             uninstall.Prepare(_context.StatusMonitor);
 
             var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId,
-                validateLicense.KeySecret, _context);
+                validateLicense.KeySecret, geolocateCommand.CountryCode, _context);
             downloadContentPackage.Prepare(_context.StatusMonitor);
 
             var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context);

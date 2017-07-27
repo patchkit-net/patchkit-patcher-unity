@@ -7,9 +7,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class AppUpdaterCommandFactory
     {
-        public IDownloadPackageCommand CreateDownloadContentPackageCommand(int versionId, string keySecret, AppUpdaterContext context)
+        public IDownloadPackageCommand CreateDownloadContentPackageCommand(int versionId, string keySecret,
+            string countryCode, AppUpdaterContext context)
         {
-            var resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret);
+            var resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret, countryCode);
 
             var appDownloadDirectory = context.App.DownloadDirectory;
             var destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
@@ -17,13 +18,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             appDownloadDirectory.PrepareForWriting();
 
-            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath,
-                context.Configuration.UseTorrents);
+            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "any" &&
+                               context.Configuration.UseTorrents;
+            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
         }
 
-        public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret, AppUpdaterContext context)
+        public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret,
+            string countryCode, AppUpdaterContext context)
         {
-            var resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret);
+            var resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret, countryCode);
 
             var appDownloadDirectory = context.App.DownloadDirectory;
             var destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
@@ -31,8 +34,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             appDownloadDirectory.PrepareForWriting();
 
-            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath,
-                context.Configuration.UseTorrents);
+            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "any" &&
+                               context.Configuration.UseTorrents;
+            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId, AppUpdaterContext context)
@@ -112,6 +116,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             AppContentSummary contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
             return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path);
+        }
+
+        public IGeolocateCommand CreateGeolocateCommand()
+        {
+            var geolocateCommand = new GeolocateCommand();
+            return geolocateCommand;
         }
     }
 }
