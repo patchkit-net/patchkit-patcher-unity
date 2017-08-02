@@ -30,7 +30,7 @@ namespace PatchKit.Unity
             settings.MainApiConnectionSettings = MainApiConnection.GetDefaultSettings();
             settings.KeysApiConnectionSettings = KeysApiConnection.GetDefaultSettings();
 
-            UnityEditor.AssetDatabase.CreateAsset(settings, string.Format("Assets/Plugins/PatchKit/Resources/{0}.asset", AssetFileName));
+            UnityEditor.AssetDatabase.CreateAsset(settings, string.Format("Assets/PatchKit Patcher/Resources/{0}.asset", AssetFileName));
             UnityEditor.EditorUtility.SetDirty(settings);
 
             UnityEditor.AssetDatabase.Refresh();
