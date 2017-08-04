@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Using geolocation to find closest http server available
 - Decides on torrents based on publish_method remote app property
 
+### Changed
+- Display warning message when auto-update fails and app is installed
+
 ### Fixed
 - HTTP downloader resumes the download on error
 - Moving files after installation instead of copying them
