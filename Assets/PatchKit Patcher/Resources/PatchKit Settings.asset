@@ -14,19 +14,19 @@ MonoBehaviour:
   MainApiConnectionSettings:
     MainServer:
       Host: api.patchkit.net
-      Port: 80
+      Port: 0
       UseHttps: 0
       Timeout: 5000
     CacheServers:
-    - Host: api-cache-node-1.patchkit.net
+    - Host: api-cache-1.patchkit.net
       Port: 80
       UseHttps: 0
       Timeout: 5000
-    - Host: api-cache-node-2.patchkit.net
+    - Host: api-cache-2.patchkit.net
       Port: 80
       UseHttps: 0
       Timeout: 5000
-    - Host: api-cache-node-3.patchkit.net
+    - Host: api-cache-3.patchkit.net
       Port: 80
       UseHttps: 0
       Timeout: 5000

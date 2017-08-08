@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - HTTP downloader resumes the download on error
 - Moving files after installation instead of copying them
 - Fix keys API connection problem
+- Fix API cache usage problems
 
 ## [3.1.4]
 ### Fixed
