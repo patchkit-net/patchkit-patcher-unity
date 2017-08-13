@@ -28,8 +28,11 @@ namespace PatchKit.Unity.Patcher
             None,
             RepairApp,
             StartApp,
+            StartAppAutomatically,
             InstallApp,
-            CheckForAppUpdates
+            InstallAppAutomatically,
+            CheckForAppUpdates,
+            CheckForAppUpdatesAutomatically
         }
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Patcher));
@@ -122,6 +125,13 @@ namespace PatchKit.Unity.Patcher
         public IReadOnlyReactiveProperty<PatcherData> Data
         {
             get { return _data; }
+        }
+        
+        private readonly ReactiveProperty<string> _warning = new ReactiveProperty<string>();
+
+        public IReadOnlyReactiveProperty<string> Warning
+        {
+            get { return _warning; }
         }
 
         public void SetUserDecision(UserDecision userDecision)
@@ -464,7 +474,7 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.Log("Automatically deciding to install app.");
                     _hasAutomaticallyInstalledApp = true;
-                    _userDecision = UserDecision.InstallApp;
+                    _userDecision = UserDecision.InstallAppAutomatically;
                     return;
                 }
 
@@ -473,7 +483,7 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.Log("Automatically deciding to check for app updates.");
                     _hasAutomaticallyCheckedForAppUpdate = true;
-                    _userDecision = UserDecision.CheckForAppUpdates;
+                    _userDecision = UserDecision.CheckForAppUpdatesAutomatically;
                     return;
                 }
 
@@ -481,7 +491,7 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.Log("Automatically deciding to start app.");
                     _hasAutomaticallyStartedApp = true;
-                    _userDecision = UserDecision.StartApp;
+                    _userDecision = UserDecision.StartAppAutomatically;
                     return;
                 }
 
@@ -518,8 +528,12 @@ namespace PatchKit.Unity.Patcher
 
         private void ThreadExecuteUserDecision(CancellationToken cancellationToken)
         {
+            bool displayWarningInsteadOfError = false;
+            
             try
             {
+                _warning.Value = string.Empty;
+                
                 DebugLogger.Log(string.Format("Executing user decision {0}...", _userDecision));
 
                 switch (_userDecision)
@@ -528,10 +542,19 @@ namespace PatchKit.Unity.Patcher
                         break;
                     case UserDecision.RepairApp:
                         break;
+                    case UserDecision.StartAppAutomatically:
                     case UserDecision.StartApp:
                         ThreadStartApp();
                         break;
+                    case UserDecision.InstallAppAutomatically:
+                        displayWarningInsteadOfError = _app.IsInstalled();
+                        ThreadUpdateApp(cancellationToken);
+                        break;
                     case UserDecision.InstallApp:
+                        ThreadUpdateApp(cancellationToken);
+                        break;
+                    case UserDecision.CheckForAppUpdatesAutomatically:
+                        displayWarningInsteadOfError = _app.IsInstalled();
                         ThreadUpdateApp(cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdates:
@@ -585,7 +608,14 @@ namespace PatchKit.Unity.Patcher
                     "Error while executing user decision {0}: an exception has occured.", _userDecision));
                 DebugLogger.LogException(exception);
 
-                ThreadDisplayError(PatcherError.Other, cancellationToken);
+                if (displayWarningInsteadOfError)
+                {
+                    _warning.Value = "Unable to check for updates. Please check your internet connection.";
+                }
+                else
+                {
+                    ThreadDisplayError(PatcherError.Other, cancellationToken);
+                }
             }
         }
 

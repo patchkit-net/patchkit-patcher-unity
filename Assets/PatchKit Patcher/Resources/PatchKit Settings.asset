@@ -12,13 +12,28 @@ MonoBehaviour:
   m_Name: PatchKit Settings
   m_EditorClassIdentifier: 
   MainApiConnectionSettings:
-    MainServer: api.patchkit.net
+    MainServer:
+      Host: api.patchkit.net
+      Port: 0
+      UseHttps: 0
+      Timeout: 5000
     CacheServers:
-    - api-cache-1.patchkit.net:80
-    - api-cache-2.patchkit.net:80
-    - api-cache-3.patchkit.net:80
-    Timeout: 5000
+    - Host: api-cache-1.patchkit.net
+      Port: 80
+      UseHttps: 0
+      Timeout: 5000
+    - Host: api-cache-2.patchkit.net
+      Port: 80
+      UseHttps: 0
+      Timeout: 5000
+    - Host: api-cache-3.patchkit.net
+      Port: 80
+      UseHttps: 0
+      Timeout: 5000
   KeysApiConnectionSettings:
-    MainServer: keys.patchkit.net:43240
+    MainServer:
+      Host: keys.patchkit.net
+      Port: 43240
+      UseHttps: 0
+      Timeout: 5000
     CacheServers: []
-    Timeout: 5000
