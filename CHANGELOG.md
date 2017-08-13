@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Moving files after installation instead of copying them
 - Fix keys API connection problem
 - Fix API cache usage problems
+- Fix problem with remaining ".app" directories on Mac OSX
 
 ## [3.1.4]
 ### Fixed

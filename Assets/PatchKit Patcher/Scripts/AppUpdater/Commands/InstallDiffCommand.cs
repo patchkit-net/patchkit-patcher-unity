@@ -6,6 +6,7 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -112,6 +113,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 ProcessAddedFiles(packageDirPath, cancellationToken);
                 ProcessRemovedFiles(cancellationToken);
                 ProcessModifiedFiles(packageDirPath, cancellationToken);
+                DeleteEmptyMacAppDirectories();
             }
             finally
             {
@@ -252,6 +254,31 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 
             _modifiedFilesStatusReporter.OnProgressChanged(1.0);
+        }
+        
+        // TODO: Temporary solution for situation when .app directory is not deleted
+        private void DeleteEmptyMacAppDirectories()
+        {
+            if (Platform.IsOSX())
+            {
+                DebugLogger.Log("Deleting empty Mac OSX '.app' directories...");
+            
+                var appDirectories = Directory
+                    .GetFileSystemEntries(_localData.Path)
+                    .Where(s => Directory.Exists(s) &&
+                                s.EndsWith(".app") &&
+                                Directory.GetFiles(s, "*", SearchOption.AllDirectories).Length == 0);
+
+                foreach (var dir in appDirectories)
+                {
+                    if (Directory.Exists(dir))
+                    {
+                        DirectoryOperations.Delete(dir, true);
+                    }
+                }
+            
+                DebugLogger.Log("Empty Mac OSX '.app' directories has been deleted.");
+            }
         }
 
         private void PatchFile(string fileName, string packageDirPath)
