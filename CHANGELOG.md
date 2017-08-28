@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- getdiskspaceosx a native library for determining the amount of free space available on Mac OSX.
 - Using geolocation to find closest http server available
 - Decides on torrents based on publish_method remote app property
 

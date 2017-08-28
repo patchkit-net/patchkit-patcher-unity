@@ -7,3 +7,8 @@ In this repository you can find PatchKit Patcher Unity project.
 ## Getting the stable version
 
 It's pretty important to use a stable and tester patcher version. You will find stable releases in [here](https://github.com/patchkit-net/patchkit-patcher-unity/releases). Be careful, **pre-releases** are not suitable for production usage. **Master** branch is also not suitable for production usage. Always look for tags if you want to do an upgrade.
+
+## getdiskspaceosx
+The native library is already precompiled.
+
+If you need to recompile it, simply open the project file (`getdiskspaceosx/getdiskspaceosx.xcodeproj`) in XCode and build it. The bundle will be automatically copied into `Assets/Plugins/PatchKit/x86_64`.
