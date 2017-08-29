@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- getdiskspaceosx a native library for determining the amount of free space available on Mac OSX.
 - Status descriptions for updating app patcher state
 
 ### Changed

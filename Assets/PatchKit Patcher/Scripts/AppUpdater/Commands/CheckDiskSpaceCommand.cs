@@ -44,6 +44,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             out ulong totalFreeBytes);
 #endif
 
+#if UNITY_STANDALONE_OSX
+
+        [DllImport("getdiskspaceosx", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
+
+#endif
+
         public void Execute(CancellationToken cancellationToken)
         {
             long availableDiskSpace = -1;
@@ -56,6 +64,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             GetDiskFreeSpaceEx(dir.Directory.Root.FullName, out freeBytes, out totalBytes, out totalFreeBytes);
 
             availableDiskSpace = (long) freeBytes;
+
+#elif UNITY_STANDALONE_OSX
+
+            long freeBytes = 0;
+            getAvailableDiskSpace(dir.Directory.Root.FullName, out freeBytes);
+
+            availableDiskSpace = freeBytes;
+
 #else
             var drive = new DriveInfo(dir.Directory.Root.FullName);
 
