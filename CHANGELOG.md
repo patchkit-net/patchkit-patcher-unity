@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Status descriptions for updating app patcher state
+
 ## [3.2.0]
 ### Added
 - Using geolocation to find closest http server available

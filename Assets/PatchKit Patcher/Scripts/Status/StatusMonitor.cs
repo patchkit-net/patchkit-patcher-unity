@@ -47,6 +47,8 @@ namespace PatchKit.Unity.Patcher.Status
 
         private void ProcessGeneralStatus(GeneralStatusHolder generalStatusHolder)
         {
+            _overallStatus.Description = generalStatusHolder.Description;
+            
             _overallStatus.Progress = CalculateOverallProgress();
 
             OnStatusChanged();

@@ -17,9 +17,10 @@ namespace PatchKit.Unity.Patcher.Status
             _generalStatusHolder.Progress = 0.0;
         }
 
-        public void OnProgressChanged(double progress)
+        public void OnProgressChanged(double progress, string description)
         {
             _generalStatusHolder.Progress = progress;
+            _generalStatusHolder.Description = description;
             OnStatusReported();
         }
 

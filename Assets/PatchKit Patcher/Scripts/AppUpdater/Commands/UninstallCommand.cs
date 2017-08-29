@@ -56,6 +56,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             int counter = 0;
 
+            _statusReporter.OnProgressChanged(0.0, "Uninstalling...");
+            
             foreach (var fileName in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -70,7 +72,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _localMetaData.UnregisterEntry(fileName);
 
                 counter++;
-                _statusReporter.OnProgressChanged(counter / (double)entries.Length);
+                _statusReporter.OnProgressChanged(counter / (double)entries.Length, "Uninstalling...");
             }
 
             // TODO: Delete this after fixing directory registration in install content command
@@ -119,6 +121,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 counter++;
                 _statusReporter.OnProgressChanged(counter / (double)entries.Length);
             }*/
+            
+            _statusReporter.OnProgressChanged(1.0, "Uninstalling...");
         }
     }
 }

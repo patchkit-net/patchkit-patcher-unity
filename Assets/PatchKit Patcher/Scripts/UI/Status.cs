@@ -31,10 +31,17 @@ namespace PatchKit.Unity.Patcher.UI
                         Text.text = "Starting application...";
                         break;
                     case PatcherState.UpdatingApp:
-                        Text.text = "Updating application...";
+                        // Managed by event below
                         break;
                 }
             }).AddTo(this);
+            
+            Patcher.Instance.UpdateAppStatusChanged += status =>
+            {
+                Text.text = status.IsDownloading ? "Downloading..." : status.Description;
+            };
+
+            Text.text = string.Empty;
         }
     }
 }

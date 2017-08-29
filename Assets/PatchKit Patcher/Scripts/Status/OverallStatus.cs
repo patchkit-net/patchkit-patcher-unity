@@ -24,5 +24,7 @@
                 return DownloadBytes/(double) DownloadTotalBytes;
             }
         }
+
+        public string Description;
     }
 }
