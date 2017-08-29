@@ -7,5 +7,7 @@
         IGeneralStatusReporter CreateGeneralStatusReporter(double weight);
 
         IDownloadStatusReporter CreateDownloadStatusReporter(double weight);
+
+        void Reset();
     }
 }

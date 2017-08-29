@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Status descriptions for updating app patcher state
 
+### Changed
+- Separate version integrity check progress from update progress
+
 ## [3.2.0]
 ### Added
 - Using geolocation to find closest http server available
