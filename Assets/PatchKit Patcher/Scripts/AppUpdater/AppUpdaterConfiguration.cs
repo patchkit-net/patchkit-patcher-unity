@@ -8,5 +8,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         public bool UseTorrents;
 
         public bool CheckConsistencyBeforeDiffUpdate;
+
+        public bool UseDiffUpdates;
     }
 }

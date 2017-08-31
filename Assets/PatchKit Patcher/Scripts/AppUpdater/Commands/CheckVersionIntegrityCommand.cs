@@ -60,7 +60,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 files[i] = CheckFile(_versionSummary.Files[i]);
 
-                _statusReporter.OnProgressChanged((i + 1)/(double)_versionSummary.Files.Length);
+                _statusReporter.OnProgressChanged((i + 1)/(double)_versionSummary.Files.Length, "Checking version integrity...");
             }
 
             Results = new VersionIntegrity(files);

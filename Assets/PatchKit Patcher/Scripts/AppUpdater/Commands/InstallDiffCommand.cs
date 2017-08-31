@@ -101,14 +101,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Unarchiving files.");
                 IUnarchiver unarchiver = CreateUnrachiver(packageDirPath);
 
+                _unarchivePackageStatusReporter.OnProgressChanged(0.0, "Unarchiving package...");
+                
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
                 {
-                    _unarchivePackageStatusReporter.OnProgressChanged(entry/(double) amount);
+                    _unarchivePackageStatusReporter.OnProgressChanged(entry/(double) amount, "Unarchiving package...");
                 };
 
                 unarchiver.Unarchive(cancellationToken);
 
-                _unarchivePackageStatusReporter.OnProgressChanged(1.0);
+                _unarchivePackageStatusReporter.OnProgressChanged(1.0, string.Empty);
 
                 ProcessAddedFiles(packageDirPath, cancellationToken);
                 ProcessRemovedFiles(cancellationToken);
@@ -148,6 +150,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             int counter = 0;
 
+            _removeFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
+            
             foreach (var fileName in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -162,7 +166,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _localMetaData.UnregisterEntry(fileName);
 
                 counter++;
-                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_versionDiffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_versionDiffSummary.RemovedFiles.Length, "Installing package...");
             }
 
             foreach (var dirName in directories)
@@ -180,17 +184,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 //_localMetaData.UnregisterEntry(dirName);
 
                 counter++;
-                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_versionDiffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.OnProgressChanged(counter/(double)_versionDiffSummary.RemovedFiles.Length, "Installing package...");
             }
 
-            _removeFilesStatusReporter.OnProgressChanged(1.0);
+            _removeFilesStatusReporter.OnProgressChanged(1.0, string.Empty);
         }
 
         private void ProcessAddedFiles(string packageDirPath,
             CancellationToken cancellationToken)
         {
             DebugLogger.Log("Processing added files.");
-
+            
+            _addFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
+            
             for (int i = 0; i < _versionDiffSummary.AddedFiles.Length; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -221,10 +227,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     _localMetaData.RegisterEntry(entryName, _versionId);
                 }
 
-                _addFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionDiffSummary.AddedFiles.Length);
+                _addFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionDiffSummary.AddedFiles.Length, "Installing package...");
             }
 
-            _addFilesStatusReporter.OnProgressChanged(1.0);
+            _addFilesStatusReporter.OnProgressChanged(1.0, "Installing package...");
         }
 
         private void ProcessModifiedFiles(string packageDirPath,
@@ -232,6 +238,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Processing modified files.");
 
+            _modifiedFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
+            
             for (int i = 0; i < _versionDiffSummary.ModifiedFiles.Length; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -250,10 +258,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     //_localMetaData.RegisterEntry(entryName, _versionId);
                 }
 
-                _modifiedFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionDiffSummary.ModifiedFiles.Length);
+                _modifiedFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionDiffSummary.ModifiedFiles.Length, "Installing package...");
             }
 
-            _modifiedFilesStatusReporter.OnProgressChanged(1.0);
+            _modifiedFilesStatusReporter.OnProgressChanged(1.0, "Installing package...");
         }
         
         // TODO: Temporary solution for situation when .app directory is not deleted

@@ -102,27 +102,31 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 IUnarchiver unarchiver = CreateUnrachiver(packageDirPath);
 
+                _unarchivePackageStatusReporter.OnProgressChanged(0.0, "Unarchiving package...");
+                
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
                 {
-                    _unarchivePackageStatusReporter.OnProgressChanged(entry/(double) amount);
+                    _unarchivePackageStatusReporter.OnProgressChanged(entry/(double) amount, "Unarchiving package...");
                 };
 
                 unarchiver.Unarchive(cancellationToken);
 
-                _unarchivePackageStatusReporter.OnProgressChanged(1.0);
+                _unarchivePackageStatusReporter.OnProgressChanged(1.0, string.Empty);
 
                 DebugLogger.Log("Copying files.");
 
+                _copyFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
+                
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
                     InstallFile(_versionContentSummary.Files[i].Path, packageDirPath);
 
-                    _copyFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionContentSummary.Files.Length);
+                    _copyFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionContentSummary.Files.Length, "Installing package...");
                 }
 
-                _copyFilesStatusReporter.OnProgressChanged(1.0);
+                _copyFilesStatusReporter.OnProgressChanged(1.0, string.Empty);
             }
             finally
             {

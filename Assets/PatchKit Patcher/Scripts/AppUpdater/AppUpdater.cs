@@ -36,6 +36,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.Log("Updating.");
 
             var strategy = _strategyResolver.Resolve(Context);
+            
+            Context.StatusMonitor.Reset();
+            
             strategy.Update(cancellationToken);
         }
     }

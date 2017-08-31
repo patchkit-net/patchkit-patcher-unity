@@ -33,6 +33,11 @@ namespace PatchKit.Unity.Patcher.Status
             return reporter;
         }
 
+        public void Reset()
+        {
+            _statusHolders.Clear();
+        }
+
         private void ProcessDownloadStatus(DownloadStatusHolder downloadStatusHolder)
         {
             _overallStatus.IsDownloading = downloadStatusHolder.IsDownloading;
@@ -47,6 +52,8 @@ namespace PatchKit.Unity.Patcher.Status
 
         private void ProcessGeneralStatus(GeneralStatusHolder generalStatusHolder)
         {
+            _overallStatus.Description = generalStatusHolder.Description;
+            
             _overallStatus.Progress = CalculateOverallProgress();
 
             OnStatusChanged();

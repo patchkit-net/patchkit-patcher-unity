@@ -2,6 +2,6 @@
 {
     public interface IGeneralStatusReporter
     {
-        void OnProgressChanged(double progress);
+        void OnProgressChanged(double progress, string description);
     }
 }
