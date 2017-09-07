@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Force single instance of patcher
 - Move configuration option for switching whether to use diffs to defines
+- Use diffs only when publish method is set to "all"
 
 ## [3.3.0]
 ### Added
