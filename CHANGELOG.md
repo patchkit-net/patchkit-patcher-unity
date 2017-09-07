@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+- Force single instance of patcher
+- Move configuration option for switching whether to use diffs to defines
+
 ## [3.3.0]
 ### Added
 - getdiskspaceosx a native library for determining the amount of free space available on Mac OSX.
