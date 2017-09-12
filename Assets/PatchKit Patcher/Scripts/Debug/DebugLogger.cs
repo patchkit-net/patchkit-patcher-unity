@@ -58,6 +58,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public void LogException(Exception exception)
         {
+            OnExceptionOccured(exception);
             UnityEngine.Debug.LogErrorFormat(FormatMessage("[Exception]", FormatExceptionMessage(exception)));
             int innerExceptionCounter = 1;
             var innerException = exception.InnerException;
@@ -81,6 +82,17 @@ namespace PatchKit.Unity.Patcher.Debug
         public void LogVariable(object value, string name)
         {
             Log(string.Format("{0} = {1}", name, value));
+        }
+
+        public static event Action<Exception> ExceptionOccured;
+
+        private static void OnExceptionOccured(Exception obj)
+        {
+            var handler = ExceptionOccured;
+            if (handler != null)
+            {
+                handler(obj);
+            }
         }
     }
 }
