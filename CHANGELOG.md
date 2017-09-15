@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Sentry integration
+
 ### Changed
-- Change patcher log sending service to Sentry
+- Refactor log sending service
 - Force single instance of patcher
 - Move configuration option for switching whether to use diffs to defines
 - Use diffs only when publish method is set to "all"
