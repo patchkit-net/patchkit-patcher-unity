@@ -6,14 +6,19 @@ namespace PatchKit.Unity.Patcher.Debug
 {
     public class PatcherLogStream : IDisposable
     {
-        private readonly Subject<PatcherLogMessage> _messages
-            = new Subject<PatcherLogMessage>();
+        private readonly Subject<string> _messages
+            = new Subject<string>();
 
-        public UniRx.IObservable<PatcherLogMessage> Messages
+        public UniRx.IObservable<string> Messages
         {
             get { return _messages; }
         }
 
+        public PatcherLogStream()
+        {
+            Application.logMessageReceivedThreaded += OnLogMessageReceived;
+        }
+        
         public void Dispose()
         {
             Application.logMessageReceivedThreaded -= OnLogMessageReceived;
@@ -21,12 +26,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
         {
-            _messages.OnNext(new PatcherLogMessage
-            {
-                Message = condition,
-                StackTrace = stackTrace,
-                LogType = type
-            });
+            _messages.OnNext(condition);
         }
     }
 }
