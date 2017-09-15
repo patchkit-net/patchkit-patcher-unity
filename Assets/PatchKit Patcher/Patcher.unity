@@ -854,7 +854,6 @@ MonoBehaviour:
     AppUpdaterConfiguration:
       UseTorrents: 1
       CheckConsistencyBeforeDiffUpdate: 1
-      UseDiffUpdates: 1
     AutomaticallyStartApp: 0
     AutomaticallyCheckForAppUpdates: 1
     AutomaticallyInstallApp: 1
@@ -866,11 +865,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 377531151}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa45eb377df974345b4c0af95b815d49, type: 3}
+  m_Script: {fileID: 11500000, guid: 6097480b36ae4a9aa4e5f12a9de4cd3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LogServerUrl: http://test.patchkit.net
-  SendDelaySeconds: 15
   IgnoreEditorErrors: 1
 --- !u!1 &421519242
 GameObject:
