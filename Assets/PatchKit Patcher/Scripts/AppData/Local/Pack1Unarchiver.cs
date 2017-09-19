@@ -58,10 +58,18 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Unarchive(CancellationToken cancellationToken)
         {
+            OnUnarchiveProgressChanged(null, false, 0, _metaData.Files.Length);
+
+            int entry = 0;
+            
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
             foreach (Pack1Meta.FileEntry file in _metaData.Files)
             {
                 Unpack(file);
+
+                entry++;
+
+                OnUnarchiveProgressChanged(file.Name, file.Type == "regular", entry, _metaData.Files.Length);
             }
             DebugLogger.Log("Unpacking finished succesfully!");
         }
@@ -143,5 +151,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 
+        protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount)
+        {
+            var handler = UnarchiveProgressChanged;
+            if (handler != null)
+            {
+                handler(name, isFile, entry, amount);
+            }
+        }
     }
 }
