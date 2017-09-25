@@ -4,10 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Fixes
-- Free space calculation algorithm was using for smaller free space values that it should be.
-
 ## [3.4.0]
 ### Added
 - Sentry integration
@@ -18,8 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Move configuration option for switching whether to use diffs to defines
 - Use diffs only when publish method is set to "all"
 
-### Fix
+### Fixed
 - Fix progress reporting for unarchiving Pack1 packages
+- Free space calculation algorithm was using for smaller free space values that it should be
+- Fix error that occured when wrong license key was submitted
 
 ## [3.3.0]
 ### Added
