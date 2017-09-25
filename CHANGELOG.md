@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixes
+- Free space calculation algorithm was using for smaller free space values that it should be.
+
 ## [3.4.0]
 ### Added
 - Sentry integration
