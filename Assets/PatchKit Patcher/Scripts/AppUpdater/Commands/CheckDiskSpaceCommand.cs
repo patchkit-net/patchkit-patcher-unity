@@ -110,13 +110,27 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private long GetRequiredDiskSpaceForContent()
         {
-            long requiredDiskSpace = _contentSummary.Value.Size + _contentSummary.Value.Size + Reserve;
+            long uncompressedSize = _contentSummary.Value.UncompressedSize;
+            if (uncompressedSize == 0) // before 2.4
+            {
+                // estimate the size
+                uncompressedSize = (long) (_contentSummary.Value.Size * 1.4);
+            }
+            
+            long requiredDiskSpace = _contentSummary.Value.Size + uncompressedSize + Reserve;
             return requiredDiskSpace;
         }
 
         private long GetRequiredDiskSpaceForDiff()
         {
-            long requiredDiskSpace = _diffSummary.Value.Size + _diffSummary.Value.Size + _bigestFileSize + Reserve;
+            long uncompressedSize = _diffSummary.Value.UncompressedSize;
+            if (uncompressedSize == 0) // before 2.4
+            {
+                // estimate the size
+                uncompressedSize = (long) (_diffSummary.Value.Size * 1.4);
+            }
+            
+            long requiredDiskSpace = _diffSummary.Value.Size + uncompressedSize + _bigestFileSize + Reserve;
             return requiredDiskSpace;
         }
 
