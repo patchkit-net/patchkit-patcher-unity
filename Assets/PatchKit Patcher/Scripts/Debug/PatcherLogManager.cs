@@ -35,7 +35,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
             _registerTriggers.ExceptionTrigger.Subscribe(e =>
                 {
-                    if (IgnoreEditorErrors)
+                    if (Application.isEditor && IgnoreEditorErrors)
                     {
                         return;
                     }
@@ -47,7 +47,7 @@ namespace PatchKit.Unity.Patcher.Debug
             _registerTriggers.ExceptionTrigger.Throttle(TimeSpan.FromSeconds(5))
                 .Subscribe(e =>
                 {
-                    if (IgnoreEditorErrors)
+                    if (Application.isEditor && IgnoreEditorErrors)
                     {
                         return;
                     }
