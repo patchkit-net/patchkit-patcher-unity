@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 validationFailed("Resource hash code is null or empty.");
             }*/
-            else if (resource.Urls == null || resource.Urls.Length == 0)
+            else if (resource.GetUrls().Length == 0)
             {
                 validationFailed("Resource urls are null or empty.");
             }

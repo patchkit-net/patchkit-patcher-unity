@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.4.0]
 ### Added
 - Sentry integration
+- File parts support
 
 ### Changed
 - Refactor log sending service

@@ -139,7 +139,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                     File.Delete(_destinationMetaPath);
                 }
 
-                var httpDownloader = CreateDefaultHttpDownloader(_destinationMetaPath, _resource.MetaUrls, 0, HttpDownloaderTimeout);
+                var httpDownloader = CreateDefaultHttpDownloader(_destinationMetaPath, _resource.GetMetaUrls(), 0,
+                    HttpDownloaderTimeout);
+                
                 httpDownloader.Download(cancellationToken);
 
                 DebugLogger.Log("Meta data downloaded");

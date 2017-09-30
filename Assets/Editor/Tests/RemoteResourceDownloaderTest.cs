@@ -2,6 +2,7 @@
 using System.IO;
 using NSubstitute;
 using NUnit.Framework;
+using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -36,7 +37,24 @@ public class RemoteResourceDownloaderTest
             Size = 1,
             HashCode = "hashcode",
             TorrentUrls = new[] {"torrent-url"},
-            Urls = new[] {"url-1", "url-2"}
+            ResourceUrls = new[]
+            {
+                // TODO: Test when MetaUrl is set
+                new ResourceUrl
+                {
+                    Url = "url-1",
+                    MetaUrl = null,
+                    Country = "PL",
+                    PartSize = 0,
+                },
+                new ResourceUrl
+                {
+                    Url = "url-2",
+                    MetaUrl = null, 
+                    Country = "PL",
+                    PartSize = 0,
+                }
+            }
         };
     }
 

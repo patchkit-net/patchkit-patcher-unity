@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
@@ -73,7 +74,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             DebugLogger.Log("Downloading.");
 
-            var validUrls = new List<string>(_resource.Urls);
+            List<ResourceUrl> validUrls = new List<ResourceUrl>(_resource.ResourceUrls);
+            
+            // getting through urls list backwards, because urls may be removed during the process,
+            // and it's easier to iterate that way
             validUrls.Reverse();
 
             int retry = RetriesAmount;
@@ -82,7 +86,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 for (int i = validUrls.Count - 1; i >= 0 && retry-- > 0; --i)
                 {
-                    string url = validUrls[i];
+                    ResourceUrl url = validUrls[i];
 
                     try
                     {
@@ -137,35 +141,72 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             throw new DownloaderException("Cannot download resource.", DownloaderExceptionStatus.Other);
         }
 
-        private void Download(string url, CancellationToken cancellationToken)
+        private void Download(ResourceUrl url, CancellationToken cancellationToken)
         {
             DebugLogger.Log(string.Format("Trying to download from {0}", url));
             
-            var offset = CurrentFileSize();
+            long offset = CurrentFileSize();
 
             DebugLogger.LogVariable(offset, "offset");
 
-            BaseHttpDownloader baseHttpDownloader = new BaseHttpDownloader(url, _timeout);
-            baseHttpDownloader.SetBytesRange(offset);
-
-            baseHttpDownloader.DataAvailable += (bytes, length) =>
+            var downloadJobQueue = BuildDownloadJobQueue(url, offset);
+            foreach (DownloadJob downloadJob in downloadJobQueue)
             {
-                bool retry = !_fileStream.Write(bytes, 0, length);
-
-                if (retry)
+                BaseHttpDownloader baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeout);
+                baseHttpDownloader.SetBytesRange(downloadJob.Offset);
+                
+                baseHttpDownloader.DataAvailable += (bytes, length) =>
                 {
-                    throw new DownloaderException("Corrupt data.", DownloaderExceptionStatus.CorruptData);
-                }
+                    bool retry = !_fileStream.Write(bytes, 0, length);
 
-                OnDownloadProgressChanged(CurrentFileSize(), _resource.Size);
-            };
+                    if (retry)
+                    {
+                        throw new DownloaderException("Corrupt data.", DownloaderExceptionStatus.CorruptData);
+                    }
 
-            baseHttpDownloader.Download(cancellationToken);
+                    OnDownloadProgressChanged(CurrentFileSize(), _resource.Size);
+                };
+
+                baseHttpDownloader.Download(cancellationToken);
+            }
             
             if (_fileStream.RemainingLength > 0)
             {
                 throw new DownloaderException("Data download hasn't been completed.", DownloaderExceptionStatus.Other);
             }
+        }
+
+        /// <summary>
+        /// Builds downloads queue based on url, part sizes, file size and current offset.
+        /// </summary>
+        /// <param name="resourceUrl"></param>
+        /// <param name="currentOffset"></param>
+        /// <returns></returns>
+        private List<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
+        {
+            long totalSize = _resource.Size;
+            int partCount = resourceUrl.PartSize == 0
+                ? 1
+                : (int) Math.Ceiling(totalSize / (decimal) resourceUrl.PartSize);
+            
+            
+            List<DownloadJob> queue = new List<DownloadJob>();
+            for (int i = 0; i < partCount; i++)
+            {
+                string url = resourceUrl.Url;
+                if (i > 0)
+                {
+                    // second and later indices should have index numebr at the end
+                    url += "." + i;
+                }
+                long offset = Math.Max(currentOffset - resourceUrl.PartSize * i, 0);
+                if (offset < resourceUrl.PartSize)
+                {
+                    queue.Add(new DownloadJob {Url = url, Offset = offset});
+                }
+            }
+
+            return queue;
         }
 
         private static byte[] HashFunction(byte[] buffer, int offset, int length)
@@ -214,6 +255,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)
         {
             if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes, totalBytes);
+        }
+        
+        private struct DownloadJob
+        {
+            public string Url { get; set; }
+            public long Offset { get; set; }
         }
     }
 }

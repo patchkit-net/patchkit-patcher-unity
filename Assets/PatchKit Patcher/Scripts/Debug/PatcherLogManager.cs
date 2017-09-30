@@ -17,9 +17,12 @@ namespace PatchKit.Unity.Patcher.Debug
         private PatcherLogSentryRegistry _sentryRegistry;
 
         public bool IgnoreEditorErrors = true;
+
+        private bool _isEditor;
         
         private void Awake()
         {
+            _isEditor = Application.isEditor;
             _stream = new PatcherLogStream();
             _tempFile = new PatcherTemporaryLogFile();
             _registerTriggers = new PatcherLogRegisterTriggers();
@@ -35,7 +38,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
             _registerTriggers.ExceptionTrigger.Subscribe(e =>
                 {
-                    if (Application.isEditor && IgnoreEditorErrors)
+                    if (_isEditor && IgnoreEditorErrors)
                     {
                         return;
                     }
