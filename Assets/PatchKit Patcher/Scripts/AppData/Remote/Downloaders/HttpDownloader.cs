@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public HttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
-            : this(destinationFilePath, resource.Urls, resource.Size, timeout)
+            : this(destinationFilePath, resource.GetUrls(), resource.Size, timeout)
         {
             _resource = resource;
         }
@@ -83,6 +83,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             DebugLogger.Log("Downloading.");
 
             var validUrls = new List<string>(_mirrorUrls);
+            
+            // getting through urls list backwards, because urls may be removed during the process,
+            // and it's easier to iterate that way
             validUrls.Reverse();
 
             int retry = RetriesAmount;
