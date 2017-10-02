@@ -185,10 +185,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private List<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
         {
             long totalSize = _resource.Size;
-            int partCount = resourceUrl.PartSize == 0
-                ? 1
-                : (int) Math.Ceiling(totalSize / (decimal) resourceUrl.PartSize);
+            long partSize = resourceUrl.PartSize == 0 ? totalSize : resourceUrl.PartSize;
             
+            int partCount = (int) (totalSize / partSize);
+            partCount += totalSize % partSize != 0 ? 1 : 0;
             
             List<DownloadJob> queue = new List<DownloadJob>();
             for (int i = 0; i < partCount; i++)
@@ -199,8 +199,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     // second and later indices should have index numebr at the end
                     url += "." + i;
                 }
-                long offset = Math.Max(currentOffset - resourceUrl.PartSize * i, 0);
-                if (offset < resourceUrl.PartSize)
+                long offset = Math.Max(currentOffset - partSize * i, 0);
+                if (offset < partSize)
                 {
                     queue.Add(new DownloadJob {Url = url, Offset = offset});
                 }
