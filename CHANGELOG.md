@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Fixed
+- Compilation error on Unity 5.6 or higher
+
 ## [3.4.0]
 ### Added
 - Sentry integration
