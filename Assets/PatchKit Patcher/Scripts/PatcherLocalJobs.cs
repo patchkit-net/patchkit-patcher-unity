@@ -1,71 +1,73 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class PatcherLocalJobs : MonoBehaviour
+namespace PatchKit.Unity.Patcher
 {
-    public interface ILocalJob
+    public class PatcherLocalJobs : MonoBehaviour
     {
-        bool isDone { get; }
-
-        void OnStart();
-        void OnFinished();
-        void Update();
-    }
-
-    private List<ILocalJob> _scheduledJobs = new List<ILocalJob>();
-    private List<ILocalJob> _processingJobs = new List<ILocalJob>();
-
-    private void Awake()
-    {
-        instance = this;
-    }
-
-    public static PatcherLocalJobs instance { get; private set; }
-
-    public void ScheduleJob(ILocalJob job)
-    {
-        lock (_scheduledJobs)
+        public interface ILocalJob
         {
-            _scheduledJobs.Add(job);
+            bool isDone { get; }
+            void OnStart();
+            void OnFinished();
+            void Update();
         }
-    }
 
-    private void Update()
-    {
-        var startingJobs = new List<ILocalJob>();
-        var finishedJobs = new List<ILocalJob>();
+        private List<ILocalJob> _scheduledJobs = new List<ILocalJob>();
+        private List<ILocalJob> _processingJobs = new List<ILocalJob>();
 
-        lock (_scheduledJobs)
+        private void Awake()
         {
-            foreach (var job in _scheduledJobs)
-            {
-                job.OnStart();
-                startingJobs.Add(job);
-            }
+            instance = this;
+        }
 
-            foreach (var job in startingJobs)
+        public static PatcherLocalJobs instance { get; private set; }
+
+        public void ScheduleJob(ILocalJob job)
+        {
+            lock (_scheduledJobs)
             {
-                _scheduledJobs.Remove(job);
-                _processingJobs.Add(job);
+                _scheduledJobs.Add(job);
             }
         }
 
-        foreach (var job in _processingJobs)
+        private void Update()
         {
-            if (job.isDone)
-            {
-                finishedJobs.Add(job);
-            }
-            else
-            {
-                job.Update();
-            }
-        }
+            var startingJobs = new List<ILocalJob>();
+            var finishedJobs = new List<ILocalJob>();
 
-        foreach (var job in finishedJobs)
-        {
-            job.OnFinished();
-            _processingJobs.Remove(job);
+            lock (_scheduledJobs)
+            {
+                foreach (var job in _scheduledJobs)
+                {
+                    job.OnStart();
+                    startingJobs.Add(job);
+                }
+
+                foreach (var job in startingJobs)
+                {
+                    _scheduledJobs.Remove(job);
+                    _processingJobs.Add(job);
+                }
+            }
+
+            foreach (var job in _processingJobs)
+            {
+                if (job.isDone)
+                {
+                    finishedJobs.Add(job);
+                }
+                else
+                {
+                    job.Update();
+                }
+            }
+
+            foreach (var job in finishedJobs)
+            {
+                job.OnFinished();
+                _processingJobs.Remove(job);
+            }
         }
     }
 }

@@ -17,9 +17,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public string CharacterSet { get; private set; }
 
-        public System.Net.HttpStatusCode StatusCode { get {
-            return System.Net.HttpStatusCode.OK;
-        }}
+        public System.Net.HttpStatusCode StatusCode
+        {
+            get
+            {
+                return System.Net.HttpStatusCode.OK;
+            }
+        }
 
         public System.IO.Stream GetResponseStream()
         {
