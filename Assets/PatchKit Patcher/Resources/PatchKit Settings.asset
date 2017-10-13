@@ -32,8 +32,8 @@ MonoBehaviour:
       Timeout: 5000
   KeysApiConnectionSettings:
     MainServer:
-      Host: keys.patchkit.net
-      Port: 43240
-      UseHttps: 0
+      Host: keys2.patchkit.net
+      Port: 443
+      UseHttps: 1
       Timeout: 5000
     CacheServers: []

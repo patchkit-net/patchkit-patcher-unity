@@ -3,6 +3,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
@@ -18,6 +19,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             new MainApiConnection(Settings.GetMainApiConnectionSettings()),
             new KeysApiConnection(Settings.GetKeysApiConnectionSettings()))
         {
+            _keysApiConnection.HttpWebRequestFactory = new UnityWebRequestFactory();
         }
 
         public RemoteMetaData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
@@ -32,6 +34,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _appSecret = appSecret;
             _mainApiConnection = mainApiConnection;
             _keysApiConnection = keysApiConnection;
+
+            _keysApiConnection.HttpWebRequestFactory = new UnityWebRequestFactory();
         }
 
         public int GetLatestVersionId()
