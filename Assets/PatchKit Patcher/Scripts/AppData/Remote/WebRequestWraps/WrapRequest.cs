@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Threading;
 using UnityEngine;
 using PatchKit.Api;
@@ -9,97 +10,64 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
     {
         public const string responseEncoding = "iso-8859-2";
 
-        public class WWWJob : PatcherLocalJobs.ILocalJob
+        private EventWaitHandle _waitHandle;
+
+        public string Data { get; private set; }
+        public bool WasError { get; private set; }
+
+        IEnumerator JobCoroutine(string url)
         {
-            public WWWJob(string url)
+            var www = new WWW(url);
+            var start = DateTime.Now;
+
+            while (!www.isDone && string.IsNullOrEmpty(www.error))
             {
-                _url = url;
-                isDone = false;
-                error = null;
-            }
+                yield return new WaitForSeconds(0.1f);
 
-            private string _url;
-            private WWW _www;
-
-            private string _downloadedData;
-
-            public bool isDone { get; private set; }
-
-            public string error { get; private set; }
-
-            public void OnStart()
-            {
-                _www = new WWW(_url);
-            }
-
-            public void OnFinished()
-            {
-                isDone = true;
-                _downloadedData = _www.text;
-            }
-
-            public void Update()
-            {
-                if (_www.isDone)
+                if ((DateTime.Now - start).Milliseconds > Timeout)
                 {
-                    isDone = true;
-                }
-
-                if (!string.IsNullOrEmpty(_www.error))
-                {
-                    isDone = true;
-                    error = _www.error;
+                    break;
                 }
             }
 
-            public WrapResponse MakeResponse()
+            if (www.isDone)
             {
-                return new WrapResponse(_downloadedData, responseEncoding);
+                Data = www.text;
             }
+            else if (!string.IsNullOrEmpty(www.error))
+            {
+                WasError = true;
+                Data = www.error;
+            }
+            else
+            {
+                WasError = true;
+                Data = "Timeout exception";
+            }
+
+            yield return null;
         }
 
         public WrapRequest(string url)
         {
-            _job = new WWWJob(url);
-            _uri = new Uri(url);
-
-            PatcherLocalJobs.instance.ScheduleJob(_job);
+            _waitHandle = Utilities.UnityDispatcher.InvokeCoroutine(JobCoroutine(url));
+            Address = new Uri(url);
         }
-
-        private WWWJob _job;
-        private Uri _uri;
 
         public int Timeout { get; set; }
 
-        public Uri Address 
-        { 
-            get 
-            {
-                return _uri;
-            }
-        }
+        public Uri Address { get; private set; }
 
         public IHttpWebResponse GetResponse()
         {
-            var start = DateTime.Now;
-            Func<bool> isTimeout = () => DateTime.Now.Subtract(start).Milliseconds > Timeout;
+            _waitHandle.WaitOne();
 
-            while (!_job.isDone || isTimeout())
+            if (WasError)
             {
-                Thread.Sleep(100);
+                throw new Exception(Data);
             }
 
-            if (isTimeout())
-            {
-                throw new TimeoutException();
-            }
-
-            if (_job.error != null)
-            {
-                throw new Exception(_job.error);
-            }
-
-            return _job.MakeResponse();
+            return new WrapResponse(Data, responseEncoding);
         }
     }
 }
