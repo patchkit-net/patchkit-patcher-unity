@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -26,6 +27,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             Checks.ArgumentNotNull(context, "context");
 
             _context = context;
+        }
+
+        public StrategyType GetStrategyType()
+        {
+            return StrategyType.Diff;
         }
 
         public void Update(CancellationToken cancellationToken)

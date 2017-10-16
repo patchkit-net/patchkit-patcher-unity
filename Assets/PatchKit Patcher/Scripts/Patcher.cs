@@ -669,8 +669,7 @@ namespace PatchKit.Unity.Patcher
 
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
-                var appUpdater = new AppUpdater.AppUpdater(_app, _configuration.AppUpdaterConfiguration);
-
+                var appUpdater = new AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration ) );
                 appUpdater.Context.StatusMonitor.OverallStatusChanged += OnUpdateAppStatusChanged;
 
                 try

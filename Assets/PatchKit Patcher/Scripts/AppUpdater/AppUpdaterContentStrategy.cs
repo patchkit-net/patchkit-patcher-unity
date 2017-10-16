@@ -1,4 +1,5 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
+﻿using System;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
@@ -18,6 +19,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.LogConstructor();
 
             _context = context;
+        }
+
+        public StrategyType GetStrategyType()
+        {
+            return StrategyType.Content;
         }
 
         public void Update(CancellationToken cancellationToken)
