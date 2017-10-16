@@ -37,7 +37,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 case StrategyType.Empty:
                     return StrategyType.Empty;
                 case StrategyType.Content:
-                    return StrategyType.Diff;
+                    return StrategyType.Content;
                 case StrategyType.Diff:
                     return StrategyType.Content;
                 default:
