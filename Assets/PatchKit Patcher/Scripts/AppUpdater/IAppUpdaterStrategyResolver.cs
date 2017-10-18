@@ -6,8 +6,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     {
         StrategyType Resolve(AppUpdaterContext context);
 
-        IAppUpdaterStrategy Create( StrategyType type, AppUpdaterContext context );
+        IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context);
 
-        StrategyType GetFallbackStrategy( StrategyType strategyType );
+        StrategyType GetFallbackStrategy(StrategyType strategyType);
     }
 }

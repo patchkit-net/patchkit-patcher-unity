@@ -6,7 +6,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    public class AppUpdaterStrategyResolver : IAppUpdaterStrategyResolver
+    public class AppUpdaterStrategyResolver: IAppUpdaterStrategyResolver
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterStrategyResolver));
 
@@ -15,24 +15,24 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.LogConstructor();
         }
 
-        public IAppUpdaterStrategy Create( StrategyType type, AppUpdaterContext context )
+        public IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context)
         {
-            switch ( type )
+            switch (type)
             {
                 case StrategyType.Empty:
                     return new AppUpdaterEmptyStrategy();
                 case StrategyType.Content:
-                    return new AppUpdaterContentStrategy( context );
+                    return new AppUpdaterContentStrategy(context);
                 case StrategyType.Diff:
-                    return new AppUpdaterDiffStrategy( context );
+                    return new AppUpdaterDiffStrategy(context);
                 default:
-                    return new AppUpdaterContentStrategy( context );
+                    return new AppUpdaterContentStrategy(context);
             }
         }
 
-        public StrategyType GetFallbackStrategy( StrategyType strategyType )
+        public StrategyType GetFallbackStrategy(StrategyType strategyType)
         {
-            switch ( strategyType )
+            switch (strategyType)
             {
                 case StrategyType.Empty:
                     return StrategyType.Empty;

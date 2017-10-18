@@ -35,51 +35,51 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.Log("Updating.");
 
             StrategyType type = _strategyResolver.Resolve(Context);
-            _strategy = _strategyResolver.Create( type, Context );
+            _strategy = _strategyResolver.Create(type, Context);
             Context.StatusMonitor.Reset();
 
             try
             {
-                _strategy.Update( cancellationToken );
+                _strategy.Update(cancellationToken);
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
-                if (   ex is OperationCanceledException
+                if (ex is OperationCanceledException
                     || ex is UnauthorizedAccessException
                     || ex is NotEnoughtDiskSpaceException
                     || ex is ThreadInterruptedException
-                    || ex is ThreadAbortException )
+                    || ex is ThreadAbortException)
                 {
-                    DebugLogger.LogWarning( "Strategy caused exception, to be handled further" );
+                    DebugLogger.LogWarning("Strategy caused exception, to be handled further");
                     throw;
                 }
                 else
                 {
-                    DebugLogger.LogWarningFormat( "Strategy caused exception, being handled by fallback: {0}", ex.Message );
+                    DebugLogger.LogWarningFormat("Strategy caused exception, being handled by fallback: {0}", ex.Message);
 
-                    HandleFallback( cancellationToken);
+                    HandleFallback(cancellationToken);
                 }
             }
         }
 
-        private void HandleFallback( CancellationToken cancellationToken)
+        private void HandleFallback(CancellationToken cancellationToken)
         {
-            StrategyType fallbackType = _strategyResolver.GetFallbackStrategy( _strategy.GetStrategyType() );
+            StrategyType fallbackType = _strategyResolver.GetFallbackStrategy(_strategy.GetStrategyType());
 
-            if ( fallbackType == StrategyType.None )
+            if (fallbackType == StrategyType.None)
             {
                 throw new Exception("Updater Strategy not found");
             }
 
-            _strategy = _strategyResolver.Create( fallbackType, Context );
+            _strategy = _strategyResolver.Create(fallbackType, Context);
 
             try
             {
-                _strategy.Update( cancellationToken );
+                _strategy.Update(cancellationToken);
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
-                DebugLogger.LogWarningFormat( "Fallback strategy caused exception, to be handled further: {0}", ex.Message );
+                DebugLogger.LogWarningFormat("Fallback strategy caused exception, to be handled further: {0}", ex.Message);
                 throw;
             }
         }

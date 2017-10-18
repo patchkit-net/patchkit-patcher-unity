@@ -4,7 +4,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    public class AppUpdaterEmptyStrategy : IAppUpdaterStrategy
+    public class AppUpdaterEmptyStrategy: IAppUpdaterStrategy
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterStrategyResolver));
 

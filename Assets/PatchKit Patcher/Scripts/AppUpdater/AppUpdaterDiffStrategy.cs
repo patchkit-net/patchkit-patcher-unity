@@ -6,7 +6,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    public class AppUpdaterDiffStrategy : IAppUpdaterStrategy
+    public class AppUpdaterDiffStrategy: IAppUpdaterStrategy
     {
         private struct DiffCommands
         {
@@ -49,7 +49,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var commandFactory = new AppUpdaterCommandFactory();
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
-            
+
             geolocateCommand.Prepare(_context.StatusMonitor);
             geolocateCommand.Execute(cancellationToken);
 
