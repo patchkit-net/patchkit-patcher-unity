@@ -1,9 +1,7 @@
-﻿using PatchKit.Api;
+﻿using System;
+using PatchKit.Api;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Utilities;
-using UnityEngine;
-using UnityEngine.Networking;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
@@ -15,27 +13,37 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly MainApiConnection _mainApiConnection;
         private readonly KeysApiConnection _keysApiConnection;
 
-        public RemoteMetaData(string appSecret) : this(appSecret, 
-            new MainApiConnection(Settings.GetMainApiConnectionSettings()),
-            new KeysApiConnection(Settings.GetKeysApiConnectionSettings()))
-        {
-            _keysApiConnection.HttpWebRequestFactory = new UnityWebRequestFactory();
-        }
-
-        public RemoteMetaData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
+        public RemoteMetaData(string appSecret)
         {
             Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
-            Checks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
-            Checks.ArgumentNotNull(keysApiConnection, "keysApiConnection");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");
 
             _appSecret = appSecret;
-            _mainApiConnection = mainApiConnection;
-            _keysApiConnection = keysApiConnection;
+            _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
 
-            _keysApiConnection.HttpWebRequestFactory = new UnityWebRequestFactory();
+            var keysSettings = Settings.GetKeysApiConnectionSettings();
+
+            string overrideKeysUrl;
+
+            if (TryReadEnvironmentVariable("PK_PATCHER_KEYS_URL", out overrideKeysUrl))
+            {
+                bool useHttps = overrideKeysUrl.StartsWith("https://");
+
+                overrideKeysUrl = overrideKeysUrl.Replace("https://", string.Empty)
+                    .Replace("http://", string.Empty);
+
+                keysSettings.MainServer.Host = overrideKeysUrl;
+                keysSettings.MainServer.Port = 0;
+                keysSettings.MainServer.UseHttps = useHttps;
+            }
+
+            _keysApiConnection =
+                new KeysApiConnection(keysSettings)
+                {
+                    HttpWebRequestFactory = new UnityWebRequestFactory()
+                };
         }
 
         public int GetLatestVersionId()
@@ -74,6 +82,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             var keySecret = _keysApiConnection.GetKeyInfo(key, _appSecret, cachedKeySecret).KeySecret;
 
             return keySecret;
+        }
+
+        private static bool TryReadEnvironmentVariable(string argumentName, out string value)
+        {
+            value = Environment.GetEnvironmentVariable(argumentName);
+
+            return value != null;
         }
     }
 }
