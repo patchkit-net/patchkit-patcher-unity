@@ -4,6 +4,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 {
     public enum StrategyType
     {
+        None,
         Empty,
         Content,
         Diff

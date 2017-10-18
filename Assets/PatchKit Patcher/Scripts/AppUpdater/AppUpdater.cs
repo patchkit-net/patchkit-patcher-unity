@@ -65,6 +65,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private void HandleFallback( CancellationToken cancellationToken)
         {
             StrategyType fallbackType = _strategyResolver.GetFallbackStrategy( _strategy.GetStrategyType() );
+
+            if ( fallbackType == StrategyType.None )
+            {
+                throw new Exception("Updater Strategy not found");
+            }
+
             _strategy = _strategyResolver.Create( fallbackType, Context );
 
             try
