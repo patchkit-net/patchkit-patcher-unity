@@ -1,4 +1,5 @@
-﻿using PatchKit.Api;
+﻿using System;
+using PatchKit.Api;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -30,14 +31,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             if (EnvironmentInfo.TryReadEnvironmentVariable(KeysUrlEnvironmentVariable, out overrideKeysUrl))
             {
-                bool useHttps = overrideKeysUrl.StartsWith("https://");
+                var overrideKeysUri = new Uri(overrideKeysUrl);
 
-                overrideKeysUrl = overrideKeysUrl.Replace("https://", string.Empty)
-                    .Replace("http://", string.Empty);
-
-                keysSettings.MainServer.Host = overrideKeysUrl;
-                keysSettings.MainServer.Port = 0;
-                keysSettings.MainServer.UseHttps = useHttps;
+                keysSettings.MainServer.Host = overrideKeysUri.Host;
+                keysSettings.MainServer.Port = overrideKeysUri.Port;
+                keysSettings.MainServer.UseHttps = overrideKeysUri.Scheme == Uri.UriSchemeHttps;
             }
 
             _keysApiConnection =
