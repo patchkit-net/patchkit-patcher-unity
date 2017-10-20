@@ -13,5 +13,12 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             return Environment.OSVersion.ToString();
         }
+
+        public static bool TryReadEnvironmentVariable(string argumentName, out string value)
+        {
+            value = Environment.GetEnvironmentVariable(argumentName);
+
+            return value != null;
+        }
     }
 }

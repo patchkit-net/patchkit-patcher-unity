@@ -1,5 +1,4 @@
-﻿using System;
-using PatchKit.Api;
+﻿using PatchKit.Api;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -8,6 +7,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
     public class RemoteMetaData : IRemoteMetaData
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteMetaData));
+
+        private const string KeysUrlEnvironmentVariable = "PK_PATCHER_KEYS_URL";
 
         private readonly string _appSecret;
         private readonly MainApiConnection _mainApiConnection;
@@ -27,7 +28,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             string overrideKeysUrl;
 
-            if (TryReadEnvironmentVariable("PK_PATCHER_KEYS_URL", out overrideKeysUrl))
+            if (EnvironmentInfo.TryReadEnvironmentVariable(KeysUrlEnvironmentVariable, out overrideKeysUrl))
             {
                 bool useHttps = overrideKeysUrl.StartsWith("https://");
 
@@ -82,13 +83,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             var keySecret = _keysApiConnection.GetKeyInfo(key, _appSecret, cachedKeySecret).KeySecret;
 
             return keySecret;
-        }
-
-        private static bool TryReadEnvironmentVariable(string argumentName, out string value)
-        {
-            value = Environment.GetEnvironmentVariable(argumentName);
-
-            return value != null;
         }
     }
 }

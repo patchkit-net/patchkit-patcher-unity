@@ -28,7 +28,7 @@ namespace PatchKit.Unity.Patcher
             PatcherData data = new PatcherData();
 
             string forceAppSecret;
-            if (TryReadEnvironmentVariable(ForceSecretEnvironmentVariable, out forceAppSecret))
+            if (EnvironmentInfo.TryReadEnvironmentVariable(ForceSecretEnvironmentVariable, out forceAppSecret))
             {
                 DebugLogger.Log(string.Format("Setting forced app secret {0}", forceAppSecret));
                 data.AppSecret = forceAppSecret;
@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher
             }
 
             string forceOverrideLatestVersionIdString;
-            if (TryReadEnvironmentVariable(ForceVersionEnvironmentVariable, out forceOverrideLatestVersionIdString))
+            if (EnvironmentInfo.TryReadEnvironmentVariable(ForceVersionEnvironmentVariable, out forceOverrideLatestVersionIdString))
             {
                 int forceOverrideLatestVersionId;
 
@@ -109,13 +109,6 @@ namespace PatchKit.Unity.Patcher
         private static bool HasArgument(string argumentName)
         {
             return _commandLineArgs.Contains(argumentName);
-        }
-
-        private static bool TryReadEnvironmentVariable(string argumentName, out string value)
-        {
-            value = Environment.GetEnvironmentVariable(argumentName);
-
-            return value != null;
         }
 
         private static string DecodeSecret(string encodedSecret)
