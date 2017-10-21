@@ -8,8 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Fallback for content strategy in case of diff strategy failure
 
+### Changed
+- Geolocate: Increased timeout from 5s to 10s
+
 ### Fixed
 - Compilation error on Unity 5.6 or higher
+- Geolocate: NullReferenceException on timeout
 
 ## [3.4.0]
 ### Added
