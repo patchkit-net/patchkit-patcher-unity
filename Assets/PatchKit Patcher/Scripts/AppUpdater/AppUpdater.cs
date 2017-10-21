@@ -67,22 +67,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private bool TryHandleFallback(CancellationToken cancellationToken)
         {
-            StrategyType fallbackType = _strategyResolver.GetFallbackStrategy(_strategy.GetStrategyType());
-            bool HasFallback = fallbackType != StrategyType.None;
-            if (HasFallback)
-            {
-                _strategy = _strategyResolver.Create(fallbackType, Context);
+            var fallbackType = _strategyResolver.GetFallbackStrategy(_strategy.GetStrategyType());
 
-                try
-                {
-                    _strategy.Update(cancellationToken);
-                }
-                catch
-                {
-                    throw;
-                }
+            if (fallbackType == StrategyType.None)
+            {
+                return false;
             }
-            return HasFallback;
+
+            _strategy = _strategyResolver.Create(fallbackType, Context);
+
+            _strategy.Update(cancellationToken);
+
+            return true;
         }
     }
 }
