@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+### Added
+- Fallback for content strategy in case of diff strategy failure
+
 ### Fixed
 - Compilation error on Unity 5.6 or higher
 
