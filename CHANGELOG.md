@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Added
 - Fallback for content strategy in case of diff strategy failure
+- Fixed error when Patcher would appear to be unresponding during downloading
 
 ### Changed
 - Geolocate: Increased timeout from 5s to 10s
