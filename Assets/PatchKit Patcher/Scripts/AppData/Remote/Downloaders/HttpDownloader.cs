@@ -145,8 +145,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     }
                 }
 
+                
                 DebugLogger.Log("Waiting 10 seconds before trying again...");
-                Thread.Sleep(10000);
+                int retrySleepDuration = 10000;
+                // FIX: Bug #692
+                for (int i = 0; i < retrySleepDuration; ++i)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    Thread.Sleep(1);
+                }
             }
 
             if (retry <= 0)
