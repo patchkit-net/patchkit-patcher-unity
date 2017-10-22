@@ -18,7 +18,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class GeolocateCommand : IGeolocateCommand
     {
-        private const int Timeout = 5000;
+        private const int Timeout = 10000;
         
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(GeolocateCommand));
         
@@ -83,7 +83,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 jToken = countryResponse.GetJson();
 #endif
                 
-                if (jToken.Value<string>("country") != null)
+                if (jToken != null && jToken.Value<string>("country") != null)
                 {
                     CountryCode = jToken.Value<string>("country");
                     HasCountryCode = !string.IsNullOrEmpty(CountryCode);

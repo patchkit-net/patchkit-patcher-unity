@@ -1,5 +1,8 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
+﻿using System;
+using System.Threading;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.AppUpdater.Commands;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
@@ -7,25 +10,21 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdater));
 
-        private readonly IAppUpdaterStrategyResolver _strategyResolver;
+        public readonly AppUpdaterContext Context;
+
+        private IAppUpdaterStrategyResolver _strategyResolver;
+
+        private IAppUpdaterStrategy _strategy;
 
         private bool _updateHasBeenCalled;
 
-        public readonly AppUpdaterContext Context;
-
-        public AppUpdater(App app, AppUpdaterConfiguration configuration) : this(
-            new AppUpdaterStrategyResolver(), new AppUpdaterContext(app, configuration))
+        public AppUpdater(AppUpdaterContext context)
         {
-        }
-
-        public AppUpdater(IAppUpdaterStrategyResolver strategyResolver, AppUpdaterContext context)
-        {
-            Checks.ArgumentNotNull(strategyResolver, "strategyResolver");
             Checks.ArgumentNotNull(context, "context");
 
             DebugLogger.LogConstructor();
 
-            _strategyResolver = strategyResolver;
+            _strategyResolver = new AppUpdaterStrategyResolver();
             Context = context;
         }
 
@@ -35,11 +34,51 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.Log("Updating.");
 
-            var strategy = _strategyResolver.Resolve(Context);
-            
+            StrategyType type = _strategyResolver.Resolve(Context);
+            _strategy = _strategyResolver.Create(type, Context);
             Context.StatusMonitor.Reset();
-            
-            strategy.Update(cancellationToken);
+
+            try
+            {
+                _strategy.Update(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                if (ex is OperationCanceledException
+                    || ex is UnauthorizedAccessException
+                    || ex is NotEnoughtDiskSpaceException
+                    || ex is ThreadInterruptedException
+                    || ex is ThreadAbortException)
+                {
+                    DebugLogger.LogWarning("Strategy caused exception, to be handled further");
+                    throw;
+                }
+                else
+                {
+                    DebugLogger.LogWarningFormat("Strategy caused exception, being handled by fallback: {0}", ex.Message);
+
+                    if (!TryHandleFallback(cancellationToken))
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+
+        private bool TryHandleFallback(CancellationToken cancellationToken)
+        {
+            var fallbackType = _strategyResolver.GetFallbackStrategy(_strategy.GetStrategyType());
+
+            if (fallbackType == StrategyType.None)
+            {
+                return false;
+            }
+
+            _strategy = _strategyResolver.Create(fallbackType, Context);
+
+            _strategy.Update(cancellationToken);
+
+            return true;
         }
     }
 }
