@@ -1,8 +1,7 @@
-﻿using PatchKit.Api;
+﻿using System;
+using PatchKit.Api;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Utilities;
-using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
@@ -14,24 +13,34 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly MainApiConnection _mainApiConnection;
         private readonly KeysApiConnection _keysApiConnection;
 
-        public RemoteMetaData(string appSecret) : this(appSecret, 
-            new MainApiConnection(Settings.GetMainApiConnectionSettings()),
-            new KeysApiConnection(Settings.GetKeysApiConnectionSettings()))
-        {
-        }
-
-        public RemoteMetaData(string appSecret, MainApiConnection mainApiConnection, KeysApiConnection keysApiConnection)
+        public RemoteMetaData(string appSecret)
         {
             Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
-            Checks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
-            Checks.ArgumentNotNull(keysApiConnection, "keysApiConnection");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");
 
             _appSecret = appSecret;
-            _mainApiConnection = mainApiConnection;
-            _keysApiConnection = keysApiConnection;
+            _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
+
+            var keysSettings = Settings.GetKeysApiConnectionSettings();
+
+            string overrideKeysUrl;
+
+            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.KeysUrlEnvironmentVariable, out overrideKeysUrl))
+            {
+                var overrideKeysUri = new Uri(overrideKeysUrl);
+
+                keysSettings.MainServer.Host = overrideKeysUri.Host;
+                keysSettings.MainServer.Port = overrideKeysUri.Port;
+                keysSettings.MainServer.UseHttps = overrideKeysUri.Scheme == Uri.UriSchemeHttps;
+            }
+
+            _keysApiConnection =
+                new KeysApiConnection(keysSettings)
+                {
+                    HttpWebRequestFactory = new UnityWebRequestFactory()
+                };
         }
 
         public int GetLatestVersionId()
