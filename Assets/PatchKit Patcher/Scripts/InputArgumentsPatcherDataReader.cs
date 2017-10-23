@@ -10,9 +10,6 @@ namespace PatchKit.Unity.Patcher
 {
     public class InputArgumentsPatcherDataReader
     {
-        private const string ForceSecretEnvironmentVariable = "PK_PATCHER_FORCE_SECRET";
-        private const string ForceVersionEnvironmentVariable = "PK_PATCHER_FORCE_VERSION";
-
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InputArgumentsPatcherDataReader));
         private static readonly List<string> _commandLineArgs = Environment.GetCommandLineArgs().ToList();
 
@@ -28,7 +25,7 @@ namespace PatchKit.Unity.Patcher
             PatcherData data = new PatcherData();
 
             string forceAppSecret;
-            if (TryReadEnvironmentVariable(ForceSecretEnvironmentVariable, out forceAppSecret))
+            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceSecretEnvironmentVariable, out forceAppSecret))
             {
                 DebugLogger.Log(string.Format("Setting forced app secret {0}", forceAppSecret));
                 data.AppSecret = forceAppSecret;
@@ -45,7 +42,7 @@ namespace PatchKit.Unity.Patcher
             }
 
             string forceOverrideLatestVersionIdString;
-            if (TryReadEnvironmentVariable(ForceVersionEnvironmentVariable, out forceOverrideLatestVersionIdString))
+            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceVersionEnvironmentVariable, out forceOverrideLatestVersionIdString))
             {
                 int forceOverrideLatestVersionId;
 
@@ -109,13 +106,6 @@ namespace PatchKit.Unity.Patcher
         private static bool HasArgument(string argumentName)
         {
             return _commandLineArgs.Contains(argumentName);
-        }
-
-        private static bool TryReadEnvironmentVariable(string argumentName, out string value)
-        {
-            value = Environment.GetEnvironmentVariable(argumentName);
-
-            return value != null;
         }
 
         private static string DecodeSecret(string encodedSecret)
