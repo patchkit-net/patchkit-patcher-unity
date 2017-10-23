@@ -1,7 +1,13 @@
-﻿namespace PatchKit.Unity.Patcher.AppUpdater
+﻿using System;
+
+namespace PatchKit.Unity.Patcher.AppUpdater
 {
     public interface IAppUpdaterStrategyResolver
     {
-        IAppUpdaterStrategy Resolve(AppUpdaterContext context);
+        StrategyType Resolve(AppUpdaterContext context);
+
+        IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context);
+
+        StrategyType GetFallbackStrategy(StrategyType strategyType);
     }
 }
