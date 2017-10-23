@@ -12,3 +12,9 @@ It's pretty important to use a stable and tester patcher version. You will find 
 The native library is already precompiled.
 
 If you need to recompile it, simply open the project file (`getdiskspaceosx/getdiskspaceosx.xcodeproj`) in XCode and build it. The bundle will be automatically copied into `Assets/Plugins/PatchKit/x86_64`.
+
+## Environment variables
+
+* **PK_PATCHER_FORCE_SECRET** - force certain app secret
+* **PK_PATCHER_FORCE_VERSION** - force certain app version
+* **PK_PATCHER_KEYS_URL** - change used url of keys API
