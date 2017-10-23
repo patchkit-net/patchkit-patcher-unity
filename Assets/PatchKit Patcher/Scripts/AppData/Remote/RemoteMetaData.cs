@@ -9,8 +9,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteMetaData));
 
-        private const string KeysUrlEnvironmentVariable = "PK_PATCHER_KEYS_URL";
-
         private readonly string _appSecret;
         private readonly MainApiConnection _mainApiConnection;
         private readonly KeysApiConnection _keysApiConnection;
@@ -29,7 +27,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             string overrideKeysUrl;
 
-            if (EnvironmentInfo.TryReadEnvironmentVariable(KeysUrlEnvironmentVariable, out overrideKeysUrl))
+            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.KeysUrlEnvironmentVariable, out overrideKeysUrl))
             {
                 var overrideKeysUri = new Uri(overrideKeysUrl);
 
