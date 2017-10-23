@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -145,15 +146,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     }
                 }
 
-                int retrySleepDuration = 10000;
-                int singleSleep = 100;
-                DebugLogger.LogFormat("Waiting {0} seconds before trying again...", retrySleepDuration/1000);
-                // FIX: Bug #692
-                for (int i = 0; i < retrySleepDuration/singleSleep; ++i)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Thread.Sleep(singleSleep);
-                }
+                DebugLogger.Log("Waiting 10 seconds before trying again...");
+                Threading.CancelableSleep(10000, cancellationToken);
             }
 
             if (retry <= 0)
