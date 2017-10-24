@@ -12,6 +12,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class InstallDiffCommand : BaseAppUpdaterCommand, IInstallDiffCommand
     {
+        private const string Suffix = "_"; // FIX: Bug #714
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallDiffCommand));
 
         private readonly string _packagePath;
@@ -134,7 +135,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 case "zip":
                     return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
                 case "pack1":
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
                 default:
                     throw new InstallerException(string.Format("Unknown compression method: {0}",
                         _versionDiffSummary.CompressionMethod));
@@ -214,13 +215,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 }
                 else
                 {
-                    string sourceFilePath = Path.Combine(packageDirPath, entryName);
+                    string sourceFilePath = Path.Combine(packageDirPath, entryName + Suffix);
 
                     if (!File.Exists(sourceFilePath))
                     {
                         throw new InstallerException(string.Format("Cannot find file <{0}> in content package.", entryName));
                     }
 
+                    DebugLogger.LogFormat("Copying {0} -> {1}", sourceFilePath, entryName);
                     DirectoryOperations.CreateParentDirectory(entryPath);
                     FileOperations.Copy(sourceFilePath, entryPath, true);
 
@@ -247,8 +249,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 var entryName = _versionDiffSummary.ModifiedFiles[i];
                 
                 if (!entryName.EndsWith("/"))
-                {
-                    PatchFile(entryName, packageDirPath);
+                {                    
+                    DebugLogger.LogFormat("Patching {0} -> {1}", packageDirPath, entryName);
+                    PatchFile(entryName + Suffix, packageDirPath);
 
                     _localMetaData.RegisterEntry(entryName, _versionId);
                 }

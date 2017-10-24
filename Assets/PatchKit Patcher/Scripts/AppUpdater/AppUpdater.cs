@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 }
                 else
                 {
-                    DebugLogger.LogWarningFormat("Strategy caused exception, being handled by fallback: {0}", ex.Message);
+                    DebugLogger.LogWarningFormat("Strategy caused exception, being handled by fallback: {0}, Trace: {1}", ex.Message, ex.StackTrace);
 
                     if (!TryHandleFallback(cancellationToken))
                     {

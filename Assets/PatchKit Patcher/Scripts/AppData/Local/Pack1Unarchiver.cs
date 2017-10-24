@@ -23,30 +23,34 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly string _packagePath;
         private readonly Pack1Meta _metaData;
         private readonly string _destinationDirPath;
+        private readonly string _suffix;
         private readonly byte[] _key;
         private readonly byte[] _iv;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key)
-            : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key))
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key, string suffix = "")
+            : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key), suffix)
         {
             // do nothing
         }
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key)
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key, string suffix)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
             Assert.AreEqual(MagicBytes.Pack1, MagicBytes.ReadFileType(packagePath), "Is not Pack1 format");
+            Checks.ArgumentNotNull(suffix, "suffix");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
             DebugLogger.LogVariable(destinationDirPath, "destinationDirPath");
+            DebugLogger.LogVariable(suffix, "suffix");
 
             _packagePath = packagePath;
             _metaData = metaData;
             _destinationDirPath = destinationDirPath;
+            _suffix = suffix;
 
             using (var sha256 = SHA256.Create())
             {
@@ -112,7 +116,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackRegularFile(Pack1Meta.FileEntry file)
         {
-            string destPath = Path.Combine(_destinationDirPath, file.Name);
+            string destPath = Path.Combine(_destinationDirPath, file.Name + _suffix);
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
             Files.CreateParents(destPath);
