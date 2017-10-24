@@ -6,7 +6,12 @@ using System.Text;
 using Ionic.Zlib;
 using Newtonsoft.Json;
 using UnityEngine;
+
+#if UNITY_5_6_OR_NEWER
+using UnityEngine.Networking;
+#else
 using UnityEngine.Experimental.Networking;
+#endif
 
 namespace PatchKit.Unity.Patcher.Debug
 {

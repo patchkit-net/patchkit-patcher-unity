@@ -1,9 +1,10 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
+﻿using System;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    public class AppUpdaterContentStrategy : IAppUpdaterStrategy
+    public class AppUpdaterContentStrategy: IAppUpdaterStrategy
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterContentStrategy));
 
@@ -20,6 +21,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             _context = context;
         }
 
+        public StrategyType GetStrategyType()
+        {
+            return StrategyType.Content;
+        }
+
         public void Update(CancellationToken cancellationToken)
         {
             Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
@@ -28,7 +34,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var commandFactory = new Commands.AppUpdaterCommandFactory();
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
-            
+
             geolocateCommand.Prepare(_context.StatusMonitor);
             geolocateCommand.Execute(cancellationToken);
 
