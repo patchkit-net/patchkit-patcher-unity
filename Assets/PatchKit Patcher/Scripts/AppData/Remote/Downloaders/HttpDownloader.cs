@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -146,7 +147,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 }
 
                 DebugLogger.Log("Waiting 10 seconds before trying again...");
-                Thread.Sleep(10000);
+                Threading.CancelableSleep(10000, cancellationToken);
             }
 
             if (retry <= 0)

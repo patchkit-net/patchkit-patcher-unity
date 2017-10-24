@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Threading;
+using PatchKit.Unity.Patcher.Cancellation;
 using UnityEngine;
 
 namespace PatchKit.Unity.Utilities
@@ -61,6 +62,22 @@ namespace PatchKit.Unity.Utilities
             finally
             {
                 thread.Abort();
+            }
+        }
+
+        /// <summary>
+        /// Like Thread.Sleep() but checks if cancelation occured meanwhile 
+        /// </summary>
+        /// <param name="duration">Miliseconds, time to sleep</param>
+        /// <param name="cancellationToken">token to check cancellation exception</param>
+        public static void CancelableSleep(int duration, CancellationToken cancellationToken)
+        {
+            // FIX: Bug #692
+            int singleSleep = 100;
+            for (int i = 0; i < duration / singleSleep; ++i)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                Thread.Sleep(singleSleep);
             }
         }
     }
