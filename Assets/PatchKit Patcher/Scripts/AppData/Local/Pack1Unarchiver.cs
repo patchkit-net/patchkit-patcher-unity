@@ -40,10 +40,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
             Assert.AreEqual(MagicBytes.Pack1, MagicBytes.ReadFileType(packagePath), "Is not Pack1 format");
+            Checks.ArgumentNotNull(suffix, "suffix");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
             DebugLogger.LogVariable(destinationDirPath, "destinationDirPath");
+            DebugLogger.LogVariable(suffix, "suffix");
 
             _packagePath = packagePath;
             _metaData = metaData;
