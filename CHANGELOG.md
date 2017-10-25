@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Sentry messages are now sent with download link for log file and include additional data (log file guid, local version id, remote version id and app secret)
 
+### Changed
+- HTTP downloading timeouts changed from 10 to 30 seconds
+
 ### Fixed
 - Unpacking error when AV software would block files (now for content packages)
 - Fix delaying patcher quit due to log sending
