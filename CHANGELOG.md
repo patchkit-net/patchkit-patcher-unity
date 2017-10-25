@@ -6,10 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Sentry messages are now sent with download link for log file (instead of GUID) and app secret
+- Sentry messages are now sent with download link for log file and include additional data (log file guid, local version id, remote version id and app secret)
 
 ### Fixed
 - Unpacking error when AV software would block files (now for content packages)
+- Fix delaying patcher quit due to log sending
 
 ## [3.5.0]
 ### Added
