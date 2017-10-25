@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Sentry messages are now sent with download link for log file (instead of GUID) and app secret
 
+### Fixed
+- Unpacking error when AV software would block files (now for content packages)
+
 ## [3.5.0]
 ### Added
 - HTTPS support for keys server
@@ -18,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Compilation error on Unity 5.6 or higher
-- Upacking error when AV software would block files
+- Unpacking error when AV software would block files
 - Geolocate: NullReferenceException on timeout
 - Error when Patcher would appear to be unresponding during downloading
 
