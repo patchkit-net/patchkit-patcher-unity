@@ -28,7 +28,10 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private static SentryMessage CreateSentryMessage(string logFileGuid)
         {
-            return new SentryMessage("Log GUID: " + logFileGuid);
+            var msg = string.Format(
+                "Log: https://s3-us-west-2.amazonaws.com/patchkit-app-logs/patcher-unity/2017_04_03/{0}.201-log.gz", logFileGuid);
+
+            return new SentryMessage(msg);
         }
     }
 }
