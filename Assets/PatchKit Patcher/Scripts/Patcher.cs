@@ -134,6 +134,20 @@ namespace PatchKit.Unity.Patcher
             get { return _warning; }
         }
 
+        private readonly ReactiveProperty<int?> _remoteVersionId = new ReactiveProperty<int?>();
+
+        public IReadOnlyReactiveProperty<int?> RemoteVersionId
+        {
+            get { return _remoteVersionId; }
+        }
+
+        private readonly ReactiveProperty<int?> _localVersionId = new ReactiveProperty<int?>();
+
+        public IReadOnlyReactiveProperty<int?> LocalVersionId
+        {
+            get { return _localVersionId; }
+        }
+
         public void SetUserDecision(UserDecision userDecision)
         {
             DebugLogger.Log(string.Format("User deicision set to {0}.", userDecision));
@@ -664,6 +678,12 @@ namespace PatchKit.Unity.Patcher
         private void ThreadUpdateApp(CancellationToken cancellationToken)
         {
             _state.Value = PatcherState.UpdatingApp;
+
+            _remoteVersionId.Value = _app.GetLatestVersionId();
+            if (_app.IsInstalled())
+            {
+                _localVersionId.Value = _app.GetInstalledVersionId();
+            }
 
             _updateAppCancellationTokenSource = new CancellationTokenSource();
 
