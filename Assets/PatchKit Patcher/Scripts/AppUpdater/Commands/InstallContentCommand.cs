@@ -14,6 +14,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
      */
     public class InstallContentCommand : BaseAppUpdaterCommand, IInstallContentCommand
     {
+        private const string Suffix = "_"; // FIX: bug #714
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
 
         private readonly string _packagePath;
@@ -145,7 +146,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 case "zip":
                     return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
                 case "pack1":
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
                 default:
                     throw new InstallerException(string.Format("Unknown compression method: {0}",
                         _versionContentSummary.CompressionMethod));
@@ -154,9 +155,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private void InstallFile(string fileName, string packageDirPath)
         {
-            DebugLogger.Log(string.Format("Installing file {0}", fileName));
+            DebugLogger.Log(string.Format("Installing file {0}", fileName+Suffix));
 
-            string sourceFilePath = Path.Combine(packageDirPath, fileName);
+            string sourceFilePath = Path.Combine(packageDirPath, fileName+Suffix);
 
             if (!File.Exists(sourceFilePath))
             {
