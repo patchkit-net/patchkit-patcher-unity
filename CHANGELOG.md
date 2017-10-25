@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Sentry messages are now sent with download link for log file (instead of GUID)
+- Sentry messages are now sent with download link for log file (instead of GUID) and app secret
 
 ## [3.5.0]
 ### Added
