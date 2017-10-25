@@ -20,12 +20,12 @@ namespace PatchKit.Unity.Patcher.Debug
         private const string PutUrlRequestUrl = "https://se5ia30ji3.execute-api.us-west-2.amazonaws.com/production/v1/request-put-url";
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLogStorage));
-        
-        private bool _hasApplicationQuit;
 
         public Guid Guid { get; private set; }
 
-        private bool _isLogBeingSent;
+        public bool IsLogBeingSent { get; private set; }
+
+        private bool _shouldAbortSending;
 
         public PatcherLogStorage()
         {
@@ -34,26 +34,19 @@ namespace PatchKit.Unity.Patcher.Debug
             ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true; 
         }
 
-        private void OnApplicationQuit()
+        public void AbortSending()
         {
-            if (!_isLogBeingSent)
-            {
-                return;
-            }
-            
-            DebugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
-            _hasApplicationQuit = true;
-            Application.CancelQuit();
+            _shouldAbortSending = true;
         }
 
         public IEnumerator SendLogFileCoroutine(string logFilePath)
         {
-            while (_isLogBeingSent)
+            while (IsLogBeingSent)
             {
                 yield return null;
             }
 
-            _isLogBeingSent = true;
+            IsLogBeingSent = true;
 
             DebugLogger.Log("Sending log...");
 
@@ -81,7 +74,7 @@ namespace PatchKit.Unity.Patcher.Debug
             if (putUrlRequest.isError)
             {
                 DebugLogger.LogError("Error while requesting PUT URL: " + putUrlRequest.error);
-                _isLogBeingSent = false;
+                IsLogBeingSent = false;
                 yield break;
             }
 
@@ -99,7 +92,7 @@ namespace PatchKit.Unity.Patcher.Debug
             if (putRequest.isError)
             {
                 DebugLogger.LogError("Error while sending log file: " + putRequest.error);
-                _isLogBeingSent = false;
+                IsLogBeingSent = false;
                 yield break;
             }
 
@@ -110,14 +103,16 @@ namespace PatchKit.Unity.Patcher.Debug
             DebugLogger.Log(string.Format("Waiting {0} seconds before next log could be sent...", sendDelaySeconds));
 
             float startWaitTime = Time.unscaledTime;
-            while (Time.unscaledTime - startWaitTime < sendDelaySeconds && !_hasApplicationQuit)
+            while (Time.unscaledTime - startWaitTime < sendDelaySeconds && !_shouldAbortSending)
             {
                 yield return null;
             }
 
+            _shouldAbortSending = false;
+
             DebugLogger.Log("Next log can be now send.");
 
-            _isLogBeingSent = false;
+            IsLogBeingSent = false;
         }
 
         private byte[] GetCompressedLogFileData(string logFilePath)
