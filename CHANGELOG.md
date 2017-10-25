@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Sentry messages are now sent with download link for log file (instead of GUID)
+
 ## [3.5.0]
 ### Added
 - HTTPS support for keys server
