@@ -94,7 +94,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 if (tmpDirs[i].CreationTime < _createdAt)
                 {
-                    DebugLogger.LogFormat("TemporaryDirectory: Deleting old tmp directory{0}/{1}]: {2}", (i + 1), tmpDirs.Length, tmpDirs[i].FullName);
+                    DebugLogger.LogFormat("TemporaryDirectory: Deleting old tmp directory[{0}/{1}]: {2}", (i + 1), tmpDirs.Length, tmpDirs[i].FullName);
+                    DirectoryOperations.Delete(tmpDirs[i].FullName, true);
                 }
             }
         }
