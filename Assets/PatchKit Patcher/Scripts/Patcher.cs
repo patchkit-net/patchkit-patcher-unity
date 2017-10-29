@@ -3,6 +3,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using PatchKit.Api;
 using PatchKit.Unity.Patcher.AppUpdater;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -596,6 +597,11 @@ namespace PatchKit.Unity.Patcher
                 {
                     ThreadDisplayError(PatcherError.NoPermissions, cancellationToken);
                 }
+            }
+            catch (ApiConnectionException e)
+            {
+                DebugLogger.LogException(e);
+                ThreadDisplayError(PatcherError.NoInternetConnection, cancellationToken);
             }
             catch (NotEnoughtDiskSpaceException e)
             {
