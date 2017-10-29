@@ -139,7 +139,7 @@ namespace PatchKit.Unity.Patcher
 
         private static ITemporaryDirectory CreateDefaultTemporaryDirectory(string appDataPath)
         {
-            return new TemporaryDirectory(appDataPath.PathCombine(".temp"));
+            return new TemporaryDirectory(appDataPath, ".patcher_temp");
         }
 
         private static IDownloadDirectory CreateDefaultDownloadDirectory(string appDataPath)
