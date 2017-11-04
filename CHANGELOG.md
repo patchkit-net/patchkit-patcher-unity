@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - HTTP downloading timeouts changed from 10 to 30 seconds
+- Temp folders have more randomized names now
 
 ### Fixed
 - Unpacking error when AV software would block files (now for content packages)
