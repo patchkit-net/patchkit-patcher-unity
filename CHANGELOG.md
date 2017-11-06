@@ -12,11 +12,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - HTTP downloading timeouts changed from 10 to 30 seconds
 - Temp folders have more randomized names now
+- New log format
 
 ### Fixed
 - Unpacking error when AV software would block files (now for content packages)
 - Fix delaying patcher quit due to log sending
 - Fix displaying no internet connection error in case of API connection problems
+- Fix Unity wrapped requests to return status code and correct exceptions
 
 ## [3.5.0]
 ### Added
