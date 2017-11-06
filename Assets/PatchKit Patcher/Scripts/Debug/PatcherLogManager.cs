@@ -11,7 +11,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public static DefaultLogger DefaultLogger
         {
-            get { return _defaultLogger ?? (_defaultLogger = new DefaultLogger()); }
+            get { return _defaultLogger ?? (_defaultLogger = new DefaultLogger(new DefaultLogStackFrameLocator())); }
         }
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLogManager));
