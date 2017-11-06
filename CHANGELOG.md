@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Sentry messages are now sent with download link for log file and include additional data (log file guid, local version id, remote version id and app secret)
 - API operations logging
+- Support for PK_PATCHER_MAIN_URL environment variable
 
 ### Changed
 - HTTP downloading timeouts changed from 10 to 30 seconds
 - Temp folders have more randomized names now
 - New log format
+- Switch to Unity web requests for main API
 
 ### Fixed
 - Unpacking error when AV software would block files (now for content packages)
