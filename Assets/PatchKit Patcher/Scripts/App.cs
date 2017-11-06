@@ -16,19 +16,22 @@ namespace PatchKit.Unity.Patcher
 
         public readonly ILocalMetaData LocalMetaData;
 
-        public readonly ITemporaryDirectory TemporaryDirectory;
-
         public readonly IDownloadDirectory DownloadDirectory;
 
         public readonly IRemoteData RemoteData;
 
         public readonly IRemoteMetaData RemoteMetaData;
 
+        public ITemporaryDirectory TemporaryDirectory;
+
+        private readonly string _appDataPath;
+
         private readonly int _overrideLatestVersionId;
 
         private bool _disposed;
 
         public App(string appDataPath, string appSecret, int overrideLatestVersionId) : this(
+            appDataPath,
             CreateDefaultLocalDirectory(appDataPath),
             CreateDefaultLocalMetaData(appDataPath),
             CreateDefaultTemporaryDirectory(appDataPath),
@@ -38,10 +41,11 @@ namespace PatchKit.Unity.Patcher
         {
         }
 
-        public App(ILocalDirectory localDirectory, ILocalMetaData localMetaData, ITemporaryDirectory temporaryDirectory,
+        public App(string appDataPath, ILocalDirectory localDirectory, ILocalMetaData localMetaData, ITemporaryDirectory temporaryDirectory,
             IDownloadDirectory downloadDirectory, IRemoteData remoteData, IRemoteMetaData remoteMetaData,
             int overrideLatestVersionId)
         {
+            Checks.ArgumentNotNull(appDataPath, "appDataPath");
             Checks.ArgumentNotNull(localDirectory, "localData");
             Checks.ArgumentNotNull(localMetaData, "localMetaData");
             Checks.ArgumentNotNull(temporaryDirectory, "temporaryData");
@@ -49,6 +53,7 @@ namespace PatchKit.Unity.Patcher
             Checks.ArgumentNotNull(remoteData, "remoteData");
             Checks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
 
+            _appDataPath = appDataPath;
             LocalDirectory = localDirectory;
             LocalMetaData = localMetaData;
             TemporaryDirectory = temporaryDirectory;
@@ -88,6 +93,15 @@ namespace PatchKit.Unity.Patcher
             }
 
             return true;
+        }
+
+        public void ReloadTemporaryDirectories()
+        {
+            DebugLogger.Log("App: ReloadTemporaryDirectories");
+
+            TemporaryDirectory.Dispose();
+            TemporaryDirectory = null;
+            TemporaryDirectory = CreateDefaultTemporaryDirectory(_appDataPath);
         }
 
         public int GetInstalledVersionId()
@@ -139,7 +153,7 @@ namespace PatchKit.Unity.Patcher
 
         private static ITemporaryDirectory CreateDefaultTemporaryDirectory(string appDataPath)
         {
-            return new TemporaryDirectory(appDataPath.PathCombine(".temp"));
+            return new TemporaryDirectory(appDataPath, ".patcher_temp");
         }
 
         private static IDownloadDirectory CreateDefaultDownloadDirectory(string appDataPath)
