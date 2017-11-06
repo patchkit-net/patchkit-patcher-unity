@@ -21,7 +21,25 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             DebugLogger.LogVariable(appSecret, "appSecret");
 
             _appSecret = appSecret;
-            _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
+
+            var mainSettings = Settings.GetMainApiConnectionSettings();
+
+            string overrideMainUrl;
+
+            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.MainUrlEnvironmentVariable, out overrideMainUrl))
+            {
+                var overrideMainUri = new Uri(overrideMainUrl);
+
+                mainSettings.MainServer.Host = overrideMainUri.Host;
+                mainSettings.MainServer.Port = overrideMainUri.Port;
+                mainSettings.MainServer.UseHttps = overrideMainUri.Scheme == Uri.UriSchemeHttps;
+            }
+
+            _mainApiConnection = new MainApiConnection(mainSettings)
+            {
+                HttpWebRequestFactory = new UnityWebRequestFactory(),
+                Logger = PatcherLogManager.DefaultLogger
+            };
 
             var keysSettings = Settings.GetKeysApiConnectionSettings();
 
@@ -36,11 +54,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 keysSettings.MainServer.UseHttps = overrideKeysUri.Scheme == Uri.UriSchemeHttps;
             }
 
-            _keysApiConnection =
-                new KeysApiConnection(keysSettings)
-                {
-                    HttpWebRequestFactory = new UnityWebRequestFactory()
-                };
+            _keysApiConnection = new KeysApiConnection(keysSettings)
+            {
+                HttpWebRequestFactory = new UnityWebRequestFactory(),
+                Logger = PatcherLogManager.DefaultLogger
+            };
+
         }
 
         public int GetLatestVersionId()

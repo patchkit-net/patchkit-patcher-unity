@@ -14,6 +14,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
      */
     public class InstallContentCommand : BaseAppUpdaterCommand, IInstallContentCommand
     {
+        private const string Suffix = "_"; // FIX: bug #714
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InstallContentCommand));
 
         private readonly string _packagePath;
@@ -100,7 +101,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 DebugLogger.Log("Unarchiving package.");
 
-                IUnarchiver unarchiver = CreateUnrachiver(packageDirPath);
+                string usedSuffix;
+                IUnarchiver unarchiver = CreateUnrachiver(packageDirPath, out usedSuffix);
 
                 _unarchivePackageStatusReporter.OnProgressChanged(0.0, "Unarchiving package...");
                 
@@ -121,7 +123,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    InstallFile(_versionContentSummary.Files[i].Path, packageDirPath);
+                    InstallFile(_versionContentSummary.Files[i].Path, packageDirPath, usedSuffix);
 
                     _copyFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionContentSummary.Files.Length, "Installing package...");
                 }
@@ -138,25 +140,27 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private IUnarchiver CreateUnrachiver(string destinationDir)
+        private IUnarchiver CreateUnrachiver(string destinationDir, out string usedSuffix)
         {
             switch (_versionContentSummary.CompressionMethod)
             {
                 case "zip":
+                    usedSuffix = string.Empty;
                     return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
                 case "pack1":
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword);
+                    usedSuffix = Suffix;
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
                 default:
                     throw new InstallerException(string.Format("Unknown compression method: {0}",
                         _versionContentSummary.CompressionMethod));
             }
         }
 
-        private void InstallFile(string fileName, string packageDirPath)
+        private void InstallFile(string fileName, string packageDirPath, string suffix)
         {
-            DebugLogger.Log(string.Format("Installing file {0}", fileName));
+            DebugLogger.Log(string.Format("Installing file {0}", fileName+suffix));
 
-            string sourceFilePath = Path.Combine(packageDirPath, fileName);
+            string sourceFilePath = Path.Combine(packageDirPath, fileName+suffix);
 
             if (!File.Exists(sourceFilePath))
             {

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using PatchKit.Api;
 using PatchKit.Unity.Patcher.AppUpdater;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -132,6 +133,20 @@ namespace PatchKit.Unity.Patcher
         public IReadOnlyReactiveProperty<string> Warning
         {
             get { return _warning; }
+        }
+
+        private readonly ReactiveProperty<int?> _remoteVersionId = new ReactiveProperty<int?>();
+
+        public IReadOnlyReactiveProperty<int?> RemoteVersionId
+        {
+            get { return _remoteVersionId; }
+        }
+
+        private readonly ReactiveProperty<int?> _localVersionId = new ReactiveProperty<int?>();
+
+        public IReadOnlyReactiveProperty<int?> LocalVersionId
+        {
+            get { return _localVersionId; }
         }
 
         public void SetUserDecision(UserDecision userDecision)
@@ -583,6 +598,11 @@ namespace PatchKit.Unity.Patcher
                     ThreadDisplayError(PatcherError.NoPermissions, cancellationToken);
                 }
             }
+            catch (ApiConnectionException e)
+            {
+                DebugLogger.LogException(e);
+                ThreadDisplayError(PatcherError.NoInternetConnection, cancellationToken);
+            }
             catch (NotEnoughtDiskSpaceException e)
             {
                 DebugLogger.LogException(e);
@@ -664,6 +684,12 @@ namespace PatchKit.Unity.Patcher
         private void ThreadUpdateApp(CancellationToken cancellationToken)
         {
             _state.Value = PatcherState.UpdatingApp;
+
+            _remoteVersionId.Value = _app.GetLatestVersionId();
+            if (_app.IsInstalled())
+            {
+                _localVersionId.Value = _app.GetInstalledVersionId();
+            }
 
             _updateAppCancellationTokenSource = new CancellationTokenSource();
 

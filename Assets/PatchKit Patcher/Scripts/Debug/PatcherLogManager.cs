@@ -1,4 +1,5 @@
 ﻿using System;
+using PatchKit.Logging;
 using UnityEngine;
 using UniRx;
 
@@ -6,6 +7,15 @@ namespace PatchKit.Unity.Patcher.Debug
 {
     public class PatcherLogManager : MonoBehaviour
     {
+        private static DefaultLogger _defaultLogger;
+
+        public static DefaultLogger DefaultLogger
+        {
+            get { return _defaultLogger ?? (_defaultLogger = new DefaultLogger(new DefaultLogStackFrameLocator())); }
+        }
+
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLogManager));
+
         private PatcherLogStream _stream;
 
         private PatcherTemporaryLogFile _tempFile;
@@ -19,9 +29,11 @@ namespace PatchKit.Unity.Patcher.Debug
         public bool IgnoreEditorErrors = true;
 
         private bool _isEditor;
-        
+
         private void Awake()
         {
+            DefaultLogger.AddWriter(new UnityMessageWriter(new SimpleMessageFormatter()));
+
             _isEditor = Application.isEditor;
             _stream = new PatcherLogStream();
             _tempFile = new PatcherTemporaryLogFile();
@@ -58,6 +70,18 @@ namespace PatchKit.Unity.Patcher.Debug
                     _tempFile.Flush();
                     StartCoroutine(_storage.SendLogFileCoroutine(_tempFile.FilePath));
                 }).AddTo(this);
+        }
+
+        private void OnApplicationQuit()
+        {
+            if (!_storage.IsLogBeingSent)
+            {
+                return;
+            }
+
+            DebugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
+            _storage.AbortSending();
+            Application.CancelQuit();
         }
     }
 }

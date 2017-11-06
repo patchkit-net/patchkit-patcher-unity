@@ -20,15 +20,33 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public void RegisterWithException(Exception exception, string logFileGuid)
         {
-            _ravenClient.Capture(new SentryEvent(exception)
-            {
-                Message = CreateSentryMessage(logFileGuid)
-            });
+            AddDataToException(exception, logFileGuid);
+            _ravenClient.Capture(new SentryEvent(exception));
         }
 
-        private static SentryMessage CreateSentryMessage(string logFileGuid)
+        private static void AddDataToException(Exception exception, string logFileGuid)
         {
-            return new SentryMessage("Log GUID: " + logFileGuid);
+            exception.Data.Add("log-guid", logFileGuid);
+            exception.Data.Add("log-link", string.Format(
+                "https://s3-us-west-2.amazonaws.com/patchkit-app-logs/patcher-unity/{0:yyyy_MM_dd}/{1}.201-log.gz", DateTime.Now, logFileGuid));
+
+            var patcher = Patcher.Instance;
+            if (patcher != null)
+            {
+                if(patcher.Data.Value.AppSecret != null)
+                {
+                    exception.Data.Add("app-secret", patcher.Data.Value.AppSecret);
+                }
+                if (patcher.LocalVersionId.Value.HasValue)
+                {
+                    exception.Data.Add("local-version", patcher.LocalVersionId.Value.ToString());
+                }
+                if (patcher.RemoteVersionId.Value.HasValue)
+                {
+                    exception.Data.Add("remote-version", patcher.RemoteVersionId.Value.ToString());
+                }
+            }
+
         }
     }
 }

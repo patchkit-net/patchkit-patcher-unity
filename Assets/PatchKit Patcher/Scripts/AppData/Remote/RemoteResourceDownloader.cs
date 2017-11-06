@@ -15,8 +15,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteResourceDownloader));
 
         private const int TorrentDownloaderTimeout = 10000;
-        private const int ChunkedHttpDownloaderTimeout = 10000;
-        private const int HttpDownloaderTimeout = 10000;
+        private const int ChunkedHttpDownloaderTimeout = 30000;
+        private const int HttpDownloaderTimeout = 30000;
 
         private readonly string _destinationFilePath;
         private readonly string _destinationMetaPath;

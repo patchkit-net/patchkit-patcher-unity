@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Net;
 using System.Threading;
 using UnityEngine;
 using PatchKit.Api;
@@ -8,14 +9,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 {
     public class WrapRequest : IHttpWebRequest
     {
-        public const string responseEncoding = "iso-8859-2";
+        public const string ResponseEncoding = "iso-8859-2";
 
-        private EventWaitHandle _waitHandle;
+        private readonly EventWaitHandle _waitHandle;
 
-        public string Data { get; private set; }
-        public bool WasError { get; private set; }
+        private string _data;
+        private int _statusCode;
 
-        IEnumerator JobCoroutine(string url)
+        private bool _wasError;
+        private bool _wasTimeout;
+        private string _errorText;
+
+        private IEnumerator JobCoroutine(string url)
         {
             var www = new WWW(url);
             var start = DateTime.Now;
@@ -30,19 +35,19 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 }
             }
 
-            if (www.isDone)
+            if (www.isDone || !string.IsNullOrEmpty(www.error))
             {
-                Data = www.text;
-            }
-            else if (!string.IsNullOrEmpty(www.error))
-            {
-                WasError = true;
-                Data = www.error;
+                _data = www.text;
+
+                if (!TryParseStatusCode(www.responseHeaders["STATUS"], out _statusCode))
+                {
+                    _wasError = true;
+                    _errorText = "Couldn't parse status code.";
+                }
             }
             else
             {
-                WasError = true;
-                Data = "Timeout exception";
+                _wasTimeout = true;
             }
 
             yield return null;
@@ -62,12 +67,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         {
             _waitHandle.WaitOne();
 
-            if (WasError)
+            if (_wasTimeout)
             {
-                throw new Exception(Data);
+                throw new WebException("Timeout.", WebExceptionStatus.Timeout);
             }
 
-            return new WrapResponse(Data, responseEncoding);
+            if (_wasError)
+            {
+                throw new WebException(_errorText);
+            }
+
+            return new WrapResponse(_data, _statusCode, ResponseEncoding);
+        }
+
+        private static bool TryParseStatusCode(string status, out int statusCode)
+        {
+            statusCode = 0;
+
+            var s = status.Split(' ');
+
+            return s.Length >= 3 && int.TryParse(s[1], out statusCode);
         }
     }
 }
