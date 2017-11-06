@@ -23,6 +23,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _appSecret = appSecret;
             _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
 
+            _mainApiConnection.Logger = PatcherLogManager.DefaultLogger;
+
             var keysSettings = Settings.GetKeysApiConnectionSettings();
 
             string overrideKeysUrl;
@@ -41,6 +43,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 {
                     HttpWebRequestFactory = new UnityWebRequestFactory()
                 };
+
+            _keysApiConnection.Logger = PatcherLogManager.DefaultLogger;
         }
 
         public int GetLatestVersionId()

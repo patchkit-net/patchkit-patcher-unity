@@ -27,6 +27,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             _appSecret = appSecret;
             _mainApiConnection = mainApiConnection;
+
+            _mainApiConnection.Logger = PatcherLogManager.DefaultLogger;
         }
 
         public RemoteResource GetContentPackageResource(int versionId, string keySecret, string countryCode)
