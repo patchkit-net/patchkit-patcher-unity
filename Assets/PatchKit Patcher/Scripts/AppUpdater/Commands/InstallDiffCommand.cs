@@ -252,9 +252,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 var entryName = _versionDiffSummary.ModifiedFiles[i];
                 
                 if (!entryName.EndsWith("/"))
-                {                    
+                {
                     DebugLogger.LogFormat("Patching {0} -> {1}", packageDirPath, entryName);
-                    PatchFile(entryName + suffix, packageDirPath);
+                    PatchFile(entryName, suffix, packageDirPath);
 
                     _localMetaData.RegisterEntry(entryName, _versionId);
                 }
@@ -295,7 +295,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private void PatchFile(string fileName, string packageDirPath)
+        private void PatchFile(string fileName, string suffix, string packageDirPath)
         {
             string filePath = _localData.Path.PathCombine(fileName);
 
@@ -321,7 +321,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             try
             {
                 var filePatcher = new FilePatcher(filePath,
-                    Path.Combine(packageDirPath, fileName), newFilePath);
+                    Path.Combine(packageDirPath, fileName + suffix), newFilePath);
                 filePatcher.Patch();
 
                 FileOperations.Copy(newFilePath, filePath, true);
