@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix delaying patcher quit due to log sending
 - Fix displaying no internet connection error in case of API connection problems
 - Fix Unity wrapped requests to return status code and correct exceptions
-- Fix applying file patches in diff strategy
+- Fix bug with applying patches (CRITICAL FIX!)
 
 ## [3.5.0]
 ### Added
