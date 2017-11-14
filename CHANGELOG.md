@@ -4,17 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.6.0]
 ### Added
 - Sentry messages are now sent with download link for log file and include additional data (log file guid, local version id, remote version id and app secret)
+- API operations logging
+- Support for PK_PATCHER_MAIN_URL environment variable
 
 ### Changed
 - HTTP downloading timeouts changed from 10 to 30 seconds
+- Temp folders have more randomized names now
+- New log format
+- Switch to Unity web requests for main API
 
 ### Fixed
 - Unpacking error when AV software would block files (now for content packages)
 - Fix delaying patcher quit due to log sending
 - Fix displaying no internet connection error in case of API connection problems
+- Fix Unity wrapped requests to return status code and correct exceptions
+- Fix bug with applying patches (CRITICAL FIX!)
 
 ## [3.5.0]
 ### Added

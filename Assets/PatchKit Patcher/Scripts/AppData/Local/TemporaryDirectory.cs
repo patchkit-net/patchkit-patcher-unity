@@ -12,6 +12,16 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     public class TemporaryDirectory : BaseWritableDirectory<TemporaryDirectory>, ITemporaryDirectory
     {
         private bool _disposed;
+        private string _prefix;
+        private DateTime _createdAt;
+
+        public TemporaryDirectory(string path, string prefix) : base(path.PathCombine(prefix + "_" + System.IO.Path.GetRandomFileName()))
+        {
+            Checks.ArgumentNotNullOrEmpty(prefix, "prefix");
+
+            _prefix = prefix;
+            _createdAt = DateTime.Now;
+        }
 
         public TemporaryDirectory(string path) : base(path)
         {
@@ -62,14 +72,32 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 return;
             }
 
-            DebugLogger.LogDispose();
-
+            DebugLogger.Log("TemporaryDirectory: Deleting: " + Path);
             if (Directory.Exists(Path))
             {
                 DirectoryOperations.Delete(Path, true);
             }
 
+            DeleteOldTmpDirectories();
+
+            DebugLogger.LogDispose();
+
             _disposed = true;
+        }
+
+        private void DeleteOldTmpDirectories()
+        {
+            DebugLogger.Log("TemporaryDirectory: ParentFullName: " + Directory.GetParent(Path).FullName);
+            DirectoryInfo[] tmpDirs = Directory.GetParent(Path).GetDirectories(_prefix + "*");
+
+            for (int i = 0; i < tmpDirs.Length; i++)
+            {
+                if (tmpDirs[i].CreationTime < _createdAt)
+                {
+                    DebugLogger.LogFormat("TemporaryDirectory: Deleting old tmp directory[{0}/{1}]: {2}", (i + 1), tmpDirs.Length, tmpDirs[i].FullName);
+                    DirectoryOperations.Delete(tmpDirs[i].FullName, true);
+                }
+            }
         }
     }
 }

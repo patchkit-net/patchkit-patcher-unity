@@ -1,4 +1,5 @@
 ﻿using System;
+using PatchKit.Logging;
 using UnityEngine;
 using UniRx;
 
@@ -6,6 +7,13 @@ namespace PatchKit.Unity.Patcher.Debug
 {
     public class PatcherLogManager : MonoBehaviour
     {
+        private static DefaultLogger _defaultLogger;
+
+        public static DefaultLogger DefaultLogger
+        {
+            get { return _defaultLogger ?? (_defaultLogger = new DefaultLogger(new DefaultLogStackFrameLocator())); }
+        }
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLogManager));
 
         private PatcherLogStream _stream;
@@ -24,6 +32,8 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private void Awake()
         {
+            DefaultLogger.AddWriter(new UnityMessageWriter(new SimpleMessageFormatter()));
+
             _isEditor = Application.isEditor;
             _stream = new PatcherLogStream();
             _tempFile = new PatcherTemporaryLogFile();

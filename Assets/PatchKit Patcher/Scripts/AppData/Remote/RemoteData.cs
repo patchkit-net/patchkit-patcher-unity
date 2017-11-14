@@ -12,21 +12,33 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly string _appSecret;
         private readonly MainApiConnection _mainApiConnection;
 
-        public RemoteData(string appSecret) : this(appSecret,
-            new MainApiConnection(Settings.GetMainApiConnectionSettings()))
-        {
-        }
-
-        public RemoteData(string appSecret, MainApiConnection mainApiConnection)
+        public RemoteData(string appSecret)
         {
             Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
-            Checks.ArgumentNotNull(mainApiConnection, "mainApiConnection");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");
 
             _appSecret = appSecret;
-            _mainApiConnection = mainApiConnection;
+
+            var mainSettings = Settings.GetMainApiConnectionSettings();
+
+            string overrideMainUrl;
+
+            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.MainUrlEnvironmentVariable, out overrideMainUrl))
+            {
+                var overrideMainUri = new Uri(overrideMainUrl);
+
+                mainSettings.MainServer.Host = overrideMainUri.Host;
+                mainSettings.MainServer.Port = overrideMainUri.Port;
+                mainSettings.MainServer.UseHttps = overrideMainUri.Scheme == Uri.UriSchemeHttps;
+            }
+
+            _mainApiConnection = new MainApiConnection(mainSettings)
+            {
+                HttpWebRequestFactory = new UnityWebRequestFactory(),
+                Logger = PatcherLogManager.DefaultLogger
+            };
         }
 
         public RemoteResource GetContentPackageResource(int versionId, string keySecret, string countryCode)

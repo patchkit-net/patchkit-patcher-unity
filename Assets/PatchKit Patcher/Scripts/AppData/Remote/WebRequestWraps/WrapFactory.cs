@@ -1,5 +1,3 @@
-using System;
-using UnityEngine;
 using PatchKit.Api;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
