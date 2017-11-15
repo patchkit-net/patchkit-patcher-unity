@@ -93,18 +93,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidVersion);
             }
 
-            string hash = HashCalculator.ComputeFileHash(localPath);
-
-            if (_checkType == IntegrityLevel.HashChecksum && hash != file.Hash)
+            if (_checkType <= IntegrityLevel.HashChecksum)
             {
-                return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash);
+                string hash = HashCalculator.ComputeFileHash(localPath);
+                if (hash != file.Hash)
+                {
+                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash);
+                }
             }
 
-            long size = new FileInfo(localPath).Length;
-
-            if ((_checkType == IntegrityLevel.FileSize || _checkType == IntegrityLevel.HashChecksum) && size != file.Size)
+            if (_checkType <= IntegrityLevel.FileSize)
             {
-                return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidSize);
+                long size = new FileInfo(localPath).Length;
+                if (size != file.Size)
+                {
+                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidSize);
+                }
             }
 
             return new FileIntegrity(file.Path, FileIntegrityStatus.Ok);
