@@ -8,12 +8,6 @@ using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
-    public enum IntegrityLevel
-    {
-        HashChecksum,
-        FileSize
-    };
-
     public class CheckVersionIntegrityCommand : BaseAppUpdaterCommand, ICheckVersionIntegrityCommand
     {
 
@@ -25,13 +19,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalMetaData _localMetaData;
 
         private IGeneralStatusReporter _statusReporter;
-        private IntegrityLevel _checkType;
+        bool _isCheckingHash;
+        bool _isCheckingSize;
 
         public CheckVersionIntegrityCommand(int versionId, AppContentSummary versionSummary,
-            ILocalDirectory localDirectory, ILocalMetaData localMetaData, IntegrityLevel checkType)
+            ILocalDirectory localDirectory, ILocalMetaData localMetaData, bool isCheckingHash, bool isCheckingSize)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
-            // TODO: Validate the content summary.
+            Checks.ArgumentNotNull(versionSummary, "versionSummary");
             Checks.ArgumentNotNull(localDirectory, "localDirectory");
             Checks.ArgumentNotNull(localMetaData, "localMetaData");
 
@@ -42,7 +37,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _versionSummary = versionSummary;
             _localDirectory = localDirectory;
             _localMetaData = localMetaData;
-            _checkType = checkType;
+            _isCheckingSize = isCheckingSize;
+            _isCheckingHash = isCheckingHash;
         }
 
         public override void Prepare(IStatusMonitor statusMonitor)
@@ -93,21 +89,21 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidVersion);
             }
 
-            if (_checkType <= IntegrityLevel.HashChecksum)
-            {
-                string hash = HashCalculator.ComputeFileHash(localPath);
-                if (hash != file.Hash)
-                {
-                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash);
-                }
-            }
-
-            if (_checkType <= IntegrityLevel.FileSize)
+            if (_isCheckingSize)
             {
                 long size = new FileInfo(localPath).Length;
                 if (size != file.Size)
                 {
                     return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidSize);
+                }
+            }
+
+            if (_isCheckingHash)
+            {
+                string hash = HashCalculator.ComputeFileHash(localPath);
+                if (hash != file.Hash)
+                {
+                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash);
                 }
             }
 

@@ -75,7 +75,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         }
 
         public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context,
-            IntegrityLevel integrityLevel)
+                bool isCheckingHash = true, bool isCheckingSize = true)
         {
             var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
 
@@ -83,7 +83,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 versionContentSummary,
                 context.App.LocalDirectory,
                 context.App.LocalMetaData,
-                integrityLevel);
+                isCheckingHash, isCheckingSize);
         }
 
         public IUninstallCommand CreateUninstallCommand(AppUpdaterContext context)

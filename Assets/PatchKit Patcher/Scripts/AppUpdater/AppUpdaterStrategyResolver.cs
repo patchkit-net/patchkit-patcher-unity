@@ -124,13 +124,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             long contentCost = GetContentCost(context); // bytes
 
             long sizeThreshold = context.Configuration.HashSizeThreshold;
-            IntegrityLevel level = contentCost > sizeThreshold ? IntegrityLevel.FileSize : IntegrityLevel.HashChecksum;
+            bool isCheckingHash = contentCost < sizeThreshold;
 
-            DebugLogger.LogFormat("IntegrityLevel: {0}, for content size: {1} and contentSizeThreshold: {2}",
-                level, contentCost, sizeThreshold);
+            DebugLogger.LogFormat("IsCheckingHash: {0}, for content size: {1} and contentSizeThreshold: {2}",
+                isCheckingHash, contentCost, sizeThreshold);
 
             var checkVersionIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(
-                installedVersionId, context, level);
+                installedVersionId, context, isCheckingHash);
 
             checkVersionIntegrity.Prepare(context.StatusMonitor);
             checkVersionIntegrity.Execute(CancellationToken.Empty);
