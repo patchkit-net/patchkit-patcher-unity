@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private const int TorrentDownloaderTimeout = 10000;
         private const int ChunkedHttpDownloaderTimeout = 30000;
         private const int HttpDownloaderTimeout = 30000;
-        private const int RetriesCount = 8;
+        private const int RetriesCount = 8; // FIX: #722
         private readonly string _destinationFilePath;
         private readonly string _destinationMetaPath;
 
@@ -132,7 +132,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             {
                 try
                 {
-                    DebugLogger.LogWarningFormat("Resolving Dowloader: try {0}/8", RetriesCount-retriesLeft+1);
                     ResolveDownloader(cancellationToken);
                 }
                 catch (Exception ex)
@@ -140,11 +139,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                     if (retriesLeft > 0)
                     {
                         retriesLeft--;
-                        DebugLogger.LogWarningFormat("Resolving Dowloader failed, retry: {0}/8", RetriesCount-retriesLeft+1);
+                        DebugLogger.LogWarningFormat("Resolving Dowloader failed, retry: {0}/{1}", RetriesCount-retriesLeft+1, RetriesCount);
                     }
                     else
                     {
-                        DebugLogger.LogWarningFormat("Resolving Dowloader failed, no retries left, throwing further");
+                        DebugLogger.LogErrorFormat("Resolving Dowloader failed, no retries left, throwing further");
                         throw ex;
                     }
                 }
