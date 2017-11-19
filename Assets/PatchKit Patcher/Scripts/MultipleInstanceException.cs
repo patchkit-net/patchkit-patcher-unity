@@ -4,21 +4,21 @@ using System.Runtime.Serialization;
 namespace PatchKit.Unity.Patcher
 {
     [Serializable]
-    internal class MultipleInstanceException: Exception
+    internal class MultipleInstancesException: Exception
     {
-        public MultipleInstanceException()
+        public MultipleInstancesException()
         {
         }
 
-        public MultipleInstanceException(string message) : base(message)
+        public MultipleInstancesException(string message) : base(message)
         {
         }
 
-        public MultipleInstanceException(string message, Exception innerException) : base(message, innerException)
+        public MultipleInstancesException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
-        protected MultipleInstanceException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected MultipleInstancesException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

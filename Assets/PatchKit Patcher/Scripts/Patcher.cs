@@ -396,7 +396,7 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.Log("Patcher thread finished: thread has been aborted.");
             }            
-            catch (MultipleInstanceException exception)
+            catch (MultipleInstancesException exception)
             {
                 DebugLogger.LogWarning(exception.Message);
                 Quit();                
@@ -482,7 +482,7 @@ namespace PatchKit.Unity.Patcher
                 }
                 catch
                 {
-                    throw new MultipleInstanceException("Another instance of Patcher spotted");
+                    throw new MultipleInstancesException("Another instance of Patcher spotted");
                 }
             }
             else
