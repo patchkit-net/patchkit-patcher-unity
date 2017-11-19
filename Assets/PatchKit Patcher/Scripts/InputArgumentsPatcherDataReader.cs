@@ -63,8 +63,14 @@ namespace PatchKit.Unity.Patcher
             {
                 throw new ApplicationException("Unable to parse app data path from command line.");
             }
-
             data.AppDataPath = MakeAppDataPathAbsolute(relativeAppDataPath);
+
+            string lockFilePath;
+            if (!TryReadArgument("--lockfile", out lockFilePath))
+            {
+                throw new ApplicationException("Unable to parse lock file path from command line.");
+            }
+            data.LockFilePath = lockFilePath;
 
             return data;
         }
