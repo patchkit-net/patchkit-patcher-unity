@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.7.0]
 ### Changed
 - Checking files hash before diff update only if content size is less that certain treshold (by default set to 1 GB)
 
