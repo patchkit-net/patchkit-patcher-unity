@@ -138,5 +138,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 return false;
             }
         }
+
+        public string GetFilePath()
+        {
+            return _filePath;
+        }
     }
 }

@@ -89,6 +89,7 @@ namespace PatchKit.Unity.Patcher
                     return new ProcessStartInfo
                     {
                         FileName = executablePath,
+                        Arguments = string.Format("+patcher-data-location {1}", _app.LocalMetaData.GetFilePath()),
                         WorkingDirectory = workingDir
                     };
                 case PlatformType.OSX:
