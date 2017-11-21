@@ -163,7 +163,7 @@ namespace PatchKit.Unity.Patcher
 
         private static ILocalMetaData CreateDefaultLocalMetaData(string appDataPath)
         {
-            return new LocalMetaData(appDataPath.PathCombine("patcher_cache.json"));
+            return new LocalMetaData(appDataPath.PathCombine("patcher_data.json"), appDataPath.PathCombine("patcher_cache.json"));
         }
 
         private static IRemoteData CreateDefaultRemoteData(string appSecret)

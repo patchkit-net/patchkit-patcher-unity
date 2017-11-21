@@ -19,6 +19,18 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private struct Data
         {
             [JsonProperty("_fileVersions")]
+            public string fileId;
+
+            [JsonProperty("version")]
+            public string version;
+
+            [JsonProperty("product_key")]
+            public string productKey;
+
+            [JsonProperty("product_key_encryption")]
+            public string productKeyEncryption;
+
+            [JsonProperty("_fileVersions")]
             public Dictionary<string, int> FileVersionIds;
         }
 
@@ -27,16 +39,21 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly string _filePath;
 
         private Data _data;
+        private string _deprecatedFilePath;
 
-        public LocalMetaData(string filePath)
+        public LocalMetaData(string filePath, string deprecatedFilePath)
         {
             Checks.ArgumentNotNullOrEmpty(filePath, "filePath");
+            Checks.ArgumentNotNullOrEmpty(deprecatedFilePath, "deprecatedFilePath");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(filePath, "filePath");
+            DebugLogger.LogVariable(deprecatedFilePath, "deprecatedFilePath");
 
             _filePath = filePath;
-            LoadData();
+            _deprecatedFilePath = deprecatedFilePath;
+
+            UpdateData();
         }
 
         public string[] GetRegisteredEntries()
@@ -86,6 +103,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds[fileName];
         }
 
+        public string GetFilePath()
+        {
+            return _filePath;
+        }
+
         private void SaveData()
         {
             DebugLogger.Log("Saving.");
@@ -93,9 +115,17 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(_data, Formatting.None));
         }
 
-        private void LoadData()
+        private void UpdateData()
         {
             DebugLogger.Log("Loading.");
+
+            if (!File.Exists(_filePath))
+            {
+                if (File.Exists(_deprecatedFilePath))
+                {
+                    File.Move(_deprecatedFilePath, _filePath);
+                }
+            }
 
             if (TryLoadDataFromFile())
             {
@@ -106,8 +136,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 DebugLogger.Log("Cannot load from file.");
 
                 LoadEmptyData();
-
             }
+            
+            // if app uses product key
+            _data.productKey = "ABCD-EFGH-IJKL";
+            _data.productKeyEncryption = "none";
+
+            SaveData();
         }
 
         private void LoadEmptyData()
@@ -137,11 +172,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 return false;
             }
-        }
-
-        public string GetFilePath()
-        {
-            return _filePath;
         }
     }
 }
