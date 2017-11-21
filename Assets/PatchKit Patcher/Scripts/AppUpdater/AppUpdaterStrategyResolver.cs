@@ -79,45 +79,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     {
                         DebugLogger.Log("Checking consitency before allowing diff update...");
 
-                        var commandFactory = new AppUpdaterCommandFactory();
-
-                        var checkVersionIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(
-                            installedVersionId, context);
-
-                        checkVersionIntegrity.Prepare(context.StatusMonitor);
-                        checkVersionIntegrity.Execute(CancellationToken.Empty);
-
-                        if (checkVersionIntegrity.Results.Files.All(
-                            fileIntegrity => fileIntegrity.Status == FileIntegrityStatus.Ok))
+                        if (!IsCheckIntegrityValid(context))
                         {
-                            DebugLogger.Log("Version is consistent. Diff update is allowed.");
-                        }
-                        else
-                        {
-                            foreach (var fileIntegrity in checkVersionIntegrity.Results.Files)
-                            {
-                                if (fileIntegrity.Status != FileIntegrityStatus.Ok)
-                                {
-                                    DebugLogger.Log(string.Format("File {0} is not consistent - {1}",
-                                        fileIntegrity.FileName, fileIntegrity.Status));
-                                }
-                            }
-
-                            DebugLogger.Log(
-                                "Version is not consistent. Diff update is forbidden - using content strategy.");
-
                             return StrategyType.Content;
                         }
                     }
 
-                    var diffCost = GetDiffCost(context);
-                    DebugLogger.LogVariable(diffCost, "diffCost");
-
-                    DebugLogger.Log(string.Format("Cost of updating with diff equals {0}.", diffCost));
-
-                    var contentCost = GetContentCost(context);
+                    ulong contentCost = (ulong)GetContentCost(context); // bytes
+                    ulong diffCost = GetDiffCost(context); // bytes
                     DebugLogger.LogVariable(contentCost, "contentCost");
-
+                    DebugLogger.LogVariable(diffCost, "diffCost");
+                    DebugLogger.Log(string.Format("Cost of updating with diff equals {0}.", diffCost));
                     DebugLogger.Log(string.Format("Cost of updating with content equals {0}.", contentCost));
 
                     if (diffCost < contentCost)
@@ -145,19 +117,59 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             return StrategyType.Content;
         }
 
-        private ulong GetContentCost(AppUpdaterContext context)
+        private bool IsCheckIntegrityValid(AppUpdaterContext context)
+        {
+            var commandFactory = new AppUpdaterCommandFactory();
+            int installedVersionId = context.App.GetInstalledVersionId();
+            long contentCost = GetContentCost(context); // bytes
+
+            long sizeThreshold = context.Configuration.HashSizeThreshold;
+            bool isCheckingHash = contentCost < sizeThreshold;
+
+            DebugLogger.LogFormat("IsCheckingHash: {0}, for content size: {1} and contentSizeThreshold: {2}",
+                isCheckingHash, contentCost, sizeThreshold);
+
+            var checkVersionIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(
+                installedVersionId, context, isCheckingHash);
+
+            checkVersionIntegrity.Prepare(context.StatusMonitor);
+            checkVersionIntegrity.Execute(CancellationToken.Empty);
+
+            bool isValid = checkVersionIntegrity.Results.Files.All(
+                fileIntegrity => fileIntegrity.Status == FileIntegrityStatus.Ok);
+
+            if (isValid)
+            {
+                DebugLogger.Log("Version is consistent. Diff update is allowed.");
+            }
+            else
+            {
+                foreach (var fileIntegrity in checkVersionIntegrity.Results.Files)
+                {
+                    if (fileIntegrity.Status != FileIntegrityStatus.Ok)
+                    {
+                        DebugLogger.Log(string.Format("File {0} is not consistent - {1}",
+                            fileIntegrity.FileName, fileIntegrity.Status));
+                    }
+                }
+
+                DebugLogger.Log(
+                    "Version is not consistent. Diff update is forbidden - using content strategy.");
+            }
+
+            return isValid;
+        }
+
+        private long GetContentCost(AppUpdaterContext context)
         {
             int latestVersionId = context.App.GetLatestVersionId();
-
             var contentSummary = context.App.RemoteMetaData.GetContentSummary(latestVersionId);
-
-            return (ulong)contentSummary.Size;
+            return contentSummary.Size;
         }
 
         private ulong GetDiffCost(AppUpdaterContext context)
         {
             int latestVersionId = context.App.GetLatestVersionId();
-
             int currentLocalVersionId = context.App.GetInstalledVersionId();
 
             ulong cost = 0;

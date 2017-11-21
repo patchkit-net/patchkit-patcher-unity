@@ -10,6 +10,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class CheckVersionIntegrityCommand : BaseAppUpdaterCommand, ICheckVersionIntegrityCommand
     {
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CheckVersionIntegrityCommand));
 
         private readonly int _versionId;
@@ -18,14 +19,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalMetaData _localMetaData;
 
         private IGeneralStatusReporter _statusReporter;
+        bool _isCheckingHash;
+        bool _isCheckingSize;
 
-        public CheckVersionIntegrityCommand(int versionId, AppContentSummary versionSummary, ILocalDirectory localDirectory, ILocalMetaData localMetaData)
+        public CheckVersionIntegrityCommand(int versionId, AppContentSummary versionSummary,
+            ILocalDirectory localDirectory, ILocalMetaData localMetaData, bool isCheckingHash, bool isCheckingSize)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
-            // TODO: Validate the content summary.
+            Checks.ArgumentNotNull(versionSummary, "versionSummary");
             Checks.ArgumentNotNull(localDirectory, "localDirectory");
             Checks.ArgumentNotNull(localMetaData, "localMetaData");
-            
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(versionId, "versionId");
@@ -34,6 +37,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _versionSummary = versionSummary;
             _localDirectory = localDirectory;
             _localMetaData = localMetaData;
+            _isCheckingSize = isCheckingSize;
+            _isCheckingHash = isCheckingHash;
         }
 
         public override void Prepare(IStatusMonitor statusMonitor)
@@ -68,7 +73,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private FileIntegrity CheckFile(AppContentSummaryFile file)
         {
-            if(!File.Exists(_localDirectory.Path.PathCombine(file.Path)))
+            string localPath = _localDirectory.Path.PathCombine(file.Path);
+            if (!File.Exists(localPath))
             {
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingData);
             }
@@ -83,14 +89,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidVersion);
             }
 
-            string hash = HashCalculator.ComputeFileHash(_localDirectory.Path.PathCombine(file.Path));
-
-            if (hash != file.Hash)
+            if (_isCheckingSize)
             {
-                return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash);
+                long size = new FileInfo(localPath).Length;
+                if (size != file.Size)
+                {
+                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidSize);
+                }
             }
 
-            // TODO: Check file size (always).
+            if (_isCheckingHash)
+            {
+                string hash = HashCalculator.ComputeFileHash(localPath);
+                if (hash != file.Hash)
+                {
+                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash);
+                }
+            }
 
             return new FileIntegrity(file.Path, FileIntegrityStatus.Ok);
         }

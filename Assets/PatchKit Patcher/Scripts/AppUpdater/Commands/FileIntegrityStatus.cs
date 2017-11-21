@@ -6,6 +6,7 @@
         MissingData,
         MissingMetaData,
         InvalidVersion,
-        InvalidHash
+        InvalidHash,
+        InvalidSize
     }
 }
