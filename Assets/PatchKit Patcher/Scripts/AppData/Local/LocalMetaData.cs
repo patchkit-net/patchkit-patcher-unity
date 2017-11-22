@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
@@ -18,16 +20,20 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         /// </summary>
         private struct Data
         {
-            [JsonProperty("file_id")]
+            [DefaultValue("patcher_data")]
+            [JsonProperty("file_id", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string fileId;
 
-            [JsonProperty("version")]
+            [DefaultValue("1.0")]
+            [JsonProperty("version", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string version;
 
-            [JsonProperty("product_key")]
+            [DefaultValue("")]
+            [JsonProperty("product_key", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string productKey;
 
-            [JsonProperty("product_key_encryption")]
+            [DefaultValue("none")]
+            [JsonProperty("product_key_encryption", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string productKeyEncryption;
 
             [JsonProperty("_fileVersions")]
@@ -53,7 +59,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             _filePath = filePath;
             _deprecatedFilePath = deprecatedFilePath;
 
-            UpdateData();
+            LoadData();
         }
 
         public string[] GetRegisteredEntries()
@@ -115,7 +121,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(_data, Formatting.None));
         }
 
-        private void UpdateData()
+        private void LoadData()
         {
             DebugLogger.Log("Loading.");
 
@@ -137,18 +143,16 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 LoadEmptyData();
             }
-
-            // if app uses product key
-            _data.productKey = "ABCD-EFGH-IJKL";
-            _data.productKeyEncryption = "none";
         }
 
         private void LoadEmptyData()
         {
-            _data = new Data
-            {
-                FileVersionIds = new Dictionary<string, int>()
-            };
+            _data = JsonConvert.DeserializeObject<Data>("{}"); // Json Deserializer will fill default property values defined in struct
+            _data.FileVersionIds = new Dictionary<string, int>();
+
+#if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs
+            _data.productKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchkitKey, string.Empty);
+#endif
         }
 
         private bool TryLoadDataFromFile()
@@ -162,9 +166,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             try
             {
                 _data = JsonConvert.DeserializeObject<Data>(File.ReadAllText(_filePath));
-                _data.fileId = _data.fileId.Equals(JsonConvert.Null) ? "patcher_data" : _data.fileId;
-                _data.version = _data.fileId.Equals(JsonConvert.Null) ? "1.0" : _data.fileId;
 
+#if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs
+                _data.productKey = string.IsNullOrEmpty(_data.productKey)
+                    ? UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchkitKey, string.Empty)
+                    : string.Empty;
+#endif
                 return true;
             }
             catch (Exception exception)
