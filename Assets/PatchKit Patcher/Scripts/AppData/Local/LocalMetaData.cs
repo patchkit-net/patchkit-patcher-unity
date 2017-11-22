@@ -18,7 +18,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         /// </summary>
         private struct Data
         {
-            [JsonProperty("_fileVersions")]
+            [JsonProperty("file_id")]
             public string fileId;
 
             [JsonProperty("version")]
@@ -137,12 +137,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 LoadEmptyData();
             }
-            
+
             // if app uses product key
             _data.productKey = "ABCD-EFGH-IJKL";
             _data.productKeyEncryption = "none";
-
-            SaveData();
         }
 
         private void LoadEmptyData()
@@ -164,6 +162,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             try
             {
                 _data = JsonConvert.DeserializeObject<Data>(File.ReadAllText(_filePath));
+                _data.fileId = _data.fileId.Equals(JsonConvert.Null) ? "patcher_data" : _data.fileId;
+                _data.version = _data.fileId.Equals(JsonConvert.Null) ? "1.0" : _data.fileId;
+
                 return true;
             }
             catch (Exception exception)
