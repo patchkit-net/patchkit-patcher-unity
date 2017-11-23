@@ -149,10 +149,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             _data = JsonConvert.DeserializeObject<Data>("{}"); // Json Deserializer will fill default property values defined in struct
             _data.FileVersionIds = new Dictionary<string, int>();
-
-#if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs
-            _data.productKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchkitKey, string.Empty);
-#endif
         }
 
         private bool TryLoadDataFromFile()
@@ -167,10 +163,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 _data = JsonConvert.DeserializeObject<Data>(File.ReadAllText(_filePath));
 
-#if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs
-                _data.productKey = string.IsNullOrEmpty(_data.productKey)
-                    ? UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchkitKey, string.Empty)
-                    : string.Empty;
+#if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs and remove it
+                if (string.IsNullOrEmpty(_data.productKey) 
+                    && UnityEngine.PlayerPrefs.HasKey(ValidateLicenseCommand.CachePatchkitKey))
+                {
+                    _data.productKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchkitKey);
+                    UnityEngine.PlayerPrefs.DeleteKey(ValidateLicenseCommand.CachePatchkitKey);
+                }
 #endif
                 return true;
             }
