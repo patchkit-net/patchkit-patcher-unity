@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -73,14 +74,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 context.App.TemporaryDirectory);
         }
 
-        public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context)
+        public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context,
+                bool isCheckingHash = true, bool isCheckingSize = true)
         {
             var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
 
             return new CheckVersionIntegrityCommand(versionId,
                 versionContentSummary,
                 context.App.LocalDirectory,
-                context.App.LocalMetaData);
+                context.App.LocalMetaData,
+                isCheckingHash, isCheckingSize);
         }
 
         public IUninstallCommand CreateUninstallCommand(AppUpdaterContext context)

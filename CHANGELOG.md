@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Patcher now keeps track of keeping only one it's instance running
 
+## [3.7.0]
+### Changed
+- Checking files hash before diff update only if content size is less that certain treshold (by default set to 1 GB)
+
 ## [3.6.0]
 ### Added
 - Sentry messages are now sent with download link for log file and include additional data (log file guid, local version id, remote version id and app secret)
