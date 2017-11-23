@@ -76,7 +76,7 @@ namespace PatchKit.Unity.Patcher
 
         private bool _hasAutomaticallyStartedApp;
 
-        private FileStream _LockFileStream;
+        private FileStream _lockFileStream;
 
         private CancellationTokenSource _updateAppCancellationTokenSource;
 
@@ -194,9 +194,9 @@ namespace PatchKit.Unity.Patcher
         {
             try
             { 
-                if (_LockFileStream != null)
+                if (_lockFileStream != null)
                 {
-                    _LockFileStream.Close();
+                    _lockFileStream.Close();
                 }
             }
             catch
@@ -398,7 +398,7 @@ namespace PatchKit.Unity.Patcher
             }            
             catch (MultipleInstancesException exception)
             {
-                DebugLogger.LogWarning(exception.Message);
+                DebugLogger.LogException(exception);
                 Quit();                
             }
             catch (Exception exception)
@@ -477,7 +477,7 @@ namespace PatchKit.Unity.Patcher
             {
                 try
                 {
-                    _LockFileStream = File.Open(lockFilePath, FileMode.Append);
+                    _lockFileStream = File.Open(lockFilePath, FileMode.Append);
                     DebugLogger.Log("Lock file open success");
                 }
                 catch
@@ -826,5 +826,5 @@ namespace PatchKit.Unity.Patcher
                 if (UpdateAppStatusChanged != null) UpdateAppStatusChanged(obj);
             });
         }
-    }    
+    }
 }
