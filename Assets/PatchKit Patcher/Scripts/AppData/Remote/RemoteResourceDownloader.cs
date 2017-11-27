@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -133,9 +134,16 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 try
                 {
                     ResolveDownloader(cancellationToken);
-                }
+                }                
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException ||
+                        ex is UnauthorizedAccessException ||
+                        ex is ThreadAbortException)
+                    {
+                        throw ex;
+                    }
+
                     if (retriesLeft > 0)
                     {
                         retriesLeft--;
@@ -146,7 +154,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                         DebugLogger.LogErrorFormat("Resolving Dowloader failed, no retries left, throwing further");
                         throw ex;
                     }
-                }
+                }  
             } while (retriesLeft > 0);
         }
 
