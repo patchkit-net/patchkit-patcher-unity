@@ -176,8 +176,6 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.Log("Quitting application.");
             _canStartThread = false;
 
-            CloseLockFile();
-
 #if UNITY_EDITOR
             if (Application.isEditor)
             {
@@ -186,6 +184,7 @@ namespace PatchKit.Unity.Patcher
             else
 #endif
             {
+                CloseLockFile();
                 Application.Quit();
             }
         }
@@ -367,7 +366,10 @@ namespace PatchKit.Unity.Patcher
 
                 ThreadLoadPatcherData();
 
-                EnsureSingleInstance();
+                if (!Application.isEditor)
+                {
+                    EnsureSingleInstance();
+                }
 
                 ThreadLoadPatcherConfiguration();
 
@@ -473,7 +475,7 @@ namespace PatchKit.Unity.Patcher
             string lockFilePath = Data.Value.LockFilePath;
             DebugLogger.LogFormat("Opening lock file: {0}", lockFilePath);
 
-            if (File.Exists(lockFilePath))
+            if (string.IsNullOrEmpty(lockFilePath))
             {
                 try
                 {
@@ -487,7 +489,7 @@ namespace PatchKit.Unity.Patcher
             }
             else
             {
-                DebugLogger.LogException(new Exception("LockFile is missing"));
+                DebugLogger.LogWarning("LockFile is missing");
             }
         }
 
