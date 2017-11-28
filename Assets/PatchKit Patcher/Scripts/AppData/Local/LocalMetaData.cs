@@ -22,19 +22,19 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             [DefaultValue("patcher_data")]
             [JsonProperty("file_id", DefaultValueHandling = DefaultValueHandling.Populate)]
-            public string fileId;
+            public string FileId;
 
             [DefaultValue("1.0")]
             [JsonProperty("version", DefaultValueHandling = DefaultValueHandling.Populate)]
-            public string version;
+            public string Version;
 
             [DefaultValue("")]
             [JsonProperty("product_key", DefaultValueHandling = DefaultValueHandling.Populate)]
-            public string productKey;
+            public string ProductKey;
 
             [DefaultValue("none")]
             [JsonProperty("product_key_encryption", DefaultValueHandling = DefaultValueHandling.Populate)]
-            public string productKeyEncryption;
+            public string ProductKeyEncryption;
 
             [JsonProperty("_fileVersions")]
             public Dictionary<string, int> FileVersionIds;
@@ -164,10 +164,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 _data = JsonConvert.DeserializeObject<Data>(File.ReadAllText(_filePath));
 
 #if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs and remove it
-                if (string.IsNullOrEmpty(_data.productKey) 
+                if (string.IsNullOrEmpty(_data.ProductKey) 
                     && UnityEngine.PlayerPrefs.HasKey(ValidateLicenseCommand.CachePatchkitKey))
                 {
-                    _data.productKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchkitKey);
+                    _data.ProductKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchkitKey);
                     UnityEngine.PlayerPrefs.DeleteKey(ValidateLicenseCommand.CachePatchkitKey);
                 }
 #endif
