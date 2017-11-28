@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
-- Some button text
+- Redesign error button label
 
 ## [3.7.0]
 ### Changed
