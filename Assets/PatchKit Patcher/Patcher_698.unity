@@ -237,7 +237,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Continue
+  m_Text: Retry
 --- !u!222 &55392231
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -817,7 +817,6 @@ GameObject:
   - 4: {fileID: 377531152}
   - 114: {fileID: 377531153}
   - 114: {fileID: 377531154}
-  - 114: {fileID: 377531155}
   m_Layer: 0
   m_Name: Patcher
   m_TagString: Untagged
@@ -849,12 +848,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ErrorDialog: {fileID: 272161832}
-  EditorAppSecret: 2364b5c2decdbb4e68d1fbeeceff278b
-  EditorOverrideLatestVersionId: 0
+  EditorAppSecret: f21ce8123258a787169f16d1dc3702d6
+  EditorOverrideLatestVersionId: 3
   DefaultConfiguration:
     AppUpdaterConfiguration:
       UseTorrents: 1
       CheckConsistencyBeforeDiffUpdate: 1
+      HashSizeThreshold: 1073741824
     AutomaticallyStartApp: 0
     AutomaticallyCheckForAppUpdates: 1
     AutomaticallyInstallApp: 1
@@ -870,17 +870,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IgnoreEditorErrors: 1
---- !u!114 &377531155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 377531151}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1872f00fdd8e7a47a81b37fbfb1aaf6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &421519242
 GameObject:
   m_ObjectHideFlags: 0
