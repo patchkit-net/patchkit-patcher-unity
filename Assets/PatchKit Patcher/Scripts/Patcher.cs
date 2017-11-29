@@ -14,6 +14,8 @@ using PatchKit.Unity.Patcher.UI.Dialogs;
 using UniRx;
 using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
+using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
+using System.Net;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -599,6 +601,11 @@ namespace PatchKit.Unity.Patcher
                 }
             }
             catch (ApiConnectionException e)
+            {
+                DebugLogger.LogException(e);
+                ThreadDisplayError(PatcherError.NoInternetConnection, cancellationToken);
+            }
+            catch (WebException e)
             {
                 DebugLogger.LogException(e);
                 ThreadDisplayError(PatcherError.NoInternetConnection, cancellationToken);

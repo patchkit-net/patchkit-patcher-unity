@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
@@ -130,7 +131,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 }
 
                 DebugLogger.Log("Waiting 10 seconds before trying again...");
-                Thread.Sleep(10000);
+                Threading.CancelableSleep(10000, cancellationToken);
             }
 
             if (retry <= 0)
