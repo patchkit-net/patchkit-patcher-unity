@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [Unversioned]
+### Added
+- Error handling when internet connection is lost while download
+
 ### Fixed
 - Fix issue with patching files which size is 2GB or more
 
