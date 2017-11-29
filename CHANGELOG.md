@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Time estimation for completing download of the patch
 
+### Fixed
+- Fix issue with patching files which size is 2GB or more
+
 ## [3.7.0]
 ### Changed
 - Checking files hash before diff update only if content size is less that certain treshold (by default set to 1 GB)
