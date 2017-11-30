@@ -128,6 +128,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public void Download(CancellationToken cancellationToken)
         {
+            Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
+
             int retriesLeft = RetriesCount;
             do
             {
@@ -160,8 +162,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private void ResolveDownloader(CancellationToken cancellationToken)
         {
-            Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
-
             if (_resource.HasMetaUrls())
             {
                 DebugLogger.Log("Downloading meta data...");
