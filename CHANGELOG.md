@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Time estimation for completing download of the patch
 
+### Changed
+- Redesign error button label
+
 ### Fixed
 - Fix issue with patching files which size is 2GB or more
 
