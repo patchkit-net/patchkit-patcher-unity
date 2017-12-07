@@ -366,10 +366,7 @@ namespace PatchKit.Unity.Patcher
 
                 ThreadLoadPatcherData();
 
-                if (!Application.isEditor)
-                {
-                    EnsureSingleInstance();
-                }
+                EnsureSingleInstance();
 
                 ThreadLoadPatcherConfiguration();
 
@@ -437,8 +434,7 @@ namespace PatchKit.Unity.Patcher
                         AppDataPath =
                             Application.dataPath.Replace("/Assets",
                                 string.Format("/Temp/PatcherApp{0}", EditorAppSecret)),
-                        OverrideLatestVersionId = EditorOverrideLatestVersionId,
-                        LockFilePath = "patcher.lock"
+                        OverrideLatestVersionId = EditorOverrideLatestVersionId
                     };
                 }).WaitOne();
 #else
@@ -475,7 +471,7 @@ namespace PatchKit.Unity.Patcher
             string lockFilePath = Data.Value.LockFilePath;
             DebugLogger.LogFormat("Opening lock file: {0}", lockFilePath);
 
-            if (string.IsNullOrEmpty(lockFilePath))
+            if (!string.IsNullOrEmpty(lockFilePath))
             {
                 try
                 {

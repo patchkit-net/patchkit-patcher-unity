@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace PatchKit.Unity.Patcher
 {
     [Serializable]
-    internal class MultipleInstancesException : Exception
+    internal class MultipleInstancesException: Exception
     {
         public MultipleInstancesException()
         {
