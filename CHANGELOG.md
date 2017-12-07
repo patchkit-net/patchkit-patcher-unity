@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Added game meta data files
+- Time estimation for completing download of the patch
+
+### Changed
+- Redesign error button label
+- Stability improvements for resource downloader
+
+### Fixed
+- Fix issue with patching files which size is 2GB or more
 
 ## [3.7.0]
 ### Changed
