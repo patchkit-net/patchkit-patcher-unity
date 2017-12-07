@@ -13,8 +13,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     public class ValidateLicenseCommand : BaseAppUpdaterCommand, IValidateLicenseCommand
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ValidateLicenseCommand));
-        public const string CachePatchkitKey = "patchkit-key";
-        public const string CachePatchkitKeySecret = "patchkit-keysecret-";
+        public const string CachePatchKitKey = "patchkit-key";
+        public const string CachePatchKitKeySecret = "patchkit-keysecret-";
 
         private readonly ILicenseDialog _licenseDialog;
         private readonly IRemoteMetaData _remoteMetaData;
@@ -157,22 +157,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private void SetCachedKey(string value)
         {
-            _cache.SetValue(CachePatchkitKey, value);
+            _cache.SetValue(CachePatchKitKey, value);
         }
 
         private string GetCachedKey()
         {
-            return _cache.GetValue(CachePatchkitKey);
+            return _cache.GetValue(CachePatchKitKey);
         }
 
         private void SetCachedKeySecret(string key, string value)
         {
-            _cache.SetValue(CachePatchkitKeySecret + key, value);
+            _cache.SetValue(CachePatchKitKeySecret + key, value);
         }
 
         private string GetCachedKeySecret(string key)
         {
-            return _cache.GetValue(CachePatchkitKeySecret + key, key);
+            return _cache.GetValue(CachePatchKitKeySecret + key, key);
         }
     }
 }

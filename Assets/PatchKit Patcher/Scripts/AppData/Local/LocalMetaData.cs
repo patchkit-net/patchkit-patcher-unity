@@ -165,10 +165,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
 #if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs and remove it
                 if (string.IsNullOrEmpty(_data.ProductKey) 
-                    && UnityEngine.PlayerPrefs.HasKey(ValidateLicenseCommand.CachePatchkitKey))
+                    && UnityEngine.PlayerPrefs.HasKey(ValidateLicenseCommand.CachePatchKitKey))
                 {
-                    _data.ProductKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchkitKey);
-                    UnityEngine.PlayerPrefs.DeleteKey(ValidateLicenseCommand.CachePatchkitKey);
+                    _data.ProductKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchKitKey);
+                    UnityEngine.PlayerPrefs.DeleteKey(ValidateLicenseCommand.CachePatchKitKey);
                 }
 #endif
                 return true;
