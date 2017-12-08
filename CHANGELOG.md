@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Added game meta data files
+- Game meta data file
 - Time estimation for completing download of the patch
 
 ### Changed
