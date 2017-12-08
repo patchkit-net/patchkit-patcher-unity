@@ -35,5 +35,10 @@
         /// </summary>
         /// <param name="entryName">Name of the entry.</param>
         int GetEntryVersionId(string entryName);
+
+        /// <summary>
+        /// Returns the file path of JSON file the data was loaded from.
+        /// </summary>
+        string GetFilePath();
     }
 }

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Patcher now keeps track of keeping only one it's instance running
+- Game meta data file
 - Time estimation for completing download of the patch
 
 ### Changed
