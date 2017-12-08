@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
@@ -18,6 +20,22 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         /// </summary>
         private struct Data
         {
+            [DefaultValue("patcher_data")]
+            [JsonProperty("file_id", DefaultValueHandling = DefaultValueHandling.Populate)]
+            public string FileId;
+
+            [DefaultValue("1.0")]
+            [JsonProperty("version", DefaultValueHandling = DefaultValueHandling.Populate)]
+            public string Version;
+
+            [DefaultValue("")]
+            [JsonProperty("product_key", DefaultValueHandling = DefaultValueHandling.Populate)]
+            public string ProductKey;
+
+            [DefaultValue("none")]
+            [JsonProperty("product_key_encryption", DefaultValueHandling = DefaultValueHandling.Populate)]
+            public string ProductKeyEncryption;
+
             [JsonProperty("_fileVersions")]
             public Dictionary<string, int> FileVersionIds;
         }
@@ -27,15 +45,20 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly string _filePath;
 
         private Data _data;
+        private string _deprecatedFilePath;
 
-        public LocalMetaData(string filePath)
+        public LocalMetaData(string filePath, string deprecatedFilePath)
         {
             Checks.ArgumentNotNullOrEmpty(filePath, "filePath");
+            Checks.ArgumentNotNullOrEmpty(deprecatedFilePath, "deprecatedFilePath");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(filePath, "filePath");
+            DebugLogger.LogVariable(deprecatedFilePath, "deprecatedFilePath");
 
             _filePath = filePath;
+            _deprecatedFilePath = deprecatedFilePath;
+
             LoadData();
         }
 
@@ -86,6 +109,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds[fileName];
         }
 
+        public string GetFilePath()
+        {
+            return _filePath;
+        }
+
         private void SaveData()
         {
             DebugLogger.Log("Saving.");
@@ -97,6 +125,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             DebugLogger.Log("Loading.");
 
+            if (!File.Exists(_filePath))
+            {
+                if (File.Exists(_deprecatedFilePath))
+                {
+                    File.Move(_deprecatedFilePath, _filePath);
+                }
+            }
+
             if (TryLoadDataFromFile())
             {
                 DebugLogger.Log("Loaded from file.");
@@ -106,16 +142,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 DebugLogger.Log("Cannot load from file.");
 
                 LoadEmptyData();
-
             }
         }
 
         private void LoadEmptyData()
         {
-            _data = new Data
-            {
-                FileVersionIds = new Dictionary<string, int>()
-            };
+            _data = JsonConvert.DeserializeObject<Data>("{}"); // Json Deserializer will fill default property values defined in struct
+            _data.FileVersionIds = new Dictionary<string, int>();
         }
 
         private bool TryLoadDataFromFile()
@@ -129,6 +162,15 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             try
             {
                 _data = JsonConvert.DeserializeObject<Data>(File.ReadAllText(_filePath));
+
+#if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs and remove it
+                if (string.IsNullOrEmpty(_data.ProductKey) 
+                    && UnityEngine.PlayerPrefs.HasKey(ValidateLicenseCommand.CachePatchKitKey))
+                {
+                    _data.ProductKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchKitKey);
+                    UnityEngine.PlayerPrefs.DeleteKey(ValidateLicenseCommand.CachePatchKitKey);
+                }
+#endif
                 return true;
             }
             catch (Exception exception)
