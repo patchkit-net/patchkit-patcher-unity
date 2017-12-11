@@ -16,6 +16,9 @@ using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using System.Net;
+using System.IO;
+using System.Runtime.Serialization;
+
 
 namespace PatchKit.Unity.Patcher
 {
@@ -75,6 +78,8 @@ namespace PatchKit.Unity.Patcher
         private bool _hasAutomaticallyCheckedForAppUpdate;
 
         private bool _hasAutomaticallyStartedApp;
+
+        private FileStream _lockFileStream;
 
         private CancellationTokenSource _updateAppCancellationTokenSource;
 
@@ -182,7 +187,23 @@ namespace PatchKit.Unity.Patcher
             else
 #endif
             {
+                CloseLockFile();
                 Application.Quit();
+            }
+        }
+
+        private void CloseLockFile()
+        {
+            try
+            { 
+                if (_lockFileStream != null)
+                {
+                    _lockFileStream.Close();
+                }
+            }
+            catch
+            {
+                DebugLogger.LogWarning("Lock file closing error");
             }
         }
 
@@ -195,9 +216,9 @@ namespace PatchKit.Unity.Patcher
             UnityDispatcher.Initialize();
             Application.runInBackground = true;
 
-            DebugLogger.Log(string.Format("patchkit-patcher-unity: {0}", PatcherInfo.GetVersion()));
-            DebugLogger.Log(string.Format("System version: {0}", EnvironmentInfo.GetSystemVersion()));
-            DebugLogger.Log(string.Format("Runtime version: {0}", EnvironmentInfo.GetSystemVersion()));
+            DebugLogger.LogFormat("patchkit-patcher-unity: {0}", PatcherInfo.GetVersion());
+            DebugLogger.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
+            DebugLogger.LogFormat("Runtime version: {0}", EnvironmentInfo.GetSystemVersion());
 
             CheckEditorAppSecretSecure();
 
@@ -217,7 +238,7 @@ namespace PatchKit.Unity.Patcher
             {
                 if (!string.IsNullOrEmpty(EditorAppSecret) && EditorAppSecret.Trim() != EditorAllowedSecret)
                 {
-                    DebugLogger.LogError("Security issue: EditorAppSecert is set to not allowed value. " +
+                    DebugLogger.LogError("Security issue: EditorAppSecret is set to not allowed value. " +
                                          "Please change it inside Unity editor to " + EditorAllowedSecret +
                                          " and build the project again.");
                     Quit();
@@ -348,6 +369,8 @@ namespace PatchKit.Unity.Patcher
 
                 ThreadLoadPatcherData();
 
+                EnsureSingleInstance();
+
                 ThreadLoadPatcherConfiguration();
 
                 UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId)).WaitOne();
@@ -374,6 +397,11 @@ namespace PatchKit.Unity.Patcher
             catch (ThreadAbortException)
             {
                 DebugLogger.Log("Patcher thread finished: thread has been aborted.");
+            }            
+            catch (MultipleInstancesException exception)
+            {
+                DebugLogger.LogException(exception);
+                Quit();                
             }
             catch (Exception exception)
             {
@@ -420,6 +448,7 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.LogVariable(_data.Value.AppSecret, "Data.AppSecret");
                 DebugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");
                 DebugLogger.LogVariable(_data.Value.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
+                DebugLogger.LogVariable(_data.Value.LockFilePath, "Data.LockFilePath");
 
                 DebugLogger.Log("Patcher data loaded.");
             }
@@ -437,6 +466,29 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.LogError("Error while loading patcher data: an exception has occured. Rethrowing exception.");
                 throw;
+            }
+        }
+
+        private void EnsureSingleInstance()
+        {
+            string lockFilePath = Data.Value.LockFilePath;
+            DebugLogger.LogFormat("Opening lock file: {0}", lockFilePath);
+
+            if (!string.IsNullOrEmpty(lockFilePath))
+            {
+                try
+                {
+                    _lockFileStream = File.Open(lockFilePath, FileMode.Append);
+                    DebugLogger.Log("Lock file open success");
+                }
+                catch
+                {
+                    throw new MultipleInstancesException("Another instance of Patcher spotted");
+                }
+            }
+            else
+            {
+                DebugLogger.LogWarning("LockFile is missing");
             }
         }
 

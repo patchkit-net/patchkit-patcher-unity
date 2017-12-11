@@ -9,6 +9,8 @@ namespace PatchKit.Unity.Patcher
 
         public string AppDataPath;
 
+        public string LockFilePath;
+
         public int OverrideLatestVersionId;
     }
 }

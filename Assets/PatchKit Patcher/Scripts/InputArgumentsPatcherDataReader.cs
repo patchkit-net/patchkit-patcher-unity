@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher
             string forceAppSecret;
             if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceSecretEnvironmentVariable, out forceAppSecret))
             {
-                DebugLogger.Log(string.Format("Setting forced app secret {0}", forceAppSecret));
+                DebugLogger.LogFormat("Setting forced app secret {0}", forceAppSecret);
                 data.AppSecret = forceAppSecret;
             }
             else
@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (int.TryParse(forceOverrideLatestVersionIdString, out forceOverrideLatestVersionId))
                 {
-                    DebugLogger.Log(string.Format("Setting forced version id {0}", forceOverrideLatestVersionId));
+                    DebugLogger.LogFormat("Setting forced version id {0}", forceOverrideLatestVersionId);
                     data.OverrideLatestVersionId = forceOverrideLatestVersionId;
                 }
             }
@@ -63,8 +63,18 @@ namespace PatchKit.Unity.Patcher
             {
                 throw new ApplicationException("Unable to parse app data path from command line.");
             }
-
             data.AppDataPath = MakeAppDataPathAbsolute(relativeAppDataPath);
+
+            string lockFilePath;
+            if (TryReadArgument("--lockfile", out lockFilePath))
+            {
+                data.LockFilePath = lockFilePath;
+                DebugLogger.LogFormat("Using lock file: {0}", lockFilePath);
+            }
+            else
+            {
+                DebugLogger.LogWarning("Lock file not provided.");
+            }
 
             return data;
         }

@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unversioned]
 ### Added
 - Error handling when internet connection is lost while download
+- Patcher now keeps track of keeping only one it's instance running
+- Game meta data file
+- Time estimation for completing download of the patch
 
 ### Changed
 - Redesign error button label
+- Stability improvements for resource downloader
 
 ### Fixed
 - Fix issue with patching files which size is 2GB or more
