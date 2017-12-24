@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
@@ -101,6 +102,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                         validator.Validate(_destinationFilePath, _resource);
 
                         return;
+                    }
+                    catch (WebException e)
+                    {
+                        // Isn't this catching too much?
+                        DebugLogger.LogException(e);
+                        
+                        // try again
+                        break;
                     }
                     catch (DownloaderException downloaderException)
                     {
