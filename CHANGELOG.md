@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Patcher now keeps track of keeping only one it's instance running
+- Game meta data file
+- Time estimation for completing download of the patch
+
+### Changed
+- Redesign error button label
+- Stability improvements for resource downloader
+- Stability improvements for license dialog
+
+### Fixed
+- Fix issue with patching files which size is 2GB or more
+- Properly handle timeouts when using chuncked HTTP downloader
+- Fix occasional torrent downloader failures due to sharing violation issues with downloaded file
+- Fix log file sending
+
 ## [3.7.0]
 ### Changed
 - Checking files hash before diff update only if content size is less that certain treshold (by default set to 1 GB)

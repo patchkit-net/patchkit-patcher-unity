@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -17,7 +18,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private const int TorrentDownloaderTimeout = 10000;
         private const int ChunkedHttpDownloaderTimeout = 30000;
         private const int HttpDownloaderTimeout = 30000;
-
+        private const int RetriesCount = 8; // FIX: #722
         private readonly string _destinationFilePath;
         private readonly string _destinationMetaPath;
 
@@ -129,6 +130,39 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         {
             Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
+            int retriesLeft = RetriesCount;
+            do
+            {
+                try
+                {
+                    ResolveDownloader(cancellationToken);
+                    return;
+                }                
+                catch (Exception ex)
+                {
+                    if (ex is OperationCanceledException ||
+                        ex is UnauthorizedAccessException ||
+                        ex is ThreadAbortException)
+                    {
+                        throw ex;
+                    }
+
+                    if (retriesLeft > 0)
+                    {
+                        retriesLeft--;
+                        DebugLogger.LogWarningFormat("Resolving Dowloader failed, retry: {0}/{1}", RetriesCount-retriesLeft+1, RetriesCount);
+                    }
+                    else
+                    {
+                        DebugLogger.LogErrorFormat("Resolving Dowloader failed, no retries left, throwing further");
+                        throw ex;
+                    }
+                }  
+            } while (retriesLeft > 0);
+        }
+
+        private void ResolveDownloader(CancellationToken cancellationToken)
+        {
             if (_resource.HasMetaUrls())
             {
                 DebugLogger.Log("Downloading meta data...");

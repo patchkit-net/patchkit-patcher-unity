@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Net;
+using JetBrains.Annotations;
 using PatchKit.Api;
+using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -12,135 +13,201 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class ValidateLicenseCommand : BaseAppUpdaterCommand, IValidateLicenseCommand
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ValidateLicenseCommand));
+        public const string CachePatchKitKey = "patchkit-key";
+        public const string CachePatchKitKeySecret = "patchkit-keysecret-";
 
-        private readonly ILicenseDialog _licenseDialog;
-        private readonly IRemoteMetaData _remoteMetaData;
-        private readonly ICache _cache;
+        [NotNull] private readonly ILicenseDialog _licenseDialog;
+        [NotNull] private readonly IRemoteMetaData _remoteMetaData;
+        [NotNull] private readonly ICache _cache;
+        [NotNull] private readonly ILogger _logger;
 
-        public ValidateLicenseCommand(ILicenseDialog licenseDialog, IRemoteMetaData remoteMetaData, ICache cache)
+        public ValidateLicenseCommand([NotNull] ILicenseDialog licenseDialog, [NotNull] IRemoteMetaData remoteMetaData,
+            [NotNull] ICache cache, [NotNull] ILogger logger)
         {
-            Checks.ArgumentNotNull(licenseDialog, "licenseDialog");
-            Checks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
-            Checks.ArgumentNotNull(cache, "cache");
-
-            DebugLogger.LogConstructor();
+            if (licenseDialog == null)
+            {
+                throw new ArgumentNullException("licenseDialog");
+            }
+            if (remoteMetaData == null)
+            {
+                throw new ArgumentNullException("remoteMetaData");
+            }
+            if (cache == null)
+            {
+                throw new ArgumentNullException("cache");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
 
             _licenseDialog = licenseDialog;
             _remoteMetaData = remoteMetaData;
             _cache = cache;
+            _logger = logger;
         }
 
         public override void Execute(CancellationToken cancellationToken)
         {
-            base.Execute(cancellationToken);
-
-            DebugLogger.Log("Validating license.");
-
-            KeySecret = null;
-
-            var appInfo = _remoteMetaData.GetAppInfo();
-
-            if (!appInfo.UseKeys)
+            try
             {
-                DebugLogger.Log("Application is not using license keys.");
-                return;
-            }
+                _logger.LogDebug("Validating license...");
 
-            LicenseDialogMessageType messageType = LicenseDialogMessageType.None;
+                base.Execute(cancellationToken);
 
-            var cachedKey = GetCachedKey();
-            bool triedCachedKey = false;
+                KeySecret = null;
 
-            while (KeySecret == null)
-            {
-                string key = string.Empty;
+                var appInfo = _remoteMetaData.GetAppInfo();
 
-                if (!triedCachedKey && !string.IsNullOrEmpty(cachedKey))
+                if (!appInfo.UseKeys)
                 {
-                    DebugLogger.Log("Using cached license key.");
-
-                    key = cachedKey;
-                    triedCachedKey = true;
-                }
-                else
-                {
-                    DebugLogger.Log("Displaying license dialog.");
-
-                    var result = _licenseDialog.Display(messageType);
-
-                    DebugLogger.Log("Processing dialog result.");
-
-                    if (result.Type == LicenseDialogResultType.Confirmed)
-                    {
-                        DebugLogger.Log("Using license key typed in dialog.");
-                        key = result.Key;
-                    }
-                    else if (result.Type == LicenseDialogResultType.Aborted)
-                    {
-                        DebugLogger.Log("License dialog has been aborted. Cancelling operation.");
-                        throw new OperationCanceledException();
-                    }
+                    _logger.LogDebug("Validating license is not required - application is not using license keys.");
+                    return;
                 }
 
-                try
+                var messageType = LicenseDialogMessageType.None;
+
+                var cachedKey = GetCachedKey();
+                _logger.LogTrace("Cached key = " + cachedKey);
+
+                bool didUseCachedKey = false;
+
+                while (KeySecret == null)
                 {
-                    KeySecret = _remoteMetaData.GetKeySecret(key, GetCachedKeySecret(key));
+                    bool isUsingCachedKey;
+                    string key = GetKey(messageType, cachedKey, out isUsingCachedKey, ref didUseCachedKey);
 
-                    DebugLogger.LogVariable(KeySecret, "KeySecret");
-                    DebugLogger.Log("License key has been validated");
-
-                    SetCachedKey(key);
-                    SetCachedKeySecret(key, KeySecret);
-                }
-                catch (ApiResponseException apiResponseException)
-                {
-                    DebugLogger.LogException(apiResponseException);
-
-                    if (apiResponseException.StatusCode == 404)
+                    try
                     {
-                        KeySecret = null;
-                        messageType = LicenseDialogMessageType.InvalidLicense;
+                        _logger.LogTrace("Key = " + key);
+
+                        var cachedKeySecret = GetCachedKeySecret(key);
+                        _logger.LogTrace("Cached key secret = " + cachedKeySecret);
+
+                        _logger.LogDebug("Validating key...");
+
+                        KeySecret = _remoteMetaData.GetKeySecret(key, cachedKeySecret);
+                        
+                        _logger.LogDebug("License has been validated!");
+                        
+                        _logger.LogTrace("KeySecret = " + KeySecret);
+
+                        _logger.LogDebug("Saving key and key secret to cache.");
+                        SetCachedKey(key);
+                        SetCachedKeySecret(key, KeySecret);
                     }
-                    else if (apiResponseException.StatusCode == 410)
+                    catch (ApiResponseException apiResponseException)
                     {
-                        KeySecret = null;
-                        messageType = LicenseDialogMessageType.BlockedLicense;
+                        _logger.LogWarning(
+                            "Key validation failed due to server or API error. Checking if error can be recognized and displayed to user...",
+                            apiResponseException);
+
+                        if (!TryToHandleApiErrors(apiResponseException.StatusCode, ref messageType, isUsingCachedKey))
+                        {
+                            throw;
+                        }
                     }
-                    else if (apiResponseException.StatusCode == 403)
+                    catch (ApiConnectionException apiConnectionException)
                     {
-                        KeySecret = null;
+                        _logger.LogWarning(
+                            "Key validation due to connection issues with API server. Setting license dialog message to ",
+                            apiConnectionException);
                         messageType = LicenseDialogMessageType.ServiceUnavailable;
                     }
-                    else
-                    {
-                        throw;
-                    }
                 }
-                catch (WebException webException)
-                {
-                    DebugLogger.LogException(webException);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Validating license has failed.", e);
+                throw;
+            }
+        }
 
-                    KeySecret = null;
-                    messageType = LicenseDialogMessageType.ServiceUnavailable;
+        private string GetKey(LicenseDialogMessageType messageType, string cachedKey, out bool isUsingCachedKey,
+            ref bool didUseCachedKey)
+        {
+            bool isCachedKeyAvailable = !string.IsNullOrEmpty(cachedKey);
 
-                    if (webException.Status == WebExceptionStatus.ProtocolError)
-                    {
-                        var response = (HttpWebResponse) webException.Response;
-                        if ((int)response.StatusCode == 404)
-                        {
-                            messageType = LicenseDialogMessageType.InvalidLicense;
-                        }
-                        else if ((int)response.StatusCode == 410)
-                        {
-                            messageType = LicenseDialogMessageType.BlockedLicense;
-                        }
-                        else if ((int)response.StatusCode == 403)
-                        {
-                            messageType = LicenseDialogMessageType.ServiceUnavailable;
-                        }
-                    }
-                }
+            if (isCachedKeyAvailable && !didUseCachedKey)
+            {
+                _licenseDialog.SetKey(cachedKey);
+                didUseCachedKey = true;
+                isUsingCachedKey = true;
+
+                return cachedKey;
+            }
+
+            isUsingCachedKey = false;
+
+            return GetKeyFromDialog(messageType);
+        }
+
+        private string GetKeyFromDialog(LicenseDialogMessageType messageType)
+        {
+            _logger.LogDebug("Displaying license dialog...");
+
+            var result = _licenseDialog.Display(messageType);
+
+            _logger.LogDebug("License dialog has returned result.");
+
+            _logger.LogTrace("result.Key = " + result.Key);
+            _logger.LogTrace(string.Format("result.Type = {0}", result.Type));
+
+            switch (result.Type)
+            {
+                case LicenseDialogResultType.Confirmed:
+                    _logger.LogDebug("Using key typed in license dialog.");
+                    return result.Key;
+                case LicenseDialogResultType.Aborted:
+                    _logger.LogDebug("License dialog has been aborted. Cancelling operation.");
+                    throw new OperationCanceledException();
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private bool TryToHandleApiErrors(int statusCode, ref LicenseDialogMessageType messageType,
+            bool isUsingCachedKey)
+        {
+            _logger.LogTrace(string.Format("isUsingCachedKey = {0}", isUsingCachedKey));
+            _logger.LogTrace(string.Format("statusCode = {0}", statusCode));
+
+            if (statusCode == 404)
+            {
+                _logger.LogDebug("License key is not found.");
+                HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.InvalidLicense);
+                return true;
+            }
+            if (statusCode == 410)
+            {
+                _logger.LogDebug("License key is blocked.");
+                HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.BlockedLicense);
+                return true;
+            }
+            if (statusCode == 403)
+            {
+                _logger.LogDebug(
+                    "License key validation service is not available.");
+                HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.ServiceUnavailable);
+                return true;
+            }
+
+            _logger.LogError("Unrecognized server or API error.");
+            return false;
+        }
+
+        private void HandleApiError(ref LicenseDialogMessageType messageType, bool isUsingCachedKey,
+            LicenseDialogMessageType licenseDialogMessageType)
+        {
+            if (!isUsingCachedKey)
+            {
+                _logger.LogDebug(string.Format("Setting license dialog message to {0}", licenseDialogMessageType));
+                messageType = licenseDialogMessageType;
+            }
+            else
+            {
+                _logger.LogDebug(
+                    "Ignoring API error - the attempt was done with cached key. Prompting user to enter new license key.");
             }
         }
 
@@ -155,22 +222,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private void SetCachedKey(string value)
         {
-            _cache.SetValue("patchkit-key", value);
+            _cache.SetValue(CachePatchKitKey, value);
         }
 
         private string GetCachedKey()
         {
-            return _cache.GetValue("patchkit-key");
+            return _cache.GetValue(CachePatchKitKey);
         }
 
         private void SetCachedKeySecret(string key, string value)
         {
-            _cache.SetValue(string.Format("patchkit-keysecret-{0}", key), value);
+            _cache.SetValue(CachePatchKitKeySecret + key, value);
         }
 
         private string GetCachedKeySecret(string key)
         {
-            return _cache.GetValue(string.Format("patchkit-keysecret-{0}", key));
+            return _cache.GetValue(CachePatchKitKeySecret + key);
         }
     }
 }

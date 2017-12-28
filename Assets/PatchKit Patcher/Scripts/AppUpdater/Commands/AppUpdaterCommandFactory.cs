@@ -3,6 +3,7 @@ using System.IO;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -93,7 +94,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)
         {
-            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, new UnityCache());
+            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, new UnityCache(), PatcherLogManager.DefaultLogger);
         }
 
         public ICheckDiskSpace CreateCheckDiskSpaceCommandForDiff(int versionId, AppUpdaterContext context)

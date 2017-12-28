@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 using PatchKit.Logging;
 using UnityEngine;
 using UniRx;
@@ -9,6 +10,7 @@ namespace PatchKit.Unity.Patcher.Debug
     {
         private static DefaultLogger _defaultLogger;
 
+        [NotNull]
         public static DefaultLogger DefaultLogger
         {
             get { return _defaultLogger ?? (_defaultLogger = new DefaultLogger(new DefaultLogStackFrameLocator())); }
@@ -62,7 +64,7 @@ namespace PatchKit.Unity.Patcher.Debug
             _registerTriggers.ExceptionTrigger.Throttle(TimeSpan.FromSeconds(5))
                 .Subscribe(e =>
                 {
-                    if (Application.isEditor && IgnoreEditorErrors)
+                    if (_isEditor && IgnoreEditorErrors)
                     {
                         return;
                     }
