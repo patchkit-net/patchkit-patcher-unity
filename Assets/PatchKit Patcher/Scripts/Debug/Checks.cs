@@ -4,6 +4,7 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
+    [Obsolete("Do custom checks and manual exception throwing instead.")]
     public class Checks
     {
         protected delegate void ValidationFailedHandler(string message);
