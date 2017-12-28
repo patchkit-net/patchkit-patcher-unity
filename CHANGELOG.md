@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Redesign error button label
 - Stability improvements for resource downloader
+- Stability improvements for license dialog
 
 ### Fixed
 - Fix issue with patching files which size is 2GB or more
