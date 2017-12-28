@@ -87,6 +87,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         _logger.LogDebug("Validating key...");
 
                         KeySecret = _remoteMetaData.GetKeySecret(key, cachedKeySecret);
+                        
+                        _logger.LogDebug("License has been validated!");
                     }
                     catch (ApiResponseException apiResponseException)
                     {
@@ -172,20 +174,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             if (statusCode == 404)
             {
-                _logger.LogDebug("License key is not found. Setting message of license dialog to \"Invalid license\".");
+                _logger.LogDebug("License key is not found.");
                 HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.InvalidLicense);
                 return true;
             }
             if (statusCode == 410)
             {
-                _logger.LogDebug("License key is blocked. Setting message of license dialog to \"Invalid license\".");
+                _logger.LogDebug("License key is blocked.");
                 HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.BlockedLicense);
                 return true;
             }
             if (statusCode == 403)
             {
                 _logger.LogDebug(
-                    "License key validation service is not available. Setting message of license dialog to \"Invalid license\".");
+                    "License key validation service is not available.");
                 HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.ServiceUnavailable);
                 return true;
             }
