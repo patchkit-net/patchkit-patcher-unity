@@ -53,6 +53,11 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             base.OnDisplayed();
         }
 
+        public void SetKey(string key)
+        {
+            UnityDispatcher.Invoke(() => KeyInputField.text = key);
+        }
+
         public LicenseDialogResult Display(LicenseDialogMessageType messageType)
         {
             UnityDispatcher.Invoke(() => UpdateMessage(messageType));
