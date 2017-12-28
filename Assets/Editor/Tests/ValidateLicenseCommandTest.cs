@@ -4,13 +4,11 @@ using NSubstitute;
 using NUnit.Framework;
 using PatchKit.Api;
 using PatchKit.Api.Models.Main;
-using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Patcher.UI.Dialogs;
-using UnityEngine;
 
 class ValidateLicenseCommandTest
 {
@@ -88,14 +86,19 @@ class ValidateLicenseCommandTest
         licenseDialog.DidNotReceive().Display(Arg.Any<LicenseDialogMessageType>());
     }
     
-    //TODO: Continue writing this test after changing ApiResponseException constructor to public (from internal).
-    /*[TestCase(404, LicenseDialogMessageType.BlockedLicense)]
+    [TestCase(404, LicenseDialogMessageType.InvalidLicense)]
+    [TestCase(403, LicenseDialogMessageType.ServiceUnavailable)]
+    [TestCase(410, LicenseDialogMessageType.BlockedLicense)]
     public void Execute_DisplaysDialogMessageForApiError(int statusCode, LicenseDialogMessageType messageType)
     {
+        const string key = "key";
+        const string keySecret = "key-secret";
+        
         var licenseDialog = Substitute.For<ILicenseDialog>();
-        licenseDialog.Display(Arg.Any<LicenseDialogMessageType>()).Returns(_ =>
+        licenseDialog.Display(Arg.Any<LicenseDialogMessageType>()).ReturnsForAnyArgs(new LicenseDialogResult()
         {
-            throw new ApiResponseException(statusCode);
+            Key = key,
+            Type = LicenseDialogResultType.Confirmed
         });
 
         var remoteMetaData = Substitute.For<IRemoteMetaData>();
@@ -103,24 +106,69 @@ class ValidateLicenseCommandTest
         {
             UseKeys = true
         });
-        remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(keySecret);
+
+        bool firstAttempt = true;
+        
+        remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(info =>
+        {
+            if (!firstAttempt)
+            {
+                return keySecret;
+            }
             
+            firstAttempt = false;
+            throw new ApiResponseException(statusCode);
+        });
+
         var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger);
         command.Prepare(_statusMonitor);
         command.Execute(CancellationToken.Empty);
+        
+        licenseDialog.Received(1).Display(LicenseDialogMessageType.None);
+        licenseDialog.Received(1).Display(messageType);
+        licenseDialog.DidNotReceive().Display(Arg.Is<LicenseDialogMessageType>(type => type != LicenseDialogMessageType.None &&
+                                             type != messageType));
+    }
+    
+    [Test]
+    public void Execute_DisplaysProperDialogMessageForConnectionError()
+    {
+        const string key = "key";
+        const string keySecret = "key-secret";
+        
+        var licenseDialog = Substitute.For<ILicenseDialog>();
+        licenseDialog.Display(Arg.Any<LicenseDialogMessageType>()).ReturnsForAnyArgs(new LicenseDialogResult()
+        {
+            Key = key,
+            Type = LicenseDialogResultType.Confirmed
+        });
+
+        var remoteMetaData = Substitute.For<IRemoteMetaData>();
+        remoteMetaData.GetAppInfo().Returns(new App()
+        {
+            UseKeys = true
+        });
+
+        bool firstAttempt = true;
+        
+        remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(info =>
+        {
+            if (!firstAttempt)
+            {
+                return keySecret;
+            }
             
-        if (i == 0)
-        {
-            licenseDialog.Received(1).Display(Arg.Any<LicenseDialogMessageType>());
-            Assert.IsTrue(_cache.Dictionary.ContainsValue(key));
-            Assert.IsTrue(_cache.Dictionary.ContainsValue(keySecret));
-        }
-        else
-        {
-            licenseDialog.Received(1).SetKey(key);
-            licenseDialog.DidNotReceive().Display(Arg.Any<LicenseDialogMessageType>());
-            Assert.IsTrue(_cache.Dictionary.ContainsValue(key));
-            Assert.IsTrue(_cache.Dictionary.ContainsValue(keySecret));
-        }
-    }*/
+            firstAttempt = false;
+            throw new ApiConnectionException(new List<Exception>(), new List<Exception>());
+        });
+
+        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger);
+        command.Prepare(_statusMonitor);
+        command.Execute(CancellationToken.Empty);
+        
+        licenseDialog.Received(1).Display(LicenseDialogMessageType.None);
+        licenseDialog.Received(1).Display(LicenseDialogMessageType.ServiceUnavailable);
+        licenseDialog.DidNotReceive().Display(Arg.Is<LicenseDialogMessageType>(type => type != LicenseDialogMessageType.None &&
+                                                                                       type != LicenseDialogMessageType.ServiceUnavailable));
+    }
 }
