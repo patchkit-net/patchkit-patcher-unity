@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fix issue with patching files which size is 2GB or more
 - Properly handle timeouts when using chuncked HTTP downloader
+- Fix occasional torrent downloader failures due to sharing violation issues with downloaded file
 
 ## [3.7.0]
 ### Changed
