@@ -89,6 +89,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         KeySecret = _remoteMetaData.GetKeySecret(key, cachedKeySecret);
                         
                         _logger.LogDebug("License has been validated!");
+                        
+                        _logger.LogTrace("KeySecret = " + KeySecret);
+
+                        _logger.LogDebug("Saving key and key secret to cache.");
+                        SetCachedKey(key);
+                        SetCachedKeySecret(key, KeySecret);
                     }
                     catch (ApiResponseException apiResponseException)
                     {
@@ -108,12 +114,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                             apiConnectionException);
                         messageType = LicenseDialogMessageType.ServiceUnavailable;
                     }
-
-                    _logger.LogTrace("KeySecret = " + KeySecret);
-
-                    _logger.LogDebug("Saving key and key secret to cache.");
-                    SetCachedKey(key);
-                    SetCachedKeySecret(key, KeySecret);
                 }
             }
             catch (Exception e)
@@ -237,7 +237,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private string GetCachedKeySecret(string key)
         {
-            return _cache.GetValue(CachePatchKitKeySecret + key, key);
+            return _cache.GetValue(CachePatchKitKeySecret + key);
         }
     }
 }
