@@ -5,11 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Patcher now keeps track of keeping only one it's instance running
+- Game meta data file
+- Time estimation for completing download of the patch
+
 ### Changed
 - Redesign error button label
+- Stability improvements for resource downloader
 
 ### Fixed
 - Fix issue with patching files which size is 2GB or more
+- Properly handle timeouts when using chuncked HTTP downloader
+- Fix occasional torrent downloader failures due to sharing violation issues with downloaded file
 
 ## [3.7.0]
 ### Changed

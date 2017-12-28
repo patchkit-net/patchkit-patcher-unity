@@ -270,18 +270,25 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             try
             {
-                _torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider());
-                DownloadTorrentFile(cancellationToken);
-                AddTorrent();
-                WaitForTorrentDownload(cancellationToken);
+                try
+                {
+                    _torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider());
+                    DownloadTorrentFile(cancellationToken);
+                    AddTorrent();
+                    WaitForTorrentDownload(cancellationToken);
+                }
+                finally
+                {
+                    if (_torrentClient != null)
+                    {
+                        _torrentClient.Dispose();
+                    }
+                }
+                
                 MoveDownloadedFile();
             }
             finally
             {
-                if (_torrentClient != null)
-                {
-                    _torrentClient.Dispose();
-                }
                 Cleanup();
             }
         }

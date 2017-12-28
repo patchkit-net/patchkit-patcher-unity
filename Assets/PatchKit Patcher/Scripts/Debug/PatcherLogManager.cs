@@ -62,7 +62,7 @@ namespace PatchKit.Unity.Patcher.Debug
             _registerTriggers.ExceptionTrigger.Throttle(TimeSpan.FromSeconds(5))
                 .Subscribe(e =>
                 {
-                    if (Application.isEditor && IgnoreEditorErrors)
+                    if (_isEditor && IgnoreEditorErrors)
                     {
                         return;
                     }
