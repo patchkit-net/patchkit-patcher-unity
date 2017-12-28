@@ -3,10 +3,18 @@ using PatchKit.Unity.Patcher.Data;
 
 public class MagicBytesTest
 {
-    private readonly string _macApp = TestFixtures.GetFilePath("magicbytes-test/mac_app");
-    private readonly string _windowsApp = TestFixtures.GetFilePath("magicbytes-test/windows_app");
-    private readonly string _linuxApp = TestFixtures.GetFilePath("magicbytes-test/linux_app");
+    private string _macApp;
+    private string _windowsApp;
+    private string _linuxApp;
 
+    [SetUp]
+    public void SetUp()
+    {
+        _macApp = TestFixtures.GetFilePath("magicbytes-test/mac_app");
+        _windowsApp = TestFixtures.GetFilePath("magicbytes-test/windows_app");
+        _linuxApp = TestFixtures.GetFilePath("magicbytes-test/linux_app");
+    }
+    
     [Test]
     public void IsMacExecutable_ForMacApp_ReturnsTrue()
     {
