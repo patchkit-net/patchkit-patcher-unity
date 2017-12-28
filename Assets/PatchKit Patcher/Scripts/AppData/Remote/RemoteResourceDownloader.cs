@@ -136,6 +136,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 try
                 {
                     ResolveDownloader(cancellationToken);
+                    return;
                 }                
                 catch (Exception ex)
                 {
