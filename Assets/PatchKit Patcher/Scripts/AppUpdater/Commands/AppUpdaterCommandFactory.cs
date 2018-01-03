@@ -94,7 +94,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)
         {
-            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, new UnityCache(), PatcherLogManager.DefaultLogger);
+            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, new UnityCache(), PatcherLogManager.DefaultLogger, PatcherLogManager.Instance);
         }
 
         public ICheckDiskSpace CreateCheckDiskSpaceCommandForDiff(int versionId, AppUpdaterContext context)

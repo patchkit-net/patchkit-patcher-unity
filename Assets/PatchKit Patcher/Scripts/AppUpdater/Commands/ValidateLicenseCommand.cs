@@ -1,6 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 using PatchKit.Api;
+using PatchKit.IssueReporting;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
@@ -20,31 +21,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         [NotNull] private readonly IRemoteMetaData _remoteMetaData;
         [NotNull] private readonly ICache _cache;
         [NotNull] private readonly ILogger _logger;
+        [NotNull] private readonly IIssueReporter _issueReporter;
 
         public ValidateLicenseCommand([NotNull] ILicenseDialog licenseDialog, [NotNull] IRemoteMetaData remoteMetaData,
-            [NotNull] ICache cache, [NotNull] ILogger logger)
+            [NotNull] ICache cache, [NotNull] ILogger logger, [NotNull] IIssueReporter issueReporter)
         {
-            if (licenseDialog == null)
-            {
-                throw new ArgumentNullException("licenseDialog");
-            }
-            if (remoteMetaData == null)
-            {
-                throw new ArgumentNullException("remoteMetaData");
-            }
-            if (cache == null)
-            {
-                throw new ArgumentNullException("cache");
-            }
-            if (logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
+            if (licenseDialog == null) throw new ArgumentNullException("licenseDialog");
+            if (remoteMetaData == null) throw new ArgumentNullException("remoteMetaData");
+            if (cache == null) throw new ArgumentNullException("cache");
+            if (logger == null) throw new ArgumentNullException("logger");
+            if (issueReporter == null) throw new ArgumentNullException("issueReporter");
 
             _licenseDialog = licenseDialog;
             _remoteMetaData = remoteMetaData;
             _cache = cache;
             _logger = logger;
+            _issueReporter = issueReporter;
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -87,9 +79,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         _logger.LogDebug("Validating key...");
 
                         KeySecret = _remoteMetaData.GetKeySecret(key, cachedKeySecret);
-                        
+
                         _logger.LogDebug("License has been validated!");
-                        
+
                         _logger.LogTrace("KeySecret = " + KeySecret);
 
                         _logger.LogDebug("Saving key and key secret to cache.");

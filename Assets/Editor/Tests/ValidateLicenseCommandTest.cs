@@ -13,6 +13,7 @@ using PatchKit.Unity.Patcher.UI.Dialogs;
 class ValidateLicenseCommandTest
 {
     private PatchKit.Logging.ILogger _logger;
+    private PatchKit.IssueReporting.IIssueReporter _issueReporter;
     private IStatusMonitor _statusMonitor;
     private MockCache _cache;
     
@@ -20,6 +21,7 @@ class ValidateLicenseCommandTest
     public void SetUp()
     {
         _logger = Substitute.For<PatchKit.Logging.ILogger>();
+        _issueReporter = Substitute.For<PatchKit.IssueReporting.IIssueReporter>();
         _statusMonitor = Substitute.For<IStatusMonitor>();
         _cache = new MockCache();
     }
@@ -46,7 +48,7 @@ class ValidateLicenseCommandTest
             });
             remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(keySecret);
             
-            var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger);
+            var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger, _issueReporter);
             command.Prepare(_statusMonitor);
             command.Execute(CancellationToken.Empty);
             
@@ -77,7 +79,7 @@ class ValidateLicenseCommandTest
             UseKeys = false
         });
         
-        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger);
+        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger, _issueReporter);
         command.Prepare(_statusMonitor);
         command.Execute(CancellationToken.Empty);
 
@@ -120,7 +122,7 @@ class ValidateLicenseCommandTest
             throw new ApiResponseException(statusCode);
         });
 
-        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger);
+        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger, _issueReporter);
         command.Prepare(_statusMonitor);
         command.Execute(CancellationToken.Empty);
         
@@ -162,7 +164,7 @@ class ValidateLicenseCommandTest
             throw new ApiConnectionException(new List<Exception>(), new List<Exception>());
         });
 
-        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger);
+        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger, _issueReporter);
         command.Prepare(_statusMonitor);
         command.Execute(CancellationToken.Empty);
         

@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using PatchKit.IssueReporting;
 using PatchKit.Logging;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UniRx;
 
@@ -15,6 +16,24 @@ namespace PatchKit.Unity.Patcher.Debug
         public static DefaultLogger DefaultLogger
         {
             get { return _defaultLogger ?? (_defaultLogger = new DefaultLogger(new DefaultLogStackFrameLocator())); }
+        }
+
+        private static PatcherLogManager _instance;
+        
+        [NotNull]
+        public static PatcherLogManager Instance
+        {
+            get
+            {
+                UnityDispatcher.Invoke(() =>
+                {
+                    if (_instance == null)
+                    {
+                        _instance = FindObjectOfType<PatcherLogManager>();
+                    }
+                }).WaitOne();
+                return _instance;
+            }
         }
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLogManager));
