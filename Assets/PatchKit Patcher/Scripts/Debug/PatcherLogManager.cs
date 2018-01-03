@@ -1,12 +1,13 @@
 ﻿using System;
 using JetBrains.Annotations;
+using PatchKit.IssueReporting;
 using PatchKit.Logging;
 using UnityEngine;
 using UniRx;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    public class PatcherLogManager : MonoBehaviour
+    public class PatcherLogManager : MonoBehaviour, IIssueReporter
     {
         private static DefaultLogger _defaultLogger;
 
@@ -84,6 +85,16 @@ namespace PatchKit.Unity.Patcher.Debug
             DebugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
             _storage.AbortSending();
             Application.CancelQuit();
+        }
+
+        public void Report(Issue issue)
+        {
+            if (_isEditor && IgnoreEditorErrors)
+            {
+                return;
+            }
+            
+            _sentryRegistry.RegisterWithException(issue, _storage.Guid.ToString());
         }
     }
 }

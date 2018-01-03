@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using PatchKit.IssueReporting;
 using SharpRaven;
 using SharpRaven.Data;
 
@@ -18,16 +19,32 @@ namespace PatchKit.Unity.Patcher.Debug
                     "https://cb13d9a4a32f456c8411c79c6ad7be9d:90ba86762829401e925a9e5c4233100c@sentry.io/175617"); 
         }
 
+        public void RegisterWithException(Issue issue, string logFileGuid)
+        {
+            var sentryEvent = new SentryEvent(issue.Exception)
+            {
+                Tags = issue.Tags
+            };
+            if (issue.Message != null)
+            {
+                sentryEvent.Message = issue.Message;
+            }
+            AddDataToSentryEvent(sentryEvent, logFileGuid);
+            _ravenClient.Capture(sentryEvent);
+        }
+        
         public void RegisterWithException(Exception exception, string logFileGuid)
         {
-            AddDataToException(exception, logFileGuid);
-            _ravenClient.Capture(new SentryEvent(exception));
+            RegisterWithException(new Issue()
+            {
+                Exception = exception
+            }, logFileGuid);
         }
 
-        private static void AddDataToException(Exception exception, string logFileGuid)
+        private static void AddDataToSentryEvent(SentryEvent sentryEvent, string logFileGuid)
         {
-            exception.Data.Add("log-guid", logFileGuid);
-            exception.Data.Add("log-link", string.Format(
+            sentryEvent.Exception.Data.Add("log-guid", logFileGuid);
+            sentryEvent.Exception.Data.Add("log-link", string.Format(
                 "https://s3-us-west-2.amazonaws.com/patchkit-app-logs/patcher-unity/{0:yyyy_MM_dd}/{1}.201-log.gz", DateTime.Now, logFileGuid));
 
             var patcher = Patcher.Instance;
@@ -35,15 +52,15 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 if(patcher.Data.Value.AppSecret != null)
                 {
-                    exception.Data.Add("app-secret", patcher.Data.Value.AppSecret);
+                    sentryEvent.Exception.Data.Add("app-secret", patcher.Data.Value.AppSecret);
                 }
                 if (patcher.LocalVersionId.Value.HasValue)
                 {
-                    exception.Data.Add("local-version", patcher.LocalVersionId.Value.ToString());
+                    sentryEvent.Exception.Data.Add("local-version", patcher.LocalVersionId.Value.ToString());
                 }
                 if (patcher.RemoteVersionId.Value.HasValue)
                 {
-                    exception.Data.Add("remote-version", patcher.RemoteVersionId.Value.ToString());
+                    sentryEvent.Exception.Data.Add("remote-version", patcher.RemoteVersionId.Value.ToString());
                 }
             }
 
