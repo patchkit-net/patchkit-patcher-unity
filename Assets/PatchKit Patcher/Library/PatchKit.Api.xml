@@ -1,0 +1,608 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PatchKit.Api</name>
+    </assembly>
+    <members>
+        <member name="T:PatchKit.Api.ApiConnection">
+            <summary>
+            Base Api Connection.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.ApiConnection.#ctor(PatchKit.Api.ApiConnectionSettings)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Api.ApiConnection"/> class.
+            </summary>
+            <param name="connectionSettings">The connection settings.</param>
+            <exception cref="T:System.ArgumentNullException">
+            connectionSettings - <see cref="F:PatchKit.Api.ApiConnectionServer.Host"/> of one of the servers is null.
+            or
+            connectionSettings - <see cref="F:PatchKit.Api.ApiConnectionServer.Host"/> of one of the servers is empty.
+            </exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            connectionSettings - <see cref="F:PatchKit.Api.ApiConnectionServer.Timeout"/> of one of the servers is less than zero and is not <see cref="F:System.Threading.Timeout.Infinite" />.
+            </exception>
+        </member>
+        <member name="M:PatchKit.Api.ApiConnection.ParseResponse``1(PatchKit.Api.IApiResponse)">
+            <summary>
+            Parses the response data to structure.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.ApiConnection.GetResponse(System.String,System.String)">
+            <summary>
+            Retrieves specified resource from API.
+            </summary>
+            <param name="path">The path to the resource.</param>
+            <param name="query">The query of the resource.</param>
+            <returns>Response with resource result.</returns>
+            <exception cref="T:PatchKit.Api.ApiConnectionException">Could not connect to API.</exception>
+        </member>
+        <member name="T:PatchKit.Api.ApiConnectionServer">
+            <summary>
+            Describes API server.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.ApiConnectionServer.Host">
+            <summary>
+            Server host url.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.ApiConnectionServer.Port">
+            <summary>
+            Port used for connection with server.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Api.ApiConnectionServer.RealPort">
+            <summary>
+            Actual port used for connection with server.
+            If <see cref="F:PatchKit.Api.ApiConnectionServer.Port"/> is set to <c>0</c>, other values are used:
+            - when <see cref="F:PatchKit.Api.ApiConnectionServer.UseHttps"/> is set to <c>false</c> then used port is <c>80</c>
+            - when <see cref="F:PatchKit.Api.ApiConnectionServer.UseHttps"/> is set to <c>true</c> then used port is <c>443</c>
+            Otherwise, returns value provided by <see cref="F:PatchKit.Api.ApiConnectionServer.Port"/>.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.ApiConnectionServer.UseHttps">
+            <summary>
+            Set to true to use https instead of http.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.ApiConnectionServer.Timeout">
+            <summary>
+            Timeout for connection.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Api.ApiServerConnectionException">
+            <summary>
+            Occurs when there are problems with connection to one API server.
+            </summary>
+            <seealso cref="T:System.Exception"/>
+        </member>
+        <member name="M:PatchKit.Api.ApiServerConnectionException.#ctor(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Api.KeysApiConnection">
+            <summary>
+            PatchKit Keys Api Connection.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.KeysApiConnection.GetDefaultSettings">
+            <summary>
+            Returns default settings.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.KeysApiConnection.#ctor(PatchKit.Api.ApiConnectionSettings)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Api.KeysApiConnection"/> class.
+            </summary>
+            <param name="connectionSettings">The connection settings.</param>
+        </member>
+        <member name="M:PatchKit.Api.KeysApiConnection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Api.KeysApiConnection"/> class.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.KeysApiConnection.GetJobInfo(System.String)">
+            <param name="guid"></param>
+        </member>
+        <member name="M:PatchKit.Api.KeysApiConnection.GetKeyInfo(System.String,System.String,System.String)">
+            <summary>
+            Gets key info. Required providing an app secret. Will find only key that matches given app_secret. This request registers itself as key usage until valid key_secret is providen with this request.
+            </summary>
+            <param name="key"></param>
+            <param name="appSecret"></param>
+            <param name="keySecret">If provided and valid, will only do a blocked check.</param>
+        </member>
+        <member name="T:PatchKit.Api.MainApiConnection">
+            <summary>
+            PatchKit Main Api Connection.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetDefaultSettings">
+            <summary>
+            Returns default settings.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.#ctor(PatchKit.Api.ApiConnectionSettings)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Api.MainApiConnection"/> class.
+            </summary>
+            <param name="connectionSettings">The connection settings.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Api.MainApiConnection"/> class.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetApplicationInfo(System.String)">
+            <summary>
+            Gets detailes app info
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppVersionList(System.String,System.String)">
+            <summary>
+            Gets the basic information for all published versions. When API Key is provided, draft version information is included if draft version exists.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+            <param name="apiKey">Application owner API key.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppLatestAppVersion(System.String)">
+            <summary>
+            Gets latest application version object.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppLatestAppVersionId(System.String)">
+            <summary>
+            Gets latest application version id.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppVersion(System.String,System.Int32,System.String)">
+            <summary>
+            Gets selected version object. If API key is provided, can get the information about draft version.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+            <param name="versionId">Version id.</param>
+            <param name="apiKey">Application owner API key.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppVersionContentSummary(System.String,System.Int32)">
+            <summary>
+            Gets selected version content summary.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+            <param name="versionId">Version id.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppVersionDiffSummary(System.String,System.Int32)">
+            <summary>
+            Gets selected version diff summary.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+            <param name="versionId">Version id.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppVersionContentTorrentUrl(System.String,System.Int32,System.String)">
+            <summary>
+            Gets selected application version content torrent url.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+            <param name="versionId">Version id.</param>
+            <param name="keySecret">Key secret provided by key server. This value is optional and is needed only if application is secured by license keys.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppVersionDiffTorrentUrl(System.String,System.Int32,System.String)">
+            <summary>
+            Gets selected application version diff torrent url.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+            <param name="versionId">Version id.</param>
+            <param name="keySecret">Key secret provided by key server. This value is optional and is needed only if application is secured by license keys.</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppVersionContentUrls(System.String,System.Int32,System.String)">
+            <summary>
+            Gets selected application version content urls.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+            <param name="versionId">Version id.</param>
+            <param name="country">Country iso code</param>
+        </member>
+        <member name="M:PatchKit.Api.MainApiConnection.GetAppVersionDiffUrls(System.String,System.Int32,System.String)">
+            <summary>
+            Gets selected application version diff urls.
+            </summary>
+            <param name="appSecret">Secret of an application.</param>
+            <param name="versionId">Version id.</param>
+            <param name="country">Country iso code</param>
+        </member>
+        <member name="T:PatchKit.Api.ApiConnectionException">
+            <summary>
+            Occurs when there are problems with connection to API.
+            </summary>
+            <seealso cref="T:System.Exception" />
+        </member>
+        <member name="M:PatchKit.Api.ApiConnectionException.#ctor(System.Collections.Generic.IEnumerable{System.Exception},System.Collections.Generic.IEnumerable{System.Exception})">
+            <inheritdoc />
+        </member>
+        <member name="P:PatchKit.Api.ApiConnectionException.MainServerExceptions">
+            <summary>
+            Exceptions that occured during attempts to connect to main server.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Api.ApiConnectionException.CacheServersExceptions">
+            <summary>
+            Exceptions that occured during attempts to connect to cache servers.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Api.ApiConnectionException.Message">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Api.ApiConnectionSettings">
+            <summary>
+            <see cref="T:PatchKit.Api.ApiConnection" /> settings.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.ApiConnectionSettings.MainServer">
+            <summary>
+            Main API server.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.ApiConnectionSettings.CacheServers">
+            <summary>
+            Cache API servers. Priority of servers is based on the array order.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Api.IApiResponse">
+            <summary>
+            API response.
+            </summary>
+            <seealso cref="T:System.IDisposable" />
+        </member>
+        <member name="P:PatchKit.Api.IApiResponse.HttpWebResponse">
+            <summary>
+            HTTP web response.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Api.IApiResponse.Body">
+            <summary>
+            Response body.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.IApiResponse.GetJson">
+            <summary>
+            Returns body parsed to JSON.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Api.ApiResponseException">
+            <summary>
+            Occurs when there are problems with API response.
+            </summary>
+            <seealso cref="T:System.Exception" />
+        </member>
+        <member name="P:PatchKit.Api.ApiResponseException.StatusCode">
+            <summary>
+            API status code.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.ApiResponseException.#ctor(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Api.Utilities.UnixTimeConvert">
+            <summary>
+            Utility for converting Unix time stamp.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.Utilities.UnixTimeConvert.FromUnixTimeStamp(System.Double)">
+            <summary>
+            Converts Unix time stamp to DateTime value.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Api.Utilities.UnixTimeConvert.ToUnixTimeStamp(System.DateTime)">
+            <summary>
+            Converts DateTime value to Unix time stamp.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Keys.Error.Message">
+            <summary>
+            Human-readable error message
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Keys.LicenseKey.Registrations">
+            <summary>
+            Number of key registrations. This is a request wihout a app_secret.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Keys.LicenseKey.Blocked">
+            <summary>
+            If set to true, this key is blocked for further use.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.App.Id">
+            <summary>
+            Initial app id.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.App.Name">
+            <summary>
+            Application name
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.App.DisplayName">
+            <summary>
+            Application display name.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.App.Author">
+            <summary>
+            Application author.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.App.PatcherSecret">
+            <summary>
+            The secret of patcher to use.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.App.UseKeys">
+            <summary>
+            If set to true, application needs to contact keys server to get valid key_secret for content download.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummary.Version">
+            <summary>
+            Version string. Format: MAJOR.MINOR. Present in >= 2.4
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummary.Size">
+            <summary>
+            Content size.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummary.UncompressedSize">
+            <summary>
+            Uncompressed archive size. Present in >= 2.4.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummary.EncryptionMethod">
+            <summary>
+            Encryption method.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummary.CompressionMethod">
+            <summary>
+            Compression method.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummary.Files">
+            <summary>
+            List of content files.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummaryFile.Path">
+            <summary>
+            File path.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummaryFile.Hash">
+            <summary>
+            File hash.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummaryFile.Size">
+            <summary>
+            Uncompressed file size in bytes. Present in >= 2.3
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentSummaryFile.Flags">
+            <summary>
+            File flags, present in >= 2.3
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentTorrentUrl.Url">
+            <summary>
+            Url to content torrent file.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentUrl.Url">
+            <summary>
+            Url to content file.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentUrl.MetaUrl">
+            <summary>
+            Url to meta file if available.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppContentUrl.Country">
+            <summary>
+            ISO code of origin country.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffSummary.Version">
+            <summary>
+            Version string. Format: MAJOR.MINOR. Present in >= 2.4
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffSummary.Size">
+            <summary>
+            Diff size.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffSummary.UncompressedSize">
+            <summary>
+            Uncompressed archive size. Present in >= 2.4.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffSummary.EncryptionMethod">
+            <summary>
+            Encryption method.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffSummary.CompressionMethod">
+            <summary>
+            Compression method.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffSummary.AddedFiles">
+            <summary>
+            List of added files.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffSummary.ModifiedFiles">
+            <summary>
+            List of modified files.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffSummary.RemovedFiles">
+            <summary>
+            List of removed files.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffTorrentUrl.Url">
+            <summary>
+            Url to diff torrent file.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffUrl.Url">
+            <summary>
+            Url to diff file.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffUrl.MetaUrl">
+            <summary>
+            Url to meta file if available.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppDiffUrl.Country">
+            <summary>
+            ISO code of origin country.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.Id">
+            <summary>
+            Initial version id.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.Label">
+            <summary>
+            Version label.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.Changelog">
+            <summary>
+            Description of changes.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.PublishDate">
+            <summary>
+            Unix timestamp of publish date.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.ContentGuid">
+            <summary>
+            Guid of content file.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.ContentMetaGuid">
+            <summary>
+            Guid of content meta file if available.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.DiffGuid">
+            <summary>
+            Guid of diff file or null if there's no diff.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.DiffMetaGuid">
+            <summary>
+            Guid of diff meta file if available.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.Draft">
+            <summary>
+            Set to true if this version is a draft version.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.PublishProgress">
+            <summary>
+            If pending_publish is true, this number will indicate the publishing progress.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.MainExecutable">
+            <summary>
+            Main executable relative path without slash at the beginning.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.MainExecutableArgs">
+            <summary>
+            Main executable arguments
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.IgnoredFiles">
+            <summary>
+            Relative list of paths that should be ignored for local data consistency.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersion.PublishWhenProcessed">
+            <summary>
+            Set to true if version will be published after successfull processing.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.AppVersionId.Id">
+            <summary>
+            Version id.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.ContentUrl.Url">
+            <summary>
+            Url to content file.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.ContentUrl.MetaUrl">
+            <summary>
+            Url to meta file if available.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.ContentUrl.Region">
+            <summary>
+            Region name of this mirror server.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.ContentUrl.Load">
+            <summary>
+            Value of recent server load (usage). Servers with lower load should be prioritorized.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.Error.Message">
+            <summary>
+            Human-readable error message
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.Error.Symbol">
+            <summary>
+            Error symbol
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.Job.JobGuid">
+            <summary>
+            Job GUID to be used with Jobs API.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.ResourceUrl.Url">
+            <summary>
+            Url to diff file.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.ResourceUrl.MetaUrl">
+            <summary>
+            Url to meta file if available.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.ResourceUrl.Country">
+            <summary>
+            ISO code of origin country.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Api.Models.Main.ResourceUrl.PartSize">
+            <summary>
+            Size of single file part. If set to 0 then file is distributed within a single part (default). Part URLs can be evaluated from first part URL - second and following parts have '.INDEX' names. For instance ../c49fde98-a07c-11e7-8919-33f7211dd1c0 is first part, then ../c49fde98-a07c-11e7-8919-33f7211dd1c0.1 is second and ../c49fde98-a07c-11e7-8919-33f7211dd1c0.2 is third.
+            </summary>
+        </member>
+    </members>
+</doc>
