@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using PatchKit.Api.Models.Main;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.Debug;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
@@ -102,12 +103,27 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         return;
                     }
-                    catch (WebException e)
+                    catch (DownloadDataNotAvailableException e)
                     {
                         // Isn't this catching too much?
                         DebugLogger.LogException(e);
-                        
-                        // try again
+
+                        // remove url and try another one
+                        validUrls.Remove(url);
+                        break;
+                    }
+                    catch (DownloadConnectionFailureException e)
+                    {
+                        // Isn't this catching too much?
+                        DebugLogger.LogException(e);
+
+                        break;
+                    }
+                    catch (DownloadServerErrorException e)
+                    {
+                        // Isn't this catching too much?
+                        DebugLogger.LogException(e);
+
                         break;
                     }
                     catch (DownloaderException downloaderException)
@@ -162,7 +178,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             foreach (DownloadJob downloadJob in downloadJobQueue)
             {
                 BaseHttpDownloader baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeout);
-                baseHttpDownloader.SetBytesRange(downloadJob.Offset);
+                baseHttpDownloader.SetBytesRange(new BytesRange(downloadJob.Offset, -1));
                 
                 baseHttpDownloader.DataAvailable += (bytes, length) =>
                 {

@@ -113,6 +113,29 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         return;
                     }
+                    catch (DownloadDataNotAvailableException e)
+                    {
+                        // Isn't this catching too much?
+                        DebugLogger.LogException(e);
+
+                        // remove url and try another one
+                        validUrls.Remove(url);
+                        break;
+                    }
+                    catch (DownloadConnectionFailureException e)
+                    {
+                        // Isn't this catching too much?
+                        DebugLogger.LogException(e);
+
+                        break;
+                    }
+                    catch (DownloadServerErrorException e)
+                    {
+                        // Isn't this catching too much?
+                        DebugLogger.LogException(e);
+
+                        break;
+                    }
                     catch (DownloadedResourceValidationException validationException)
                     {
                         DebugLogger.LogException(validationException);

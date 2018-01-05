@@ -1,4 +1,5 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
+﻿using PatchKit.Network;
+using PatchKit.Unity.Patcher.Cancellation;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -9,7 +10,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         event DataAvailableHandler DataAvailable;
 
-        void SetBytesRange(long bytesRangeStart, long bytesRangeEnd = -1L);
+        void SetBytesRange(BytesRange? range);
 
         void Download(CancellationToken cancellationToken);
     }

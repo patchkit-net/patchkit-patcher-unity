@@ -1,44 +1,49 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using NUnit.Framework;
 using NSubstitute;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
+using ILogger = PatchKit.Logging.ILogger;
+using Random = System.Random;
 
 public class BaseHttpDownloaderTest
 {
-    private byte[] CreateRandomData(int length)
+    private static byte[] CreateRandomData(int length)
     {
-        byte[] data = new byte[length];
+        var data = new byte[length];
         new Random().NextBytes(data);
         return data;
     }
 
-    private IHttpWebRequestAdapter MockRequest(Stream responseStream, HttpStatusCode statusCode)
+    private static IHttpClient MockHttpClient(Stream responseStream, HttpStatusCode statusCode)
     {
-        var request = Substitute.For<IHttpWebRequestAdapter>();
-        var response = Substitute.For<IHttpWebResponseAdapter>();
-        response.GetResponseStream().Returns(responseStream);
-        response.StatusCode.Returns(statusCode);
-        request.GetResponse().Returns(response);
-        request.WhenForAnyArgs(adapter => adapter.AddRange(0, 0))
-            .Do(info =>
-            {
-                if (responseStream != null)
-                {
-                    responseStream.Seek((long) info[0], SeekOrigin.Begin);
-                }
-            });
+        var httpClient = Substitute.For<IHttpClient>();
+        httpClient.Get(Arg.Any<HttpGetRequest>()).Returns(info =>
+        {
+            var request = info.Arg<HttpGetRequest>();
+            var response = Substitute.For<IHttpResponse>();
 
-        return request;
+            if (request.Range.HasValue)
+            {
+                responseStream.Seek(request.Range.Value.Start, SeekOrigin.Begin);
+            }
+
+            response.ContentStream.Returns(responseStream);
+            response.StatusCode.Returns(statusCode);
+
+            return response;
+        });
+
+        return httpClient;
     }
 
-    private void ValidateOutput(byte[] inputData, MemoryStream outputDataStream, int bytesRangeStart, int bytesRangeEnd)
+    private static void ValidateOutput(byte[] inputData, MemoryStream outputDataStream, BytesRange bytesRange)
     {
         byte[] buffer = new byte[1];
-
-        for (int i = bytesRangeStart; i < bytesRangeEnd; i++)
+        
+        for (long i = bytesRange.Start; i < bytesRange.End; i++)
         {
             Assert.AreEqual(1, outputDataStream.Read(buffer, 0, 1),
                 string.Format("Cannot read output data stream at byte {0}.", i));
@@ -47,13 +52,13 @@ public class BaseHttpDownloaderTest
     }
 
     [Test]
-    public void Download()
+    public void DownloadStreamsAllData_For_NotSpecifiedRange()
     {
         var inputData = CreateRandomData(1024);
         var inputDataStream = new MemoryStream(inputData, false);
 
-        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64,
-            url => MockRequest(inputDataStream, HttpStatusCode.OK));
+        var baseHttpDownloader = new BaseHttpDownloader("http://test_url.com", 10000,
+            MockHttpClient(inputDataStream, HttpStatusCode.OK), Substitute.For<ILogger>());
 
         var outputDataStream = new MemoryStream(inputData.Length);
 
@@ -68,20 +73,24 @@ public class BaseHttpDownloaderTest
 
         outputDataStream.Seek(0, SeekOrigin.Begin);
 
-        ValidateOutput(inputData, outputDataStream, 0, inputData.Length);
+        ValidateOutput(inputData, outputDataStream, new BytesRange(0, inputData.Length));
     }
 
     [Test]
-    public void DownloadRange()
+    public void DownloadStreamsCertainData_For_SpecifiedRange()
     {
-        const int bytesStartRange = 100;
-        const int bytesEndRange = 200;
+        var bytesRange = new BytesRange
+        {
+            Start = 100,
+            End = 200
+        };
 
         var inputData = CreateRandomData(1024);
         var inputDataStream = new MemoryStream(inputData, false);
 
-        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64,
-            url => MockRequest(inputDataStream, HttpStatusCode.OK));
+        var baseHttpDownloader = new BaseHttpDownloader("http://test_url.com", 10000,
+            MockHttpClient(inputDataStream, HttpStatusCode.OK), Substitute.For<ILogger>());
+
 
         var outputDataStream = new MemoryStream(inputData.Length);
 
@@ -92,33 +101,50 @@ public class BaseHttpDownloaderTest
             outputDataStream.Write(data, 0, length);
         };
 
-        baseHttpDownloader.SetBytesRange(bytesStartRange, bytesEndRange);
+        baseHttpDownloader.SetBytesRange(bytesRange);
 
         baseHttpDownloader.Download(CancellationToken.Empty);
 
         outputDataStream.Seek(0, SeekOrigin.Begin);
 
-        ValidateOutput(inputData, outputDataStream, bytesStartRange, bytesEndRange);
+        ValidateOutput(inputData, outputDataStream, bytesRange);
     }
 
     [Test]
-    public void InvalidResponse()
+    public void DownloadThrowsException_For_Status404()
     {
         var inputData = CreateRandomData(1024);
         var inputDataStream = new MemoryStream(inputData, false);
 
-        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64,
-            url => MockRequest(inputDataStream, HttpStatusCode.BadRequest));
-
-        Assert.Catch<DownloaderException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
+        var baseHttpDownloader = new BaseHttpDownloader("http://test_url.com", 10000,
+            MockHttpClient(inputDataStream, HttpStatusCode.NotFound), Substitute.For<ILogger>());
+        
+        Assert.Catch<DownloadDataNotAvailableException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
     }
-
+    
     [Test]
-    public void EmptyDataStream()
+    public void DownloadThrowsException_For_Status500()
     {
-        var baseHttpDownloader = new BaseHttpDownloader("someurl", 10000, 64,
-            url => MockRequest(null, HttpStatusCode.OK));
+        var inputData = CreateRandomData(1024);
+        var inputDataStream = new MemoryStream(inputData, false);
 
-        Assert.Catch<DownloaderException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
+        var baseHttpDownloader = new BaseHttpDownloader("http://test_url.com", 10000,
+            MockHttpClient(inputDataStream, HttpStatusCode.InternalServerError), Substitute.For<ILogger>());
+        
+        Assert.Catch<DownloadServerErrorException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
+    }
+    
+    [Test]
+    public void DownloadThrowsException_For_WebException()
+    {
+        var httpClient = Substitute.For<IHttpClient>();
+        httpClient.Get(Arg.Any<HttpGetRequest>()).Returns(_ =>
+        {
+            throw new WebException();
+        });
+
+        var baseHttpDownloader = new BaseHttpDownloader("http://test_url.com", 10000, httpClient, Substitute.For<ILogger>());
+        
+        Assert.Catch<DownloadConnectionFailureException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
     }
 }
