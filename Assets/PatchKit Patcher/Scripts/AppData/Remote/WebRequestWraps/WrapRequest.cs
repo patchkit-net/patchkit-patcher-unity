@@ -45,11 +45,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
                 try
                 {
-                    // HACK: because WWW is broken and sometimes just does not return STATUS in responseHeaders we are returning status code 200 (we can assume that status code is not an error since www.error is null or empty).
                     if (!www.responseHeaders.ContainsKey("STATUS"))
                     {
-                        DebugLogger.LogWarning("Response headers doesn't contain status information. Since WWW marks response as one without errors, status code is set to 200 (OK).");
-                        _statusCode = 200;
+                        // Based on tests, if response doesn't contain status it has probably timed out.
+                        _wasTimeout = true;
                     }
                     else
                     {
@@ -63,10 +62,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                         }
                         else
                         {
-                            // HACK: Again, we can't parse the status code (it might be in some different format) - so we simply set it to 200.
-                            DebugLogger.LogWarning(
-                                "Unable to parse status code. Since WWW marks response as one without errors, status code is set to 200 (OK).");
-                            _statusCode = 200;
+                            // Based on tests, if response contains invalid status it has probably timed out.
+                            _wasTimeout = true;
                         }
                     }
 
