@@ -21,8 +21,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly byte[] _buffer;
 
-        private IHttpWebRequestAdapter _request;
-
         private bool _downloadHasBeenCalled;
         private BytesRange? _bytesRange;
 
