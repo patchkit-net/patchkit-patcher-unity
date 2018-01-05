@@ -7,7 +7,7 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
-    public class WrapRequest : IHttpClient
+    public class UnityHttpClient : IHttpClient
     {
         private class RequestResult
         {
@@ -19,7 +19,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             public string ErrorText;
         }
         
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(WrapRequest));
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(UnityHttpClient));
 
         public const string ResponseEncoding = "iso-8859-2";
 
@@ -107,7 +107,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 throw new WebException(result.ErrorText);
             }
 
-            return new WrapResponse(result.Data, result.StatusCode, ResponseEncoding);
+            return new UnityHttpResponse(result.Data, result.StatusCode, ResponseEncoding);
         }
     }
 }

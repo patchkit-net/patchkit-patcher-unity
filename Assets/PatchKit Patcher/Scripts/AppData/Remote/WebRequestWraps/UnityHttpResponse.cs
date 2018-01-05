@@ -1,17 +1,16 @@
 using System;
 using System.IO;
-using PatchKit.Api;
 using PatchKit.Network;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
-    public class WrapResponse : IHttpResponse
+    public class UnityHttpResponse : IHttpResponse
     {
         private readonly string _data;
         private readonly int _statusCode;
         private MemoryStream _contentStream;
 
-        public WrapResponse(string data, int statusCode, string charset)
+        public UnityHttpResponse(string data, int statusCode, string charset)
         {
             if (data == null) throw new ArgumentNullException("data");
             

@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             _mainApiConnection = new MainApiConnection(mainSettings)
             {
-                HttpClient = new WrapRequest(),
+                HttpClient = new UnityHttpClient(),
                 Logger = PatcherLogManager.DefaultLogger
             };
         }
