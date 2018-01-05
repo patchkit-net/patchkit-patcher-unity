@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using PatchKit.Api;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
@@ -12,7 +13,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly string _appSecret;
         private readonly MainApiConnection _mainApiConnection;
 
-        public RemoteData(string appSecret)
+        public RemoteData(string appSecret, IRequestTimeoutCalculator requestTimeoutCalculator)
         {
             Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
 
@@ -37,6 +38,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _mainApiConnection = new MainApiConnection(mainSettings)
             {
                 HttpClient = new UnityHttpClient(),
+                RequestTimeoutCalculator = requestTimeoutCalculator,
+                RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
                 Logger = PatcherLogManager.DefaultLogger
             };
         }

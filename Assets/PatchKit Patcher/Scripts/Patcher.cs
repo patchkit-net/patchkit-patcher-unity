@@ -16,6 +16,7 @@ using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
 using System.Runtime.Serialization;
+using PatchKit.Network;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -70,6 +71,8 @@ namespace PatchKit.Unity.Patcher
 
         private readonly ManualResetEvent _userDecisionSetEvent = new ManualResetEvent(false);
 
+        private readonly IRequestTimeoutCalculator _requestTimeoutCalculator = new SimpleRequestTimeoutCalculator();
+        
         private bool _hasAutomaticallyInstalledApp;
 
         private bool _hasAutomaticallyCheckedForAppUpdate;
@@ -370,7 +373,7 @@ namespace PatchKit.Unity.Patcher
 
                 ThreadLoadPatcherConfiguration();
 
-                UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId)).WaitOne();
+                UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
                 while (true)
                 {

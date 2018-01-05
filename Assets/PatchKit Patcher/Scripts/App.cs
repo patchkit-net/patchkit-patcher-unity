@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
@@ -30,14 +31,14 @@ namespace PatchKit.Unity.Patcher
 
         private bool _disposed;
 
-        public App(string appDataPath, string appSecret, int overrideLatestVersionId) : this(
+        public App(string appDataPath, string appSecret, int overrideLatestVersionId, IRequestTimeoutCalculator requestTimeoutCalculator) : this(
             appDataPath,
             CreateDefaultLocalDirectory(appDataPath),
             CreateDefaultLocalMetaData(appDataPath),
             CreateDefaultTemporaryDirectory(appDataPath),
             CreateDefaultDownloadDirectory(appDataPath),
-            CreateDefaultRemoteData(appSecret),
-            CreateDefaultRemoteMetaData(appSecret), overrideLatestVersionId)
+            CreateDefaultRemoteData(appSecret, requestTimeoutCalculator),
+            CreateDefaultRemoteMetaData(appSecret, requestTimeoutCalculator), overrideLatestVersionId)
         {
         }
 
@@ -166,14 +167,14 @@ namespace PatchKit.Unity.Patcher
             return new LocalMetaData(appDataPath.PathCombine("app_data.json"), appDataPath.PathCombine("patcher_cache.json"));
         }
 
-        private static IRemoteData CreateDefaultRemoteData(string appSecret)
+        private static IRemoteData CreateDefaultRemoteData(string appSecret, IRequestTimeoutCalculator requestTimeoutCalculator)
         {
-            return new RemoteData(appSecret);
+            return new RemoteData(appSecret, requestTimeoutCalculator);
         }
 
-        private static IRemoteMetaData CreateDefaultRemoteMetaData(string appSecret)
+        private static IRemoteMetaData CreateDefaultRemoteMetaData(string appSecret, IRequestTimeoutCalculator requestTimeoutCalculator)
         {
-            return new RemoteMetaData(appSecret);
+            return new RemoteMetaData(appSecret, requestTimeoutCalculator);
         }
     }
 }

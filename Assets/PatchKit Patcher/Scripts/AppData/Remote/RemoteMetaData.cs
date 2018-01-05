@@ -1,6 +1,8 @@
 ﻿using System;
+using JetBrains.Annotations;
 using PatchKit.Api;
 using PatchKit.Api.Models.Main;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
@@ -13,9 +15,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly MainApiConnection _mainApiConnection;
         private readonly KeysApiConnection _keysApiConnection;
 
-        public RemoteMetaData(string appSecret)
+        public RemoteMetaData([NotNull] string appSecret, [NotNull] IRequestTimeoutCalculator requestTimeoutCalculator)
         {
-            Checks.ArgumentNotNullOrEmpty(appSecret, "appSecret");
+            if (string.IsNullOrEmpty(appSecret))
+                throw new ArgumentException("Value cannot be null or empty.", "appSecret");
+            if (requestTimeoutCalculator == null) throw new ArgumentNullException("requestTimeoutCalculator");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(appSecret, "appSecret");
@@ -38,6 +42,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _mainApiConnection = new MainApiConnection(mainSettings)
             {
                 HttpClient = new UnityHttpClient(),
+                RequestTimeoutCalculator = requestTimeoutCalculator,
+                RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
                 Logger = PatcherLogManager.DefaultLogger
             };
 
@@ -57,6 +63,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _keysApiConnection = new KeysApiConnection(keysSettings)
             {
                 HttpClient = new UnityHttpClient(),
+                RequestTimeoutCalculator = requestTimeoutCalculator,
+                RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
                 Logger = PatcherLogManager.DefaultLogger
             };
 
