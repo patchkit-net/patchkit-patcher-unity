@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Properly handle timeouts when using chuncked HTTP downloader
 - Fix occasional torrent downloader failures due to sharing violation issues with downloaded file
 - Fix log file sending
+- Block license key cache sharing between all non-custom patchers
 
 ## [3.7.0]
 ### Changed
