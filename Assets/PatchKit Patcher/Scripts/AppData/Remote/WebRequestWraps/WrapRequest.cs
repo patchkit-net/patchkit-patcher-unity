@@ -1,39 +1,38 @@
 using System;
 using System.Collections;
 using System.Net;
-using System.Threading;
 using UnityEngine;
-using PatchKit.Api;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.Debug;
-using ILogger = PatchKit.Logging.ILogger;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
-    public class WrapRequest : IHttpWebRequest
+    public class WrapRequest : IHttpClient
     {
+        private class RequestResult
+        {
+            public string Data;
+            public int StatusCode;
+
+            public bool WasError;
+            public bool WasTimeout;
+            public string ErrorText;
+        }
+        
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(WrapRequest));
 
         public const string ResponseEncoding = "iso-8859-2";
 
-        private readonly EventWaitHandle _waitHandle;
-
-        private string _data;
-        private int _statusCode;
-
-        private bool _wasError;
-        private bool _wasTimeout;
-        private string _errorText;
-
-        private IEnumerator JobCoroutine(string url)
+        private IEnumerator JobCoroutine(HttpGetRequest getRequest, RequestResult result)
         {
-            var www = new WWW(url);
+            var www = new WWW(getRequest.Address.ToString());
             var start = DateTime.Now;
 
             while (!www.isDone && string.IsNullOrEmpty(www.error))
             {
                 yield return new WaitForSeconds(0.1f);
 
-                if ((DateTime.Now - start).Milliseconds > Timeout)
+                if ((DateTime.Now - start).Milliseconds > getRequest.Timeout)
                 {
                     break;
                 }
@@ -41,7 +40,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             if (www.isDone || !string.IsNullOrEmpty(www.error))
             {
-                _data = www.text;
+                result.Data = www.text;
 
                 try
                 {
@@ -49,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                     if (!www.responseHeaders.ContainsKey("STATUS"))
                     {
                         DebugLogger.LogWarning("Response headers doesn't contain status information. Since WWW marks response as one without errors, status code is set to 200 (OK).");
-                        _statusCode = 200;
+                        result.StatusCode = 200;
                     }
                     else
                     {
@@ -57,59 +56,58 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                         DebugLogger.Log(string.Format("Response status: {0}", status));
                         var s = status.Split(' ');
 
-                        if (s.Length >= 3 && int.TryParse(s[1], out _statusCode))
+                        if (s.Length >= 3 && int.TryParse(s[1], out result.StatusCode))
                         {
-                            DebugLogger.Log(string.Format("Successfully parsed status code: {0}", _statusCode));
+                            DebugLogger.Log(string.Format("Successfully parsed status code: {0}", result.StatusCode));
                         }
                         else
                         {
                             // HACK: Again, we can't parse the status code (it might be in some different format) - so we simply set it to 200.
                             DebugLogger.LogWarning(
                                 "Unable to parse status code. Since WWW marks response as one without errors, status code is set to 200 (OK).");
-                            _statusCode = 200;
+                            result.StatusCode = 200;
                         }
                     }
 
                 }
                 catch (Exception e)
                 {
-                    _wasError = true;
-                    _errorText = e.ToString();
+                    result.WasError = true;
+                    result.ErrorText = e.ToString();
                 }
             }
             else
             {
-                _wasTimeout = true;
+                result.WasTimeout = true;
             }
 
             yield return null;
         }
 
-        public WrapRequest(string url)
+        public IHttpResponse Get(HttpGetRequest getRequest)
         {
-            _waitHandle = Utilities.UnityDispatcher.InvokeCoroutine(JobCoroutine(url));
-            Address = new Uri(url);
-        }
+            if (getRequest.Range != null)
+            {
+                throw new NotImplementedException();
+            }
+            
+            var result = new RequestResult();
+            
+            var waitHandle = Utilities.UnityDispatcher.InvokeCoroutine(JobCoroutine(getRequest, result));
+            
+            waitHandle.WaitOne();
 
-        public int Timeout { get; set; }
-
-        public Uri Address { get; private set; }
-
-        public IHttpWebResponse GetResponse()
-        {
-            _waitHandle.WaitOne();
-
-            if (_wasTimeout)
+            if (result.WasTimeout)
             {
                 throw new WebException("Timeout.", WebExceptionStatus.Timeout);
             }
 
-            if (_wasError)
+            if (result.WasError)
             {
-                throw new WebException(_errorText);
+                throw new WebException(result.ErrorText);
             }
 
-            return new WrapResponse(_data, _statusCode, ResponseEncoding);
+            return new WrapResponse(result.Data, result.StatusCode, ResponseEncoding);
         }
     }
 }
