@@ -40,5 +40,9 @@
         /// Returns the file path of JSON file the data was loaded from.
         /// </summary>
         string GetFilePath();
+
+        void SetProductKey(string productKey);
+
+        string GetProductKey();
     }
 }
