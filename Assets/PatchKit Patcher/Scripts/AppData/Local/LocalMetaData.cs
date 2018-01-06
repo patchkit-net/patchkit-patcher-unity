@@ -15,6 +15,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     /// <seealso cref="ILocalMetaData" />
     public class LocalMetaData : ILocalMetaData
     {
+        private const string DeprecatedCachePatchKitKey = "patchkit-key";
+        
         /// <summary>
         /// Data structure stored in file.
         /// </summary>
@@ -114,6 +116,18 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _filePath;
         }
 
+        public void SetProductKey(string productKey)
+        {
+            _data.ProductKey = productKey;
+            
+            SaveData();
+        }
+
+        public string GetProductKey()
+        {
+            return _data.ProductKey;
+        }
+
         private void SaveData()
         {
             DebugLogger.Log("Saving.");
@@ -165,10 +179,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
 #if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs and remove it
                 if (string.IsNullOrEmpty(_data.ProductKey) 
-                    && UnityEngine.PlayerPrefs.HasKey(ValidateLicenseCommand.CachePatchKitKey))
+                    && UnityEngine.PlayerPrefs.HasKey(DeprecatedCachePatchKitKey))
                 {
-                    _data.ProductKey = UnityEngine.PlayerPrefs.GetString(ValidateLicenseCommand.CachePatchKitKey);
-                    UnityEngine.PlayerPrefs.DeleteKey(ValidateLicenseCommand.CachePatchKitKey);
+                    _data.ProductKey = UnityEngine.PlayerPrefs.GetString(DeprecatedCachePatchKitKey);
+                    UnityEngine.PlayerPrefs.DeleteKey(DeprecatedCachePatchKitKey);
                 }
 #endif
                 return true;
