@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.8.1]
+### Fixed
+- Block license key cache sharing between all non-custom patchers
+- Properly handle situation when WWW response doesn't contain status header - previously it was assumed to be 200 (OK), right now response is marked as timed out
+
 ## [3.8.0]
 ### Added
 - Patcher now keeps track of keeping only one it's instance running
@@ -20,8 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Properly handle timeouts when using chuncked HTTP downloader
 - Fix occasional torrent downloader failures due to sharing violation issues with downloaded file
 - Fix log file sending
-- Block license key cache sharing between all non-custom patchers
-- Properly handle situation when WWW response doesn't contain status header - previously it was assumed to be 200 (OK), right now response is marked as timed out
 
 ## [3.7.0]
 ### Changed
