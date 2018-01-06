@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix occasional torrent downloader failures due to sharing violation issues with downloaded file
 - Fix log file sending
 - Block license key cache sharing between all non-custom patchers
+- Properly handle situation when WWW response doesn't contain status header - previously it was assumed to be 200 (OK), right now response is marked as timed out
 
 ## [3.7.0]
 ### Changed
