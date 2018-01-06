@@ -6,7 +6,6 @@ using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Patcher.UI.Dialogs;
 
@@ -14,26 +13,28 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class ValidateLicenseCommand : BaseAppUpdaterCommand, IValidateLicenseCommand
     {
-        public const string CachePatchKitKey = "patchkit-key";
-        public const string CachePatchKitKeySecret = "patchkit-keysecret-";
+        private const string CachePatchKitKeySecret = "patchkit-keysecret-";
 
         [NotNull] private readonly ILicenseDialog _licenseDialog;
         [NotNull] private readonly IRemoteMetaData _remoteMetaData;
+        [NotNull] private readonly ILocalMetaData _localMetaData;
         [NotNull] private readonly ICache _cache;
         [NotNull] private readonly ILogger _logger;
         [NotNull] private readonly IIssueReporter _issueReporter;
 
         public ValidateLicenseCommand([NotNull] ILicenseDialog licenseDialog, [NotNull] IRemoteMetaData remoteMetaData,
-            [NotNull] ICache cache, [NotNull] ILogger logger, [NotNull] IIssueReporter issueReporter)
+            [NotNull] ILocalMetaData localMetaData, [NotNull] ICache cache, [NotNull] ILogger logger, [NotNull] IIssueReporter issueReporter)
         {
             if (licenseDialog == null) throw new ArgumentNullException("licenseDialog");
             if (remoteMetaData == null) throw new ArgumentNullException("remoteMetaData");
+            if (localMetaData == null) throw new ArgumentNullException("localMetaData");
             if (cache == null) throw new ArgumentNullException("cache");
             if (logger == null) throw new ArgumentNullException("logger");
             if (issueReporter == null) throw new ArgumentNullException("issueReporter");
 
             _licenseDialog = licenseDialog;
             _remoteMetaData = remoteMetaData;
+            _localMetaData = localMetaData;
             _cache = cache;
             _logger = logger;
             _issueReporter = issueReporter;
@@ -203,23 +204,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public override void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare([NotNull] IStatusMonitor statusMonitor)
         {
             base.Prepare(statusMonitor);
-
-            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            
+            if (statusMonitor == null) throw new ArgumentNullException("statusMonitor");
         }
 
         public string KeySecret { get; private set; }
 
         private void SetCachedKey(string value)
         {
-            _cache.SetValue(CachePatchKitKey, value);
+            _localMetaData.SetProductKey(value);
         }
 
         private string GetCachedKey()
         {
-            return _cache.GetValue(CachePatchKitKey);
+            return _localMetaData.GetProductKey();
         }
 
         private void SetCachedKeySecret(string key, string value)

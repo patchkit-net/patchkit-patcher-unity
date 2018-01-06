@@ -4,6 +4,7 @@ using NSubstitute;
 using NUnit.Framework;
 using PatchKit.Api;
 using PatchKit.Api.Models.Main;
+using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -32,6 +33,15 @@ class ValidateLicenseCommandTest
         const string key = "this-key-should-be-cached";
         const string keySecret = "this-key-secret-should-be-cached";
         
+        var remoteMetaData = Substitute.For<IRemoteMetaData>();
+        remoteMetaData.GetAppInfo().Returns(new App()
+        {
+            UseKeys = true
+        });
+        remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(keySecret);
+
+        var localMetaData = Substitute.For<ILocalMetaData>();
+        
         for (int i = 0; i < 2; i++)
         {
             var licenseDialog = Substitute.For<ILicenseDialog>();
@@ -41,28 +51,22 @@ class ValidateLicenseCommandTest
                 Type = LicenseDialogResultType.Confirmed
             });
 
-            var remoteMetaData = Substitute.For<IRemoteMetaData>();
-            remoteMetaData.GetAppInfo().Returns(new App()
-            {
-                UseKeys = true
-            });
-            remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(keySecret);
-            
-            var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger, _issueReporter);
+            var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
             command.Prepare(_statusMonitor);
             command.Execute(CancellationToken.Empty);
             
             if (i == 0)
             {
                 licenseDialog.Received(1).Display(Arg.Any<LicenseDialogMessageType>());
-                Assert.IsTrue(_cache.Dictionary.ContainsValue(key));
+                localMetaData.Received().SetProductKey(key);
+                localMetaData.GetProductKey().Returns(key);
                 Assert.IsTrue(_cache.Dictionary.ContainsValue(keySecret));
             }
             else
             {
                 licenseDialog.Received(1).SetKey(key);
                 licenseDialog.DidNotReceive().Display(Arg.Any<LicenseDialogMessageType>());
-                Assert.IsTrue(_cache.Dictionary.ContainsValue(key));
+                localMetaData.Received().SetProductKey(key);
                 Assert.IsTrue(_cache.Dictionary.ContainsValue(keySecret));
             }
         }
@@ -79,7 +83,9 @@ class ValidateLicenseCommandTest
             UseKeys = false
         });
         
-        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger, _issueReporter);
+        var localMetaData = Substitute.For<ILocalMetaData>();
+        
+        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
         command.Prepare(_statusMonitor);
         command.Execute(CancellationToken.Empty);
 
@@ -108,6 +114,8 @@ class ValidateLicenseCommandTest
         {
             UseKeys = true
         });
+        
+        var localMetaData = Substitute.For<ILocalMetaData>();
 
         bool firstAttempt = true;
         
@@ -122,7 +130,7 @@ class ValidateLicenseCommandTest
             throw new ApiResponseException(statusCode);
         });
 
-        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger, _issueReporter);
+        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
         command.Prepare(_statusMonitor);
         command.Execute(CancellationToken.Empty);
         
@@ -164,7 +172,9 @@ class ValidateLicenseCommandTest
             throw new ApiConnectionException(new List<Exception>(), new List<Exception>());
         });
 
-        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, _cache, _logger, _issueReporter);
+        var localMetaData = Substitute.For<ILocalMetaData>();
+        
+        var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
         command.Prepare(_statusMonitor);
         command.Execute(CancellationToken.Empty);
         
