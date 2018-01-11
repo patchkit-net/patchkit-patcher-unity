@@ -101,7 +101,7 @@ class UnarchiverTest
         int? lastAmount = null;
         int? lastEntry = null;
 
-        unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
+        unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
         {
             if (!lastAmount.HasValue)
             {
@@ -119,6 +119,7 @@ class UnarchiverTest
             if (entry == 0)
             {
                 Assert.IsNull(name);
+                Assert.AreEqual(0.0, entryProgress);
             }
             else if (isFile)
             {
@@ -130,6 +131,9 @@ class UnarchiverTest
                 string dirPath = Path.Combine(_dirPath, name);
                 Assert.IsTrue(Directory.Exists(dirPath), string.Format("Directory doesn't exist - {0}", dirPath));
             }
+
+            Assert.GreaterOrEqual(0.0, entryProgress);
+            Assert.LessOrEqual(1.0, entryProgress);
         };
 
         unarchiver.Unarchive(CancellationToken.Empty);

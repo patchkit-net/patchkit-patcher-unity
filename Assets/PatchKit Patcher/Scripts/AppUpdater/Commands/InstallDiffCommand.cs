@@ -7,6 +7,7 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
+using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -105,9 +106,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 _unarchivePackageStatusReporter.OnProgressChanged(0.0, "Unarchiving package...");
                 
-                unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount) =>
+                unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
                 {
-                    _unarchivePackageStatusReporter.OnProgressChanged(entry/(double) amount, "Unarchiving package...");
+                    var entryMinProgress = Mathf.Max(0, entry - 1) / (double) amount; // entry could be zero
+                    var entryMaxProgress = entry / (double) amount;
+
+                    var progress = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
+
+                    _unarchivePackageStatusReporter.OnProgressChanged(progress, "Unarchiving package...");
                 };
 
                 unarchiver.Unarchive(cancellationToken);
