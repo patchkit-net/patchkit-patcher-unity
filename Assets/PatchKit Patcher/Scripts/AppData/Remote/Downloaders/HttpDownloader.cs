@@ -1,7 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Threading;
+using System.Linq;
+using JetBrains.Annotations;
+using PatchKit.Logging;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
@@ -11,235 +14,156 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// <summary>
     /// Downloads file through HTTP without any validation (such as hash checking).
     /// </summary>
-    /// <seealso cref="System.IDisposable" />
     public class HttpDownloader : IHttpDownloader
     {
-        private const int RetriesAmount = 100;
+        private readonly ILogger _logger;
 
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(HttpDownloader));
+        // TODO: Use global timeout calculator.
+        private readonly IRequestTimeoutCalculator _requestTimeoutCalculator = new SimpleRequestTimeoutCalculator();
+        private readonly IRequestRetryStrategy _retryStrategy = new SimpleInfiniteRequestRetryStrategy();
 
         private readonly string _destinationFilePath;
 
-        private readonly RemoteResource? _resource;
-
-        private readonly string[] _mirrorUrls;
-
-        private readonly long _size;
-
-        private readonly int _timeout;
-
-        private FileStream _fileStream;
+        private readonly string[] _urls;
 
         private bool _downloadHasBeenCalled;
 
-        private bool _disposed;
-
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public HttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
-            : this(destinationFilePath, resource.GetUrls(), resource.Size, timeout)
+        public HttpDownloader([NotNull] string destinationFilePath, [NotNull] string[] urls, long size)
         {
-            _resource = resource;
-        }
+            if (destinationFilePath == null) throw new ArgumentNullException("destinationFilePath");
+            if (urls == null) throw new ArgumentNullException("urls");
+            if (size <= 0) throw new ArgumentOutOfRangeException("size");
 
-        public HttpDownloader(string destinationFilePath, string[] mirrorUrls, long size, int timeout)
-        {
-            Checks.ArgumentParentDirectoryExists(destinationFilePath, "destinationFilePath");
-            Checks.ArgumentMoreThanZero(timeout, "timeout");
-            Checks.ArgumentNotNull(mirrorUrls, "mirrorUrls");
-
-            DebugLogger.LogConstructor();
-            DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
-            DebugLogger.LogVariable(mirrorUrls, "mirrorUrls");
-            DebugLogger.LogVariable(size, "size");
-            DebugLogger.LogVariable(timeout, "timeout");
-
+            _logger = PatcherLogManager.DefaultLogger;
             _destinationFilePath = destinationFilePath;
-            _mirrorUrls = mirrorUrls;
-            _size = size;
-            _timeout = timeout;
+            _urls = urls;
         }
 
-        private void OpenFileStream()
+        private FileStream OpenFileStream()
         {
-            if (_fileStream == null)
+            var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
+            if (!string.IsNullOrEmpty(parentDirectory))
             {
-                _fileStream = new FileStream(_destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                Directory.CreateDirectory(parentDirectory);
             }
-        }
 
-        private void CloseFileStream()
-        {
-            if (_fileStream != null)
-            {
-                _fileStream.Dispose();
-                _fileStream = null;
-            }
+            return new FileStream(_destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
         }
 
         public void Download(CancellationToken cancellationToken)
         {
-            Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
-
-            DebugLogger.Log("Downloading.");
-
-            var validUrls = new List<string>(_mirrorUrls);
-            
-            // getting through urls list backwards, because urls may be removed during the process,
-            // and it's easier to iterate that way
-            validUrls.Reverse();
-
-            int retry = RetriesAmount;
-
-            while (validUrls.Count > 0 && retry > 0)
+            try
             {
-                for (int i = validUrls.Count - 1; i >= 0 && retry-- > 0; --i)
+                _logger.LogDebug("Downloading...");
+                for (int i = 0; i < _urls.Length; i++)
                 {
-                    string url = validUrls[i];
-
-                    try
-                    {
-                        OpenFileStream();
-
-                        Download(url, cancellationToken);
-
-                        CloseFileStream();
-
-                        if (_resource.HasValue)
-                        {
-                            var validator = new DownloadedResourceValidator();
-                            validator.Validate(_destinationFilePath, _resource.Value);
-                        }
-
-                        return;
-                    }
-                    catch (DownloadDataNotAvailableException e)
-                    {
-                        // Isn't this catching too much?
-                        DebugLogger.LogException(e);
-
-                        // remove url and try another one
-                        validUrls.Remove(url);
-                        break;
-                    }
-                    catch (DownloadConnectionFailureException e)
-                    {
-                        // Isn't this catching too much?
-                        DebugLogger.LogException(e);
-
-                        break;
-                    }
-                    catch (DownloadServerErrorException e)
-                    {
-                        // Isn't this catching too much?
-                        DebugLogger.LogException(e);
-
-                        break;
-                    }
-                    catch (DownloadedResourceValidationException validationException)
-                    {
-                        DebugLogger.LogException(validationException);
-                        validUrls.Remove(url);
-                    }
-                    catch (DownloaderException downloaderException)
-                    {
-                        DebugLogger.LogException(downloaderException);
-                        switch (downloaderException.Status)
-                        {
-                            case DownloaderExceptionStatus.EmptyStream:
-                                // try another one
-                                break;
-                            case DownloaderExceptionStatus.CorruptData:
-                                // try another one
-                                break;
-                            case DownloaderExceptionStatus.NotFound:
-                                // remove url and try another one
-                                validUrls.Remove(url);
-                                break;
-                            case DownloaderExceptionStatus.Other:
-                                // try another one
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                    finally
-                    {
-                        CloseFileStream();
-                    }
+                    _logger.LogTrace("urls[" + i + "] = " + _urls[i]);
                 }
 
-                DebugLogger.Log("Waiting 10 seconds before trying again...");
-                Threading.CancelableSleep(10000, cancellationToken);
+                _logger.LogTrace("destinationFilePath = " + _destinationFilePath);
+
+                Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
+
+                using (var fileStream = OpenFileStream())
+                {
+                    bool retry;
+
+                    do
+                    {
+                        bool success = _urls.Any(url => TryDownload(url, fileStream, cancellationToken));
+
+                        if (success)
+                        {
+                            retry = false;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("All server requests have failed. Checking if retry is possible...");
+                            _retryStrategy.OnRequestFailure();
+                            _requestTimeoutCalculator.OnRequestFailure();
+                            retry = _retryStrategy.ShouldRetry;
+
+                            if (!retry)
+                            {
+                                throw new DownloadFailureException("Download failure.");
+                            }
+
+                            _logger.LogDebug(string.Format("Retry is possible. Waiting {0}ms until before attempt...",
+                                _retryStrategy.DelayBeforeNextTry));
+                            Threading.CancelableSleep(_retryStrategy.DelayBeforeNextTry, cancellationToken);
+                            _logger.LogDebug("Trying to download data once again from each server...");
+                        }
+                    } while (retry);
+                }
             }
-
-            if (retry <= 0)
+            catch (Exception e)
             {
-                throw new DownloaderException("Too many retries, aborting.", DownloaderExceptionStatus.Other);
+                _logger.LogError("Downloading has failed.", e);
+                throw;
             }
-
-            throw new DownloaderException("Cannot download resource.", DownloaderExceptionStatus.Other);
         }
 
-        private void Download(string url, CancellationToken cancellationToken)
+        private bool TryDownload(string url, FileStream fileStream, CancellationToken cancellationToken)
         {
-            DebugLogger.Log(string.Format("Trying to download from {0}", url));
-
-            ClearFileStream();
-
-            long downloadedBytes = 0;
-
-            BaseHttpDownloader baseHttpDownloader = new BaseHttpDownloader(url, _timeout);
-            baseHttpDownloader.DataAvailable += (bytes, length) =>
+            try
             {
-                _fileStream.Write(bytes, 0, length);
+                _logger.LogDebug(string.Format("Trying to download from {0}", url));
 
-                downloadedBytes += length;
-                OnDownloadProgressChanged(downloadedBytes, _size);
-            };
+                fileStream.SetLength(0);
+                fileStream.Flush();
 
-            baseHttpDownloader.Download(cancellationToken);
-        }
+                long downloadedBytes = 0;
 
-        private void ClearFileStream()
-        {
-            _fileStream.SetLength(0);
-            _fileStream.Flush();
-        }
+                const long downloadStatusLogInterval = 5000L;
+                var stopwatch = Stopwatch.StartNew();
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+                var baseHttpDownloader = new BaseHttpDownloader(url, _requestTimeoutCalculator.Timeout);
+                baseHttpDownloader.DataAvailable += (bytes, length) =>
+                {
+                    fileStream.Write(bytes, 0, length);
 
-        ~HttpDownloader()
-        {
-            Dispose(false);
-        }
+                    if (stopwatch.ElapsedMilliseconds > downloadStatusLogInterval)
+                    {
+                        stopwatch.Reset();
+                        stopwatch.Start();
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if(_disposed)
-            {
-                return;
+                        _logger.LogDebug(string.Format("Downloaded {0} from {1}", downloadedBytes, url));
+                    }
+
+                    downloadedBytes += length;
+                    OnDownloadProgressChanged(downloadedBytes);
+                };
+
+                baseHttpDownloader.Download(cancellationToken);
+
+                _logger.LogDebug(string.Format("Download from {0} has been successful.", url));
+
+                return true;
             }
-
-            DebugLogger.LogDispose();
-
-            if(disposing)
+            catch (DataNotAvailableException e)
             {
-                CloseFileStream();
+                _logger.LogWarning(string.Format("Unable to download from {0}", url), e);
+                return false;
             }
-
-            _disposed = true;
+            catch (ServerErrorException e)
+            {
+                _logger.LogWarning(string.Format("Unable to download from {0}", url), e);
+                return false;
+            }
+            catch (ConnectionFailureException e)
+            {
+                _logger.LogWarning(string.Format("Unable to download from {0}", url), e);
+                return false;
+            }
         }
 
-        protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)
+        protected virtual void OnDownloadProgressChanged(long downloadedBytes)
         {
             if (DownloadProgressChanged != null)
             {
-                DownloadProgressChanged(downloadedBytes, totalBytes);
+                DownloadProgressChanged(downloadedBytes);
             }
         }
     }

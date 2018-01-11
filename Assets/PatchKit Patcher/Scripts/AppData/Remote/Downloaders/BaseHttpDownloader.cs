@@ -14,7 +14,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private readonly ILogger _logger;
 
         private const int BufferSize = 1024;
-        
+
         private readonly string _url;
         private readonly int _timeout;
         private readonly IHttpClient _httpClient;
@@ -31,7 +31,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
         }
 
-        public BaseHttpDownloader([NotNull] string url, int timeout, [NotNull] IHttpClient httpClient, [NotNull] ILogger logger)
+        public BaseHttpDownloader([NotNull] string url, int timeout, [NotNull] IHttpClient httpClient,
+            [NotNull] ILogger logger)
         {
             if (string.IsNullOrEmpty(url)) throw new ArgumentException("Value cannot be null or empty.", "url");
             if (timeout <= 0) throw new ArgumentOutOfRangeException("timeout");
@@ -83,23 +84,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     _logger.LogDebug("Received response from server.");
                     _logger.LogTrace("statusCode = " + response.StatusCode);
 
-                    if (IsStatusSuccess(response.StatusCode))
+                    if (Is2XXStatus(response.StatusCode))
                     {
                         _logger.LogDebug("Successful response. Reading response stream...");
+
+                        //TODO: Could response.ContentStream be null? Need to check it.
 
                         ReadResponseStream(response.ContentStream, cancellationToken);
 
                         _logger.LogDebug("Stream has been read.");
                     }
-                    else if (IsStatusClientError(response.StatusCode))
+                    else if (Is4XXStatus(response.StatusCode))
                     {
-                        _logger.LogError("Download data is not available.");
-                        throw new DownloadDataNotAvailableException(_url);
+                        throw new DataNotAvailableException(string.Format(
+                            "Request data for {0} is not available (status: {1})", _url, response.StatusCode));
                     }
                     else
                     {
-                        _logger.LogError("Invalid server response.");
-                        throw new DownloadServerErrorException(_url, response.StatusCode);
+                        throw new ServerErrorException(string.Format(
+                            "Server has experienced some issues with request for {0} which resulted in {1} status code.",
+                            _url, response.StatusCode));
                     }
                 }
 
@@ -108,7 +112,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             catch (WebException webException)
             {
                 _logger.LogError("Downloading has failed.", webException);
-                throw new DownloadConnectionFailureException(_url);
+                throw new ConnectionFailureException(
+                    string.Format("Connection to server has failed while requesting {0}", _url), webException);
             }
             catch (Exception e)
             {
@@ -128,12 +133,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private bool IsStatusSuccess(HttpStatusCode statusCode)
+        private bool Is2XXStatus(HttpStatusCode statusCode)
         {
             return (int) statusCode >= 200 && (int) statusCode <= 299;
         }
 
-        private bool IsStatusClientError(HttpStatusCode statusCode)
+        private bool Is4XXStatus(HttpStatusCode statusCode)
         {
             return (int) statusCode >= 400 && (int) statusCode <= 499;
         }

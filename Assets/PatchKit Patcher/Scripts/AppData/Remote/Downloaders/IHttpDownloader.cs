@@ -1,9 +1,8 @@
-﻿using System;
-using PatchKit.Unity.Patcher.Cancellation;
+﻿using PatchKit.Unity.Patcher.Cancellation;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
-    public interface IHttpDownloader : IDisposable
+    public interface IHttpDownloader
     {
         event DownloadProgressChangedHandler DownloadProgressChanged;
 

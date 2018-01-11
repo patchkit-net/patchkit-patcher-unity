@@ -2,6 +2,7 @@
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
+    [Obsolete]
     public class DownloaderException : Exception
     {
         public readonly DownloaderExceptionStatus Status;

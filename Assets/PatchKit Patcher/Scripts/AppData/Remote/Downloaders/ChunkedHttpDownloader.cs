@@ -103,7 +103,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         return;
                     }
-                    catch (DownloadDataNotAvailableException e)
+                    catch (DataNotAvailableException e)
                     {
                         // Isn't this catching too much?
                         DebugLogger.LogException(e);
@@ -112,14 +112,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                         validUrls.Remove(url);
                         break;
                     }
-                    catch (DownloadConnectionFailureException e)
+                    catch (ConnectionFailureException e)
                     {
                         // Isn't this catching too much?
                         DebugLogger.LogException(e);
 
                         break;
                     }
-                    catch (DownloadServerErrorException e)
+                    catch (ServerErrorException e)
                     {
                         // Isn't this catching too much?
                         DebugLogger.LogException(e);
@@ -189,7 +189,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                         throw new DownloaderException("Corrupt data.", DownloaderExceptionStatus.CorruptData);
                     }
 
-                    OnDownloadProgressChanged(CurrentFileSize(), _resource.Size);
+                    OnDownloadProgressChanged(CurrentFileSize());
                 };
 
                 baseHttpDownloader.Download(cancellationToken);
@@ -277,9 +277,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _disposed = true;
         }
 
-        protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)
+        protected virtual void OnDownloadProgressChanged(long downloadedBytes)
         {
-            if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes, totalBytes);
+            if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes);
         }
         
         private struct DownloadJob

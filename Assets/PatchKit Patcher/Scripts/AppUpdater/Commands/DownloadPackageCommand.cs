@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource,
                 _useTorrents);
 
-            downloader.DownloadProgressChanged += _statusReporter.OnDownloadProgressChanged;
+            downloader.DownloadProgressChanged += bytes => _statusReporter.OnDownloadProgressChanged(bytes, _resource.Size);
 
             _statusReporter.OnDownloadStarted();
 

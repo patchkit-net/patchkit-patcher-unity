@@ -151,7 +151,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private void UpdateTorrentProgress(double progress)
         {
-            OnDownloadProgressChanged((long)(_resource.Size * progress), _resource.Size);
+            OnDownloadProgressChanged((long)(_resource.Size * progress));
         }
 
         private bool UpdateTorrentStatus()
@@ -321,9 +321,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _disposed = true;
         }
 
-        protected virtual void OnDownloadProgressChanged(long downloadedBytes, long totalBytes)
+        protected virtual void OnDownloadProgressChanged(long downloadedBytes)
         {
-            if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes, totalBytes);
+            if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes);
         }
     }
 }

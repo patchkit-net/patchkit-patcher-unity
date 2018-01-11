@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using PatchKit.Api.Models.Main;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
@@ -28,6 +29,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return ResourceUrls != null && ResourceUrls.Length > 0 && !string.IsNullOrEmpty(ResourceUrls[0].MetaUrl);
         }
 
+        [Pure]
         public string[] GetMetaUrls()
         {
             var urls = new List<string>();
@@ -43,6 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return urls.ToArray();
         }
 
+        [Pure]
         public string[] GetUrls()
         {
             var urls = new List<string>();
