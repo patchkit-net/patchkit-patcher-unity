@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.8.2]
 ### Added
 - Added download speed unit switcher (if download speed is higher than 1 MB/s then MB/s are used, otherwise KB/s)
+- Progress monitoring for unarchiving each of the files from Pack1 package
 
 ## [3.8.1]
 ### Fixed
