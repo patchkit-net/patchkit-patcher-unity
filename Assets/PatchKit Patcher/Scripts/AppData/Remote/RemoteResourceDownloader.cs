@@ -14,7 +14,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             [NotNull] string[] mirrorUrls, long size);
 
         public delegate IChunkedHttpDownloader CreateNewChunkedHttpDownloader(string destinationFilePath,
-            RemoteResource resource, int timeout);
+            RemoteResource resource);
 
         public delegate ITorrentDownloader CreateNewTorrentDownloader(string destinationFilePath,
             RemoteResource resource, int timeout);
@@ -22,7 +22,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteResourceDownloader));
 
         private const int TorrentDownloaderTimeout = 10000;
-        private const int ChunkedHttpDownloaderTimeout = 30000;
         private const int RetriesCount = 8; // FIX: #722
         private readonly string _destinationFilePath;
         private readonly string _destinationMetaPath;
@@ -105,13 +104,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         {
             DebugLogger.Log("Downloading with chunked HTTP.");
 
-            using (var downloader =
-                _createNewChunkedHttpDownloader(_destinationFilePath, _resource, ChunkedHttpDownloaderTimeout))
-            {
-                downloader.DownloadProgressChanged += OnDownloadProgressChanged;
+            var downloader = _createNewChunkedHttpDownloader(_destinationFilePath, _resource);
+            downloader.DownloadProgressChanged += OnDownloadProgressChanged;
 
-                downloader.Download(cancellationToken);
-            }
+            downloader.Download(cancellationToken);
         }
 
         private void DownloadWithHttp(CancellationToken cancellationToken)
@@ -223,10 +219,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         }
 
         private static IChunkedHttpDownloader CreateDefaultChunkedHttpDownloader(string destinationFilePath,
-            RemoteResource resource,
-            int timeout)
+            RemoteResource resource)
         {
-            return new ChunkedHttpDownloader(destinationFilePath, resource, timeout);
+            return new ChunkedHttpDownloader(destinationFilePath, resource);
         }
 
         private static ITorrentDownloader CreateDefaultTorrentDownloader(string destinationFilePath,

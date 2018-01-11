@@ -119,7 +119,7 @@ public class BaseHttpDownloaderTest
         var baseHttpDownloader = new BaseHttpDownloader("http://test_url.com", 10000,
             MockHttpClient(inputDataStream, HttpStatusCode.NotFound), Substitute.For<ILogger>());
         
-        Assert.Catch<DownloadDataNotAvailableException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
+        Assert.Catch<DataNotAvailableException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
     }
     
     [Test]
@@ -131,7 +131,7 @@ public class BaseHttpDownloaderTest
         var baseHttpDownloader = new BaseHttpDownloader("http://test_url.com", 10000,
             MockHttpClient(inputDataStream, HttpStatusCode.InternalServerError), Substitute.For<ILogger>());
         
-        Assert.Catch<DownloadServerErrorException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
+        Assert.Catch<ServerErrorException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
     }
     
     [Test]
@@ -145,6 +145,6 @@ public class BaseHttpDownloaderTest
 
         var baseHttpDownloader = new BaseHttpDownloader("http://test_url.com", 10000, httpClient, Substitute.For<ILogger>());
         
-        Assert.Catch<DownloadConnectionFailureException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
+        Assert.Catch<ConnectionFailureException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
     }
 }

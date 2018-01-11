@@ -61,7 +61,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 {
                     _logger.LogTrace("urls[" + i + "] = " + _urls[i]);
                 }
-
                 _logger.LogTrace("destinationFilePath = " + _destinationFilePath);
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
@@ -97,6 +96,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                         }
                     } while (retry);
                 }
+
+                _logger.LogDebug("Downloading finished.");
             }
             catch (Exception e)
             {

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Net;
-using System.Threading;
+using JetBrains.Annotations;
 using PatchKit.Api.Models.Main;
+using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
@@ -18,204 +21,193 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// </summary>
     public class ChunkedHttpDownloader : IChunkedHttpDownloader
     {
-        private const int RetriesAmount = 100;
+        private struct DownloadJob
+        {
+            public string Url;
+            public long Offset;
+        }
 
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ChunkedHttpDownloader));
+        private readonly ILogger _logger;
+
+        private readonly IRequestTimeoutCalculator _timeoutCalculator = new SimpleRequestTimeoutCalculator();
+
+        private readonly IRequestRetryStrategy _retryStrategy = new SimpleInfiniteRequestRetryStrategy();
 
         private readonly string _destinationFilePath;
 
         private readonly RemoteResource _resource;
 
-        private readonly int _timeout;
-
-        private ChunkedFileStream _fileStream;
-
         private bool _downloadHasBeenCalled;
-
-        private bool _disposed;
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public ChunkedHttpDownloader(string destinationFilePath, RemoteResource resource, int timeout)
+        public ChunkedHttpDownloader([NotNull] string destinationFilePath, RemoteResource resource)
         {
-            Checks.ArgumentParentDirectoryExists(destinationFilePath, "destinationFilePath");
-            Checks.ArgumentValidRemoteResource(resource, "resource");
-            Checks.ArgumentMoreThanZero(timeout, "timeout");
+            if (string.IsNullOrEmpty(destinationFilePath))
+                throw new ArgumentException("Value cannot be null or empty.", "destinationFilePath");
 
-            DebugLogger.LogConstructor();
-            DebugLogger.LogVariable(destinationFilePath, "destinationFilePath");
-            DebugLogger.LogVariable(resource, "resource");
-            DebugLogger.LogVariable(timeout, "timeout");
-
+            _logger = PatcherLogManager.DefaultLogger;
             _destinationFilePath = destinationFilePath;
             _resource = resource;
-            _timeout = timeout;
         }
 
-        private void OpenFileStream()
+        private ChunkedFileStream OpenFileStream()
         {
-            if (_fileStream == null)
+            var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
+            if (!string.IsNullOrEmpty(parentDirectory))
             {
-                _fileStream = new ChunkedFileStream(_destinationFilePath, _resource.Size, _resource.ChunksData,
-                    HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile);
+                Directory.CreateDirectory(parentDirectory);
             }
-        }
 
-        private void CloseFileStream()
-        {
-            if (_fileStream != null)
-            {
-                _fileStream.Dispose();
-                _fileStream = null;
-            }
+            return new ChunkedFileStream(_destinationFilePath, _resource.Size, _resource.ChunksData,
+                HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile);
         }
 
         public void Download(CancellationToken cancellationToken)
         {
-            Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
-
-            DebugLogger.Log("Downloading.");
-
-            List<ResourceUrl> validUrls = new List<ResourceUrl>(_resource.ResourceUrls);
-            
-            // getting through urls list backwards, because urls may be removed during the process,
-            // and it's easier to iterate that way
-            validUrls.Reverse();
-
-            int retry = RetriesAmount;
-
-            while (validUrls.Count > 0 && retry > 0)
+            try
             {
-                for (int i = validUrls.Count - 1; i >= 0 && retry-- > 0; --i)
+                _logger.LogDebug("Downloading...");
+                _logger.LogTrace("resource.Size = " + _resource.Size);
+                for (int i = 0; i < _resource.ResourceUrls.Length; i++)
                 {
-                    ResourceUrl url = validUrls[i];
-
-                    try
-                    {
-                        OpenFileStream();
-
-                        Download(url, cancellationToken);
-
-                        CloseFileStream();
-
-                        var validator = new DownloadedResourceValidator();
-                        validator.Validate(_destinationFilePath, _resource);
-
-                        return;
-                    }
-                    catch (DataNotAvailableException e)
-                    {
-                        // Isn't this catching too much?
-                        DebugLogger.LogException(e);
-
-                        // remove url and try another one
-                        validUrls.Remove(url);
-                        break;
-                    }
-                    catch (ConnectionFailureException e)
-                    {
-                        // Isn't this catching too much?
-                        DebugLogger.LogException(e);
-
-                        break;
-                    }
-                    catch (ServerErrorException e)
-                    {
-                        // Isn't this catching too much?
-                        DebugLogger.LogException(e);
-
-                        break;
-                    }
-                    catch (DownloaderException downloaderException)
-                    {
-                        DebugLogger.LogException(downloaderException);
-                        switch (downloaderException.Status)
-                        {
-                            case DownloaderExceptionStatus.EmptyStream:
-                                // try another one
-                                break;
-                            case DownloaderExceptionStatus.CorruptData:
-                                // try another one
-                                break;
-                            case DownloaderExceptionStatus.NotFound:
-                                // remove url and try another one
-                                validUrls.Remove(url);
-                                break;
-                            case DownloaderExceptionStatus.Other:
-                                // try another one
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                    finally
-                    {
-                        CloseFileStream();
-                    }
+                    _logger.LogTrace("resource.ResourceUrls[" + i + "].Url = " + _resource.ResourceUrls[i].Url);
+                    _logger.LogTrace("resource.ResourceUrls[" + i + "].Country = " + _resource.ResourceUrls[i].Country);
+                    _logger.LogTrace(
+                        "resource.ResourceUrls[" + i + "].PartSize = " + _resource.ResourceUrls[i].PartSize);
                 }
 
-                DebugLogger.Log("Waiting 10 seconds before trying again...");
-                Thread.Sleep(10000);
-            }
+                _logger.LogTrace("resource.ChunksData.ChunkSize = " + _resource.ChunksData.ChunkSize);
+                _logger.LogTrace("resource.ChunksData.Chunks.Length = " + _resource.ChunksData.Chunks.Length);
 
-            if (retry <= 0)
-            {
-                throw new DownloaderException("Too many retries, aborting.", DownloaderExceptionStatus.Other);
-            }
+                Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-            throw new DownloaderException("Cannot download resource.", DownloaderExceptionStatus.Other);
-        }
-
-        private void Download(ResourceUrl url, CancellationToken cancellationToken)
-        {
-            DebugLogger.Log(string.Format("Trying to download from {0}", url));
-            
-            long offset = CurrentFileSize();
-
-            DebugLogger.LogVariable(offset, "offset");
-
-            var downloadJobQueue = BuildDownloadJobQueue(url, offset);
-            foreach (DownloadJob downloadJob in downloadJobQueue)
-            {
-                BaseHttpDownloader baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeout);
-                baseHttpDownloader.SetBytesRange(new BytesRange(downloadJob.Offset, -1));
-                
-                baseHttpDownloader.DataAvailable += (bytes, length) =>
+                using (var fileStream = OpenFileStream())
                 {
-                    bool retry = !_fileStream.Write(bytes, 0, length);
+                    bool retry;
 
-                    if (retry)
+                    do
                     {
-                        throw new DownloaderException("Corrupt data.", DownloaderExceptionStatus.CorruptData);
-                    }
+                        bool success =
+                            _resource.ResourceUrls.Any(url => TryDownload(url, fileStream, cancellationToken));
 
-                    OnDownloadProgressChanged(CurrentFileSize());
-                };
+                        if (success)
+                        {
+                            retry = false;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("All server requests have failed. Checking if retry is possible...");
+                            _retryStrategy.OnRequestFailure();
+                            _timeoutCalculator.OnRequestFailure();
+                            retry = _retryStrategy.ShouldRetry;
 
-                baseHttpDownloader.Download(cancellationToken);
+                            if (!retry)
+                            {
+                                throw new DownloadFailureException("Download failure.");
+                            }
+
+                            _logger.LogDebug(string.Format("Retry is possible. Waiting {0}ms until before attempt...",
+                                _retryStrategy.DelayBeforeNextTry));
+                            Threading.CancelableSleep(_retryStrategy.DelayBeforeNextTry, cancellationToken);
+                            _logger.LogDebug("Trying to download data once again from each server...");
+                        }
+                    } while (retry);
+                }
+
+                _logger.LogDebug("Downloading finished.");
             }
-            
-            if (_fileStream.RemainingLength > 0)
+            catch (Exception e)
             {
-                throw new DownloaderException("Data download hasn't been completed.", DownloaderExceptionStatus.Other);
+                _logger.LogDebug("Download has failed.", e);
+                throw;
             }
         }
 
-        /// <summary>
-        /// Builds downloads queue based on url, part sizes, file size and current offset.
-        /// </summary>
-        /// <param name="resourceUrl"></param>
-        /// <param name="currentOffset"></param>
-        /// <returns></returns>
-        private List<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
+        private bool TryDownload(ResourceUrl url, ChunkedFileStream fileStream, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogDebug(string.Format("Trying to download from {0}", url.Url));
+                _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+
+                var downloadJobQueue = BuildDownloadJobQueue(url, fileStream.VerifiedLength);
+                foreach (var downloadJob in downloadJobQueue)
+                {
+                    _logger.LogDebug(string.Format("Executing download job {0} with offest {1}", downloadJob.Url,
+                        downloadJob.Offset));
+                    _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+                    _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+
+                    var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeoutCalculator.Timeout);
+                    baseHttpDownloader.SetBytesRange(new BytesRange(downloadJob.Offset, -1));
+
+                    const long downloadStatusLogInterval = 5000L;
+                    var stopwatch = Stopwatch.StartNew();
+
+                    long downloadedBytes = 0;
+
+                    var job = downloadJob;
+                    baseHttpDownloader.DataAvailable += (bytes, length) =>
+                    {
+                        fileStream.Write(bytes, 0, length);
+
+                        if (stopwatch.ElapsedMilliseconds > downloadStatusLogInterval)
+                        {
+                            stopwatch.Reset();
+                            stopwatch.Start();
+
+                            _logger.LogDebug(string.Format("Downloaded {0} from {1}", downloadedBytes, job.Url));
+                            _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+                            _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+                        }
+
+                        OnDownloadProgressChanged(fileStream.VerifiedLength);
+                    };
+
+                    baseHttpDownloader.Download(cancellationToken);
+
+                    _logger.LogDebug("Download job execution success.");
+                    _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+                    _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+                }
+
+                _logger.LogDebug(string.Format("Download from {0} has been successful.", url.Url));
+
+                Assert.AreEqual(0, fileStream.RemainingLength, "Chunks downloading must finish downloading whole file");
+
+                return true;
+            }
+            catch (InvalidChunkDataException e)
+            {
+                _logger.LogWarning(string.Format("Unable to download from {0}", url.Url), e);
+                return false;
+            }
+            catch (DataNotAvailableException e)
+            {
+                _logger.LogWarning(string.Format("Unable to download from {0}", url.Url), e);
+                return false;
+            }
+            catch (ServerErrorException e)
+            {
+                _logger.LogWarning(string.Format("Unable to download from {0}", url.Url), e);
+                return false;
+            }
+            catch (ConnectionFailureException e)
+            {
+                _logger.LogWarning(string.Format("Unable to download from {0}", url.Url), e);
+                return false;
+            }
+        }
+
+        private IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
         {
             long totalSize = _resource.Size;
             long partSize = resourceUrl.PartSize == 0 ? totalSize : resourceUrl.PartSize;
-            
+
             int partCount = (int) (totalSize / partSize);
             partCount += totalSize % partSize != 0 ? 1 : 0;
-            
-            List<DownloadJob> queue = new List<DownloadJob>();
+
             for (int i = 0; i < partCount; i++)
             {
                 string url = resourceUrl.Url;
@@ -224,14 +216,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     // second and later indices should have index numebr at the end
                     url += "." + i;
                 }
+
                 long offset = Math.Max(currentOffset - partSize * i, 0);
                 if (offset < partSize)
                 {
-                    queue.Add(new DownloadJob {Url = url, Offset = offset});
+                    yield return new DownloadJob {Url = url, Offset = offset};
                 }
             }
-
-            return queue;
         }
 
         private static byte[] HashFunction(byte[] buffer, int offset, int length)
@@ -239,53 +230,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             return HashCalculator.ComputeHash(buffer, offset, length).Reverse().ToArray();
         }
 
-        private long CurrentFileSize()
-        {
-            if (_fileStream != null)
-            {
-                return _fileStream.VerifiedLength;
-            }
-
-            return 0;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        ~ChunkedHttpDownloader()
-        {
-            Dispose(false);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if(_disposed)
-            {
-                return;
-            }
-
-            DebugLogger.LogDispose();
-
-            if(disposing)
-            {
-                CloseFileStream();
-            }
-
-            _disposed = true;
-        }
-
         protected virtual void OnDownloadProgressChanged(long downloadedBytes)
         {
             if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes);
-        }
-        
-        private struct DownloadJob
-        {
-            public string Url { get; set; }
-            public long Offset { get; set; }
         }
     }
 }

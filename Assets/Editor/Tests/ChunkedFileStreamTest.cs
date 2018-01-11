@@ -64,7 +64,7 @@ public class ChunkedFileStreamTest {
             Assert.AreEqual(0, chunkedFile.VerifiedLength);
             Assert.AreEqual(3, chunkedFile.RemainingLength);
 
-            Assert.True(chunkedFile.Write(new byte[] {1, 2, 3}, 0, 3));
+            chunkedFile.Write(new byte[] {1, 2, 3}, 0, 3);
 
             Assert.AreEqual(3, chunkedFile.VerifiedLength);
             Assert.AreEqual(0, chunkedFile.RemainingLength);
@@ -84,12 +84,12 @@ public class ChunkedFileStreamTest {
             Assert.AreEqual(0, chunkedFile.VerifiedLength);
             Assert.AreEqual(3, chunkedFile.RemainingLength);
 
-            Assert.True(chunkedFile.Write(new byte[] {1, 2}, 0, 2));
+            chunkedFile.Write(new byte[] {1, 2}, 0, 2);
 
             Assert.AreEqual(2, chunkedFile.VerifiedLength);
             Assert.AreEqual(1, chunkedFile.RemainingLength);
 
-            Assert.True(chunkedFile.Write(new byte[] {3}, 0, 1));
+            chunkedFile.Write(new byte[] {3}, 0, 1);
 
             Assert.AreEqual(3, chunkedFile.VerifiedLength);
             Assert.AreEqual(0, chunkedFile.RemainingLength);
@@ -124,17 +124,17 @@ public class ChunkedFileStreamTest {
             Assert.AreEqual(0, chunkedFile.VerifiedLength);
             Assert.AreEqual(3, chunkedFile.RemainingLength);
 
-            Assert.False(chunkedFile.Write(new byte[] {1, 2}, 0, 2), "Should reject those bytes");
+            Assert.Throws<InvalidChunkDataException>(() => chunkedFile.Write(new byte[] {1, 2}, 0, 2), "Should reject those bytes");
 
             Assert.AreEqual(0, chunkedFile.VerifiedLength);
             Assert.AreEqual(3, chunkedFile.RemainingLength);
 
-            Assert.True(chunkedFile.Write(new byte[] {1, 2}, 0, 2));
+            chunkedFile.Write(new byte[] {1, 2}, 0, 2);
 
             Assert.AreEqual(2, chunkedFile.VerifiedLength);
             Assert.AreEqual(1, chunkedFile.RemainingLength);
 
-            Assert.True(chunkedFile.Write(new byte[] {3}, 0, 1));
+            chunkedFile.Write(new byte[] {3}, 0, 1);
 
             Assert.AreEqual(3, chunkedFile.VerifiedLength);
             Assert.AreEqual(0, chunkedFile.RemainingLength);
@@ -167,17 +167,17 @@ public class ChunkedFileStreamTest {
             Assert.AreEqual(0, chunkedFile.VerifiedLength);
             Assert.AreEqual(3, chunkedFile.RemainingLength);
 
-            Assert.True(chunkedFile.Write(new byte[] {1, 2}, 0, 2));
+            chunkedFile.Write(new byte[] {1, 2}, 0, 2);
 
             Assert.AreEqual(2, chunkedFile.VerifiedLength);
             Assert.AreEqual(1, chunkedFile.RemainingLength);
 
-            Assert.False(chunkedFile.Write(new byte[] {3}, 0, 1), "Should reject those bytes");
+            Assert.Throws<InvalidChunkDataException>(() => chunkedFile.Write(new byte[] {3}, 0, 1), "Should reject those bytes");
 
             Assert.AreEqual(2, chunkedFile.VerifiedLength);
             Assert.AreEqual(1, chunkedFile.RemainingLength);
 
-            Assert.True(chunkedFile.Write(new byte[] {3}, 0, 1));
+            chunkedFile.Write(new byte[] {3}, 0, 1);
 
             Assert.AreEqual(3, chunkedFile.VerifiedLength);
             Assert.AreEqual(0, chunkedFile.RemainingLength);

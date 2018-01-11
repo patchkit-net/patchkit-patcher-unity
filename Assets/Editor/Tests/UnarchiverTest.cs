@@ -132,8 +132,8 @@ class UnarchiverTest
                 Assert.IsTrue(Directory.Exists(dirPath), string.Format("Directory doesn't exist - {0}", dirPath));
             }
 
-            Assert.GreaterOrEqual(0.0, entryProgress);
-            Assert.LessOrEqual(1.0, entryProgress);
+            Assert.GreaterOrEqual(entryProgress, 0.0);
+            Assert.LessOrEqual(entryProgress, 1.0);
         };
 
         unarchiver.Unarchive(CancellationToken.Empty);

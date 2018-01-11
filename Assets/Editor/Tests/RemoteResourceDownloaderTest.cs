@@ -98,8 +98,8 @@ public class RemoteResourceDownloaderTest
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
         var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, true,
-            (path, remoteResource, timeout) => httpDownloader,
-            (path, remoteResource, timeout) => chunkedHttpDownloader,
+            (path, remoteResource, size) => httpDownloader,
+            (path, remoteResource) => chunkedHttpDownloader,
             (path, remoteResource, timeout) => torrentDownloader);
 
         downloader.Download(CancellationToken.Empty);
@@ -121,8 +121,8 @@ public class RemoteResourceDownloaderTest
             info => { throw new DownloaderException("Test.", DownloaderExceptionStatus.Other); });
 
         var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, true,
-            (path, remoteResource, timeout) => httpDownloader,
-            (path, remoteResource, timeout) => chunkedHttpDownloader,
+            (path, remoteResource, size) => httpDownloader,
+            (path, remoteResource) => chunkedHttpDownloader,
             (path, remoteResource, timeout) => torrentDownloader);
 
         downloader.Download(CancellationToken.Empty);
@@ -142,8 +142,8 @@ public class RemoteResourceDownloaderTest
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
         var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, false,
-            (path, remoteResource, timeout) => httpDownloader,
-            (path, remoteResource, timeout) => chunkedHttpDownloader,
+            (path, remoteResource, size) => httpDownloader,
+            (path, remoteResource) => chunkedHttpDownloader,
             (path, remoteResource, timeout) => torrentDownloader);
 
         downloader.Download(CancellationToken.Empty);
@@ -164,8 +164,8 @@ public class RemoteResourceDownloaderTest
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
         var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, false,
-            (path, remoteResource, timeout) => httpDownloader,
-            (path, remoteResource, timeout) => chunkedHttpDownloader,
+            (path, remoteResource, size) => httpDownloader,
+            (path, remoteResource) => chunkedHttpDownloader,
             (path, remoteResource, timeout) => torrentDownloader);
 
         downloader.Download(CancellationToken.Empty);

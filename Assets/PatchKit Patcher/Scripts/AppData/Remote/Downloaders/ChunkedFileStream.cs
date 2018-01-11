@@ -120,7 +120,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         /// <param name="offset"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        public bool Write(byte[] buffer, int offset, int count)
+        public void Write(byte[] buffer, int offset, int count)
         {
             Checks.ArgumentNotNull(buffer, "buffer");
             // TODO: Rest of assertions
@@ -149,13 +149,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     else
                     {
                         DiscardBuffer();
-                        return false;
+                        throw new InvalidChunkDataException("Invalid chunk data.");
                     }
 
                 }
             } while (count > 0);
-
-            return true;
         }
 
         private bool ChunkFullyInBuffer()
