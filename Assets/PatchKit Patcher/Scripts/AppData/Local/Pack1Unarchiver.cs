@@ -7,7 +7,6 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
-using CompressionMode = System.IO.Compression.CompressionMode;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -62,34 +61,45 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Unarchive(CancellationToken cancellationToken)
         {
-            OnUnarchiveProgressChanged(null, false, 0, _metaData.Files.Length);
+            OnUnarchiveProgressChanged(null, false, 0, _metaData.Files.Length, 0.0);
 
-            int entry = 0;
+            int entry = 1;
             
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
-            foreach (Pack1Meta.FileEntry file in _metaData.Files)
+            foreach (var file in _metaData.Files)
             {
-                Unpack(file);
+                OnUnarchiveProgressChanged(file.Name, file.Type == "regular", entry, _metaData.Files.Length, 0.0);
+
+                var currentFile = file;
+                var currentEntry = entry;
+                Unpack(file, progress =>
+                {
+                    OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == "regular", currentEntry, _metaData.Files.Length, progress);
+                });
+
+                OnUnarchiveProgressChanged(file.Name, file.Type == "regular", entry, _metaData.Files.Length, 1.0);
 
                 entry++;
-
-                OnUnarchiveProgressChanged(file.Name, file.Type == "regular", entry, _metaData.Files.Length);
             }
             DebugLogger.Log("Unpacking finished succesfully!");
         }
 
-        private void Unpack(Pack1Meta.FileEntry file)
+        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress)
         {
             switch (file.Type)
             {
                 case "regular":
-                    UnpackRegularFile(file);
+                    UnpackRegularFile(file, progress);
                     break;
                 case "directory":
+                    progress(0.0);
                     UnpackDirectory(file);
+                    progress(1.0);
                     break;
                 case "symlink":
+                    progress(0.0);
                     UnpackSymlink(file);
+                    progress(1.0);
                     break;
                 default:
                     DebugLogger.LogWarning("Unknown file type: " + file.Type);
@@ -114,7 +124,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // TODO: how to create a symlink?
         }
 
-        private void UnpackRegularFile(Pack1Meta.FileEntry file)
+        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress)
         {
             string destPath = Path.Combine(_destinationDirPath, file.Name + _suffix);
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
@@ -141,7 +151,16 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                         {
                             using (var fileWritter = new FileStream(destPath, FileMode.Create))
                             {
-                                Streams.Copy(gzipStream, fileWritter);
+                                long bytesProcessed = 0;
+                                const int bufferSize = 131072;
+                                var buffer = new byte[bufferSize];
+                                int count;
+                                while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
+                                {
+                                    fileWritter.Write(buffer, 0, count);
+                                    bytesProcessed += count;
+                                    onProgress(bytesProcessed / (double) file.Size.Value);
+                                }
                                 if (Platform.IsPosix())
                                 {
                                     Chmod.SetMode(file.Mode.Substring(3), destPath);
@@ -155,12 +174,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 
-        protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount)
+        protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
         {
             var handler = UnarchiveProgressChanged;
             if (handler != null)
             {
-                handler(name, isFile, entry, amount);
+                handler(name, isFile, entry, amount, entryProgress);
             }
         }
     }
