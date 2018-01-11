@@ -19,7 +19,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// proven corrupted. In this way even on poor internet connection there's a possibility
     /// of downloading big files through http without the need of re-downloading it again.
     /// </summary>
-    public class ChunkedHttpDownloader : IChunkedHttpDownloader
+    public sealed class ChunkedHttpDownloader : IChunkedHttpDownloader
     {
         private struct DownloadJob
         {
@@ -230,7 +230,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             return HashCalculator.ComputeHash(buffer, offset, length).Reverse().ToArray();
         }
 
-        protected virtual void OnDownloadProgressChanged(long downloadedBytes)
+        private void OnDownloadProgressChanged(long downloadedBytes)
         {
             if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes);
         }

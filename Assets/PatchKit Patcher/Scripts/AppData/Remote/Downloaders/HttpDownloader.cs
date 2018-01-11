@@ -14,7 +14,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// <summary>
     /// Downloads file through HTTP without any validation (such as hash checking).
     /// </summary>
-    public class HttpDownloader : IHttpDownloader
+    public sealed class HttpDownloader : IHttpDownloader
     {
         private readonly ILogger _logger;
 
@@ -160,7 +160,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        protected virtual void OnDownloadProgressChanged(long downloadedBytes)
+        private void OnDownloadProgressChanged(long downloadedBytes)
         {
             if (DownloadProgressChanged != null)
             {

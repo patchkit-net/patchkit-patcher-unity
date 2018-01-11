@@ -133,12 +133,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private bool Is2XXStatus(HttpStatusCode statusCode)
+        // ReSharper disable once InconsistentNaming
+        private static bool Is2XXStatus(HttpStatusCode statusCode)
         {
             return (int) statusCode >= 200 && (int) statusCode <= 299;
         }
 
-        private bool Is4XXStatus(HttpStatusCode statusCode)
+        // ReSharper disable once InconsistentNaming
+        private static bool Is4XXStatus(HttpStatusCode statusCode)
         {
             return (int) statusCode >= 400 && (int) statusCode <= 499;
         }
