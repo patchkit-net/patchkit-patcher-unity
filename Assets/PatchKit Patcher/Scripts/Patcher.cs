@@ -156,6 +156,13 @@ namespace PatchKit.Unity.Patcher
             get { return _localVersionId; }
         }
 
+        private readonly ReactiveProperty<Api.Models.Main.App> _appInfo = new ReactiveProperty<Api.Models.Main.App>();
+
+        public IReadOnlyReactiveProperty<Api.Models.Main.App> AppInfo
+        {
+            get { return _appInfo; }
+        }
+
         public void SetUserDecision(UserDecision userDecision)
         {
             DebugLogger.Log(string.Format("User deicision set to {0}.", userDecision));
@@ -739,6 +746,7 @@ namespace PatchKit.Unity.Patcher
         {
             _state.Value = PatcherState.UpdatingApp;
 
+            _appInfo.Value = _app.RemoteMetaData.GetAppInfo();
             _remoteVersionId.Value = _app.GetLatestVersionId();
             if (_app.IsInstalled())
             {

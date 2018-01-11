@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.9.0]
+### Changed
+- Add support for download speed unit parameter from application info
+
 ## [3.8.2]
 ### Added
 - Added download speed unit switcher (if download speed is higher than 1 MB/s then MB/s are used, otherwise KB/s)

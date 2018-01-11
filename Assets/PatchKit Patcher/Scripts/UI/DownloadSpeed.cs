@@ -11,17 +11,22 @@ namespace PatchKit.Unity.Patcher.UI
     {
         public Text Text;
 
+        private string _downloadSpeedUnit;
+
         private void Start()
         {
             Patcher.Instance.UpdateAppStatusChanged += status =>
             {
                 string speed = GetDownloadSpeedFormated(status);
-                string eta = status.DownloadBytes > 0 && status.DownloadBytes < status.DownloadTotalBytes
+                string eta = status.DownloadBytes > 0 && status.DownloadBytes < status.DownloadTotalBytes && status.DownloadBytesPerSecond > 0.0
                     ? " ready in " + GetRemainingTimeFormated(GetRemainingTime(status))
                     : string.Empty;
 
                 Text.text = status.IsDownloading ? speed + eta : string.Empty;
             };
+
+            Patcher.Instance.AppInfo.Subscribe(app => { _downloadSpeedUnit = app.PatcherDownloadSpeedUnit; })
+                .AddTo(this);
 
             Text.text = string.Empty;
         }
@@ -30,9 +35,19 @@ namespace PatchKit.Unity.Patcher.UI
         {
             double kbPerSecond = status.DownloadBytesPerSecond / 1024.0;
 
-            return kbPerSecond > 1024.0
-                ? FormatDownloadSpeedMegabytes(kbPerSecond)
-                : FormatDownloadSpeedKilobytes(kbPerSecond);
+            switch (_downloadSpeedUnit)
+            {
+                case "kilobytes":
+                    return FormatDownloadSpeedKilobytes(kbPerSecond);
+                case "megabytes":
+                    return FormatDownloadSpeedMegabytes(kbPerSecond);
+                default: // "human_readable" and any other
+                {
+                    return kbPerSecond > 1024.0
+                        ? FormatDownloadSpeedMegabytes(kbPerSecond)
+                        : FormatDownloadSpeedKilobytes(kbPerSecond);
+                }
+            }
         }
 
         private string FormatDownloadSpeedMegabytes(double kbPerSecond)
