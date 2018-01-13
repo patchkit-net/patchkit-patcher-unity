@@ -35,20 +35,29 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly string _destinationFilePath;
 
-        private readonly RemoteResource _resource;
+        private readonly ResourceUrl[] _urls;
+
+        private readonly ChunksData _chunksData;
+
+        private readonly long _size;
 
         private bool _downloadHasBeenCalled;
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public ChunkedHttpDownloader([NotNull] string destinationFilePath, RemoteResource resource)
+        public ChunkedHttpDownloader([NotNull] string destinationFilePath, [NotNull] ResourceUrl[] urls, ChunksData chunksData,
+            long size)
         {
             if (string.IsNullOrEmpty(destinationFilePath))
                 throw new ArgumentException("Value cannot be null or empty.", "destinationFilePath");
+            if (urls == null) throw new ArgumentNullException("urls");
+            if (size <= 0) throw new ArgumentOutOfRangeException("size");
 
             _logger = PatcherLogManager.DefaultLogger;
             _destinationFilePath = destinationFilePath;
-            _resource = resource;
+            _urls = urls;
+            _chunksData = chunksData;
+            _size = size;
         }
 
         private ChunkedFileStream OpenFileStream()
@@ -59,7 +68,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 Directory.CreateDirectory(parentDirectory);
             }
 
-            return new ChunkedFileStream(_destinationFilePath, _resource.Size, _resource.ChunksData,
+            return new ChunkedFileStream(_destinationFilePath, _size, _chunksData,
                 HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile);
         }
 
@@ -68,17 +77,16 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             try
             {
                 _logger.LogDebug("Downloading...");
-                _logger.LogTrace("resource.Size = " + _resource.Size);
-                for (int i = 0; i < _resource.ResourceUrls.Length; i++)
+                _logger.LogTrace("size = " + _size);
+                for (int i = 0; i < _urls.Length; i++)
                 {
-                    _logger.LogTrace("resource.ResourceUrls[" + i + "].Url = " + _resource.ResourceUrls[i].Url);
-                    _logger.LogTrace("resource.ResourceUrls[" + i + "].Country = " + _resource.ResourceUrls[i].Country);
-                    _logger.LogTrace(
-                        "resource.ResourceUrls[" + i + "].PartSize = " + _resource.ResourceUrls[i].PartSize);
+                    _logger.LogTrace("urls[" + i + "].Url = " + _urls[i].Url);
+                    _logger.LogTrace("urls[" + i + "].Country = " + _urls[i].Country);
+                    _logger.LogTrace("urls[" + i + "].PartSize = " + _urls[i].PartSize);
                 }
 
-                _logger.LogTrace("resource.ChunksData.ChunkSize = " + _resource.ChunksData.ChunkSize);
-                _logger.LogTrace("resource.ChunksData.Chunks.Length = " + _resource.ChunksData.Chunks.Length);
+                _logger.LogTrace("chunksData.ChunkSize = " + _chunksData.ChunkSize);
+                _logger.LogTrace("chunksData.Chunks.Length = " + _chunksData.Chunks.Length);
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
@@ -89,7 +97,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     do
                     {
                         bool success =
-                            _resource.ResourceUrls.Any(url => TryDownload(url, fileStream, cancellationToken));
+                            _urls.Any(url => TryDownload(url, fileStream, cancellationToken));
 
                         if (success)
                         {
@@ -202,11 +210,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
         {
-            long totalSize = _resource.Size;
-            long partSize = resourceUrl.PartSize == 0 ? totalSize : resourceUrl.PartSize;
+            long partSize = resourceUrl.PartSize == 0 ? _size : resourceUrl.PartSize;
 
-            int partCount = (int) (totalSize / partSize);
-            partCount += totalSize % partSize != 0 ? 1 : 0;
+            int partCount = (int) (_size / partSize);
+            partCount += _size % partSize != 0 ? 1 : 0;
 
             for (int i = 0; i < partCount; i++)
             {
