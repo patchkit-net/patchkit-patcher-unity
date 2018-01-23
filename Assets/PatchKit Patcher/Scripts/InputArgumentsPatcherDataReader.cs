@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher
             if (!HasArgument("--secret") || !HasArgument("--installdir"))
             {
                 DebugLogger.Log("Expected the secret and installdir to be present in the command line arguments.");
-                throw new NonLauncherExecutionException();
+                throw new NonLauncherExecutionException("Patcher has been started without a Launcher.");
             }
 
             string forceAppSecret;
