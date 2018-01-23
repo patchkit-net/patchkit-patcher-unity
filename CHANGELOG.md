@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.9.0]
 ### Added
 - Add support for download speed unit parameter from application info
+- Protecting patcher from being started without launcher (with attempt to actually start the launcher in that case)
 
 ### Changed
 - Improved the network errors handling in downloaders
