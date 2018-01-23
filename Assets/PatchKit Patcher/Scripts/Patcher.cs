@@ -15,7 +15,6 @@ using UniRx;
 using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
-using System.Runtime.Serialization;
 using PatchKit.Network;
 
 namespace PatchKit.Unity.Patcher
@@ -383,11 +382,14 @@ namespace PatchKit.Unity.Patcher
                     try
                     {
                         LauncherUtilities.ExecuteLauncher();
-                        Quit();
                     }
                     catch (ApplicationException)
                     {
                         ThreadDisplayError(PatcherError.NonLauncherExecution, cancellationToken);
+                    }
+                    finally
+                    {
+                        Quit();
                     }
                 }
 
