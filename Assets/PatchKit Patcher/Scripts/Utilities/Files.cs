@@ -4,7 +4,7 @@ using PatchKit.Unity.Patcher.Data;
 
 namespace PatchKit.Unity.Utilities
 {
-    public class Files
+    public static class Files
     {
         public static void CreateParents(string path)
         {
@@ -19,8 +19,6 @@ namespace PatchKit.Unity.Utilities
         {
             switch (platformType)
             {
-                case PlatformType.Unknown:
-                    throw new ArgumentException("Unknown");
                 case PlatformType.Windows:
                     return filePath.EndsWith(".exe");
                 case PlatformType.OSX:
