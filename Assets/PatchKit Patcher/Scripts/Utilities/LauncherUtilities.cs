@@ -83,12 +83,14 @@ namespace PatchKit.Unity.Utilities
             {
                 Logger.LogDebug("Executing launcher...");
 
-                Logger.LogDebug("Starting launcher processs...");
-
                 var platformType = Platform.GetPlatformType();
                 Logger.LogTrace("platformType = " + platformType);
 
                 var processStartInfo = GetLauncherProcessStartInfo(platformType);
+
+                Logger.LogDebug("Starting launcher process...");
+                Logger.LogTrace("fileName = " + processStartInfo.FileName);
+                Logger.LogTrace("arguments = " + processStartInfo.Arguments);
 
                 if (Process.Start(processStartInfo) == null)
                 {
