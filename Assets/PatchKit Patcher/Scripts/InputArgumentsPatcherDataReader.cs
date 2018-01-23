@@ -24,6 +24,12 @@ namespace PatchKit.Unity.Patcher
 
             PatcherData data = new PatcherData();
 
+            if (!HasArgument("--secret") || !HasArgument("--installdir"))
+            {
+                DebugLogger.Log("Expected the secret and installdir to be present in the command line arguments.");
+                throw new NonLauncherExecutionException();
+            }
+
             string forceAppSecret;
             if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceSecretEnvironmentVariable, out forceAppSecret))
             {
