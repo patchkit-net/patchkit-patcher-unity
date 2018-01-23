@@ -374,7 +374,21 @@ namespace PatchKit.Unity.Patcher
 
                 DebugLogger.Log("Patcher thread started.");
 
-                ThreadLoadPatcherData();
+                try
+                {
+                    ThreadLoadPatcherData();
+                }
+                catch (NonLauncherExecutionException)
+                {
+                    if (LauncherUtilities.TryExecuteLauncher())
+                    {
+                        Quit();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
 
                 EnsureSingleInstance();
 
