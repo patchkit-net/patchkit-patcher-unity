@@ -30,11 +30,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public HttpDownloader([NotNull] string destinationFilePath, [NotNull] string[] urls, long size)
+        public HttpDownloader([NotNull] string destinationFilePath, [NotNull] string[] urls)
         {
             if (destinationFilePath == null) throw new ArgumentNullException("destinationFilePath");
             if (urls == null) throw new ArgumentNullException("urls");
-            if (size <= 0) throw new ArgumentOutOfRangeException("size");
 
             _logger = PatcherLogManager.DefaultLogger;
             _destinationFilePath = destinationFilePath;

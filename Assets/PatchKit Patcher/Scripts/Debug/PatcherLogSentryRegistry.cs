@@ -52,7 +52,7 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 if(patcher.Data.Value.AppSecret != null)
                 {
-                    sentryEvent.Exception.Data.Add("app-secret", patcher.Data.Value.AppSecret);
+                    sentryEvent.Tags.Add("app-secret", patcher.Data.Value.AppSecret);
                 }
                 if (patcher.LocalVersionId.Value.HasValue)
                 {

@@ -24,6 +24,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                    "hashcode: " + HashCode;
         }
 
+        [Pure]
         public bool HasMetaUrls()
         {
             return ResourceUrls != null && ResourceUrls.Length > 0 && !string.IsNullOrEmpty(ResourceUrls[0].MetaUrl);

@@ -103,7 +103,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     catch (ApiConnectionException apiConnectionException)
                     {
                         _logger.LogWarning(
-                            "Key validation due to connection issues with API server. Setting license dialog message to ",
+                            "Key validation failed due to connection issues with API server. Setting license dialog message to ServiceUnavailable",
                             apiConnectionException);
                         messageType = LicenseDialogMessageType.ServiceUnavailable;
                     }

@@ -31,8 +31,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         protected BaseWritableDirectory(string path)
         {
-            Assert.IsFalse(UsedPaths.Contains(path),
-                string.Format("You cannot create two instances of {0} pointing to the same path.", typeof(T)));
+            // This makes no sense.
+            //Assert.IsFalse(UsedPaths.Contains(path),
+            //    string.Format("You cannot create two instances of {0} pointing to the same path.", typeof(T)));
             Checks.ArgumentNotNullOrEmpty(path, "path");
 
             DebugLogger.LogConstructor();
