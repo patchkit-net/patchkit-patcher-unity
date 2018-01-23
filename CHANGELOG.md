@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.9.0]
-### Changed
+### Added
 - Add support for download speed unit parameter from application info
+
+### Changed
+- Improved the network errors handling in downloaders
 
 ## [3.8.2]
 ### Added
