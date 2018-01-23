@@ -34,8 +34,5 @@ namespace PatchKit.Unity.Utilities
                 Arguments = string.Format("\"{0}\"", target)
             };
         }
-
-
-
     }
 }

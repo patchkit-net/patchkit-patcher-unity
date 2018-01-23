@@ -380,7 +380,7 @@ namespace PatchKit.Unity.Patcher
                 }
                 catch (NonLauncherExecutionException)
                 {
-                    if (LauncherUtilities.TryExecuteLauncher())
+                    if (LauncherUtilities.ExecuteLauncher())
                     {
                         Quit();
                     }

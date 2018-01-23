@@ -11,7 +11,7 @@ namespace PatchKit.Unity.Utilities
 
         public const string LauncherPathFileName = "launcher_path";
 
-        public static string LauncherExecutableByPlatform(PlatformType platform)
+        public static string LauncherExecutableNameByPlatform(PlatformType platform)
         {
             switch (platform)
             {
@@ -22,11 +22,11 @@ namespace PatchKit.Unity.Utilities
                 case PlatformType.OSX:
                     return "Launcher.app";
                 default:
-                    return "";
+                    throw new ArgumentException("Couldn't resolve launcher executable name.");
             }
         }
 
-        public static string TryFindLauncherExecutable()
+        public static string FindLauncherExecutable()
         {
             if (File.Exists(LauncherPathFileName))
             {
@@ -35,8 +35,7 @@ namespace PatchKit.Unity.Utilities
             }
 
             var platformType = Platform.GetPlatformType();
-            var executableName = Path.Combine("..", LauncherExecutableByPlatform(platformType));
-
+            var executableName = Path.Combine("..", LauncherExecutableNameByPlatform(platformType));
             if (File.Exists(executableName))
             {
                 return executableName;
@@ -45,14 +44,12 @@ namespace PatchKit.Unity.Utilities
             throw new ApplicationException("Failed to find the Launcher executable.");
         }
 
-        public static bool TryExecuteLauncher()
+        public static bool ExecuteLauncher()
         {
             DebugLogger.Log("Trying to execute launcher.");
 
             var platformType = Platform.GetPlatformType();
-
-            var executablePath = Path.GetFullPath(TryFindLauncherExecutable());
-
+            var executablePath = Path.GetFullPath(FindLauncherExecutable());
             if (!Files.IsExecutable(executablePath, platformType))
             {
                 return false;
@@ -61,7 +58,6 @@ namespace PatchKit.Unity.Utilities
             DebugLogger.Log(string.Format("Launcher executable has been resolved to {0}", executablePath));
 
             var process = ProcessUtils.Launch(executablePath);
-
             if (process == null)
             {
                 return false;
