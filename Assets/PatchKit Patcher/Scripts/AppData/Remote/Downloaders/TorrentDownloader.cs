@@ -21,10 +21,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private const int ConnectionTimeout = 10000;
 
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         private readonly string _destinationFilePath;
         private readonly string _torrentFilePath;
+        private readonly long _totalBytes;
 
         private bool _downloadHasBeenCalled;
 
@@ -35,14 +36,17 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             get { return _destinationFilePath + ".torrent_dir"; }
         }
 
-        public TorrentDownloader([NotNull] string destinationFilePath, [NotNull] string torrentFilePath)
+        public TorrentDownloader([NotNull] string destinationFilePath, [NotNull] string torrentFilePath,
+            long totalBytes)
         {
             if (destinationFilePath == null) throw new ArgumentNullException("destinationFilePath");
             if (torrentFilePath == null) throw new ArgumentNullException("torrentFilePath");
+            if (totalBytes <= 0) throw new ArgumentOutOfRangeException("totalBytes");
 
             _logger = PatcherLogManager.DefaultLogger;
             _destinationFilePath = destinationFilePath;
             _torrentFilePath = torrentFilePath;
+            _totalBytes = totalBytes;
         }
 
         public void Download(CancellationToken cancellationToken)
@@ -56,9 +60,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
+                using (var tempDir = new TemporaryDirectory(DestinationDirectoryPath))
                 {
-                    using (var tempDir = new TemporaryDirectory(DestinationDirectoryPath))
+                    using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
                     {
                         torrentClient.AddTorrent(_torrentFilePath, tempDir.Path, cancellationToken);
 
@@ -67,7 +71,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         var status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
                         double initialProgress = status.Progress;
+                        _logger.LogTrace("initialProgress = " + status.Progress);
                         var waitHandle = new AutoResetEvent(false);
+
+                        OnDownloadProgressChanged(0);
 
                         using (cancellationToken.Register(() => waitHandle.Set()))
                         {
@@ -79,7 +86,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                                 status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
 
+                                _logger.LogTrace("progress = " + status.Progress);
+
                                 CheckTimeout(timeoutWatch, status.Progress, initialProgress);
+
+                                OnDownloadProgressChanged((long) (_totalBytes * status.Progress));
 
                                 if (status.IsSeeding)
                                 {
@@ -114,9 +125,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private TorrentStatus GetAndCheckTorrentStatus(TorrentClient torrentClient, CancellationToken cancellationToken)
+        private TorrentStatus GetAndCheckTorrentStatus(TorrentClient torrentClient,
+            CancellationToken cancellationToken)
         {
             var torrentClientStatus = torrentClient.GetStatus(cancellationToken);
+
+            _logger.LogTrace("status = " + torrentClientStatus.Status);
 
             if (torrentClientStatus.Status != "ok")
             {
@@ -168,14 +182,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             return dirFiles[0].FullName;
         }
 
-        //private void UpdateTorrentProgress(double progress)
-        //{
-        //    OnDownloadProgressChanged((long) (_resource.Size * progress));
-        //}
-
-        private void OnDownloadProgressChanged(long downloadedBytes)
+        private void OnDownloadProgressChanged(long downloadedbytes)
         {
-            if (DownloadProgressChanged != null) DownloadProgressChanged(downloadedBytes);
+            var handler = DownloadProgressChanged;
+            if (handler != null) handler(downloadedbytes);
         }
     }
 }

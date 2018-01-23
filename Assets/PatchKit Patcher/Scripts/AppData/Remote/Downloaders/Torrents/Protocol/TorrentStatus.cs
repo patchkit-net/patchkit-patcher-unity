@@ -23,7 +23,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents.Protocol
         public long Peers { get; set; }
 
         [JsonProperty("progress")]
-        public long Progress { get; set; }
+        public double Progress { get; set; }
 
         [JsonProperty("seed_rank")]
         public long SeedRank { get; set; }
