@@ -44,7 +44,7 @@ namespace PatchKit.Unity.Patcher
                 foreach (var fileName in _app.LocalMetaData.GetRegisteredEntries())
                 {
                     string filePath = _app.LocalDirectory.Path.PathCombine(fileName);
-                    if (IsExecutable(filePath, platformType))
+                    if (Files.IsExecutable(filePath, platformType))
                     {
                         DebugLogger.LogFormat("File is recognized as executable {0}", filePath);
                         Chmod.SetExecutableFlag(filePath);
@@ -59,23 +59,6 @@ namespace PatchKit.Unity.Patcher
         private bool NeedPermissionFix(PlatformType platformType)
         {
             return platformType == PlatformType.OSX || platformType == PlatformType.Linux;
-        }
-
-        private bool IsExecutable(string filePath, PlatformType platformType)
-        {
-            switch (platformType)
-            {
-                case PlatformType.Unknown:
-                    throw new ArgumentException("Unknown");
-                case PlatformType.Windows:
-                    throw new ArgumentException("Unsupported");
-                case PlatformType.OSX:
-                    return MagicBytes.IsMacExecutable(filePath);
-                case PlatformType.Linux:
-                    return MagicBytes.IsLinuxExecutable(filePath);
-                default:
-                    throw new ArgumentOutOfRangeException("platformType", platformType, null);
-            }
         }
 
         private ProcessStartInfo GetProcessStartInfo(string executablePath, PlatformType platform)

@@ -11,6 +11,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
     {
         private class RequestResult
         {
+            public bool IsDone;
+
             public string Data;
             public int StatusCode;
 
@@ -21,33 +23,58 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(UnityHttpClient));
 
-        public const string ResponseEncoding = "iso-8859-2";
+        private const string ResponseEncoding = "iso-8859-2";
 
         private IEnumerator JobCoroutine(HttpGetRequest getRequest, RequestResult result)
         {
             var www = new WWW(getRequest.Address.ToString());
-            var start = DateTime.Now;
 
-            while (!www.isDone && string.IsNullOrEmpty(www.error))
+            yield return www;
+
+            if (!www.isDone)
             {
-                yield return new WaitForSeconds(0.1f);
-
-                if ((DateTime.Now - start).Milliseconds > getRequest.Timeout)
+                lock (result)
                 {
-                    break;
+                    result.WasTimeout = true;
+                    result.IsDone = true;
                 }
+                yield break;
             }
 
-            if (www.isDone || !string.IsNullOrEmpty(www.error))
+            if (!string.IsNullOrEmpty(www.error))
             {
-                result.Data = www.text;
+                lock (result)
+                {
+                    result.ErrorText = www.error;
+                    result.WasError = true;
+                    result.IsDone = true;
+                }
+                yield break;
+            }
 
+            var wwwText = www.text;
+
+            if (string.IsNullOrEmpty(wwwText))
+            {
+                lock (result)
+                {
+                    result.ErrorText = "Empty response data";
+                    result.WasError = true;
+                    result.IsDone = true;
+                }
+                yield break;
+            }
+
+            lock (result)
+            {
                 try
                 {
+                    result.Data = wwwText;
+
                     if (!www.responseHeaders.ContainsKey("STATUS"))
                     {
                         // Based on tests, if response doesn't contain status it has probably timed out.
-                        DebugLogger.Log(string.Format("Response is missing STATUS header. Marking it as timed out."));
+                        DebugLogger.Log("Response is missing STATUS header. Marking it as timed out.");
                         result.WasTimeout = true;
                     }
                     else
@@ -63,21 +90,21 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                         else
                         {
                             // Based on tests, if response contains invalid status it has probably timed out.
-                            DebugLogger.Log(string.Format("Response has invalid status - {0}. Marking it as timed out.", status));
+                            DebugLogger.Log(string.Format("Response has invalid status - {0}. Marking it as timed out.",
+                                status));
                             result.WasTimeout = true;
                         }
                     }
-
                 }
                 catch (Exception e)
                 {
                     result.WasError = true;
                     result.ErrorText = e.ToString();
                 }
-            }
-            else
-            {
-                result.WasTimeout = true;
+                finally
+                {
+                    result.IsDone = true;
+                }
             }
 
             yield return null;
@@ -91,12 +118,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             }
             
             var result = new RequestResult();
-            
+
             var waitHandle = Utilities.UnityDispatcher.InvokeCoroutine(JobCoroutine(getRequest, result));
             
-            waitHandle.WaitOne();
+            waitHandle.WaitOne(TimeSpan.FromMilliseconds(getRequest.Timeout));
 
-            if (result.WasTimeout)
+            if (result.WasTimeout || !result.IsDone)
             {
                 throw new WebException("Timeout.", WebExceptionStatus.Timeout);
             }

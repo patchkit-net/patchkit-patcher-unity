@@ -5,6 +5,7 @@
         NoInternetConnection,
         NoPermissions,
         NotEnoughDiskSpace,
+        NonLauncherExecution,
         Other
     }
 }

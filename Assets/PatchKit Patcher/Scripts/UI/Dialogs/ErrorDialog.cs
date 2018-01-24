@@ -33,6 +33,9 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 case PatcherError.NotEnoughDiskSpace:
                     ErrorText.text = "Not enough disk space.";
                     break;
+                case PatcherError.NonLauncherExecution:
+                    ErrorText.text = "Patcher has to be started using the launcher.";
+                    break;
                 case PatcherError.Other:
                     ErrorText.text = "Unknown error. Please try again.";
                     break;
