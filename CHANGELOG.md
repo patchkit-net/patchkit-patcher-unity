@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Improved the network errors handling in downloaders
 
+### Fixed
+- Fix usage of Unity WWW network connection
+
 ## [3.8.2]
 ### Added
 - Added download speed unit switcher (if download speed is higher than 1 MB/s then MB/s are used, otherwise KB/s)
