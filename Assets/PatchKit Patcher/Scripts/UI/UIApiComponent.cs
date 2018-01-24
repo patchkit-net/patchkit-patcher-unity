@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using PatchKit.Api;
+using PatchKit.Unity.Patcher.AppData.Remote;
 using UnityEngine;
 
 namespace PatchKit.Unity.UI
@@ -47,6 +48,7 @@ namespace PatchKit.Unity.UI
         protected virtual void Awake()
         {
             _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
+            _mainApiConnection.HttpClient = new UnityHttpClient();
         }
 
         protected virtual void Start()
