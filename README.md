@@ -17,5 +17,6 @@ If you need to recompile it, simply open the project file (`getdiskspaceosx/getd
 
 * **PK_PATCHER_FORCE_SECRET** - force certain app secret
 * **PK_PATCHER_FORCE_VERSION** - force certain app version
-* **PK_PATCHER_KEYS_URL** - change used url of keys API
 * **PK_PATCHER_MAIN_URL** - change used url of main API
+* **PK_PATCHER_MAIN_CACHE_URL* - changed used url of main API cache
+* **PK_PATCHER_KEYS_URL** - change used url of keys API
