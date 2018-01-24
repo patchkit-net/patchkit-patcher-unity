@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Support for PK_PATCHER_MAIN_CACHE_URL
+
 ### Changed
 - Update API servers configuration
 
