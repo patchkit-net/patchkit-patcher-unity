@@ -1,5 +1,7 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 using PatchKit.Api;
+using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 
 namespace PatchKit.Unity
@@ -21,7 +23,8 @@ namespace PatchKit.Unity
             {
                 UnityEditor.EditorApplication.isPaused = true;
 
-                UnityEditor.EditorUtility.DisplayDialog("PatchKit Settings has been created.", "PatchKit Settings asset has been created.", "OK");
+                UnityEditor.EditorUtility.DisplayDialog("PatchKit Settings has been created.",
+                    "PatchKit Settings asset has been created.", "OK");
 
                 pingObject = true;
             }
@@ -30,7 +33,8 @@ namespace PatchKit.Unity
             settings.MainApiConnectionSettings = MainApiConnection.GetDefaultSettings();
             settings.KeysApiConnectionSettings = KeysApiConnection.GetDefaultSettings();
 
-            UnityEditor.AssetDatabase.CreateAsset(settings, string.Format("Assets/PatchKit Patcher/Resources/{0}.asset", AssetFileName));
+            UnityEditor.AssetDatabase.CreateAsset(settings,
+                string.Format("Assets/PatchKit Patcher/Resources/{0}.asset", AssetFileName));
             UnityEditor.EditorUtility.SetDirty(settings);
 
             UnityEditor.AssetDatabase.Refresh();
@@ -59,18 +63,67 @@ namespace PatchKit.Unity
             return settings;
         }
 
+        private static ApiConnectionServer? GetApiConnectionServerFromEnvVar(string argumentName)
+        {
+            string url;
+
+            if (EnvironmentInfo.TryReadEnvironmentVariable(argumentName, out url))
+            {
+                var uri = new Uri(url);
+
+                return new ApiConnectionServer
+                {
+                    Host = uri.Host,
+                    Port = uri.Port,
+                    UseHttps = uri.Scheme == Uri.UriSchemeHttps
+                };
+            }
+
+            return null;
+        }
+
         public static ApiConnectionSettings GetMainApiConnectionSettings()
         {
             var instance = FindInstance();
 
-            return instance == null ? MainApiConnection.GetDefaultSettings() : instance.MainApiConnectionSettings;
+            var settings = instance == null
+                ? MainApiConnection.GetDefaultSettings()
+                : instance.MainApiConnectionSettings;
+
+            var overrideMain = GetApiConnectionServerFromEnvVar(EnvironmentVariables.MainUrlEnvironmentVariable);
+
+            if (overrideMain.HasValue)
+            {
+                settings.MainServer = overrideMain.Value;
+            }
+
+            var overrideMainCache =
+                GetApiConnectionServerFromEnvVar(EnvironmentVariables.MainCacheUrlEnvironmentVariable);
+
+            if (overrideMainCache.HasValue)
+            {
+                settings.CacheServers = new[] {overrideMainCache.Value};
+            }
+
+            return settings;
         }
 
         public static ApiConnectionSettings GetKeysApiConnectionSettings()
         {
             var instance = FindInstance();
 
-            return instance == null ? KeysApiConnection.GetDefaultSettings() : instance.KeysApiConnectionSettings;
+            var settings = instance == null
+                ? KeysApiConnection.GetDefaultSettings()
+                : instance.KeysApiConnectionSettings;
+
+            var overrideKeys = GetApiConnectionServerFromEnvVar(EnvironmentVariables.KeysUrlEnvironmentVariable);
+
+            if (overrideKeys.HasValue)
+            {
+                settings.MainServer = overrideKeys.Value;
+            }
+
+            return settings;
         }
     }
 }
