@@ -124,7 +124,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 return true;
             }
 
-            return file.Offset > _range.Start && file.Offset < _range.End;
+            return file.Offset > _range.Start && file.Offset + file.Size < _range.End;
         }
 
         private void Unpack(Pack1Meta.FileEntry file, Action<double> progress)
@@ -193,6 +193,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     {
                         ExtractFileFromStream(limitedStream, target, file, decryptor, onProgress);
                     }
+
                     if (Platform.IsPosix())
                     {
                         Chmod.SetMode(file.Mode.Substring(3), destPath);
