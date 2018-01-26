@@ -3,6 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using Ionic.Zlib;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
@@ -25,6 +26,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly string _suffix;
         private readonly byte[] _key;
         private readonly byte[] _iv;
+
+        private readonly BytesRange _bytesRange;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
@@ -84,6 +87,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("Unpacking finished succesfully!");
         }
 
+        // TODO: Create a method for unarchiving a single file.
+        // Use Pack1Meta.FileEntry to designate that file.
+
         private void Unpack(Pack1Meta.FileEntry file, Action<double> progress)
         {
             switch (file.Type)
@@ -131,6 +137,28 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             Files.CreateParents(destPath);
 
+            using (var fs = new FileStream(_packagePath, FileMode.Open))
+            {
+                fs.Seek(file.Offset.Value, SeekOrigin.Begin);
+
+                using (var limitedStream = new LimitedStream(fs, file.Size.Value))
+                {
+                    using (var target = new FileStream(destPath, FileMode.Create))
+                    {
+                        ExtractFileFromStream(limitedStream, target, file, onProgress);
+                    }
+                    if (Platform.IsPosix())
+                    {
+                        Chmod.SetMode(file.Mode.Substring(3), destPath);
+                    }
+                }
+            }
+
+            DebugLogger.Log("File " + file.Name + " unpacked successfully!");
+        }
+
+        private void ExtractFileFromStream(Stream sourceStream, Stream targetStream, Pack1Meta.FileEntry file, Action<double> onProgress)
+        {
             RijndaelManaged rijn = new RijndaelManaged
             {
                 Mode = CipherMode.CBC,
@@ -138,40 +166,23 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 KeySize = 256
             };
 
-            using (var fs = new FileStream(_packagePath, FileMode.Open))
+            ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
+            using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                fs.Seek(file.Offset.Value, SeekOrigin.Begin);
-
-                using (var limitedStream = new LimitedStream(fs, file.Size.Value))
+                using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
                 {
-                    ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
-                    using (var cryptoStream = new CryptoStream(limitedStream, decryptor, CryptoStreamMode.Read))
+                    long bytesProcessed = 0;
+                    const int bufferSize = 128 * 1024;
+                    var buffer = new byte[bufferSize];
+                    int count;
+                    while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
                     {
-                        using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
-                        {
-                            using (var fileWritter = new FileStream(destPath, FileMode.Create))
-                            {
-                                long bytesProcessed = 0;
-                                const int bufferSize = 131072;
-                                var buffer = new byte[bufferSize];
-                                int count;
-                                while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
-                                {
-                                    fileWritter.Write(buffer, 0, count);
-                                    bytesProcessed += count;
-                                    onProgress(bytesProcessed / (double) file.Size.Value);
-                                }
-                                if (Platform.IsPosix())
-                                {
-                                    Chmod.SetMode(file.Mode.Substring(3), destPath);
-                                }
-                            }
-                        }
+                        targetStream.Write(buffer, 0, count);
+                        bytesProcessed += count;
+                        onProgress(bytesProcessed / (double) file.Size.Value);
                     }
                 }
             }
-
-            DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
