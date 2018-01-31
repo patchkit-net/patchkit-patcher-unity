@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Fix usage of Unity WWW network connection
+- Broken windows librsync binary files
 
 ## [3.8.2]
 ### Added
