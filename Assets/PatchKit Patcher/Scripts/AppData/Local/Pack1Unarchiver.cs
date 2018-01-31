@@ -47,8 +47,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
-            Assert.AreEqual(MagicBytes.Pack1, MagicBytes.ReadFileType(packagePath), "Is not Pack1 format");
             Checks.ArgumentNotNull(suffix, "suffix");
+
+            if (range.Start == 0)
+            {
+                Assert.AreEqual(MagicBytes.Pack1, MagicBytes.ReadFileType(packagePath), "Is not Pack1 format");
+            }
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
@@ -185,7 +189,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             using (var fs = new FileStream(_packagePath, FileMode.Open))
             {
-                fs.Seek(file.Offset.Value + _range.Start, SeekOrigin.Begin);
+                fs.Seek(file.Offset.Value - _range.Start, SeekOrigin.Begin);
 
                 using (var limitedStream = new LimitedStream(fs, file.Size.Value))
                 {
