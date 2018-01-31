@@ -111,25 +111,25 @@ class UnarchiverTest
 
             if (lastEntry.HasValue)
             {
-                Assert.AreEqual(lastEntry + 1, entry, "Entries are not following each other.");
+                Assert.IsTrue(lastEntry <= entry, "Entries are not following each other.");
             }
 
             lastEntry = entry;
 
-            if (entry == 0)
+            Assert.IsTrue(entry > 0);
+
+            if (entryProgress == 1.0)
             {
-                Assert.IsNull(name);
-                Assert.AreEqual(0.0, entryProgress);
-            }
-            else if (isFile)
-            {
-                string filePath = Path.Combine(_dirPath, name);
-                Assert.IsTrue(File.Exists(filePath), string.Format("File doesn't exist - {0}", filePath));
-            }
-            else
-            {
-                string dirPath = Path.Combine(_dirPath, name);
-                Assert.IsTrue(Directory.Exists(dirPath), string.Format("Directory doesn't exist - {0}", dirPath));
+                if (isFile)
+                {
+                    string filePath = Path.Combine(_dirPath, name);
+                    Assert.IsTrue(File.Exists(filePath), string.Format("File doesn't exist - {0}", filePath));
+                }
+                else
+                {
+                    string dirPath = Path.Combine(_dirPath, name);
+                    Assert.IsTrue(Directory.Exists(dirPath), string.Format("Directory doesn't exist - {0}", dirPath));
+                }
             }
 
             Assert.GreaterOrEqual(entryProgress, 0.0);

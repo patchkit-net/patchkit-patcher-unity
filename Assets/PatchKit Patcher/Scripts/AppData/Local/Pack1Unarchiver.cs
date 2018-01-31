@@ -61,13 +61,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Unarchive(CancellationToken cancellationToken)
         {
-            OnUnarchiveProgressChanged(null, false, 0, _metaData.Files.Length, 0.0);
-
             int entry = 1;
             
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
             foreach (var file in _metaData.Files)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 OnUnarchiveProgressChanged(file.Name, file.Type == "regular", entry, _metaData.Files.Length, 0.0);
 
                 var currentFile = file;
@@ -75,7 +75,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 Unpack(file, progress =>
                 {
                     OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == "regular", currentEntry, _metaData.Files.Length, progress);
-                });
+                }, cancellationToken);
 
                 OnUnarchiveProgressChanged(file.Name, file.Type == "regular", entry, _metaData.Files.Length, 1.0);
 
@@ -84,12 +84,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("Unpacking finished succesfully!");
         }
 
-        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress)
+        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, CancellationToken cancellationToken)
         {
             switch (file.Type)
             {
                 case "regular":
-                    UnpackRegularFile(file, progress);
+                    UnpackRegularFile(file, progress, cancellationToken);
                     break;
                 case "directory":
                     progress(0.0);
@@ -124,7 +124,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // TODO: how to create a symlink?
         }
 
-        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress)
+        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken)
         {
             string destPath = Path.Combine(_destinationDirPath, file.Name + _suffix);
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
@@ -157,6 +157,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                                 int count;
                                 while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
                                 {
+                                    cancellationToken.ThrowIfCancellationRequested();
+
                                     fileWritter.Write(buffer, 0, count);
                                     bytesProcessed += count;
                                     onProgress(bytesProcessed / (double) file.Size.Value);

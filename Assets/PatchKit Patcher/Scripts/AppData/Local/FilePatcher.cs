@@ -10,7 +10,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     public class FilePatcher
     {
         // TODO: Use rsync as executable.
+        #if UNITY_EDITOR_LINUX
+        [DllImport("librsync", EntryPoint = "rs_rdiff_patch")]
+        #else
         [DllImport("rsync", EntryPoint = "rs_rdiff_patch")]
+        #endif
         private static extern int rs_rdiff_patch(string basisFile, string deltaFile, string newFile);
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(FilePatcher));
