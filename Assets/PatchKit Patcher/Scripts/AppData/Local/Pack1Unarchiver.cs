@@ -102,7 +102,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("Unpacking finished succesfully!");
         }
 
-        public void UnarchiveSingleFile(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
+        public void UnarchiveSingleFile(Pack1Meta.FileEntry file, CancellationToken cancellationToken, string destinationDirPath = null)
         {
             OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 0.0);
 
@@ -111,7 +111,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 throw new ArgumentOutOfRangeException("file", file, null);
             }
 
-            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress));
+            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress), destinationDirPath);
 
             OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 1.0);
         }
@@ -128,15 +128,15 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 return true;
             }
 
-            return file.Offset > _range.Start && file.Offset + file.Size < _range.End;
+            return file.Offset >= _range.Start && file.Offset + file.Size <= _range.End;
         }
 
-        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress)
+        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, string destinationDirPath = null)
         {
             switch (file.Type)
             {
                 case Pack1Meta.RegularFileType:
-                    UnpackRegularFile(file, progress);
+                    UnpackRegularFile(file, progress, destinationDirPath);
                     break;
                 case Pack1Meta.DirectoryFileType:
                     progress(0.0);
@@ -171,9 +171,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // TODO: how to create a symlink?
         }
 
-        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress)
+        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, string destinationDirPath = null)
         {
-            string destPath = Path.Combine(_destinationDirPath, file.Name + _suffix);
+            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, file.Name + _suffix);
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
             Files.CreateParents(destPath);
