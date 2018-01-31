@@ -62,9 +62,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         #region Constants
 
-        public const string regularFileType = "regular";
-        public const string directoryFileType = "directory";
-        public const string symlinkFileType = "symlink";
+        public const string RegularFileType = "regular";
+        public const string DirectoryFileType = "directory";
+        public const string SymlinkFileType = "symlink";
 
         #endregion
     }

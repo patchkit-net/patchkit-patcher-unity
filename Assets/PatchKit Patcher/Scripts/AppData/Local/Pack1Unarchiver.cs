@@ -82,7 +82,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
             foreach (var file in _metaData.Files)
             {
-                OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.regularFileType, entry, _metaData.Files.Length, 0.0);
+                OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 0.0);
 
                 var currentFile = file;
                 var currentEntry = entry;
@@ -91,11 +91,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     Unpack(file, progress =>
                     {
-                        OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == Pack1Meta.regularFileType, currentEntry, _metaData.Files.Length, progress);
+                        OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == Pack1Meta.RegularFileType, currentEntry, _metaData.Files.Length, progress);
                     });
                 }
 
-                OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.regularFileType, entry, _metaData.Files.Length, 1.0);
+                OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 1.0);
 
                 entry++;
             }
@@ -104,21 +104,21 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void UnarchiveSingleFile(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
         {
-            OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.regularFileType, 0, 1, 0.0);
+            OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 0.0);
 
             if (!CanUnpack(file))
             {
                 throw new ArgumentOutOfRangeException("file", file, null);
             }
 
-            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.regularFileType, 1, 1, progress));
+            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress));
 
-            OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.regularFileType, 0, 1, 1.0);
+            OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 1.0);
         }
 
         private bool CanUnpack(Pack1Meta.FileEntry file)
         {
-            if (file.Type != Pack1Meta.regularFileType)
+            if (file.Type != Pack1Meta.RegularFileType)
             {
                 return true;
             }
@@ -135,15 +135,15 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             switch (file.Type)
             {
-                case Pack1Meta.regularFileType:
+                case Pack1Meta.RegularFileType:
                     UnpackRegularFile(file, progress);
                     break;
-                case Pack1Meta.directoryFileType:
+                case Pack1Meta.DirectoryFileType:
                     progress(0.0);
                     UnpackDirectory(file);
                     progress(1.0);
                     break;
-                case Pack1Meta.symlinkFileType:
+                case Pack1Meta.SymlinkFileType:
                     progress(0.0);
                     UnpackSymlink(file);
                     progress(1.0);
