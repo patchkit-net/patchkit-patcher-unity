@@ -97,6 +97,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                         OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == Pack1Meta.RegularFileType, currentEntry, _metaData.Files.Length, progress);
                     });
                 }
+                else
+                {
+                    DebugLogger.LogWarning(string.Format("The file {0} couldn't be unpacked.", file.Name));
+                }
 
                 OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 1.0);
 
