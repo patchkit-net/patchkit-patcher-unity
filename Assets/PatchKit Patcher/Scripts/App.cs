@@ -11,6 +11,12 @@ namespace PatchKit.Unity.Patcher
 {
     public class App
     {
+        private const string AppCacheFlieName = "patcher_cache.json";
+
+        private const string AppDataFileName = "app_data.json";
+
+        private const string DownloadsDirName = ".downloads";
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(App));
 
         public readonly ILocalDirectory LocalDirectory;
@@ -140,13 +146,13 @@ namespace PatchKit.Unity.Patcher
 
         private static IDownloadDirectory CreateDefaultDownloadDirectory(string appDataPath)
         {
-            return new DownloadDirectory(appDataPath.PathCombine(".downloads"));
+            return new DownloadDirectory(appDataPath.PathCombine(DownloadsDirName));
         }
 
         private static ILocalMetaData CreateDefaultLocalMetaData(string appDataPath)
         {
-            return new LocalMetaData(appDataPath.PathCombine("app_data.json"),
-                appDataPath.PathCombine("patcher_cache.json"));
+            return new LocalMetaData(appDataPath.PathCombine(AppDataFileName),
+                appDataPath.PathCombine(AppCacheFlieName));
         }
 
         private static IRemoteData CreateDefaultRemoteData(string appSecret,
