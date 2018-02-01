@@ -90,7 +90,7 @@ namespace PatchKit.Unity
                 ? MainApiConnection.GetDefaultSettings()
                 : instance.MainApiConnectionSettings;
 
-            var overrideMain = GetApiConnectionServerFromEnvVar(EnvironmentVariables.MainUrlEnvironmentVariable);
+            var overrideMain = GetApiConnectionServerFromEnvVar(EnvironmentVariables.ApiUrlEnvironmentVariable);
 
             if (overrideMain.HasValue)
             {
@@ -98,7 +98,7 @@ namespace PatchKit.Unity
             }
 
             var overrideMainCache =
-                GetApiConnectionServerFromEnvVar(EnvironmentVariables.MainCacheUrlEnvironmentVariable);
+                GetApiConnectionServerFromEnvVar(EnvironmentVariables.ApiCacheUrlEnvironmentVariable);
 
             if (overrideMainCache.HasValue)
             {

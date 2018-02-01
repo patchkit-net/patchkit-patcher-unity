@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Update API servers configuration
+- Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
+- Rename PK_PATCHER_MAIN_CACHE_URL environmental variable to PK_PATCHER_API_CACHE_URL
 
 ### Fixed
 - Freeze in case that license server wasn't available

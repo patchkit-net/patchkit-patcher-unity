@@ -26,7 +26,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             string overrideMainUrl;
 
-            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.MainUrlEnvironmentVariable, out overrideMainUrl))
+            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ApiUrlEnvironmentVariable, out overrideMainUrl))
             {
                 var overrideMainUri = new Uri(overrideMainUrl);
 
