@@ -9,7 +9,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     /// </summary>
     /// <seealso cref="BaseWritableDirectory{TemporaryDirectory}" />
     /// <seealso cref="ITemporaryDirectory" />
-    public class TemporaryDirectory : BaseWritableDirectory<TemporaryDirectory>, ITemporaryDirectory
+    public sealed class TemporaryDirectory : BaseWritableDirectory<TemporaryDirectory>, ITemporaryDirectory
     {
         private bool _disposed;
         private string _prefix;
@@ -21,10 +21,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             _prefix = prefix;
             _createdAt = DateTime.Now;
+
+            PrepareForWriting();
         }
 
         public TemporaryDirectory(string path) : base(path)
         {
+            PrepareForWriting();
         }
 
         public string GetUniquePath()
@@ -65,7 +68,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Dispose(false);
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (_disposed)
             {

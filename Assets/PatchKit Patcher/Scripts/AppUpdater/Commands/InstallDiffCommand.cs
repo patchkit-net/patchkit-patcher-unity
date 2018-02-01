@@ -149,7 +149,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 using (var packageDir = new TemporaryDirectory(_temporaryData.GetUniquePath()))
                 {
                     _logger.LogTrace("packageDir = " + packageDir.Path);
-                    Directory.CreateDirectory(packageDir.Path);
 
                     string usedSuffix;
 
@@ -428,7 +427,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             using (var tempDiffDir = new TemporaryDirectory(_temporaryData.GetUniquePath()))
             {
                 _logger.LogTrace("tempDiffDir = " + tempDiffDir.Path);
-                Directory.CreateDirectory(tempDiffDir.Path);
 
                 _modifiedFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
 
