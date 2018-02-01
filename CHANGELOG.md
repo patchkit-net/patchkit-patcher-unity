@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for PK_PATCHER_MAIN_CACHE_URL
 - Skipping patches for files that content remained unchanged in newer version (during diff installation)
+- Support for partial pack1 processing
 
 ### Changed
 - Update API servers configuration
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Fix usage of Unity WWW network connection
+- Broken windows librsync binary files
 
 ## [3.8.2]
 ### Added

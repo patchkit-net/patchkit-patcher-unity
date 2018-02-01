@@ -3,6 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using Ionic.Zlib;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
@@ -26,20 +27,35 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly byte[] _key;
         private readonly byte[] _iv;
 
+        /// <summary>
+        /// The range (in bytes) of the partial pack1 source file
+        /// </summary>
+        private readonly BytesRange _range;
+
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
         public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key, string suffix = "")
-            : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key), suffix)
+            : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key), suffix, new BytesRange(0, -1))
         {
             // do nothing
         }
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key, string suffix)
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key, string suffix, BytesRange range)
+            : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key), suffix, range)
+        {
+            // do nothing
+        }
+
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key, string suffix, BytesRange range)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
-            Assert.AreEqual(MagicBytes.Pack1, MagicBytes.ReadFileType(packagePath), "Is not Pack1 format");
             Checks.ArgumentNotNull(suffix, "suffix");
+
+            if (range.Start == 0)
+            {
+                Assert.AreEqual(MagicBytes.Pack1, MagicBytes.ReadFileType(packagePath), "Is not Pack1 format");
+            }
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
@@ -50,6 +66,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             _metaData = metaData;
             _destinationDirPath = destinationDirPath;
             _suffix = suffix;
+            _range = range;
 
             using (var sha256 = SHA256.Create())
             {
@@ -66,37 +83,72 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
             foreach (var file in _metaData.Files)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                OnUnarchiveProgressChanged(file.Name, file.Type == "regular", entry, _metaData.Files.Length, 0.0);
+                OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 0.0);
 
                 var currentFile = file;
                 var currentEntry = entry;
-                Unpack(file, progress =>
-                {
-                    OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == "regular", currentEntry, _metaData.Files.Length, progress);
-                }, cancellationToken);
 
-                OnUnarchiveProgressChanged(file.Name, file.Type == "regular", entry, _metaData.Files.Length, 1.0);
+                if (CanUnpack(file))
+                {
+                    Unpack(file, progress =>
+                    {
+                        OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == Pack1Meta.RegularFileType, currentEntry, _metaData.Files.Length, progress);
+                    }, cancellationToken);
+                }
+                else
+                {
+                    DebugLogger.LogWarning(string.Format("The file {0} couldn't be unpacked.", file.Name));
+                }
+
+                OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 1.0);
 
                 entry++;
             }
             DebugLogger.Log("Unpacking finished succesfully!");
         }
 
-        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, CancellationToken cancellationToken)
+        public void UnarchiveSingleFile(Pack1Meta.FileEntry file, CancellationToken cancellationToken, string destinationDirPath = null)
+        {
+            OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 0.0);
+
+            if (!CanUnpack(file))
+            {
+                throw new ArgumentOutOfRangeException("file", file, null);
+            }
+
+            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress), cancellationToken, destinationDirPath);
+
+            OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 1.0);
+        }
+
+        private bool CanUnpack(Pack1Meta.FileEntry file)
+        {
+            if (file.Type != Pack1Meta.RegularFileType)
+            {
+                return true;
+            }
+
+            if (_range.Start == 0 && _range.End == -1)
+            {
+                return true;
+            }
+
+            return file.Offset >= _range.Start && file.Offset + file.Size <= _range.End;
+        }
+
+        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
             switch (file.Type)
             {
-                case "regular":
-                    UnpackRegularFile(file, progress, cancellationToken);
+                case Pack1Meta.RegularFileType:
+                    UnpackRegularFile(file, progress, cancellationToken, destinationDirPath);
                     break;
-                case "directory":
+                case Pack1Meta.DirectoryFileType:
                     progress(0.0);
                     UnpackDirectory(file);
                     progress(1.0);
                     break;
-                case "symlink":
+                case Pack1Meta.SymlinkFileType:
                     progress(0.0);
                     UnpackSymlink(file);
                     progress(1.0);
@@ -124,9 +176,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // TODO: how to create a symlink?
         }
 
-        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken)
+        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
-            string destPath = Path.Combine(_destinationDirPath, file.Name + _suffix);
+            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, file.Name + _suffix);
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
             Files.CreateParents(destPath);
@@ -138,42 +190,54 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 KeySize = 256
             };
 
+            ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
+
             using (var fs = new FileStream(_packagePath, FileMode.Open))
             {
-                fs.Seek(file.Offset.Value, SeekOrigin.Begin);
+                fs.Seek(file.Offset.Value - _range.Start, SeekOrigin.Begin);
 
                 using (var limitedStream = new LimitedStream(fs, file.Size.Value))
                 {
-                    ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
-                    using (var cryptoStream = new CryptoStream(limitedStream, decryptor, CryptoStreamMode.Read))
+                    using (var target = new FileStream(destPath, FileMode.Create))
                     {
-                        using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
-                        {
-                            using (var fileWritter = new FileStream(destPath, FileMode.Create))
-                            {
-                                long bytesProcessed = 0;
-                                const int bufferSize = 131072;
-                                var buffer = new byte[bufferSize];
-                                int count;
-                                while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
-                                {
-                                    cancellationToken.ThrowIfCancellationRequested();
+                        ExtractFileFromStream(limitedStream, target, file, decryptor, onProgress, cancellationToken);
+                    }
 
-                                    fileWritter.Write(buffer, 0, count);
-                                    bytesProcessed += count;
-                                    onProgress(bytesProcessed / (double) file.Size.Value);
-                                }
-                                if (Platform.IsPosix())
-                                {
-                                    Chmod.SetMode(file.Mode.Substring(3), destPath);
-                                }
-                            }
-                        }
+                    if (Platform.IsPosix())
+                    {
+                        Chmod.SetMode(file.Mode.Substring(3), destPath);
                     }
                 }
             }
 
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
+        }
+
+        private void ExtractFileFromStream(
+            Stream sourceStream,
+            Stream targetStream,
+            Pack1Meta.FileEntry file,
+            ICryptoTransform decryptor,
+            Action<double> onProgress,
+            CancellationToken cancellationToken)
+        {
+            using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
+            {
+                using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
+                {
+                    long bytesProcessed = 0;
+                    const int bufferSize = 128 * 1024;
+                    var buffer = new byte[bufferSize];
+                    int count;
+                    while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        targetStream.Write(buffer, 0, count);
+                        bytesProcessed += count;
+                        onProgress(bytesProcessed / (double) file.Size.Value);
+                    }
+                }
+            }
         }
 
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
