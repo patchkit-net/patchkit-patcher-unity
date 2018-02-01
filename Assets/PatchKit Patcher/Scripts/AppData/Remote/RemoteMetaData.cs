@@ -38,13 +38,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             var keysSettings = Settings.GetKeysApiConnectionSettings();
 
-
-
             _keysApiConnection = new KeysApiConnection(keysSettings)
             {
                 HttpClient = new UnityHttpClient(),
                 RequestTimeoutCalculator = requestTimeoutCalculator,
-                RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
                 Logger = PatcherLogManager.DefaultLogger
             };
 
