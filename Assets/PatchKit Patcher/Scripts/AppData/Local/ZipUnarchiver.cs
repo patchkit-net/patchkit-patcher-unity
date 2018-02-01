@@ -47,13 +47,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 foreach (var zipEntry in zip)
                 {
-                    OnUnarchiveProgressChanged(zipEntry.FileName, !zipEntry.FileName.EndsWith("/"), entry, zip.Count, 0.0);
+                    OnUnarchiveProgressChanged(zipEntry.FileName, !zipEntry.IsDirectory, entry, zip.Count, 0.0);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
                     UnarchiveEntry(zipEntry);
 
-                    OnUnarchiveProgressChanged(zipEntry.FileName, !zipEntry.FileName.EndsWith("/"), entry, zip.Count, 1.0);
+                    OnUnarchiveProgressChanged(zipEntry.FileName, !zipEntry.IsDirectory, entry, zip.Count, 1.0);
                     
                     entry++;
                 }
