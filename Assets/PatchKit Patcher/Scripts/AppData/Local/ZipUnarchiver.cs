@@ -70,7 +70,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
         {
             var handler = UnarchiveProgressChanged;
-            if (handler != null) handler(name, isFile, entry, amount, entryProgress);
+            if (handler != null)
+            {
+                handler(name, isFile, entry, amount, entryProgress);
+            }
         }
     }
 }

@@ -48,8 +48,15 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public LocalMetaData([NotNull] string filePath, [NotNull] string deprecatedFilePath)
         {
-            if (filePath == null) throw new ArgumentNullException("filePath");
-            if (deprecatedFilePath == null) throw new ArgumentNullException("deprecatedFilePath");
+            if (filePath == null)
+            {
+                throw new ArgumentNullException("filePath");
+            }
+
+            if (deprecatedFilePath == null)
+            {
+                throw new ArgumentNullException("deprecatedFilePath");
+            }
 
             _filePath = filePath;
             _deprecatedFilePath = deprecatedFilePath;
@@ -65,11 +72,21 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void RegisterEntry([NotNull] string entryName, int versionId)
         {
-            if (entryName == null) throw new ArgumentNullException("entryName");
-            if (versionId <= 0) throw new ArgumentOutOfRangeException("versionId");
+            if (entryName == null)
+            {
+                throw new ArgumentNullException("entryName");
+            }
+
+            if (versionId <= 0)
+            {
+                throw new ArgumentOutOfRangeException("versionId");
+            }
+
             if (entryName.EndsWith("/"))
+            {
                 throw new InvalidOperationException(
                     "Cannot register directory as entry due to problem with content installation command. See code to learn more.");
+            }
 
             try
             {
@@ -90,7 +107,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void UnregisterEntry([NotNull] string entryName)
         {
-            if (entryName == null) throw new ArgumentNullException("entryName");
+            if (entryName == null)
+            {
+                throw new ArgumentNullException("entryName");
+            }
 
             try
             {
@@ -111,14 +131,20 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public bool IsEntryRegistered([NotNull] string entryName)
         {
-            if (entryName == null) throw new ArgumentNullException("entryName");
+            if (entryName == null)
+            {
+                throw new ArgumentNullException("entryName");
+            }
 
             return _data.FileVersionIds.ContainsKey(entryName);
         }
 
         public int GetEntryVersionId([NotNull] string entryName)
         {
-            if (entryName == null) throw new ArgumentNullException("entryName");
+            if (entryName == null)
+            {
+                throw new ArgumentNullException("entryName");
+            }
 
             if (!IsEntryRegistered(entryName))
             {

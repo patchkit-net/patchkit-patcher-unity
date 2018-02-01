@@ -45,12 +45,35 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             [NotNull] ILocalDirectory localData, [NotNull] ILocalMetaData localMetaData,
             [NotNull] ITemporaryDirectory temporaryData, [NotNull] IRemoteMetaData remoteMetaData)
         {
-            if (packagePath == null) throw new ArgumentNullException("packagePath");
-            if (versionId <= 0) throw new ArgumentOutOfRangeException("versionId");
-            if (localData == null) throw new ArgumentNullException("localData");
-            if (localMetaData == null) throw new ArgumentNullException("localMetaData");
-            if (temporaryData == null) throw new ArgumentNullException("temporaryData");
-            if (remoteMetaData == null) throw new ArgumentNullException("remoteMetaData");
+            if (packagePath == null)
+            {
+                throw new ArgumentNullException("packagePath");
+            }
+
+            if (versionId <= 0)
+            {
+                throw new ArgumentOutOfRangeException("versionId");
+            }
+
+            if (localData == null)
+            {
+                throw new ArgumentNullException("localData");
+            }
+
+            if (localMetaData == null)
+            {
+                throw new ArgumentNullException("localMetaData");
+            }
+
+            if (temporaryData == null)
+            {
+                throw new ArgumentNullException("temporaryData");
+            }
+
+            if (remoteMetaData == null)
+            {
+                throw new ArgumentNullException("remoteMetaData");
+            }
 
             _logger = PatcherLogManager.DefaultLogger;
             _packagePath = packagePath;
@@ -65,7 +88,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public override void Prepare([NotNull] IStatusMonitor statusMonitor)
         {
-            if (statusMonitor == null) throw new ArgumentNullException("statusMonitor");
+            if (statusMonitor == null)
+            {
+                throw new ArgumentNullException("statusMonitor");
+            }
 
             try
             {
