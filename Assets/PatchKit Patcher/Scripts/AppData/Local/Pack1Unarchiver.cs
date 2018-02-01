@@ -27,7 +27,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly byte[] _key;
         private readonly byte[] _iv;
 
-        // The range (in bytes) of the partial pack1 source file
+        /// <summary>
+        /// The range (in bytes) of the partial pack1 source file
+        /// </summary>
         private readonly BytesRange _range;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
