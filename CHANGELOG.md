@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Update API servers configuration
 
+### Fixed
+- Freeze in case that license server wasn't available
+- Freeze at start when API server wasn't available
+
 ## [3.9.0]
 ### Added
 - Add support for download speed unit parameter from application info
