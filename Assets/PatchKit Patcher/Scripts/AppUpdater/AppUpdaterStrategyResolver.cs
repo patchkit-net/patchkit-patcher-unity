@@ -79,7 +79,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     {
                         DebugLogger.Log("Checking consitency before allowing diff update...");
 
-                        if (!IsCheckIntegrityValid(context))
+                        if (!IsVersionIntegral(context))
                         {
                             return StrategyType.Content;
                         }
@@ -117,7 +117,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             return StrategyType.Content;
         }
 
-        private bool IsCheckIntegrityValid(AppUpdaterContext context)
+        private bool IsVersionIntegral(AppUpdaterContext context)
         {
             var commandFactory = new AppUpdaterCommandFactory();
             int installedVersionId = context.App.GetInstalledVersionId();
