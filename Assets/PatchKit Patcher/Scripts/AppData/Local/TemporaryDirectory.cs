@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using PatchKit.Unity.Patcher.Debug;
+using JetBrains.Annotations;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -9,31 +9,25 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     /// </summary>
     /// <seealso cref="BaseWritableDirectory{TemporaryDirectory}" />
     /// <seealso cref="ITemporaryDirectory" />
-    public sealed class TemporaryDirectory : BaseWritableDirectory<TemporaryDirectory>, ITemporaryDirectory
+    public sealed class TemporaryDirectory : IDisposable
     {
-        private bool _disposed;
-        private string _prefix;
-        private DateTime _createdAt;
+        public string Path { get; private set; }
 
-        public TemporaryDirectory(string path, string prefix) : base(path.PathCombine(prefix + "_" + System.IO.Path.GetRandomFileName()))
+        public TemporaryDirectory([NotNull] string path)
         {
-            Checks.ArgumentNotNullOrEmpty(prefix, "prefix");
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException("Value cannot be null or empty.", "path");
+            }
 
-            _prefix = prefix;
-            _createdAt = DateTime.Now;
+            Path = path;
 
-            PrepareForWriting();
+            Directory.CreateDirectory(Path);
         }
 
-        public TemporaryDirectory(string path) : base(path)
-        {
-            PrepareForWriting();
-        }
-
+        //TODO: Move it to some extension method.
         public string GetUniquePath()
         {
-            Assert.IsFalse(_disposed, "Object has been disposed.");
-
             string uniquePath = string.Empty;
 
             for (int i = 0; i < 1000; i++)
@@ -50,57 +44,23 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return uniquePath;
         }
 
-        public override void PrepareForWriting()
+        private void ReleaseUnmanagedResources()
         {
-            Assert.IsFalse(_disposed, "Object has been disposed.");
-
-            base.PrepareForWriting();
+            if (Directory.Exists(Path))
+            {
+                Directory.Delete(Path, true);
+            }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            ReleaseUnmanagedResources();
             GC.SuppressFinalize(this);
         }
 
         ~TemporaryDirectory()
         {
-            Dispose(false);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            DebugLogger.Log("TemporaryDirectory: Deleting: " + Path);
-            if (Directory.Exists(Path))
-            {
-                DirectoryOperations.Delete(Path, true);
-            }
-
-            DeleteOldTmpDirectories();
-
-            DebugLogger.LogDispose();
-
-            _disposed = true;
-        }
-
-        private void DeleteOldTmpDirectories()
-        {
-            DebugLogger.Log("TemporaryDirectory: ParentFullName: " + Directory.GetParent(Path).FullName);
-            DirectoryInfo[] tmpDirs = Directory.GetParent(Path).GetDirectories(_prefix + "*");
-
-            for (int i = 0; i < tmpDirs.Length; i++)
-            {
-                if (tmpDirs[i].CreationTime < _createdAt)
-                {
-                    DebugLogger.LogFormat("TemporaryDirectory: Deleting old tmp directory[{0}/{1}]: {2}", (i + 1), tmpDirs.Length, tmpDirs[i].FullName);
-                    DirectoryOperations.Delete(tmpDirs[i].FullName, true);
-                }
-            }
+            ReleaseUnmanagedResources();
         }
     }
 }

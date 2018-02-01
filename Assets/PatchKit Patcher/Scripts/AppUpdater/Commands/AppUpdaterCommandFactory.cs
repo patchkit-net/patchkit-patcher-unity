@@ -54,8 +54,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 versionId,
                 versionContentSummary,
                 context.App.LocalDirectory,
-                context.App.LocalMetaData,
-                context.App.TemporaryDirectory);
+                context.App.LocalMetaData);
         }
 
         public IInstallDiffCommand CreateInstallDiffCommand(int versionId, AppUpdaterContext context)
@@ -70,7 +69,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 versionId,
                 context.App.LocalDirectory,
                 context.App.LocalMetaData,
-                context.App.TemporaryDirectory,
                 context.App.RemoteMetaData);
         }
 

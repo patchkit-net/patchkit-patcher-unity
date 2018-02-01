@@ -27,7 +27,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly int _versionId;
         private readonly ILocalDirectory _localData;
         private readonly ILocalMetaData _localMetaData;
-        private readonly ITemporaryDirectory _temporaryData;
         private readonly IRemoteMetaData _remoteMetaData;
 
         private IGeneralStatusReporter _addFilesStatusReporter;
@@ -43,7 +42,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public InstallDiffCommand([NotNull] string packagePath, string packageMetaPath, string packagePassword,
             int versionId,
             [NotNull] ILocalDirectory localData, [NotNull] ILocalMetaData localMetaData,
-            [NotNull] ITemporaryDirectory temporaryData, [NotNull] IRemoteMetaData remoteMetaData)
+            [NotNull] IRemoteMetaData remoteMetaData)
         {
             if (packagePath == null)
             {
@@ -65,11 +64,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new ArgumentNullException("localMetaData");
             }
 
-            if (temporaryData == null)
-            {
-                throw new ArgumentNullException("temporaryData");
-            }
-
             if (remoteMetaData == null)
             {
                 throw new ArgumentNullException("remoteMetaData");
@@ -82,7 +76,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _versionId = versionId;
             _localData = localData;
             _localMetaData = localMetaData;
-            _temporaryData = temporaryData;
             _remoteMetaData = remoteMetaData;
         }
 
@@ -100,7 +93,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 base.Prepare(statusMonitor);
 
                 _localData.PrepareForWriting();
-                _temporaryData.PrepareForWriting();
 
                 _previousContentSummary = _remoteMetaData.GetContentSummary(_versionId - 1);
                 _contentSummary = _remoteMetaData.GetContentSummary(_versionId);
@@ -146,7 +138,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     ReadPack1MetaFile();
                 }
 
-                using (var packageDir = new TemporaryDirectory(_temporaryData.GetUniquePath()))
+                using (var packageDir = new TemporaryDirectory(_packagePath + ".temp_unpack_" + Path.GetRandomFileName()))
                 {
                     _logger.LogTrace("packageDir = " + packageDir.Path);
 
@@ -156,7 +148,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     ProcessAddedFiles(packageDir.Path, usedSuffix, cancellationToken);
                     ProcessRemovedFiles(cancellationToken);
-                    ProcessModifiedFiles(packageDir.Path, usedSuffix, cancellationToken);
+
+                    using (var tempDiffDir =
+                        new TemporaryDirectory(_packagePath + ".temp_diff_" + Path.GetRandomFileName()))
+                    {
+                        _logger.LogTrace("tempDiffDir = " + tempDiffDir.Path);
+
+                        ProcessModifiedFiles(packageDir.Path, usedSuffix, tempDiffDir, cancellationToken);
+                    }
+
                     DeleteEmptyMacAppDirectories();
                 }
 
@@ -419,34 +419,29 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Add file entry processed.");
         }
 
-        private void ProcessModifiedFiles(string packageDirPath, string suffix,
+        private void ProcessModifiedFiles(string packageDirPath, string suffix, TemporaryDirectory tempDiffDir,
             CancellationToken cancellationToken)
         {
             _logger.LogDebug("Processing diff modified files...");
 
-            using (var tempDiffDir = new TemporaryDirectory(_temporaryData.GetUniquePath()))
+            _modifiedFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
+
+            for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
             {
-                _logger.LogTrace("tempDiffDir = " + tempDiffDir.Path);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                _modifiedFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
+                var entryName = _diffSummary.ModifiedFiles[i];
 
-                for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
+                if (!entryName.EndsWith("/"))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var entryName = _diffSummary.ModifiedFiles[i];
-
-                    if (!entryName.EndsWith("/"))
-                    {
-                        PatchFile(entryName, packageDirPath, suffix, tempDiffDir);
-                    }
-
-                    _modifiedFilesStatusReporter.OnProgressChanged(
-                        (i + 1) / (double) _diffSummary.ModifiedFiles.Length, "Installing package...");
+                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir);
                 }
 
-                _modifiedFilesStatusReporter.OnProgressChanged(1.0, "Installing package...");
+                _modifiedFilesStatusReporter.OnProgressChanged(
+                    (i + 1) / (double) _diffSummary.ModifiedFiles.Length, "Installing package...");
             }
+
+            _modifiedFilesStatusReporter.OnProgressChanged(1.0, "Installing package...");
 
             _logger.LogDebug("Diff modified files processed.");
         }

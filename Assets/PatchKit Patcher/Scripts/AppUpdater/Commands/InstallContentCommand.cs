@@ -25,21 +25,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly AppContentSummary _versionContentSummary;
         private readonly ILocalDirectory _localData;
         private readonly ILocalMetaData _localMetaData;
-        private readonly ITemporaryDirectory _temporaryData;
 
         private IGeneralStatusReporter _copyFilesStatusReporter;
         private IGeneralStatusReporter _unarchivePackageStatusReporter;
         private Pack1Meta _pack1Meta;
 
         public InstallContentCommand(string packagePath, string packageMetaPath, string packagePassword, int versionId,
-            AppContentSummary versionContentSummary, ILocalDirectory localData, ILocalMetaData localMetaData,
-            ITemporaryDirectory temporaryData)
+            AppContentSummary versionContentSummary, ILocalDirectory localData, ILocalMetaData localMetaData)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
             // TODO: Validate the content summary.
             Checks.ArgumentNotNull(localData, "localData");
             Checks.ArgumentNotNull(localMetaData, "localMetaData");
-            Checks.ArgumentNotNull(temporaryData, "temporaryData");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
@@ -52,7 +49,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _versionContentSummary = versionContentSummary;
             _localData = localData;
             _localMetaData = localMetaData;
-            _temporaryData = temporaryData;
         }
 
         public override void Prepare(IStatusMonitor statusMonitor)
@@ -64,7 +60,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DebugLogger.Log("Preparing content installation.");
 
             _localData.PrepareForWriting();
-            _temporaryData.PrepareForWriting();
 
             double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionContentSummary);
             _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
@@ -93,17 +88,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Installing content.");
             
-            var packageDirPath = _temporaryData.GetUniquePath();
-            DebugLogger.LogVariable(packageDirPath, "destinationDir");
-
-            DebugLogger.Log("Creating package directory.");
-            DirectoryOperations.CreateDirectory(packageDirPath);
-            try
+            using (var packageDir = new TemporaryDirectory(_packagePath + ".temp_unpack_" + Path.GetRandomFileName()))
             {
+                DebugLogger.LogVariable(packageDir.Path, "packageDirPath");
+
                 DebugLogger.Log("Unarchiving package.");
 
                 string usedSuffix;
-                IUnarchiver unarchiver = CreateUnrachiver(packageDirPath, out usedSuffix);
+                IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
                 _unarchivePackageStatusReporter.OnProgressChanged(0.0, "Unarchiving package...");
                 
@@ -129,20 +121,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    InstallFile(_versionContentSummary.Files[i].Path, packageDirPath, usedSuffix);
+                    InstallFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
 
                     _copyFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionContentSummary.Files.Length, "Installing package...");
                 }
 
                 _copyFilesStatusReporter.OnProgressChanged(1.0, string.Empty);
-            }
-            finally
-            {
-                DebugLogger.Log("Deleting package directory.");
-                if (Directory.Exists(packageDirPath))
-                {
-                    DirectoryOperations.Delete(packageDirPath, true);
-                }
             }
         }
 
