@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
 - Support for partial pack1 processing
+- Support for new lowest_version_diff property
 
 ### Changed
 - Update API servers configuration
