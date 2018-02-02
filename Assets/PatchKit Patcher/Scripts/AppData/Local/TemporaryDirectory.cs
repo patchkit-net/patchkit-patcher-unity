@@ -37,11 +37,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 uniquePath = Path.PathCombine(System.IO.Path.GetRandomFileName());
                 if (!File.Exists(uniquePath) && !Directory.Exists(uniquePath))
                 {
-                    break;
+                    return uniquePath;
                 }
             }
 
-            return uniquePath;
+            throw new Exception("Cannot find unique path.");
         }
 
         private void ReleaseUnmanagedResources()
