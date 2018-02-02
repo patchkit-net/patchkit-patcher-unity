@@ -435,12 +435,6 @@ namespace PatchKit.Unity.Patcher
             finally
             {
                 _state.Value = PatcherState.None;
-
-                if (_app != null)
-                {
-                    _app.Dispose();
-                    _app = null;
-                }
             }
         }
 

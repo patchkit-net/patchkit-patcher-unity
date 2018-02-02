@@ -74,8 +74,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 return false;
             }
 
-            Context.App.ReloadTemporaryDirectories(); // FIX: Bug #724
-
             _strategy = _strategyResolver.Create(fallbackType, Context);
 
             _strategy.Update(cancellationToken);

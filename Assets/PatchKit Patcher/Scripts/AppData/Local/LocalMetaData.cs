@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
-using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Logging;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
@@ -15,8 +16,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     /// <seealso cref="ILocalMetaData" />
     public class LocalMetaData : ILocalMetaData
     {
+        private readonly ILogger _logger;
         private const string DeprecatedCachePatchKitKey = "patchkit-key";
-        
+
         /// <summary>
         /// Data structure stored in file.
         /// </summary>
@@ -26,40 +28,39 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             [JsonProperty("file_id", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string FileId;
 
-            [DefaultValue("1.0")]
-            [JsonProperty("version", DefaultValueHandling = DefaultValueHandling.Populate)]
+            [DefaultValue("1.0")] [JsonProperty("version", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string Version;
 
-            [DefaultValue("")]
-            [JsonProperty("product_key", DefaultValueHandling = DefaultValueHandling.Populate)]
+            [DefaultValue("")] [JsonProperty("product_key", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string ProductKey;
 
             [DefaultValue("none")]
             [JsonProperty("product_key_encryption", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string ProductKeyEncryption;
 
-            [JsonProperty("_fileVersions")]
-            public Dictionary<string, int> FileVersionIds;
+            [JsonProperty("_fileVersions")] public Dictionary<string, int> FileVersionIds;
         }
 
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(LocalMetaData));
-
         private readonly string _filePath;
+        private readonly string _deprecatedFilePath;
 
         private Data _data;
-        private string _deprecatedFilePath;
 
-        public LocalMetaData(string filePath, string deprecatedFilePath)
+        public LocalMetaData([NotNull] string filePath, [NotNull] string deprecatedFilePath)
         {
-            Checks.ArgumentNotNullOrEmpty(filePath, "filePath");
-            Checks.ArgumentNotNullOrEmpty(deprecatedFilePath, "deprecatedFilePath");
+            if (filePath == null)
+            {
+                throw new ArgumentNullException("filePath");
+            }
 
-            DebugLogger.LogConstructor();
-            DebugLogger.LogVariable(filePath, "filePath");
-            DebugLogger.LogVariable(deprecatedFilePath, "deprecatedFilePath");
+            if (deprecatedFilePath == null)
+            {
+                throw new ArgumentNullException("deprecatedFilePath");
+            }
 
             _filePath = filePath;
             _deprecatedFilePath = deprecatedFilePath;
+            _logger = PatcherLogManager.DefaultLogger;
 
             LoadData();
         }
@@ -69,46 +70,89 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
-        public void RegisterEntry(string entryName, int versionId)
+        public void RegisterEntry([NotNull] string entryName, int versionId)
         {
-            Checks.ArgumentNotNullOrEmpty(entryName, "fileName");
-            Checks.ArgumentValidVersionId(versionId, "versionId");
+            if (entryName == null)
+            {
+                throw new ArgumentNullException("entryName");
+            }
 
-            // TODO: Uncomment this after fixing directory registration in install content command
-            Assert.IsFalse(entryName.EndsWith("/"),
-                "Cannot register directory as entry due to problem with content installation command. See code to learn more.");
+            if (versionId <= 0)
+            {
+                throw new ArgumentOutOfRangeException("versionId");
+            }
 
-            DebugLogger.Log(string.Format("Adding or updating file {0} to version {1}.", entryName, versionId));
+            if (entryName.EndsWith("/"))
+            {
+                throw new InvalidOperationException(
+                    "Cannot register directory as entry due to problem with content installation command. See code to learn more.");
+            }
 
-            _data.FileVersionIds[entryName] = versionId;
+            try
+            {
+                _logger.LogDebug(string.Format("Registering entry {0} as version {1}.", entryName, versionId));
 
-            SaveData();
+                _data.FileVersionIds[entryName] = versionId;
+
+                SaveData();
+
+                _logger.LogDebug("Entry registered.");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Failed to register entry.", e);
+                throw;
+            }
         }
 
-        public void UnregisterEntry(string fileName)
+        public void UnregisterEntry([NotNull] string entryName)
         {
-            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+            if (entryName == null)
+            {
+                throw new ArgumentNullException("entryName");
+            }
 
-            DebugLogger.Log(string.Format("Removing file {0}", fileName));
+            try
+            {
+                _logger.LogDebug(string.Format("Unregistering entry {0}", entryName));
 
-            _data.FileVersionIds.Remove(fileName);
+                _data.FileVersionIds.Remove(entryName);
 
-            SaveData();
+                SaveData();
+
+                _logger.LogDebug("Entry unregistered.");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Failed to unregister entry.", e);
+                throw;
+            }
         }
 
-        public bool IsEntryRegistered(string fileName)
+        public bool IsEntryRegistered([NotNull] string entryName)
         {
-            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
+            if (entryName == null)
+            {
+                throw new ArgumentNullException("entryName");
+            }
 
-            return _data.FileVersionIds.ContainsKey(fileName);
+            return _data.FileVersionIds.ContainsKey(entryName);
         }
 
-        public int GetEntryVersionId(string fileName)
+        public int GetEntryVersionId([NotNull] string entryName)
         {
-            Checks.ArgumentNotNullOrEmpty(fileName, "fileName");
-            Assert.IsTrue(IsEntryRegistered(fileName), string.Format("File doesn't exist in meta data - {0}", fileName));
+            if (entryName == null)
+            {
+                throw new ArgumentNullException("entryName");
+            }
 
-            return _data.FileVersionIds[fileName];
+            if (!IsEntryRegistered(entryName))
+            {
+                throw new LocalMetaDataEntryNotFoundException(
+                    string.Format("Entry {0} doesn't exists in local meta data.", entryName));
+            }
+
+            return _data.FileVersionIds[entryName];
         }
 
         public string GetFilePath()
@@ -119,7 +163,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public void SetProductKey(string productKey)
         {
             _data.ProductKey = productKey;
-            
+
             SaveData();
         }
 
@@ -130,66 +174,107 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void SaveData()
         {
-            DebugLogger.Log("Saving.");
+            _logger.LogDebug(string.Format("Saving data to {0}", _filePath));
 
+            var fileDirPath = Path.GetDirectoryName(_filePath);
+            if (fileDirPath != null)
+            {
+                Directory.CreateDirectory(fileDirPath);
+            }
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(_data, Formatting.None));
+
+            _logger.LogDebug("Data saved.");
         }
 
         private void LoadData()
         {
-            DebugLogger.Log("Loading.");
+            _logger.LogDebug("Loading data...");
 
+            _logger.LogDebug("Checking whether data file exists...");
+            _logger.LogTrace("filePath = " + _filePath);
             if (!File.Exists(_filePath))
             {
+                _logger.LogDebug("Data file doesn't exist. Chechking whether deprecated data file exists...");
+                _logger.LogTrace("deprecatedFilePath = " + _deprecatedFilePath);
                 if (File.Exists(_deprecatedFilePath))
                 {
+                    _logger.LogDebug("Deprecated data file exists. Moving it to a new location...");
                     File.Move(_deprecatedFilePath, _filePath);
-                }
-            }
+                    _logger.LogDebug("Deprecated data file moved.");
 
-            if (TryLoadDataFromFile())
-            {
-                DebugLogger.Log("Loaded from file.");
+                    if (TryLoadDataFromFile())
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    _logger.LogDebug("Deprecated data file doesn't exist.");
+                }
             }
             else
             {
-                DebugLogger.Log("Cannot load from file.");
+                _logger.LogDebug("Data file exists.");
 
-                LoadEmptyData();
+                if (TryLoadDataFromFile())
+                {
+                    return;
+                }
             }
+
+            LoadEmptyData();
         }
 
         private void LoadEmptyData()
         {
-            _data = JsonConvert.DeserializeObject<Data>("{}"); // Json Deserializer will fill default property values defined in struct
+            _logger.LogDebug("Loading empty data...");
+
+            _data = JsonConvert
+                .DeserializeObject<Data>("{}"); // Json Deserializer will fill default property values defined in struct
             _data.FileVersionIds = new Dictionary<string, int>();
+
+            _logger.LogDebug("Empty data loaded.");
         }
 
+        //TODO: Change from "TryXXXXX" method to method that throws exceptions.
         private bool TryLoadDataFromFile()
         {
-            DebugLogger.Log("Trying to load from file.");
-
-            if (!File.Exists(_filePath)) return false;
-
-            _data = new Data();
-
             try
             {
-                _data = JsonConvert.DeserializeObject<Data>(File.ReadAllText(_filePath));
+                _logger.LogDebug("Trying to load data from file...");
 
-#if UNITY_5_3_OR_NEWER // LEGACY: fill productKey from unity prefs and remove it
-                if (string.IsNullOrEmpty(_data.ProductKey) 
+                //TODO: Assert that file exists.
+
+                _data = new Data();
+
+                _logger.LogDebug("Loading content from file...");
+                var fileContent = File.ReadAllText(_filePath);
+                _logger.LogDebug("File content loaded.");
+                _logger.LogTrace("fileContent = " + fileContent);
+
+                _logger.LogDebug("Deserializing data...");
+                _data = JsonConvert.DeserializeObject<Data>(fileContent);
+                _logger.LogDebug("Data deserialized.");
+
+                if (string.IsNullOrEmpty(_data.ProductKey)
                     && UnityEngine.PlayerPrefs.HasKey(DeprecatedCachePatchKitKey))
                 {
+                    _logger.LogDebug("Retrieving deprecated product key from player prefs...");
+                    _logger.LogTrace("deprecatedCachePatchKitKey = " + DeprecatedCachePatchKitKey);
                     _data.ProductKey = UnityEngine.PlayerPrefs.GetString(DeprecatedCachePatchKitKey);
                     UnityEngine.PlayerPrefs.DeleteKey(DeprecatedCachePatchKitKey);
+                    _logger.LogDebug("Product key retrieved and deleted from player prefs.");
+                    _logger.LogDebug(_data.ProductKey);
                 }
-#endif
+
+                _logger.LogDebug("Data loaded from file.");
+
                 return true;
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                DebugLogger.LogException(exception);
+                //TODO: Check what exceptions are reasonable to be caught here.
+                _logger.LogWarning("Failed to load data from file.", e);
 
                 return false;
             }

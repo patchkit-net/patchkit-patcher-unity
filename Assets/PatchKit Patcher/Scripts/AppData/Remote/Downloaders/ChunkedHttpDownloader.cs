@@ -160,6 +160,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     {
                         fileStream.Write(bytes, 0, length);
 
+                        downloadedBytes += length;
+
                         if (stopwatch.ElapsedMilliseconds > downloadStatusLogInterval)
                         {
                             stopwatch.Reset();

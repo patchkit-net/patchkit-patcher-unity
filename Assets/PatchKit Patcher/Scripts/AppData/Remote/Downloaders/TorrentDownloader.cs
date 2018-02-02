@@ -62,6 +62,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 using (var tempDir = new TemporaryDirectory(DestinationDirectoryPath))
                 {
+                    _logger.LogTrace("tempDir = " + tempDir.Path);
+
                     using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
                     {
                         torrentClient.AddTorrent(_torrentFilePath, tempDir.Path, cancellationToken);
