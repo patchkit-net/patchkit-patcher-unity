@@ -129,14 +129,14 @@ namespace PatchKit.Unity.Patcher
             return LocalMetaData.GetEntryVersionId(LocalMetaData.GetRegisteredEntries()[0]);
         }
 
-        public int GetLatestVersionId()
+        public int GetLatestVersionId(bool retryRequests = true)
         {
             if (_overrideLatestVersionId > 0)
             {
                 return _overrideLatestVersionId;
             }
 
-            return RemoteMetaData.GetLatestVersionId();
+            return RemoteMetaData.GetLatestVersionId(retryRequests);
         }
 
         private static ILocalDirectory CreateDefaultLocalDirectory(string appDataPath)
