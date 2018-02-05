@@ -72,7 +72,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             {
                 HttpClient = new UnityHttpClient(),
                 RequestTimeoutCalculator = requestTimeoutCalculator,
-                RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
                 Logger = PatcherLogManager.DefaultLogger
             };
         }
