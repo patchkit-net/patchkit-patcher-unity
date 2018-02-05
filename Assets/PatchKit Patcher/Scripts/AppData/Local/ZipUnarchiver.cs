@@ -43,19 +43,19 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 zip.Password = _password;
 
-                int entry = 0;
-
-                OnUnarchiveProgressChanged(null, false, 0, zip.Count, 0.0);
+                int entry = 1;
 
                 foreach (var zipEntry in zip)
                 {
+                    OnUnarchiveProgressChanged(zipEntry.FileName, !zipEntry.IsDirectory, entry, zip.Count, 0.0);
+
                     cancellationToken.ThrowIfCancellationRequested();
 
                     UnarchiveEntry(zipEntry);
 
+                    OnUnarchiveProgressChanged(zipEntry.FileName, !zipEntry.IsDirectory, entry, zip.Count, 1.0);
+                    
                     entry++;
-
-                    OnUnarchiveProgressChanged(zipEntry.FileName, !zipEntry.FileName.EndsWith("/"), entry, zip.Count, 1.0);
                 }
             }
         }
@@ -69,7 +69,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
         {
-            if (UnarchiveProgressChanged != null) UnarchiveProgressChanged(name, isFile, entry, amount, entryProgress);
+            var handler = UnarchiveProgressChanged;
+            if (handler != null)
+            {
+                handler(name, isFile, entry, amount, entryProgress);
+            }
         }
     }
 }

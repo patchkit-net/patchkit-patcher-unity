@@ -78,8 +78,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Unarchive(CancellationToken cancellationToken)
         {
-            OnUnarchiveProgressChanged(null, false, 0, _metaData.Files.Length, 0.0);
-
             int entry = 1;
             
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
@@ -95,7 +93,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     Unpack(file, progress =>
                     {
                         OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == Pack1Meta.RegularFileType, currentEntry, _metaData.Files.Length, progress);
-                    });
+                    }, cancellationToken);
                 }
                 else
                 {
@@ -118,7 +116,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 throw new ArgumentOutOfRangeException("file", file, null);
             }
 
-            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress), destinationDirPath);
+            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress), cancellationToken, destinationDirPath);
 
             OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 1.0);
         }
@@ -138,12 +136,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return file.Offset >= _range.Start && file.Offset + file.Size <= _range.End;
         }
 
-        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, string destinationDirPath = null)
+        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
             switch (file.Type)
             {
                 case Pack1Meta.RegularFileType:
-                    UnpackRegularFile(file, progress, destinationDirPath);
+                    UnpackRegularFile(file, progress, cancellationToken, destinationDirPath);
                     break;
                 case Pack1Meta.DirectoryFileType:
                     progress(0.0);
@@ -178,7 +176,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // TODO: how to create a symlink?
         }
 
-        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, string destinationDirPath = null)
+        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
             string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, file.Name + _suffix);
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
@@ -202,7 +200,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     using (var target = new FileStream(destPath, FileMode.Create))
                     {
-                        ExtractFileFromStream(limitedStream, target, file, decryptor, onProgress);
+                        ExtractFileFromStream(limitedStream, target, file, decryptor, onProgress, cancellationToken);
                     }
 
                     if (Platform.IsPosix())
@@ -220,7 +218,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Stream targetStream,
             Pack1Meta.FileEntry file,
             ICryptoTransform decryptor,
-            Action<double> onProgress)
+            Action<double> onProgress,
+            CancellationToken cancellationToken)
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
@@ -232,6 +231,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     int count;
                     while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         targetStream.Write(buffer, 0, count);
                         bytesProcessed += count;
                         onProgress(bytesProcessed / (double) file.Size.Value);

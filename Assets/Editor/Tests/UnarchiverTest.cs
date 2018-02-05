@@ -29,8 +29,7 @@ class UnarchiverTest
         var sourceFileInfo = new FileInfo(sourceFilePath);
         var fileInfo = new FileInfo(filePath);
 
-        Assert.AreEqual(sourceFileInfo.Length, fileInfo.Length,
-            string.Format("File size is different for {0}", sourceFilePath));
+        Assert.That(sourceFileInfo.Length, Is.EqualTo(fileInfo.Length));
     }
 
     private void CheckConsistency(string sourceDirPath, string dirPath)
@@ -39,15 +38,13 @@ class UnarchiverTest
 
         foreach (var file in sourceDirInfo.GetFiles("*", SearchOption.TopDirectoryOnly))
         {
-            Assert.IsTrue(File.Exists(Path.Combine(dirPath, file.Name)),
-                string.Format("Missing file {0} in extracted directory.", file.FullName));
+            Assert.That(File.Exists(Path.Combine(dirPath, file.Name)));
             CheckFileConsistency(Path.Combine(sourceDirPath, file.Name), Path.Combine(dirPath, file.Name));
         }
 
         foreach (var dir in sourceDirInfo.GetDirectories("*", SearchOption.TopDirectoryOnly))
         {
-            Assert.IsTrue(Directory.Exists(Path.Combine(dirPath, dir.Name)),
-                string.Format("Missing directory {0} in extracted directory.", dir.FullName));
+            Assert.That(Directory.Exists(Path.Combine(dirPath, dir.Name)));
             CheckConsistency(Path.Combine(sourceDirPath, dir.Name), Path.Combine(dirPath, dir.Name));
         }
     }
@@ -70,7 +67,7 @@ class UnarchiverTest
         CancellationTokenSource source = new CancellationTokenSource();
         source.Cancel();
 
-        Assert.Catch<OperationCanceledException>(() => unarchiver.Unarchive(source));
+        Assert.That(() => unarchiver.Unarchive(source), Throws.Exception.TypeOf<OperationCanceledException>());
     }
 
     [Test]
@@ -78,7 +75,7 @@ class UnarchiverTest
     {
         var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/corrupted-zip.zip"), _dirPath);
 
-        Assert.Catch<Exception>(() => unarchiver.Unarchive(CancellationToken.Empty));
+        Assert.That(() => unarchiver.Unarchive(CancellationToken.Empty), Throws.Exception);
     }
 
     [Test]
@@ -107,39 +104,42 @@ class UnarchiverTest
             {
                 lastAmount = amount;
             }
-            Assert.AreEqual(lastAmount, amount, "Amount of extracted files cannot change during the operation.");
+            else
+            {
+                Assert.That(amount, Is.EqualTo(lastAmount.Value));
+            }
 
             if (lastEntry.HasValue)
             {
-                Assert.AreEqual(lastEntry + 1, entry, "Entries are not following each other.");
+                Assert.That(entry, Is.GreaterThanOrEqualTo(lastEntry.Value));
             }
 
             lastEntry = entry;
 
-            if (entry == 0)
+            Assert.That(entry, Is.GreaterThan(0));
+
+            if (entryProgress == 1.0)
             {
-                Assert.IsNull(name);
-                Assert.AreEqual(0.0, entryProgress);
-            }
-            else if (isFile)
-            {
-                string filePath = Path.Combine(_dirPath, name);
-                Assert.IsTrue(File.Exists(filePath), string.Format("File doesn't exist - {0}", filePath));
-            }
-            else
-            {
-                string dirPath = Path.Combine(_dirPath, name);
-                Assert.IsTrue(Directory.Exists(dirPath), string.Format("Directory doesn't exist - {0}", dirPath));
+                if (isFile)
+                {
+                    string filePath = Path.Combine(_dirPath, name);
+                    Assert.That(File.Exists(filePath));
+                }
+                else
+                {
+                    string dirPath = Path.Combine(_dirPath, name);
+                    Assert.That(Directory.Exists(dirPath));
+                }
             }
 
-            Assert.GreaterOrEqual(entryProgress, 0.0);
-            Assert.LessOrEqual(entryProgress, 1.0);
+            Assert.That(entryProgress, Is.GreaterThanOrEqualTo(0.0));
+            Assert.That(entryProgress, Is.LessThanOrEqualTo(1.0));
         };
 
         unarchiver.Unarchive(CancellationToken.Empty);
 
-        Assert.IsNotNull(lastAmount);
-        Assert.IsNotNull(lastEntry);
-        Assert.AreEqual(lastAmount, lastEntry, "Last entry must be equal to amount.");
+        Assert.That(lastAmount, Is.Not.Null);
+        Assert.That(lastEntry, Is.Not.Null);
+        Assert.That(lastEntry.Value, Is.EqualTo(lastAmount.Value));
     }
 }

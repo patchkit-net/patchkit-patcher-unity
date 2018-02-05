@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
+- Skipping patches for files that content remained unchanged in newer version (during diff installation)
 - Support for partial pack1 processing
 
 ### Changed
