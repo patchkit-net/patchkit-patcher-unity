@@ -7,7 +7,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         /// <summary>
         /// Returns latest version id.
         /// </summary>
-        int GetLatestVersionId();
+        int GetLatestVersionId(bool retryRequests = true);
 
         /// <summary>
         /// Returns app info.
