@@ -75,6 +75,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 context.App.TemporaryDirectory);
         }
 
+        public IRepairContentCommand CreateRepairContentCommand(int versionId, AppUpdaterContext context)
+        {
+            return null;
+        }
+
         public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context,
                 bool isCheckingHash = true, bool isCheckingSize = true)
         {
