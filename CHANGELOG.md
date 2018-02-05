@@ -14,10 +14,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update API servers configuration
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
 
-### Fixed
-- Freeze in case that license server wasn't available
-- Freeze at start when API server wasn't available
-
 ## [3.9.0]
 ### Added
 - Add support for download speed unit parameter from application info
