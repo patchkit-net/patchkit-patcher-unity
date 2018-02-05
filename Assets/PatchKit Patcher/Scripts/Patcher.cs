@@ -764,7 +764,7 @@ namespace PatchKit.Unity.Patcher
             _state.Value = PatcherState.UpdatingApp;
 
             _appInfo.Value = _app.RemoteMetaData.GetAppInfo();
-            _remoteVersionId.Value = _app.GetLatestVersionId();
+            _remoteVersionId.Value = _app.GetLatestVersionId(false);
             if (_app.IsInstalled())
             {
                 _localVersionId.Value = _app.GetInstalledVersionId();

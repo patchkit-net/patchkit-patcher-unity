@@ -12,6 +12,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RemoteMetaData));
 
         private readonly string _appSecret;
+        private readonly MainApiConnection _mainApiConnectionWithoutRetry;
         private readonly MainApiConnection _mainApiConnection;
         private readonly KeysApiConnection _keysApiConnection;
 
@@ -47,6 +48,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 Logger = PatcherLogManager.DefaultLogger
             };
 
+            _mainApiConnectionWithoutRetry = new MainApiConnection(mainSettings)
+            {
+                HttpClient = new UnityHttpClient(),
+                RequestTimeoutCalculator = requestTimeoutCalculator,
+                Logger = PatcherLogManager.DefaultLogger
+            };
+
             var keysSettings = Settings.GetKeysApiConnectionSettings();
 
             string overrideKeysUrl;
@@ -67,13 +75,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
                 Logger = PatcherLogManager.DefaultLogger
             };
-
         }
 
-        public int GetLatestVersionId()
+        public int GetLatestVersionId(bool retryRequests = true)
         {
             DebugLogger.Log("Getting latest version id.");
-            return _mainApiConnection.GetAppLatestAppVersionId(_appSecret).Id;
+            var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
+            return m.GetAppLatestAppVersionId(_appSecret).Id;
         }
 
         public Api.Models.Main.App GetAppInfo()
