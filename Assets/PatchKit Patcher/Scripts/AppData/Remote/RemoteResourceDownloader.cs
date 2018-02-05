@@ -6,6 +6,7 @@ using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using ILogger = PatchKit.Logging.ILogger;
+using BytesRange = PatchKit.Network.BytesRange;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
@@ -136,6 +137,21 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private bool AreMetaAvailable()
         {
             return _resource.HasMetaUrls();
+        }
+
+        public void DownloadPartial(BytesRange range, CancellationToken cancellationToken)
+        {
+            _logger.LogDebug("Downloading partial resource with chunked HTTP...");
+            _logger.LogTrace(string.Format("Byte range is {0}-{1}", range.Start, range.End));
+
+            var downloader = _createNewChunkedHttpDownloader(_destinationFilePath, _resource.ResourceUrls,
+                _resource.ChunksData, _resource.Size);
+
+            downloader.SetRange(range);
+            downloader.DownloadProgressChanged += OnDownloadProgressChanged;
+            downloader.Download(cancellationToken);
+
+            _logger.LogDebug("Partial resource has been downloaded with chunked HTTP.");
         }
 
         public void Download(CancellationToken cancellationToken)

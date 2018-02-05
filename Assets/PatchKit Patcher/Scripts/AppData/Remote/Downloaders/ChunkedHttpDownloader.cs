@@ -43,6 +43,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private bool _downloadHasBeenCalled;
 
+        private BytesRange _range = new BytesRange(0, -1);
+
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
         public ChunkedHttpDownloader([NotNull] string destinationFilePath, [NotNull] ResourceUrl[] urls, ChunksData chunksData,
@@ -70,6 +72,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             return new ChunkedFileStream(_destinationFilePath, _size, _chunksData,
                 HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile);
+        }
+
+        public void SetRange(BytesRange range)
+        {
+            _range = range;
         }
 
         public void Download(CancellationToken cancellationToken)
@@ -210,12 +217,23 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
         {
+            long size = _size;
+            if (_range.End != -1)
+            {
+                size = _range.End - _range.Start;
+            }
+            else
+            {
+                size = _size - _range.Start;
+            }
+
             long partSize = resourceUrl.PartSize == 0 ? _size : resourceUrl.PartSize;
 
-            int partCount = (int) (_size / partSize);
-            partCount += _size % partSize != 0 ? 1 : 0;
+            int startingPart = (int) (_range.Start / size);
+            int partCount = (int) (size / partSize);
+            partCount += size % partSize != 0 ? 1 : 0;
 
-            for (int i = 0; i < partCount; i++)
+            for (int i = startingPart; i < partCount; i++)
             {
                 string url = resourceUrl.Url;
                 if (i > 0)
