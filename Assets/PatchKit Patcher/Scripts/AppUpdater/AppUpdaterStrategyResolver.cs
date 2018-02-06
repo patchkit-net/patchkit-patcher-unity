@@ -17,6 +17,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context)
         {
+            return new ContentRepairStrategy(context);
+            
             switch (type)
             {
                 case StrategyType.Empty:
