@@ -560,7 +560,11 @@ namespace PatchKit.Unity.Patcher
 
                 _canRepairApp.Value = false; // not implemented
                 _canInstallApp.Value = !isInstalled;
+#if PATCHER_DISABLED_PATCHING
+                _canCheckForAppUpdates.Value = false;
+#else
                 _canCheckForAppUpdates.Value = isInstalled;
+#endif
                 _canStartApp.Value = isInstalled;
 
                 if (_canInstallApp.Value && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
@@ -762,6 +766,13 @@ namespace PatchKit.Unity.Patcher
         private void ThreadUpdateApp(CancellationToken cancellationToken)
         {
             _state.Value = PatcherState.UpdatingApp;
+
+#if PATCHER_DISABLED_PATCHING
+            if (_app.IsInstalled())
+            {
+                return;
+            }
+#endif
 
             _appInfo.Value = _app.RemoteMetaData.GetAppInfo();
             _remoteVersionId.Value = _app.GetLatestVersionId(false);
