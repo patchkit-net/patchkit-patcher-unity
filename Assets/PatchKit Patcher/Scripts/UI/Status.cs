@@ -1,4 +1,5 @@
 ﻿using System;
+using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,11 +36,23 @@ namespace PatchKit.Unity.Patcher.UI
                         break;
                 }
             }).AddTo(this);
-            
-            Patcher.Instance.UpdateAppStatusChanged += status =>
-            {
-                Text.text = status.IsDownloading ? "Downloading..." : status.Description;
-            };
+
+            var latestOperation = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
+
+            var latestOperationDescription = latestOperation.SelectSwitchOrDefault(s => s.Description, string.Empty);
+
+            latestOperation.CombineLatest(latestOperationDescription, (operation, desc) =>
+                {
+                    if (operation == null)
+                    {
+                        return string.Empty;
+                    }
+
+                    return desc;
+                })
+                .ObserveOnMainThread()
+                .SubscribeToText(Text)
+                .AddTo(this);
 
             Text.text = string.Empty;
         }

@@ -7,15 +7,15 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Patcher.UI.Dialogs;
 
 class ValidateLicenseCommandTest
 {
     private PatchKit.Logging.ILogger _logger;
     private PatchKit.IssueReporting.IIssueReporter _issueReporter;
-    private IStatusMonitor _statusMonitor;
+    private UpdaterStatus _updaterStatus;
     private MockCache _cache;
     
     [SetUp]
@@ -23,7 +23,7 @@ class ValidateLicenseCommandTest
     {
         _logger = Substitute.For<PatchKit.Logging.ILogger>();
         _issueReporter = Substitute.For<PatchKit.IssueReporting.IIssueReporter>();
-        _statusMonitor = Substitute.For<IStatusMonitor>();
+        _updaterStatus = new UpdaterStatus();
         _cache = new MockCache();
     }
     
@@ -52,7 +52,7 @@ class ValidateLicenseCommandTest
             });
 
             var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
-            command.Prepare(_statusMonitor);
+            command.Prepare(_updaterStatus);
             command.Execute(CancellationToken.Empty);
             
             if (i == 0)
@@ -86,7 +86,7 @@ class ValidateLicenseCommandTest
         var localMetaData = Substitute.For<ILocalMetaData>();
         
         var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
-        command.Prepare(_statusMonitor);
+        command.Prepare(_updaterStatus);
         command.Execute(CancellationToken.Empty);
 
         Assert.AreEqual(command.KeySecret, null);
@@ -131,7 +131,7 @@ class ValidateLicenseCommandTest
         });
 
         var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
-        command.Prepare(_statusMonitor);
+        command.Prepare(_updaterStatus);
         command.Execute(CancellationToken.Empty);
         
         licenseDialog.Received(1).Display(LicenseDialogMessageType.None);
@@ -175,7 +175,7 @@ class ValidateLicenseCommandTest
         var localMetaData = Substitute.For<ILocalMetaData>();
         
         var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
-        command.Prepare(_statusMonitor);
+        command.Prepare(_updaterStatus);
         command.Execute(CancellationToken.Empty);
         
         licenseDialog.Received(1).Display(LicenseDialogMessageType.None);

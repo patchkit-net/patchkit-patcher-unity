@@ -7,7 +7,6 @@ using PatchKit.Api;
 using PatchKit.Unity.Patcher.AppUpdater;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.UI.Dialogs;
@@ -16,6 +15,7 @@ using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -82,8 +82,6 @@ namespace PatchKit.Unity.Patcher
 
         private CancellationTokenSource _updateAppCancellationTokenSource;
 
-        public event Action<OverallStatus> UpdateAppStatusChanged;
-
         public ErrorDialog ErrorDialog;
 
         public string EditorAppSecret;
@@ -91,6 +89,13 @@ namespace PatchKit.Unity.Patcher
         public int EditorOverrideLatestVersionId;
 
         public PatcherConfiguration DefaultConfiguration;
+
+        private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
+
+        public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus
+        {
+            get { return _updaterStatus; }
+        }
 
         private readonly BoolReactiveProperty _canRepairApp = new BoolReactiveProperty(false);
 
@@ -769,15 +774,15 @@ namespace PatchKit.Unity.Patcher
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
                 var appUpdater = new AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration ) );
-                appUpdater.Context.StatusMonitor.OverallStatusChanged += OnUpdateAppStatusChanged;
 
                 try
                 {
+                    _updaterStatus.Value = appUpdater.Status;
                     appUpdater.Update(_updateAppCancellationTokenSource.Token);
                 }
                 finally
                 {
-                    appUpdater.Context.StatusMonitor.OverallStatusChanged -= OnUpdateAppStatusChanged;
+                    _updaterStatus.Value = null;
                     _updateAppCancellationTokenSource = null;
                 }
             }
@@ -837,14 +842,6 @@ namespace PatchKit.Unity.Patcher
 
                 return false;
             }
-        }
-
-        protected virtual void OnUpdateAppStatusChanged(OverallStatus obj)
-        {
-            UnityDispatcher.Invoke(() =>
-            {
-                if (UpdateAppStatusChanged != null) UpdateAppStatusChanged(obj);
-            });
         }
     }
 }

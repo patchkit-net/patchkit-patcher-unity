@@ -2,6 +2,7 @@
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Status;
@@ -26,8 +27,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalDirectory _localData;
         private readonly ILocalMetaData _localMetaData;
 
-        private IGeneralStatusReporter _copyFilesStatusReporter;
-        private IGeneralStatusReporter _unarchivePackageStatusReporter;
+        private OperationStatus _copyFilesStatus;
+        private OperationStatus _unarchivePackageStatus;
         private Pack1Meta _pack1Meta;
 
         public InstallContentCommand(string packagePath, string packageMetaPath, string packagePassword, int versionId,
@@ -51,21 +52,27 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _localMetaData = localMetaData;
         }
 
-        public override void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(UpdaterStatus status)
         {
-            base.Prepare(statusMonitor);
+            base.Prepare(status);
 
-            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(status, "statusMonitor");
 
             DebugLogger.Log("Preparing content installation.");
 
             _localData.PrepareForWriting();
 
-            double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionContentSummary);
-            _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
+            _copyFilesStatus = new OperationStatus
+            {
+                Weight = {Value = StatusWeightHelper.GetCopyContentFilesWeight(_versionContentSummary)}
+            };
+            status.RegisterOperation(_copyFilesStatus);
 
-            double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size);
-            _unarchivePackageStatusReporter = statusMonitor.CreateGeneralStatusReporter(unarchivePackageWeight);
+            _unarchivePackageStatus = new OperationStatus
+            {
+                Weight = {Value = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size)}
+            };
+            status.RegisterOperation(_unarchivePackageStatus);
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -97,36 +104,40 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 string usedSuffix;
                 IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
-                _unarchivePackageStatusReporter.OnProgressChanged(0.0, "Unarchiving package...");
-                
+                _unarchivePackageStatus.IsActive.Value = true;
+                _unarchivePackageStatus.Description.Value = "Unarchiving package...";
+                _unarchivePackageStatus.Progress.Value = 0.0;
+
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
                 {
                     var entryMinProgress = Mathf.Max(0, entry - 1) / (double) amount; // entry could be zero
                     var entryMaxProgress = entry / (double) amount;
 
-                    var progress = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
-
-                    _unarchivePackageStatusReporter.OnProgressChanged(progress, "Unarchiving package...");
+                    _unarchivePackageStatus.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
                 };
 
                 unarchiver.Unarchive(cancellationToken);
 
-                _unarchivePackageStatusReporter.OnProgressChanged(1.0, string.Empty);
+                _unarchivePackageStatus.Progress.Value = 1.0;
+                _unarchivePackageStatus.IsActive.Value = false;
 
                 DebugLogger.Log("Copying files.");
 
-                _copyFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
-                
+                _copyFilesStatus.IsActive.Value = true;
+                _copyFilesStatus.Description.Value = "Installing package...";
+                _copyFilesStatus.Progress.Value = 0.0;
+
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
                     InstallFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
 
-                    _copyFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionContentSummary.Files.Length, "Installing package...");
+                    _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
                 }
 
-                _copyFilesStatusReporter.OnProgressChanged(1.0, string.Empty);
+                _copyFilesStatus.Progress.Value = 1.0;
+                _copyFilesStatus.IsActive.Value = false;
             }
         }
 

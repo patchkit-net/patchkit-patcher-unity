@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Status;
+using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,29 +14,56 @@ namespace PatchKit.Unity.Patcher.UI
 
         private string _downloadSpeedUnit;
 
+        private readonly DownloadSpeedCalculator _downloadSpeedCalculator = new DownloadSpeedCalculator();
+
         private void Start()
         {
-            Patcher.Instance.UpdateAppStatusChanged += status =>
+            var status = Patcher.Instance.UpdaterStatus
+                .SelectSwitchOrNull(u => u.LatestActiveOperation)
+                .Select(s => s as IReadOnlyDownloadStatus);
+
+            var bytes = status.WhereNotNull().Select(s => (IObservable<long>) s.Bytes).Switch();
+            var totalBytes = status.WhereNotNull().Select(s => (IObservable<long>) s.TotalBytes).Switch();
+            var bytesPerSecond = bytes.Select(b =>
             {
-                string speed = GetDownloadSpeedFormated(status);
-                string eta = status.DownloadBytes > 0 && status.DownloadBytes < status.DownloadTotalBytes && status.DownloadBytesPerSecond > 0.0
-                    ? " ready in " + GetRemainingTimeFormated(GetRemainingTime(status))
+                _downloadSpeedCalculator.AddSample(b, DateTime.Now);
+                return _downloadSpeedCalculator.BytesPerSecond;
+            });
+            var remainingTime = bytes.CombineLatest<long, long, double, double?>(totalBytes, bytesPerSecond, GetRemainingTime);
+
+            status.Subscribe(s =>
+            {
+                _downloadSpeedCalculator.Restart(DateTime.Now);
+            }).AddTo(this);
+
+            var downloadSpeedUnit = Patcher.Instance.AppInfo.Select(a => a.PatcherDownloadSpeedUnit);
+
+            var statusText = bytesPerSecond.CombineLatest(downloadSpeedUnit, remainingTime, (speed, speedUnit, eta) =>
+            {
+                string speedText = GetDownloadSpeedFormated(speedUnit);
+                string etaText = eta.HasValue
+                    ? " ready in " + GetRemainingTimeFormated(eta.Value)
                     : string.Empty;
 
-                Text.text = status.IsDownloading ? speed + eta : string.Empty;
-            };
+                return speedText + etaText;
+            });
 
-            Patcher.Instance.AppInfo.Subscribe(app => { _downloadSpeedUnit = app.PatcherDownloadSpeedUnit; })
-                .AddTo(this);
+            status.CombineLatest(statusText, (s, t) =>
+            {
+                if (s == null)
+                {
+                    return string.Empty;
+                }
 
-            Text.text = string.Empty;
+                return t;
+            }).ObserveOnMainThread().SubscribeToText(Text).AddTo(this);
         }
 
-        private string GetDownloadSpeedFormated(OverallStatus status)
+        private string GetDownloadSpeedFormated(string downloadSpeedUnit)
         {
-            double kbPerSecond = status.DownloadBytesPerSecond / 1024.0;
+            double kbPerSecond = _downloadSpeedCalculator.BytesPerSecond / 1024.0;
 
-            switch (_downloadSpeedUnit)
+            switch (downloadSpeedUnit)
             {
                 case "kilobytes":
                     return FormatDownloadSpeedKilobytes(kbPerSecond);
@@ -65,13 +93,24 @@ namespace PatchKit.Unity.Patcher.UI
             return s.ToString("#,#0.0");
         }
 
-        private float GetRemainingTime(OverallStatus status)
+        private double? GetRemainingTime(long bytes, long totalBytes, double bytesPerSecond)
         {
-            float remainingBytes = status.DownloadTotalBytes - status.DownloadBytes;
-            return remainingBytes / (float) status.DownloadBytesPerSecond;
+            if (bytesPerSecond <= 0.0)
+            {
+                return null;
+            }
+
+            double remainingBytes = totalBytes - bytes;
+
+            if (remainingBytes <= 0)
+            {
+                return null;
+            }
+
+            return remainingBytes / bytesPerSecond;
         }
 
-        private string GetRemainingTimeFormated(float value)
+        private string GetRemainingTimeFormated(double value)
         {
             TimeSpan span = TimeSpan.FromSeconds(value);
             return span.Days > 0 ? string.Format("{0:0} day", span.Days) + GetPlural(span.Days) :

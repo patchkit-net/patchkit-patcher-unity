@@ -1,4 +1,5 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
+﻿using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -7,6 +8,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     {
         void Execute(CancellationToken cancellationToken);
 
-        void Prepare(IStatusMonitor statusMonitor);
+        void Prepare(UpdaterStatus status);
     }
 }
