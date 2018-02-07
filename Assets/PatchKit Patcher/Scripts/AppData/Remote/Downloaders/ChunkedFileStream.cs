@@ -38,6 +38,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private readonly byte[] _buffer;
         private int _bufferPos;
         private int _chunkIndex;
+
+        private int _startChunk;
+        private int _endChunk;
+
         private FileStream _fileStream;
 
         private bool _disposed;
@@ -64,25 +68,37 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public ChunkedFileStream([NotNull] string path, long fileSize, ChunksData chunksData,
             [NotNull] HashFunction hashFunction,
-            WorkFlags workFlags = WorkFlags.None)
+            WorkFlags workFlags = WorkFlags.None, int startChunk = 0, int endChunk = -1)
         {
             if (path == null) throw new ArgumentNullException("path");
             if (fileSize <= 0) throw new ArgumentOutOfRangeException("fileSize");
             if (hashFunction == null) throw new ArgumentNullException("hashFunction");
 
             _logger = PatcherLogManager.DefaultLogger;
-            _fileSize = fileSize;
             _chunksData = chunksData;
             _hashFunction = hashFunction;
 
             _buffer = new byte[_chunksData.ChunkSize];
 
             _logger.LogTrace("path = " + path);
-            _logger.LogTrace("fileSize = " + fileSize);
             _logger.LogTrace("chunksData.ChunkSize = " + chunksData.ChunkSize);
 
-            bool preservePreviousFile = (workFlags | WorkFlags.PreservePreviousFile) != 0;
+            _startChunk = startChunk;
+            _endChunk = endChunk;
 
+            if (endChunk == -1)
+            {
+                _fileSize = fileSize - (startChunk * chunksData.ChunkSize);
+            }
+            else
+            {
+                _fileSize = (endChunk - startChunk) * chunksData.ChunkSize;
+            }
+
+            _logger.LogTrace("fileSize = " + fileSize);
+
+            bool preservePreviousFile = (workFlags | WorkFlags.PreservePreviousFile) != 0;
+            
             _logger.LogTrace("preservePreviousFile = " + preservePreviousFile);
 
             if (preservePreviousFile)
@@ -100,7 +116,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 _logger.LogTrace("currentFileSize = " + currentFileSize);
 
                 _logger.LogDebug("Checking whether stream can append to current file...");
-
 
                 if (currentFileSize == 0)
                 {
@@ -193,7 +208,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private bool BufferedChunkValid()
         {
             byte[] bufferHash = _hashFunction(_buffer, 0, (int) Math.Min(_chunksData.ChunkSize, RemainingLength));
-            byte[] chunkHash = _chunksData.Chunks[_chunkIndex].Hash;
+            byte[] chunkHash = _chunksData.Chunks[_chunkIndex + _startChunk].Hash;
 
             return bufferHash.SequenceEqual(chunkHash);
         }

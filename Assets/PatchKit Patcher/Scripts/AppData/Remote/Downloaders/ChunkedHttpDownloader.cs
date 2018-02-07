@@ -76,8 +76,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 Directory.CreateDirectory(parentDirectory);
             }
 
+            int startChunk = (int) (CalculateContainingChunksRange(_range).Start / _chunksData.ChunkSize);
+            int endChunk = _range.End == -1 ? -1 : (int) (CalculateContainingChunksRange(_range).End / _chunksData.ChunkSize);
+
+            _logger.LogTrace(string.Format("Opening chunked file stream for chunks {0}-{1}", startChunk, endChunk));
             return new ChunkedFileStream(_destinationFilePath, _size, _chunksData,
-                HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile);
+                HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile, startChunk, endChunk);
         }
 
         public void SetRange(BytesRange range)
@@ -226,10 +230,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         public BytesRange CalculateContainingChunksRange(BytesRange range)
         {
             long chunkSize = _chunksData.ChunkSize;
-            long bottom = range.Start / chunkSize;
-            long top = range.End % chunkSize == 0 ? range.End : (range.End / chunkSize) + chunkSize;
+            long bottom = (range.Start / chunkSize) * chunkSize;
 
-            return new BytesRange(bottom, range.End == -1 ? range.End : top);
+            if (range.End == -1)
+            {
+                return new BytesRange(bottom, -1);
+            }
+
+            long top = (range.End / chunkSize) * chunkSize;
+
+            if (top < range.End)
+            {
+                top += chunkSize;
+            }
+
+            Assert.IsTrue(top >= range.End && bottom <= range.Start, "Effective range must contain the original range.");
+
+            _logger.LogTrace(string.Format("Original byte range is {0}-{1}", range.Start, range.End));
+            _logger.LogTrace(string.Format("Effective byte range is {0}-{1}", bottom, top));
+
+            return new BytesRange(bottom, top);
         }
 
         private IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
@@ -249,7 +269,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             long partSize = resourceUrl.PartSize;
 
             int startingPart = (int) (lowerBound / partSize);
-            int partCount = (int) (effectiveDataSize / partSize);
+            int partCount = (int) (effectiveDataSize / partSize); // Possible off-by-one error?
 
             for (int i = startingPart; i < partCount; i++)
             {
@@ -260,10 +280,17 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     url += "." + i;
                 }
 
-                long offset = Math.Max(currentOffset - partSize * i, 0);
-                if (offset < partSize)
+                long partBottom = i * partSize;
+                long partTop = (i+1) * partSize;
+
+                long localLowerBound = lowerBound < partBottom ? 0 : lowerBound - partBottom;
+                long localUpperBound = upperBound > partTop ? -1 : upperBound - partBottom;
+
+                long effectivePartSize = localUpperBound != -1 ? localUpperBound - localLowerBound : partSize - localLowerBound;
+
+                if (effectivePartSize > 0)
                 {
-                    yield return new DownloadJob(url, offset);
+                    yield return new DownloadJob(url, localLowerBound, localUpperBound);
                 }
             }
         }
