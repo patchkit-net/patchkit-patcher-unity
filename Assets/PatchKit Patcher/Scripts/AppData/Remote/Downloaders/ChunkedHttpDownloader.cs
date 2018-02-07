@@ -23,8 +23,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         private struct DownloadJob
         {
+            public DownloadJob(string url, long Start = 0, long End = -1)
+            {
+                Url = url;
+                Range = new BytesRange(Start, End);
+            }
+
             public string Url;
-            public long Offset;
+            public BytesRange Range;
         }
 
         private readonly ILogger _logger;
@@ -150,12 +156,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 foreach (var downloadJob in downloadJobQueue)
                 {
                     _logger.LogDebug(string.Format("Executing download job {0} with offest {1}", downloadJob.Url,
-                        downloadJob.Offset));
+                        downloadJob.Range.Start));
                     _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
                     _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
 
                     var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeoutCalculator.Timeout);
-                    baseHttpDownloader.SetBytesRange(new BytesRange(downloadJob.Offset, -1));
+                    baseHttpDownloader.SetBytesRange(downloadJob.Range);
 
                     const long downloadStatusLogInterval = 5000L;
                     var stopwatch = Stopwatch.StartNew();
@@ -217,23 +223,33 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
+        public BytesRange CalculateContainingChunksRange(BytesRange range)
+        {
+            long chunkSize = _chunksData.ChunkSize;
+            long bottom = range.Start / chunkSize;
+            long top = range.End % chunkSize == 0 ? range.End : (range.End / chunkSize) + chunkSize;
+
+            return new BytesRange(bottom, range.End == -1 ? range.End : top);
+        }
+
         private IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
         {
-            long size = _size;
-            if (_range.End != -1)
+            var effectiveRange = CalculateContainingChunksRange(_range);
+            long lowerBound = Math.Max(currentOffset, effectiveRange.Start);
+            long upperBound = effectiveRange.End;
+            long effectiveDataSize = upperBound - lowerBound;
+
+            if (resourceUrl.PartSize == 0)
             {
-                size = _range.End - _range.Start;
-            }
-            else
-            {
-                size = _size - _range.Start;
+                // No parts, return a single download job with specified lower and upper bounds
+                yield return new DownloadJob(resourceUrl.Url, lowerBound, upperBound);
+                yield break;
             }
 
-            long partSize = resourceUrl.PartSize == 0 ? _size : resourceUrl.PartSize;
+            long partSize = resourceUrl.PartSize;
 
-            int startingPart = (int) (_range.Start / size);
-            int partCount = (int) (size / partSize);
-            partCount += size % partSize != 0 ? 1 : 0;
+            int startingPart = (int) (lowerBound / partSize);
+            int partCount = (int) (effectiveDataSize / partSize);
 
             for (int i = startingPart; i < partCount; i++)
             {
@@ -247,7 +263,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 long offset = Math.Max(currentOffset - partSize * i, 0);
                 if (offset < partSize)
                 {
-                    yield return new DownloadJob {Url = url, Offset = offset};
+                    yield return new DownloadJob(url, offset);
                 }
             }
         }

@@ -63,6 +63,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     string packagePath = Path.Combine(tempDir.Path, ".pack" + Path.GetRandomFileName());
                     string unarchivePath = Path.Combine(tempDir.Path, Path.GetRandomFileName());
 
+                    if (!Directory.Exists(unarchivePath))
+                    {
+                        DirectoryOperations.CreateDirectory(unarchivePath);
+                    }
+
                     var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls, _resource.ChunksData, _resource.Size);
 
                     long start = entry.Offset.GetValueOrDefault();
@@ -71,9 +76,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     var range = new Network.BytesRange(start, end);
 
                     downloader.SetRange(range);
-                    downloader.Download(cancellationToken);
+                    var effectiveRange  = downloader.CalculateContainingChunksRange(range);
 
-                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, "", range);
+                    try
+                    {
+                        _logger.LogDebug(string.Format("Trying to download package to fix {0} with range {1}-{2}", entry.Name, start, end));
+                        downloader.Download(cancellationToken);
+                    }
+                    catch(Exception e)
+                    {
+                        _logger.LogError("Failed", e);
+                        throw;
+                    }
+
+                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, "", effectiveRange);
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
 
                     EmplaceFile(Path.Combine(unarchivePath, entry.Name), Path.Combine(_localData.Path, entry.Name));

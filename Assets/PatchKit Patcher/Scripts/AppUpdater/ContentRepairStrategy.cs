@@ -60,6 +60,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             checkVersionIntegrityCommand.Prepare(_context.StatusMonitor);
             checkVersionIntegrityCommand.Execute(cancellationToken);
 
+            if (!resource.HasMetaUrls())
+            {
+                throw new ArgumentException("Cannot execute content repair strategy without meta files.");
+            }
+
             _logger.LogDebug("Downloading the meta file.");
             var downloader = new HttpDownloader(metaDestination, resource.GetMetaUrls());
             downloader.Download(cancellationToken);
@@ -67,17 +72,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var meta = Pack1Meta.ParseFromFile(metaDestination);
             var filesIntegrity = checkVersionIntegrityCommand.Results.Files;
 
-            var brokenFiles = meta.Files
-                .Where(f => f.Type == Pack1Meta.RegularFileType)
-                .Select(f => new 
-                {
-                    Details = f,
-                    Integrity = filesIntegrity.Single(fi => fi.FileName == f.Name).Status
-                })
-                .Where(entry => entry.Integrity != FileIntegrityStatus.Ok)
-                .ToList();
+            var brokenFiles = filesIntegrity
+                .Where(f => f.Status != FileIntegrityStatus.Ok)
+                .Select(integrity => meta.Files.Single(file => file.Name == integrity.FileName))
+                .Where(file => file.Type == Pack1Meta.RegularFileType)
+                .ToArray();
 
-            _logger.LogDebug(string.Format("Broken files count: {0}", brokenFiles.Count));
+            _logger.LogDebug(string.Format("Broken files count: {0}", brokenFiles.Length));
 
             // TODO: Move to command factory
             var packagePath = _context.App.DownloadDirectory.GetContentPackagePath(installedVersionId);
@@ -86,7 +87,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var repairCommand = new RepairFilesCommand(
                 resource, 
                 meta, 
-                brokenFiles.Select(f => f.Details).ToArray(),
+                brokenFiles,
                 packagePath,
                 packagePassword,
                 _context.App.LocalDirectory);
