@@ -85,7 +85,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                         if (!IsVersionIntegral(context))
                         {
-                            return StrategyType.Content;
+                            return StrategyType.ContentRepair;
                         }
                     }
 
