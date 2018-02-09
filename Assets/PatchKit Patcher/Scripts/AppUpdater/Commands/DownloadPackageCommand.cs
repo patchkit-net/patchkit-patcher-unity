@@ -17,7 +17,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private DownloadStatus _status;
 
-        public DownloadPackageCommand(RemoteResource resource, string destinationPackagePath, string destinationMetaPath, bool useTorrents)
+        public DownloadPackageCommand(RemoteResource resource, string destinationPackagePath,
+            string destinationMetaPath, bool useTorrents)
         {
             Checks.ArgumentValidRemoteResource(resource, "resource");
             Checks.ArgumentNotNullOrEmpty(destinationPackagePath, "destinationPackagePath");
@@ -43,9 +44,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DebugLogger.Log("Preparing package download.");
 
             _status = new DownloadStatus
-                {
-                    Weight = {Value = StatusWeightHelper.GetResourceDownloadWeight(_resource)}
-                };
+            {
+                Weight = {Value = StatusWeightHelper.GetResourceDownloadWeight(_resource)},
+                Description = {Value = "Downloading package..."}
+            };
             status.RegisterOperation(_status);
         }
 
@@ -61,10 +63,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource,
                 _useTorrents);
 
-            downloader.DownloadProgressChanged += bytes =>
-            {
-                _status.Bytes.Value = bytes;
-            };
+            downloader.DownloadProgressChanged += bytes => { _status.Bytes.Value = bytes; };
 
             downloader.Download(cancellationToken);
 

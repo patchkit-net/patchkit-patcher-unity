@@ -114,6 +114,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     var entryMaxProgress = entry / (double) amount;
 
                     _unarchivePackageStatus.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
+
+                    _unarchivePackageStatus.Description.Value = string.Format("Unarchiving package ({0}/{1})...", entry, amount);
                 };
 
                 unarchiver.Unarchive(cancellationToken);
@@ -124,7 +126,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Copying files.");
 
                 _copyFilesStatus.IsActive.Value = true;
-                _copyFilesStatus.Description.Value = "Installing package...";
+                _copyFilesStatus.Description.Value = "Installing...";
                 _copyFilesStatus.Progress.Value = 0.0;
 
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
@@ -134,6 +136,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     InstallFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
+                    _copyFilesStatus.Description.Value = string.Format("Installing ({0}/{1})...", i + 1, _versionContentSummary.Files.Length);
                 }
 
                 _copyFilesStatus.Progress.Value = 1.0;

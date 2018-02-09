@@ -11,7 +11,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class CheckVersionIntegrityCommand : BaseAppUpdaterCommand, ICheckVersionIntegrityCommand
     {
-
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CheckVersionIntegrityCommand));
 
         private readonly int _versionId;
@@ -52,7 +51,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _status = new OperationStatus
             {
-                Weight = {Value = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary)}
+                Weight = {Value = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary)},
+                Description = {Value = "Checking version integrity..."}
             };
             status.RegisterOperation(_status);
         }
@@ -71,8 +71,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 files[i] = CheckFile(_versionSummary.Files[i]);
 
-                _status.Progress.Value = (i + 1)/(double)_versionSummary.Files.Length;
-                _status.Description.Value = "Checking version integrity...";
+                _status.Progress.Value = (i + 1) / (double) _versionSummary.Files.Length;
             }
 
             Results = new VersionIntegrity(files);
