@@ -21,20 +21,10 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
-            {
-                if (state != PatcherState.UpdatingApp)
-                {
-                    SetProgress(1.0);
-                }
-            }).AddTo(this);
-
-            Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(s => s.Progress, 0.0)
+            Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(s => s.Progress, 1.0)
                 .ObserveOnMainThread()
                 .Subscribe(SetProgress)
                 .AddTo(this);
-
-            SetProgress(1.0);
         }
     }
 }

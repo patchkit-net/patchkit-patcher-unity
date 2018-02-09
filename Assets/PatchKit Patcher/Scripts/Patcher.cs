@@ -566,6 +566,7 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.Log("Automatically deciding to install app.");
                     _hasAutomaticallyInstalledApp = true;
+                    _hasAutomaticallyCheckedForAppUpdate = true;
                     _userDecision = UserDecision.InstallAppAutomatically;
                     return;
                 }
@@ -574,6 +575,7 @@ namespace PatchKit.Unity.Patcher
                     !_hasAutomaticallyCheckedForAppUpdate)
                 {
                     DebugLogger.Log("Automatically deciding to check for app updates.");
+                    _hasAutomaticallyInstalledApp = true;
                     _hasAutomaticallyCheckedForAppUpdate = true;
                     _userDecision = UserDecision.CheckForAppUpdatesAutomatically;
                     return;

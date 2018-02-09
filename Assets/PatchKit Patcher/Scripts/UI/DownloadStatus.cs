@@ -12,30 +12,18 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
-            {
-                if (state != PatcherState.UpdatingApp)
-                {
-                    Text.text = string.Empty;
-                }
-            }).AddTo(this);
-
-            var status = Patcher.Instance.UpdaterStatus
+            var downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
 
-            var bytes = status.WhereNotNull().Select(s => (IObservable<long>) s.Bytes).Switch();
-            var totalBytes = status.WhereNotNull().Select(s => (IObservable<long>) s.TotalBytes).Switch();
-
-            var text = status.CombineLatest(bytes, totalBytes,
-                (s, b, t) =>
-                    s == null
-                        ? string.Empty
-                        : string.Format("{0:0.0} MB of {1:0.0} MB", b / 1024.0 / 1024.0, t / 1024.0 / 1024.0));
+            var text = downloadStatus.SelectSwitchOrDefault(status =>
+            {
+                return status.Bytes.CombineLatest(status.TotalBytes,
+                    (bytes, totalBytes) => string.Format("{0:0.0} MB of {1:0.0} MB", bytes / 1024.0 / 1024.0,
+                        totalBytes / 1024.0 / 1024.0));
+            }, string.Empty);
 
             text.ObserveOnMainThread().SubscribeToText(Text).AddTo(this);
-
-            Text.text = string.Empty;
         }
     }
 }

@@ -12,49 +12,29 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
+            var operationStatus = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
+
+            var statusDescription = operationStatus.SelectSwitchOrDefault(s => s.Description, string.Empty);
+
+            Patcher.Instance.State.CombineLatest(statusDescription, (state, description) =>
             {
                 switch (state)
                 {
                     case PatcherState.None:
-                        Text.text = string.Empty;
-                        break;
-                    case PatcherState.LoadingPatcherData:
-                        Text.text = "Loading data...";
-                        break;
-                    case PatcherState.LoadingPatcherConfiguration:
-                        Text.text = "Loading configuration...";
-                        break;
-                    case PatcherState.WaitingForUserDecision:
-                        Text.text = string.Empty;
-                        break;
-                    case PatcherState.StartingApp:
-                        Text.text = "Starting application...";
-                        break;
-                    case PatcherState.UpdatingApp:
-                        // Managed by event below
-                        break;
-                }
-            }).AddTo(this);
-
-            var latestOperation = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
-
-            var latestOperationDescription = latestOperation.SelectSwitchOrDefault(s => s.Description, string.Empty);
-
-            latestOperation.CombineLatest(latestOperationDescription, (operation, desc) =>
-                {
-                    if (operation == null)
-                    {
                         return string.Empty;
-                    }
-
-                    return desc;
-                })
-                .ObserveOnMainThread()
-                .SubscribeToText(Text)
-                .AddTo(this);
-
-            Text.text = string.Empty;
+                    case PatcherState.LoadingPatcherData:
+                        return "Loading data...";
+                    case PatcherState.LoadingPatcherConfiguration:
+                        return "Loading configuration...";
+                    case PatcherState.WaitingForUserDecision:
+                        return string.Empty;
+                    case PatcherState.StartingApp:
+                        return "Starting application...";
+                    case PatcherState.UpdatingApp:
+                        return description;
+                }
+                return string.Empty;
+            }).ObserveOnMainThread().SubscribeToText(Text).AddTo(this);
         }
     }
 }

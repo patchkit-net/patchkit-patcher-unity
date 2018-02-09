@@ -33,6 +33,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
                 UpdateProgress();
             }).AddTo(subscriptions);
 
+            operation.Weight.Subscribe(_ =>
+            {
+                UpdateProgress();
+            }).AddTo(subscriptions);
+
             _registeredOperations.Add(operation, subscriptions);
         }
 
@@ -50,7 +55,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             var progressSum = _registeredOperations.Keys.Sum(o => o.Progress.Value * o.Weight.Value);
             var weightSum = _registeredOperations.Keys.Sum(o => o.Weight.Value);
 
-            _progress.Value = progressSum / weightSum;
+            _progress.Value = weightSum > 0.0 ? progressSum / weightSum : 0.0;
         }
 
 

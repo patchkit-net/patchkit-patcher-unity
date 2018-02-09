@@ -6,5 +6,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
     {
         IReadOnlyReactiveProperty<long> Bytes { get; }
         IReadOnlyReactiveProperty<long> TotalBytes { get; }
+        IReadOnlyReactiveProperty<double> BytesPerSecond { get; }
     }
 }
