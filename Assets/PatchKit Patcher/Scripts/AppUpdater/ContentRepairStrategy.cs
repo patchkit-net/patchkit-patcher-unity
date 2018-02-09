@@ -72,25 +72,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var meta = Pack1Meta.ParseFromFile(metaDestination);
             var filesIntegrity = checkVersionIntegrityCommand.Results.Files;
 
+            var invalidhHashCount = filesIntegrity.Where(f => f.Status == FileIntegrityStatus.InvalidHash).Count();
+            var invalidSizeCount = filesIntegrity.Where(f => f.Status == FileIntegrityStatus.InvalidSize).Count();
+
             var brokenFiles = filesIntegrity
-                .Where(f => f.Status != FileIntegrityStatus.Ok)
-                .Select(integrity => meta.Files.Single(file => file.Name == integrity.FileName))
+                .Where(f => f.Status == FileIntegrityStatus.InvalidHash || f.Status == FileIntegrityStatus.InvalidSize)
+                .Select(integrity => meta.Files.SingleOrDefault(file => file.Name == integrity.FileName))
                 .Where(file => file.Type == Pack1Meta.RegularFileType)
                 .ToArray();
 
             _logger.LogDebug(string.Format("Broken files count: {0}", brokenFiles.Length));
-
-            // TODO: Move to command factory
-            var packagePath = _context.App.DownloadDirectory.GetContentPackagePath(installedVersionId);
-            var packagePassword = _context.App.RemoteData.GetContentPackageResourcePassword(installedVersionId);
-
-            var repairCommand = new RepairFilesCommand(
-                resource, 
-                meta, 
+            
+            var repairCommand = commandFactory.CreateRepairFilesCommand(
+                installedVersionId,
+                _context,
+                resource,
                 brokenFiles,
-                packagePath,
-                packagePassword,
-                _context.App.LocalDirectory);
+                meta);
 
             repairCommand.Prepare(_context.StatusMonitor);
             repairCommand.Execute(cancellationToken);

@@ -27,6 +27,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     return new AppUpdaterContentStrategy(context);
                 case StrategyType.Diff:
                     return new AppUpdaterDiffStrategy(context);
+                case StrategyType.ContentRepair:
+                    return new ContentRepairStrategy(context);
                 default:
                     return new AppUpdaterContentStrategy(context);
             }
