@@ -254,13 +254,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
         {
+            _logger.LogDebug("Building download jobs.");
             var effectiveRange = CalculateContainingChunksRange(_range);
             long lowerBound = Math.Max(currentOffset, effectiveRange.Start);
-            long upperBound = effectiveRange.End;
-            long effectiveDataSize = upperBound - lowerBound;
+            long upperBound = effectiveRange.End != -1 ? effectiveRange.End - 1 : -1;
+            long effectiveDataSize = upperBound != -1 ? upperBound - lowerBound : _size - lowerBound;
 
             if (resourceUrl.PartSize == 0)
             {
+                _logger.LogDebug("No parts, returning a single download job");
                 // No parts, return a single download job with specified lower and upper bounds
                 yield return new DownloadJob(resourceUrl.Url, lowerBound, upperBound);
                 yield break;
@@ -269,7 +271,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             long partSize = resourceUrl.PartSize;
 
             int startingPart = (int) (lowerBound / partSize);
-            int partCount = (int) (effectiveDataSize / partSize); // Possible off-by-one error?
+            int partCount = (int) (effectiveDataSize / partSize) + 1;
+
+            _logger.LogTrace(string.Format("Effective data size is {0}, lower bound is {1}, upper bound is {2}", effectiveDataSize, lowerBound, upperBound));
+            _logger.LogTrace(string.Format("Parts are {0} bytes long, starting part is {1}, there will be {2} parts", partSize, startingPart, partCount));
 
             for (int i = startingPart; i < partCount; i++)
             {
@@ -281,12 +286,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 }
 
                 long partBottom = i * partSize;
-                long partTop = (i+1) * partSize;
+                long partTop = (i+1) * partSize - 1;
 
                 long localLowerBound = lowerBound < partBottom ? 0 : lowerBound - partBottom;
                 long localUpperBound = upperBound > partTop ? -1 : upperBound - partBottom;
 
-                long effectivePartSize = localUpperBound != -1 ? localUpperBound - localLowerBound : partSize - localLowerBound;
+                long effectivePartSize = localUpperBound != -1 ? (localUpperBound - localLowerBound) : (partSize - localLowerBound);
 
                 if (effectivePartSize > 0)
                 {
