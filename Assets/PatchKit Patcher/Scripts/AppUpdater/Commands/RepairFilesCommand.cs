@@ -60,6 +60,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 using (var tempDir = new TemporaryDirectory(_packagePath + string.Format("{0}_{1}_{2}", entry.Name, entry.Offset, entry.Size)))
                 {
+                    _logger.LogDebug(string.Format("Repairing the file {0}", entry.Name));
                     string packagePath = Path.Combine(tempDir.Path, ".pack" + Path.GetRandomFileName());
                     string unarchivePath = Path.Combine(tempDir.Path, Path.GetRandomFileName());
 
@@ -84,17 +85,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         _downloadStatusReporter.OnDownloadProgressChanged(downloadedBytes, totalData);
                     };
 
-                    try
-                    {
-                        _logger.LogDebug(string.Format("Trying to download package to fix {0} with range {1}-{2}", entry.Name, start, end));
-                        downloader.Download(cancellationToken);
-                    }
-                    catch(Exception e)
-                    {
-                        _logger.LogError("Failed", e);
-                        throw;
-                    }
+                    _logger.LogDebug(string.Format("Downloading the partial package with range {0}-{1}", start, end));
+                    downloader.Download(cancellationToken);
 
+                    _logger.LogDebug("Unarchiving the package.");
                     var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, "", effectiveRange);
                     unarchiver.UnarchiveProgressChanged += (name, isFile, unarchiveEntry, amount,  entryProgress) => {
                         _statusReporter.OnProgressChanged(entryProgress, string.Format("Unarchiving {0}", name));

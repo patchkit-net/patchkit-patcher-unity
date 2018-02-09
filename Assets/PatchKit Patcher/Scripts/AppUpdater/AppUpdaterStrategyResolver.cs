@@ -16,9 +16,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         }
 
         public IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context)
-        {
-            return new ContentRepairStrategy(context);
-            
+        {            
             switch (type)
             {
                 case StrategyType.Empty:
@@ -43,6 +41,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 case StrategyType.Content:
                     return StrategyType.None;
                 case StrategyType.Diff:
+                    return StrategyType.Content;
+                case StrategyType.ContentRepair:
                     return StrategyType.Content;
                 default:
                     return StrategyType.Content;
