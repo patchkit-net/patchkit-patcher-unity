@@ -12,17 +12,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 {
     public class ContentRepairStrategy: IAppUpdaterStrategy
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ContentRepairStrategy));
-
         private readonly AppUpdaterContext _context;
 
         private readonly ILogger _logger;
 
         public ContentRepairStrategy(AppUpdaterContext context)
         {
-            Checks.ArgumentNotNull(context, "context");
-
-            DebugLogger.LogConstructor();
+            Assert.IsNotNull(context, "Context is null");
 
             _context = context;
 
@@ -72,15 +68,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var meta = Pack1Meta.ParseFromFile(metaDestination);
             var filesIntegrity = checkVersionIntegrityCommand.Results.Files;
 
-            var invalidhHashCount = filesIntegrity.Where(f => f.Status == FileIntegrityStatus.InvalidHash).Count();
-            var invalidSizeCount = filesIntegrity.Where(f => f.Status == FileIntegrityStatus.InvalidSize).Count();
-
             var brokenFiles = filesIntegrity
+                // Filter only files with invalid size or hash
                 .Where(f => f.Status == FileIntegrityStatus.InvalidHash || f.Status == FileIntegrityStatus.InvalidSize)
+                // Map to file entires from meta
                 .Select(integrity => meta.Files.SingleOrDefault(file => file.Name == integrity.FileName))
+                // Filter only regular files
                 .Where(file => file.Type == Pack1Meta.RegularFileType)
                 .ToArray();
 
+            if (brokenFiles.Length == 0)
+            {
+                _logger.LogDebug("Nothing to repair.");
+                return;
+            }
             _logger.LogDebug(string.Format("Broken files count: {0}", brokenFiles.Length));
             
             var repairCommand = commandFactory.CreateRepairFilesCommand(

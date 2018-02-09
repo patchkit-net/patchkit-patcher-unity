@@ -13,7 +13,7 @@ using PatchKit.Unity.Patcher.Status;
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public interface IRepairFilesCommand : IAppUpdaterCommand
-    {    
+    {
     }
 
     public class RepairFilesCommand : BaseAppUpdaterCommand, IRepairFilesCommand
@@ -78,6 +78,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     downloader.SetRange(range);
                     var effectiveRange  = downloader.CalculateContainingChunksRange(range);
 
+                    long totalData = effectiveRange.End == -1 ? _resource.Size - effectiveRange.Start : effectiveRange.End - effectiveRange.Start;
+
+                    downloader.DownloadProgressChanged += downloadedBytes => {
+                        _downloadStatusReporter.OnDownloadProgressChanged(downloadedBytes, totalData);
+                    };
+
                     try
                     {
                         _logger.LogDebug(string.Format("Trying to download package to fix {0} with range {1}-{2}", entry.Name, start, end));
@@ -90,6 +96,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     }
 
                     var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, "", effectiveRange);
+                    unarchiver.UnarchiveProgressChanged += (name, isFile, unarchiveEntry, amount,  entryProgress) => {
+                        _statusReporter.OnProgressChanged(entryProgress, string.Format("Unarchiving {0}", name));
+                    };
+
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
 
                     EmplaceFile(Path.Combine(unarchivePath, entry.Name), Path.Combine(_localData.Path, entry.Name));
@@ -103,6 +113,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             double weight = StatusWeightHelper.GetRepairFilesWeight(_entries);
             _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
+
+            _downloadStatusReporter = statusMonitor.CreateDownloadStatusReporter(weight);
 
             _localData.PrepareForWriting();
         }
