@@ -246,9 +246,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             Assert.IsTrue(top >= range.End && bottom <= range.Start, "Effective range must contain the original range.");
 
-            _logger.LogTrace(string.Format("Original byte range is {0}-{1}", range.Start, range.End));
-            _logger.LogTrace(string.Format("Effective byte range is {0}-{1}", bottom, top));
-
             return new BytesRange(bottom, top);
         }
 
@@ -258,12 +255,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             var effectiveRange = CalculateContainingChunksRange(_range);
             long lowerBound = Math.Max(currentOffset, effectiveRange.Start);
             long upperBound = effectiveRange.End != -1 ? effectiveRange.End - 1 : -1;
-            long effectiveDataSize = upperBound != -1 ? upperBound - lowerBound : _size - lowerBound;
+            long effectiveDataSize = upperBound != -1 ? upperBound - lowerBound + 1 : _size - lowerBound;
 
             if (resourceUrl.PartSize == 0)
             {
                 _logger.LogDebug("No parts, returning a single download job");
-                // No parts, return a single download job with specified lower and upper bounds
                 yield return new DownloadJob(resourceUrl.Url, lowerBound, upperBound);
                 yield break;
             }
@@ -273,10 +269,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             int startingPart = (int) (lowerBound / partSize);
             int partCount = (int) (effectiveDataSize / partSize) + 1;
 
-            _logger.LogTrace(string.Format("Effective data size is {0}, lower bound is {1}, upper bound is {2}", effectiveDataSize, lowerBound, upperBound));
-            _logger.LogTrace(string.Format("Parts are {0} bytes long, starting part is {1}, there will be {2} parts", partSize, startingPart, partCount));
-
-            for (int i = startingPart; i < partCount; i++)
+            _logger.LogDebug(string.Format("Download jobs will be separated into {0} parts, starting at {1}.", partCount, startingPart));
+            for (int i = startingPart; i < startingPart + partCount; i++)
             {
                 string url = resourceUrl.Url;
                 if (i > 0)
