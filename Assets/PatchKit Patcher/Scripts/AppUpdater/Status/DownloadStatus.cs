@@ -1,5 +1,4 @@
 ﻿using System;
-using PatchKit.Unity.Patcher.Status;
 using UniRx;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Status

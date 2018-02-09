@@ -11,7 +11,6 @@ using PatchKit.Api;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 

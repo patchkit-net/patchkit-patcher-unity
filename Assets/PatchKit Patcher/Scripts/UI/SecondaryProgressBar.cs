@@ -1,10 +1,9 @@
-﻿using PatchKit.Unity.Patcher;
-using PatchKit.Unity.Utilities;
+﻿using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace PatchKit_Patcher.Scripts.UI
+namespace PatchKit.Unity.Patcher.UI
 {
     public class SecondaryProgressBar : MonoBehaviour
     {
