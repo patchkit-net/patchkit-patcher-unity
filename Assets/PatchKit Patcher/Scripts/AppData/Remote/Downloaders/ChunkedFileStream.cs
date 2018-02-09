@@ -86,7 +86,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _startChunk = startChunk;
             _endChunk = endChunk;
 
-            if (endChunk == -1)
+            bool noEndChunk = endChunk == -1;
+            bool isLastChunkIncomplete = endChunk * chunksData.ChunkSize > fileSize;
+
+            if (noEndChunk || isLastChunkIncomplete)
             {
                 _fileSize = fileSize - (startChunk * chunksData.ChunkSize);
             }
