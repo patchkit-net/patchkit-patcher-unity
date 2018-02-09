@@ -109,7 +109,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
                 {
-                    var entryMinProgress = Mathf.Max(0, entry - 1) / (double) amount; // entry could be zero
+                    var entryMinProgress = (entry - 1) / (double) amount;
                     var entryMaxProgress = entry / (double) amount;
 
                     _unarchivePackageStatus.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
