@@ -84,13 +84,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                     return StrategyType.Content;
 #else
-                        int lowestVersionWithDiffId = GetLowestVersionWithDiffId(context);
-                        _logger.LogTrace("lowestVersionWithDiffId = " + lowestVersionWithDiffId);
-
-                        if (installedVersionId + 1 < lowestVersionWithDiffId)
+                        if (DoesVersionSupportDiffUpdates(context, installedVersionId))
                         {
-                            _logger.LogDebug(
-                                "Diffs for updating from installed to latest version are not available. Using content strategy.");
+                            _logger.LogDebug("Installed version does not support diff updates. Using content strategy");
 
                             return StrategyType.Content;
                         }
@@ -101,10 +97,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                         long contentSize = GetLatestVersionContentSize(context);
                         _logger.LogTrace("contentSize = " + contentSize);
 
-                        ulong sumDiffSize = GetSumLatestVersionDiffSize(context);
+                        long sumDiffSize = GetLatestVersionDiffSizeSum(context);
                         _logger.LogTrace("sumDiffSize = " + sumDiffSize);
 
-                        if (sumDiffSize < (ulong) contentSize)
+                        if (sumDiffSize < contentSize)
                         {
                             _logger.LogDebug(
                                 "Cost of updating with diff is lower than cost of updating with content.");
@@ -148,6 +144,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 _logger.LogError("Failed to resolve best strategy for updating.", e);
                 throw;
             }
+        }
+
+        private bool DoesVersionSupportDiffUpdates(AppUpdaterContext context, int versionId)
+        {
+            int lowestVersionWithDiffId = GetLowestVersionWithDiffId(context);
+            _logger.LogTrace("lowestVersionWithDiffId = " + lowestVersionWithDiffId);
+
+            return versionId + 1 < lowestVersionWithDiffId;
         }
 
         private bool IsVersionIntegral(long contentSize, AppUpdaterContext context)
@@ -197,17 +201,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             return contentSummary.Size;
         }
 
-        private static ulong GetSumLatestVersionDiffSize(AppUpdaterContext context)
+        private static long GetLatestVersionDiffSizeSum(AppUpdaterContext context)
         {
             int latestVersionId = context.App.GetLatestVersionId();
             int currentLocalVersionId = context.App.GetInstalledVersionId();
 
-            ulong cost = 0;
+            long cost = 0;
 
             for (int i = currentLocalVersionId + 1; i <= latestVersionId; i++)
             {
                 var diffSummary = context.App.RemoteMetaData.GetDiffSummary(i);
-                cost += (ulong)diffSummary.Size;
+                cost += diffSummary.Size;
             }
 
             return cost;
