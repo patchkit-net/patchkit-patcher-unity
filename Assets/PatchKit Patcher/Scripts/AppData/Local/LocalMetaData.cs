@@ -128,10 +128,20 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.ProductKey;
         }
 
+        private void CreateDataDir()
+        {
+            string dirPath = Path.GetDirectoryName(_filePath);
+            if (dirPath != null)
+            {
+                Directory.CreateDirectory(dirPath);
+            }
+        }
+
         private void SaveData()
         {
             DebugLogger.Log("Saving.");
 
+            CreateDataDir();
             File.WriteAllText(_filePath, JsonConvert.SerializeObject(_data, Formatting.None));
         }
 
@@ -143,6 +153,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 if (File.Exists(_deprecatedFilePath))
                 {
+                    CreateDataDir();
                     File.Move(_deprecatedFilePath, _filePath);
                 }
             }
