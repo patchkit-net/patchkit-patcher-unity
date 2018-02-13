@@ -1,139 +1,121 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Net;
+using PatchKit.Logging;
 using UnityEngine;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
+using ILogger = PatchKit.Logging.ILogger;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
     public class UnityHttpClient : IHttpClient
     {
-        private class RequestResult
+        private class WWWResult
         {
-            public bool IsDone;
+            public bool IsDone { get; set; }
 
-            public string Data;
-            public int StatusCode;
+            public string Text { get; set; }
 
-            public bool WasError;
-            public bool WasTimeout;
-            public string ErrorText;
+            public Dictionary<string, string> ResponseHeaders { get; set; }
         }
-        
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(UnityHttpClient));
+
+        private readonly ILogger _logger;
 
         private const string ResponseEncoding = "iso-8859-2";
 
-        private IEnumerator JobCoroutine(HttpGetRequest getRequest, RequestResult result)
+        public UnityHttpClient()
+        {
+            _logger = PatcherLogManager.DefaultLogger;
+        }
+
+        private IEnumerator GetWWW(HttpGetRequest getRequest, WWWResult result)
         {
             var www = new WWW(getRequest.Address.ToString());
 
             yield return www;
 
-            if (!www.isDone)
-            {
-                lock (result)
-                {
-                    result.WasTimeout = true;
-                    result.IsDone = true;
-                }
-                yield break;
-            }
-
-            if (!string.IsNullOrEmpty(www.error))
-            {
-                lock (result)
-                {
-                    result.ErrorText = www.error;
-                    result.WasError = true;
-                    result.IsDone = true;
-                }
-                yield break;
-            }
-
-            var wwwText = www.text;
-
-            if (string.IsNullOrEmpty(wwwText))
-            {
-                lock (result)
-                {
-                    result.ErrorText = "Empty response data";
-                    result.WasError = true;
-                    result.IsDone = true;
-                }
-                yield break;
-            }
-
             lock (result)
             {
-                try
-                {
-                    result.Data = wwwText;
+                result.IsDone = www.isDone;
 
-                    if (!www.responseHeaders.ContainsKey("STATUS"))
-                    {
-                        // Based on tests, if response doesn't contain status it has probably timed out.
-                        DebugLogger.Log("Response is missing STATUS header. Marking it as timed out.");
-                        result.WasTimeout = true;
-                    }
-                    else
-                    {
-                        var status = www.responseHeaders["STATUS"];
-                        DebugLogger.Log(string.Format("Response status: {0}", status));
-                        var s = status.Split(' ');
-
-                        if (s.Length >= 3 && int.TryParse(s[1], out result.StatusCode))
-                        {
-                            DebugLogger.Log(string.Format("Successfully parsed status code: {0}", result.StatusCode));
-                        }
-                        else
-                        {
-                            // Based on tests, if response contains invalid status it has probably timed out.
-                            DebugLogger.Log(string.Format("Response has invalid status - {0}. Marking it as timed out.",
-                                status));
-                            result.WasTimeout = true;
-                        }
-                    }
-                }
-                catch (Exception e)
+                if (www.isDone)
                 {
-                    result.WasError = true;
-                    result.ErrorText = e.ToString();
-                }
-                finally
-                {
-                    result.IsDone = true;
+                    result.ResponseHeaders = www.responseHeaders;
+                    result.Text = www.text;
                 }
             }
-
-            yield return null;
         }
 
         public IHttpResponse Get(HttpGetRequest getRequest)
         {
-            if (getRequest.Range != null)
+            try
             {
-                throw new NotImplementedException();
+                _logger.LogDebug("Sending GET request to " + getRequest.Address);
+
+                if (getRequest.Range != null)
+                {
+                    throw new NotImplementedException();
+                }
+
+                _logger.LogTrace("timeout  = " + getRequest.Timeout);
+            
+                var result = new WWWResult();
+
+                var waitHandle = UnityDispatcher.InvokeCoroutine(GetWWW(getRequest, result));
+            
+                waitHandle.WaitOne(TimeSpan.FromMilliseconds(getRequest.Timeout));
+
+                lock (result)
+                {
+                    if (!result.IsDone)
+                    {
+                        throw new WebException("Timeout.", WebExceptionStatus.Timeout);
+                    }
+
+                    var statusCode = ReadStatusCode(result);
+
+                    _logger.LogDebug("Successfuly received response.");
+                    return new UnityHttpResponse(result.Text, statusCode, ResponseEncoding);
+                }
             }
-            
-            var result = new RequestResult();
-
-            var waitHandle = Utilities.UnityDispatcher.InvokeCoroutine(JobCoroutine(getRequest, result));
-            
-            waitHandle.WaitOne(TimeSpan.FromMilliseconds(getRequest.Timeout));
-
-            if (result.WasTimeout || !result.IsDone)
+            catch (Exception e)
             {
+                _logger.LogError("Failed to get response.", e);
+                throw;
+            }
+        }
+
+        private HttpStatusCode ReadStatusCode(WWWResult result)
+        {
+            _logger.LogDebug("Reading status code...");
+
+            if (!result.ResponseHeaders.ContainsKey("STATUS"))
+            {
+                // Based on tests, if response doesn't contain status it has probably timed out.
+                _logger.LogWarning("Response is missing STATUS header. Marking it as timed out.");
                 throw new WebException("Timeout.", WebExceptionStatus.Timeout);
             }
 
-            if (result.WasError)
+            var status = result.ResponseHeaders["STATUS"];
+            _logger.LogTrace("status = " + status);
+
+            var s = status.Split(' ');
+
+            int statusCode;
+
+            if (s.Length < 3 || !int.TryParse(s[1], out statusCode))
             {
-                throw new WebException(result.ErrorText);
+                _logger.LogWarning("Response has invalid status. Marking it as timed out.");
+                throw new WebException("Timeout.", WebExceptionStatus.Timeout);
             }
 
-            return new UnityHttpResponse(result.Data, result.StatusCode, ResponseEncoding);
+            _logger.LogTrace("statusCode = " + statusCode);
+            _logger.LogTrace("statusCode (as enum) = " + (HttpStatusCode) statusCode);
+
+            return (HttpStatusCode) statusCode;
         }
     }
 }
