@@ -16,7 +16,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         }
 
         public IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context)
-        {            
+        {
             switch (type)
             {
                 case StrategyType.Empty:

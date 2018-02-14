@@ -23,10 +23,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         private struct DownloadJob
         {
-            public DownloadJob(string url, long Start = 0, long End = -1)
+            public DownloadJob(string url, long start = 0, long end = -1)
             {
                 Url = url;
-                Range = new BytesRange(Start, End);
+                Range = new BytesRange(start, end);
             }
 
             public string Url;
@@ -76,8 +76,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 Directory.CreateDirectory(parentDirectory);
             }
 
-            int startChunk = (int) (CalculateContainingChunksRange(_range).Start / _chunksData.ChunkSize);
-            int endChunk = _range.End == -1 ? -1 : (int) (CalculateContainingChunksRange(_range).End / _chunksData.ChunkSize);
+            var chunksRange = CalculateContainingChunksRange(_range);
+            int startChunk = (int) (chunksRange.Start / _chunksData.ChunkSize);
+            int endChunk = _range.End == -1 ? -1 : (int) (chunksRange.End / _chunksData.ChunkSize);
 
             _logger.LogTrace(string.Format("Opening chunked file stream for chunks {0}-{1}", startChunk, endChunk));
             return new ChunkedFileStream(_destinationFilePath, _size, _chunksData,
@@ -237,12 +238,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return new BytesRange(bottom, -1);
             }
 
-            long top = (range.End / chunkSize) * chunkSize;
-
-            if (top < range.End)
-            {
-                top += chunkSize;
-            }
+            long top = Math.Min((range.End / chunkSize) * (chunkSize + 1), range.End);
 
             Assert.IsTrue(top >= range.End && bottom <= range.Start, "Effective range must contain the original range.");
 
