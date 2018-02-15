@@ -1,5 +1,7 @@
-﻿using PatchKit.Api.Models.Main;
+﻿using System.Linq;
+using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.AppData.Local;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Status
 {
@@ -25,6 +27,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             return BytesToWeight(summary.Size) *0.01;
         }
 
+        public static double GetRepairFilesWeight(Pack1Meta.FileEntry[] files)
+        {
+            var sum = files.Sum(f => f.Size).GetValueOrDefault();
+            return BytesToWeight(sum) * 0.01;
+        }
+
         public static double GetAddDiffFilesWeight(AppDiffSummary summary)
         {
             return BytesToWeight(summary.Size) * 0.01;
@@ -43,6 +51,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         public static double GetResourceDownloadWeight(RemoteResource resource)
         {
             return BytesToWeight(resource.Size)*1;
+        }
+
+        public static double GetDownloadWeight(long bytes)
+        {
+            return BytesToWeight(bytes);
+        }
+
+        public static double GetCopyFileWeight(long bytes)
+        {
+            return BytesToWeight(bytes) *0.01;
         }
 
         private static double BytesToWeight(long bytes)
