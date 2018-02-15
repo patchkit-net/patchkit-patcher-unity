@@ -16,7 +16,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
 - Example scenes with double progress bars
 
-
 ### Changed
 - Update API servers configuration
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
