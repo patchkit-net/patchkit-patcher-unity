@@ -39,6 +39,8 @@ namespace PatchKit.Unity
         {
             var patcher = Patcher.Patcher.Instance;
 
+            Assert.IsNotNull(patcher);
+
             patcher.AppInfo
                 .ObserveOnMainThread()
                 .Subscribe(app => Resolve(app.PatcherWhitelabel))
