@@ -227,7 +227,7 @@ namespace PatchKit.Unity.Patcher
             UnityDispatcher.Initialize();
             Application.runInBackground = true;
 
-            DebugLogger.LogFormat("patchkit-patcher-unity: {0}", PatcherInfo.GetVersion());
+            DebugLogger.LogFormat("patchkit-patcher-unity: {0}", Version.Value);
             DebugLogger.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
             DebugLogger.LogFormat("Runtime version: {0}", EnvironmentInfo.GetSystemVersion());
 

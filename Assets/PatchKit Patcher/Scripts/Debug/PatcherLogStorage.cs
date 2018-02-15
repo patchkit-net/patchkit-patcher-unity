@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher.Debug
             var putLinkRequest = new PutLinkRequest()
             {
                 AppId = "patcher-unity",
-                Version = PatcherInfo.GetVersion(),
+                Version = Version.Value,
                 Priority = "201",
                 Guid = Guid.ToString(),
                 Compression = "gz"
