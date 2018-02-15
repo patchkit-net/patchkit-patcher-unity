@@ -2,6 +2,7 @@
 using System.IO;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -39,6 +40,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "all" &&
                                context.Configuration.UseTorrents;
             return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
+        }
+
+        public IRepairFilesCommand CreateRepairFilesCommand(int versionId, AppUpdaterContext context, RemoteResource resource, Pack1Meta.FileEntry[] brokenFiles, Pack1Meta meta)
+        {
+            var packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
+            var packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
+
+            return new RepairFilesCommand(resource, meta, brokenFiles, packagePath, packagePassword, context.App.LocalDirectory);
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId, AppUpdaterContext context)

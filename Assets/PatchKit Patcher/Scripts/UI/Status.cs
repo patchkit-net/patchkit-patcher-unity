@@ -1,4 +1,5 @@
 ﻿using System;
+using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,37 +12,29 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
+            var operationStatus = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
+
+            var statusDescription = operationStatus.SelectSwitchOrDefault(s => s.Description, string.Empty);
+
+            Patcher.Instance.State.CombineLatest(statusDescription, (state, description) =>
             {
                 switch (state)
                 {
                     case PatcherState.None:
-                        Text.text = string.Empty;
-                        break;
+                        return string.Empty;
                     case PatcherState.LoadingPatcherData:
-                        Text.text = "Loading data...";
-                        break;
+                        return "Loading data...";
                     case PatcherState.LoadingPatcherConfiguration:
-                        Text.text = "Loading configuration...";
-                        break;
+                        return "Loading configuration...";
                     case PatcherState.WaitingForUserDecision:
-                        Text.text = string.Empty;
-                        break;
+                        return string.Empty;
                     case PatcherState.StartingApp:
-                        Text.text = "Starting application...";
-                        break;
+                        return "Starting application...";
                     case PatcherState.UpdatingApp:
-                        // Managed by event below
-                        break;
+                        return description;
                 }
-            }).AddTo(this);
-            
-            Patcher.Instance.UpdateAppStatusChanged += status =>
-            {
-                Text.text = status.IsDownloading ? "Downloading..." : status.Description;
-            };
-
-            Text.text = string.Empty;
+                return string.Empty;
+            }).ObserveOnMainThread().SubscribeToText(Text).AddTo(this);
         }
     }
 }
