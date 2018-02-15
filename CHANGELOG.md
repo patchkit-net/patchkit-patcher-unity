@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Skipping patches for files that content remained unchanged in newer version (during diff installation)
 - Support for partial pack1 processing
 - Support for new lowest_version_diff property
+- An inspector warning if the default editor app secret has been modified
 
 ### Changed
 - Update API servers configuration
