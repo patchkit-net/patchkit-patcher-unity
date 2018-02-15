@@ -14,6 +14,7 @@ namespace PatchKit.Unity
             var patcher = Patcher.Patcher.Instance;
 
             Assert.IsNotNull(patcher);
+            Assert.IsNotNull(Text);
 
             patcher.AppInfo
                 .ObserveOnMainThread()
