@@ -87,16 +87,28 @@ namespace PatchKit.Unity.Patcher.UI
             }
 
             var span = TimeSpan.FromSeconds(remainingTime.Value);
-            return span.TotalDays > 1.0
-                ? string.Format("{0:0} day", span.TotalDays) + GetPlural(span.TotalDays)
-                : span.TotalHours > 1.0
-                    ? string.Format("{0:0} hour", span.TotalHours) + GetPlural(span.TotalHours)
-                    : span.TotalMinutes > 1.0
-                        ? string.Format("{0:0} minute", span.TotalMinutes) + GetPlural(span.TotalMinutes)
-                        : span.TotalSeconds > 1.0
-                            ? string.Format("{0:0} second", span.TotalSeconds) +
-                              GetPlural(span.TotalSeconds)
-                            : "a moment";
+
+            if (span.TotalDays > 1.0)
+            {
+                return FormatPlural("{0:0} day", span.TotalDays);
+            }
+
+            if (span.TotalHours > 1.0)
+            {
+                return FormatPlural("{0:0} hour", span.TotalHours);
+            }
+
+            if (span.TotalMinutes > 1.0)
+            {
+                return FormatPlural("{0:0} minute", span.TotalMinutes);
+            }
+
+            if (span.TotalSeconds > 1.0)
+            {
+                return FormatPlural("{0:0} second", span.TotalSeconds);
+            }
+
+            return "a moment";
         }
 
         private static double? GetRemainingTime(long bytes, long totalBytes, double bytesPerSecond)
@@ -114,6 +126,11 @@ namespace PatchKit.Unity.Patcher.UI
             }
 
             return remainingBytes / bytesPerSecond;
+        }
+
+        private static string FormatPlural(string format, double value)
+        {
+            return string.Format(format, value) + GetPlural(value);
         }
 
         private static string GetPlural(double value)
