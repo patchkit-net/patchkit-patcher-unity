@@ -11,10 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for partial pack1 processing
 - Support for new lowest_version_diff property
 - Displaying the application display name
+- An inspector warning if the default editor app secret has been modified
 
 ### Changed
 - Update API servers configuration
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
+- The patcher will now delete the lockfile when quitting
 
 ## [3.9.0]
 ### Added
