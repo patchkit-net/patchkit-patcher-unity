@@ -1696,8 +1696,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   patchKitWebsiteUrl: https://patchkit.net/?source=patcher
-  cursorTexture: {fileID: 2800000, guid: 77b6d54a3ed2be84997121d42b6b6da2, type: 3}
-  cursorHotspot: {x: 10, y: 15}
+  cursorTexture: {fileID: 2800000, guid: 9a9d58e8a026acf4bbb9018ecc4d96e3, type: 3}
+  cursorHotspot: {x: 14, y: 7}
   image: {fileID: 723082948}
   button: {fileID: 723082947}
 --- !u!114 &723082951
