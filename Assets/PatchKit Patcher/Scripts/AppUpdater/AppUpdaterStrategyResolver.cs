@@ -31,8 +31,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     return new AppUpdaterContentStrategy(context, _status);
                 case StrategyType.Diff:
                     return new AppUpdaterDiffStrategy(context, _status);
-                case StrategyType.ContentRepair:
-                    return new ContentRepairStrategy(context, _status);
+                case StrategyType.RepairAndDiff:
+                    return new AppUpdaterRepairAndDiffStrategy(context, _status);
                 default:
                     return new AppUpdaterContentStrategy(context, _status);
             }
@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     return StrategyType.None;
                 case StrategyType.Diff:
                     return StrategyType.Content;
-                case StrategyType.ContentRepair:
+                case StrategyType.RepairAndDiff:
                     return StrategyType.Content;
                 default:
                     return StrategyType.Content;
@@ -120,7 +120,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                                 if (!IsVersionIntegral(contentSize, context))
                                 {
                                     _logger.LogDebug("Installed version is broken. Using repair&diff strategy.");
-                                    return StrategyType.ContentRepair;
+                                    return StrategyType.RepairAndDiff;
                                 }
 
                                 _logger.LogDebug("Installed verison is ready for diff updating.");

@@ -9,7 +9,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         Empty,
         Content,
         Diff,
-        ContentRepair
+        RepairAndDiff
     }
 
     public interface IAppUpdaterStrategy

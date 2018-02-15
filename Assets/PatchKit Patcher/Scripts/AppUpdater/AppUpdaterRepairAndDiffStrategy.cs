@@ -12,7 +12,7 @@ using FileIntegrityStatus = PatchKit.Unity.Patcher.AppUpdater.Commands.FileInteg
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
-    public class ContentRepairStrategy: IAppUpdaterStrategy
+    public class AppUpdaterRepairAndDiffStrategy: IAppUpdaterStrategy
     {
         private readonly AppUpdaterContext _context;
 
@@ -20,7 +20,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly ILogger _logger;
 
-        public ContentRepairStrategy(AppUpdaterContext context, UpdaterStatus status)
+        public AppUpdaterRepairAndDiffStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
             Assert.IsNotNull(context, "Context is null");
 
@@ -32,7 +32,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public StrategyType GetStrategyType()
         {
-            return StrategyType.ContentRepair;
+            return StrategyType.RepairAndDiff;
         }
 
         public void Update(CancellationToken cancellationToken)
