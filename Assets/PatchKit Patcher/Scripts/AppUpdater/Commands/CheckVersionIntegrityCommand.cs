@@ -2,15 +2,14 @@
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class CheckVersionIntegrityCommand : BaseAppUpdaterCommand, ICheckVersionIntegrityCommand
     {
-
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CheckVersionIntegrityCommand));
 
         private readonly int _versionId;
@@ -18,7 +17,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalDirectory _localDirectory;
         private readonly ILocalMetaData _localMetaData;
 
-        private IGeneralStatusReporter _statusReporter;
+        private OperationStatus _status;
         bool _isCheckingHash;
         bool _isCheckingSize;
 
@@ -41,16 +40,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _isCheckingHash = isCheckingHash;
         }
 
-        public override void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(UpdaterStatus status)
         {
-            base.Prepare(statusMonitor);
+            base.Prepare(status);
 
-            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(status, "statusMonitor");
 
             DebugLogger.Log("Preparing version integrity check.");
 
-            double weight = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary);
-            _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
+            _status = new OperationStatus
+            {
+                Weight = {Value = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary)},
+                Description = {Value = "Checking version integrity..."}
+            };
+            status.RegisterOperation(_status);
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -59,16 +62,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Checking version integrity.");
 
+            _status.IsActive.Value = true;
+
             var files = new FileIntegrity[_versionSummary.Files.Length];
 
             for (int i = 0; i < _versionSummary.Files.Length; i++)
             {
                 files[i] = CheckFile(_versionSummary.Files[i]);
 
-                _statusReporter.OnProgressChanged((i + 1)/(double)_versionSummary.Files.Length, "Checking version integrity...");
+                _status.Progress.Value = (i + 1) / (double) _versionSummary.Files.Length;
             }
 
             Results = new VersionIntegrity(files);
+
+            _status.IsActive.Value = false;
         }
 
         private FileIntegrity CheckFile(AppContentSummaryFile file)

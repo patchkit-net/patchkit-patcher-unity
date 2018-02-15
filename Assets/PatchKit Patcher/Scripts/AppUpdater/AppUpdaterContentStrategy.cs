@@ -1,4 +1,4 @@
-﻿using System;
+﻿using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -10,15 +10,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly AppUpdaterContext _context;
 
+        private readonly UpdaterStatus _status;
+
         private bool _updateHasBeenCalled;
 
-        public AppUpdaterContentStrategy(AppUpdaterContext context)
+        public AppUpdaterContentStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
             Checks.ArgumentNotNull(context, "context");
 
             DebugLogger.LogConstructor();
 
             _context = context;
+            _status = status;
         }
 
         public StrategyType GetStrategyType()
@@ -35,7 +38,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var commandFactory = new Commands.AppUpdaterCommandFactory();
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
 
-            geolocateCommand.Prepare(_context.StatusMonitor);
+            geolocateCommand.Prepare(_status);
             geolocateCommand.Execute(cancellationToken);
 
             var latestVersionId = _context.App.GetLatestVersionId();
@@ -43,22 +46,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.LogVariable(latestVersionId, "latestVersionId");
 
             var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForContent(latestVersionId, _context);
-            checkDiskSpaceCommand.Prepare(_context.StatusMonitor);
+            checkDiskSpaceCommand.Prepare(_status);
             checkDiskSpaceCommand.Execute(cancellationToken);
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_context.StatusMonitor);
+            validateLicense.Prepare(_status);
             validateLicense.Execute(cancellationToken);
 
             var uninstall = commandFactory.CreateUninstallCommand(_context);
-            uninstall.Prepare(_context.StatusMonitor);
+            uninstall.Prepare(_status);
 
             var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId,
                 validateLicense.KeySecret, geolocateCommand.CountryCode, _context);
-            downloadContentPackage.Prepare(_context.StatusMonitor);
+            downloadContentPackage.Prepare(_status);
 
             var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context);
-            installContent.Prepare(_context.StatusMonitor);
+            installContent.Prepare(_status);
 
             uninstall.Execute(cancellationToken);
             downloadContentPackage.Execute(cancellationToken);

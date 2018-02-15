@@ -3,6 +3,7 @@ using System.Threading;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
@@ -12,11 +13,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public readonly AppUpdaterContext Context;
 
+        private readonly UpdaterStatus _status = new UpdaterStatus();
+
         private IAppUpdaterStrategyResolver _strategyResolver;
 
         private IAppUpdaterStrategy _strategy;
 
         private bool _updateHasBeenCalled;
+
+        public IReadOnlyUpdaterStatus Status
+        {
+            get { return _status; }
+        }
 
         public AppUpdater(AppUpdaterContext context)
         {
@@ -24,7 +32,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.LogConstructor();
 
-            _strategyResolver = new AppUpdaterStrategyResolver();
+            _strategyResolver = new AppUpdaterStrategyResolver(_status);
             Context = context;
         }
 
@@ -36,7 +44,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             StrategyType type = _strategyResolver.Resolve(Context);
             _strategy = _strategyResolver.Create(type, Context);
-            Context.StatusMonitor.Reset();
 
             try
             {

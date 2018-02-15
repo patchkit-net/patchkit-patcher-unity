@@ -5,8 +5,8 @@ using PatchKit.IssueReporting;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Patcher.UI.Dialogs;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -204,11 +204,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public override void Prepare([NotNull] IStatusMonitor statusMonitor)
+        public override void Prepare([NotNull] UpdaterStatus status)
         {
-            base.Prepare(statusMonitor);
+            base.Prepare(status);
             
-            if (statusMonitor == null) throw new ArgumentNullException("statusMonitor");
+            if (status == null) throw new ArgumentNullException("status");
         }
 
         public string KeySecret { get; private set; }
