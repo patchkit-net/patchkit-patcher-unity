@@ -209,10 +209,10 @@ namespace PatchKit.Unity.Patcher
             { 
                 if (_lockFileStream != null)
                 {
-                    _lockFileStream.Close()
+                    _lockFileStream.Close();
                     
                     DebugLogger.Log("Deleting the lock file.");
-                    File.Delete(_data.Value.LockFilePath);;
+                    File.Delete(_data.Value.LockFilePath);
                 }
             }
             catch
