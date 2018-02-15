@@ -3,6 +3,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -12,9 +13,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     {
         private readonly ILogger _logger;
 
-        public AppUpdaterStrategyResolver()
+        private readonly UpdaterStatus _status;
+
+        public AppUpdaterStrategyResolver(UpdaterStatus status)
         {
             _logger = PatcherLogManager.DefaultLogger;
+            _status = status;
         }
 
         public IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context)
@@ -24,11 +28,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 case StrategyType.Empty:
                     return new AppUpdaterEmptyStrategy();
                 case StrategyType.Content:
-                    return new AppUpdaterContentStrategy(context);
+                    return new AppUpdaterContentStrategy(context, _status);
                 case StrategyType.Diff:
-                    return new AppUpdaterDiffStrategy(context);
+                    return new AppUpdaterDiffStrategy(context, _status);
                 default:
-                    return new AppUpdaterContentStrategy(context);
+                    return new AppUpdaterContentStrategy(context, _status);
             }
         }
 
@@ -167,7 +171,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var checkVersionIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(
                 installedVersionId, context, isCheckingHash);
 
-            checkVersionIntegrity.Prepare(context.StatusMonitor);
+            checkVersionIntegrity.Prepare(_status);
             checkVersionIntegrity.Execute(CancellationToken.Empty);
 
             bool isValid = checkVersionIntegrity.Results.Files.All(

@@ -2,9 +2,9 @@
 using System.Linq;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalDirectory _localData;
         private readonly ILocalMetaData _localMetaData;
 
-        private IGeneralStatusReporter _statusReporter;
+        private OperationStatus _statusReporter;
 
         public UninstallCommand(ILocalDirectory localData, ILocalMetaData localMetaData)
         {
@@ -28,18 +28,21 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _localMetaData = localMetaData;
         }
 
-        public override void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(UpdaterStatus status)
         {
-            base.Prepare(statusMonitor);
+            base.Prepare(status);
 
-            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(status, "statusMonitor");
 
             DebugLogger.Log("Preparing uninstallation.");
 
             _localData.PrepareForWriting();
 
-            double weight = StatusWeightHelper.GetUninstallWeight();
-            _statusReporter = statusMonitor.CreateGeneralStatusReporter(weight);
+            _statusReporter = new OperationStatus
+            {
+                Weight = {Value = StatusWeightHelper.GetUninstallWeight()}
+            };
+            status.RegisterOperation(_statusReporter);
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -56,8 +59,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             int counter = 0;
 
-            _statusReporter.OnProgressChanged(0.0, "Uninstalling...");
-            
+            _statusReporter.IsActive.Value = true;
+            _statusReporter.Description.Value = "Uninstalling...";
+
             foreach (var fileName in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -72,7 +76,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _localMetaData.UnregisterEntry(fileName);
 
                 counter++;
-                _statusReporter.OnProgressChanged(counter / (double)entries.Length, "Uninstalling...");
+                _statusReporter.Progress.Value = counter / (double) entries.Length;
+                _statusReporter.Description.Value = string.Format("Uninstalling ({0}/{1})...", counter, entries.Length);
             }
 
             // TODO: Delete this after fixing directory registration in install content command
@@ -121,8 +126,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 counter++;
                 _statusReporter.OnProgressChanged(counter / (double)entries.Length);
             }*/
-            
-            _statusReporter.OnProgressChanged(1.0, "Uninstalling...");
+
+            _statusReporter.Progress.Value = 1.0;
+            _statusReporter.IsActive.Value = false;
         }
     }
 }

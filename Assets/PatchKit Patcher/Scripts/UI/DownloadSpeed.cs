@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
-using PatchKit.Unity.Patcher.Status;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,27 +15,41 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.UpdateAppStatusChanged += status =>
+            var downloadStatus = Patcher.Instance.UpdaterStatus
+                .SelectSwitchOrNull(u => u.LatestActiveOperation)
+                .Select(s => s as IReadOnlyDownloadStatus);
+
+            var downloadSpeedUnit = Patcher.Instance.AppInfo.Select(a => a.PatcherDownloadSpeedUnit);
+
+            var text = downloadStatus.SelectSwitchOrDefault(status =>
             {
-                string speed = GetDownloadSpeedFormated(status);
-                string eta = status.DownloadBytes > 0 && status.DownloadBytes < status.DownloadTotalBytes && status.DownloadBytesPerSecond > 0.0
-                    ? " ready in " + GetRemainingTimeFormated(GetRemainingTime(status))
-                    : string.Empty;
+                var remainingTime =
+                    status.Bytes.CombineLatest<long, long, double, double?>(status.TotalBytes, status.BytesPerSecond,
+                        GetRemainingTime);
 
-                Text.text = status.IsDownloading ? speed + eta : string.Empty;
-            };
+                var formattedRemainingTime = remainingTime.Select<double?, string>(GetFormattedRemainingTime);
 
-            Patcher.Instance.AppInfo.Subscribe(app => { _downloadSpeedUnit = app.PatcherDownloadSpeedUnit; })
-                .AddTo(this);
+                var formattedDownloadSpeed =
+                    status.BytesPerSecond.CombineLatest<double, string, string>(downloadSpeedUnit,
+                        GetFormattedDownloadSpeed);
 
-            Text.text = string.Empty;
+                return formattedDownloadSpeed.CombineLatest<string, string, string>(formattedRemainingTime,
+                    GetStatusText);
+            }, string.Empty);
+
+            text.ObserveOnMainThread().SubscribeToText(Text).AddTo(this);
         }
 
-        private string GetDownloadSpeedFormated(OverallStatus status)
+        private static string GetStatusText(string formattedDownloadSpeed, string formattedRemainingTime)
         {
-            double kbPerSecond = status.DownloadBytesPerSecond / 1024.0;
+            return formattedDownloadSpeed + " " + formattedRemainingTime;
+        }
 
-            switch (_downloadSpeedUnit)
+        private static string GetFormattedDownloadSpeed(double bytesPerSecond, string downloadSpeedUnit)
+        {
+            double kbPerSecond = bytesPerSecond / 1024.0;
+
+            switch (downloadSpeedUnit)
             {
                 case "kilobytes":
                     return FormatDownloadSpeedKilobytes(kbPerSecond);
@@ -50,39 +64,78 @@ namespace PatchKit.Unity.Patcher.UI
             }
         }
 
-        private string FormatDownloadSpeedMegabytes(double kbPerSecond)
+        private static string FormatDownloadSpeedMegabytes(double kbPerSecond)
         {
             return FormatDownloadSpeed(kbPerSecond / 1024.0) + " MB/sec.";
         }
 
-        private string FormatDownloadSpeedKilobytes(double kbPerSecond)
+        private static string FormatDownloadSpeedKilobytes(double kbPerSecond)
         {
             return FormatDownloadSpeed(kbPerSecond) + " KB/sec.";
         }
 
-        private string FormatDownloadSpeed(double s)
+        private static string FormatDownloadSpeed(double s)
         {
             return s.ToString("#,#0.0");
         }
 
-        private float GetRemainingTime(OverallStatus status)
+        private static string GetFormattedRemainingTime(double? remainingTime)
         {
-            float remainingBytes = status.DownloadTotalBytes - status.DownloadBytes;
-            return remainingBytes / (float) status.DownloadBytesPerSecond;
+            if (!remainingTime.HasValue)
+            {
+                return string.Empty;
+            }
+
+            var span = TimeSpan.FromSeconds(remainingTime.Value);
+
+            if (span.TotalDays > 1.0)
+            {
+                return FormatPlural("{0:0} day", span.TotalDays);
+            }
+
+            if (span.TotalHours > 1.0)
+            {
+                return FormatPlural("{0:0} hour", span.TotalHours);
+            }
+
+            if (span.TotalMinutes > 1.0)
+            {
+                return FormatPlural("{0:0} minute", span.TotalMinutes);
+            }
+
+            if (span.TotalSeconds > 1.0)
+            {
+                return FormatPlural("{0:0} second", span.TotalSeconds);
+            }
+
+            return "a moment";
         }
 
-        private string GetRemainingTimeFormated(float value)
+        private static double? GetRemainingTime(long bytes, long totalBytes, double bytesPerSecond)
         {
-            TimeSpan span = TimeSpan.FromSeconds(value);
-            return span.Days > 0 ? string.Format("{0:0} day", span.Days) + GetPlural(span.Days) :
-                span.Hours > 0 ? string.Format("{0:0} hour", span.Hours) + GetPlural(span.Hours) :
-                span.Minutes > 0 ? string.Format("{0:0} minute", span.Minutes) + GetPlural(span.Minutes) :
-                span.Seconds > 0 ? string.Format("{0:0} second", span.Seconds) + GetPlural(span.Seconds) : "a moment";
+            if (bytesPerSecond <= 0.0)
+            {
+                return null;
+            }
+
+            double remainingBytes = totalBytes - bytes;
+
+            if (remainingBytes <= 0)
+            {
+                return null;
+            }
+
+            return remainingBytes / bytesPerSecond;
         }
 
-        private string GetPlural(int value)
+        private static string FormatPlural(string format, double value)
         {
-            return value == 1 ? string.Empty : "s";
+            return string.Format(format, value) + GetPlural(value);
+        }
+
+        private static string GetPlural(double value)
+        {
+            return value.ToString("0") == "1" ? string.Empty : "s";
         }
     }
 }

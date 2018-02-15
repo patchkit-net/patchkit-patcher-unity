@@ -8,9 +8,9 @@ using System.Security.Cryptography.X509Certificates;
 using I18N.West;
 using Newtonsoft.Json.Linq;
 using PatchKit.Api;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 
@@ -109,7 +109,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public void Prepare(UpdaterStatus status)
         {
             // not needed
         }
