@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
-    public class ProgressBar : MonoBehaviour
+    public class SecondaryProgressBar : MonoBehaviour
     {
         public Text Text;
 
@@ -21,7 +21,8 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(s => s.Progress, 1.0)
+            Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation)
+                .SelectSwitchOrDefault(s => s.Progress, 1.0)
                 .ObserveOnMainThread()
                 .Subscribe(SetProgress)
                 .AddTo(this);

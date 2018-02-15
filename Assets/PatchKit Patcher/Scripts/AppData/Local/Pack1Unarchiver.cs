@@ -234,7 +234,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                         cancellationToken.ThrowIfCancellationRequested();
                         targetStream.Write(buffer, 0, count);
                         bytesProcessed += count;
-                        onProgress(bytesProcessed / (double) file.Size.Value);
+                        onProgress((double) gzipStream.Position / file.Size.Value);
                     }
                 }
             }

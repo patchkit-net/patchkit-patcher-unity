@@ -1,7 +1,7 @@
 ﻿using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -14,9 +14,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly string _destinationMetaPath;
         private readonly bool _useTorrents;
 
-        private IDownloadStatusReporter _statusReporter;
+        private DownloadStatus _status;
 
-        public DownloadPackageCommand(RemoteResource resource, string destinationPackagePath, string destinationMetaPath, bool useTorrents)
+        public DownloadPackageCommand(RemoteResource resource, string destinationPackagePath,
+            string destinationMetaPath, bool useTorrents)
         {
             Checks.ArgumentValidRemoteResource(resource, "resource");
             Checks.ArgumentNotNullOrEmpty(destinationPackagePath, "destinationPackagePath");
@@ -33,16 +34,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _useTorrents = useTorrents;
         }
 
-        public override void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(UpdaterStatus status)
         {
-            base.Prepare(statusMonitor);
+            base.Prepare(status);
 
-            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(status, "statusMonitor");
 
             DebugLogger.Log("Preparing package download.");
 
-            double weight = StatusWeightHelper.GetResourceDownloadWeight(_resource);
-            _statusReporter = statusMonitor.CreateDownloadStatusReporter(weight);
+            _status = new DownloadStatus
+            {
+                Weight = {Value = StatusWeightHelper.GetResourceDownloadWeight(_resource)},
+                Description = {Value = "Downloading package..."}
+            };
+            status.RegisterOperation(_status);
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -51,16 +56,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Downloading package.");
 
+            _status.IsActive.Value = true;
+            _status.TotalBytes.Value = _resource.Size;
+
             var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource,
                 _useTorrents);
 
-            downloader.DownloadProgressChanged += bytes => _statusReporter.OnDownloadProgressChanged(bytes, _resource.Size);
-
-            _statusReporter.OnDownloadStarted();
+            downloader.DownloadProgressChanged += bytes => { _status.Bytes.Value = bytes; };
 
             downloader.Download(cancellationToken);
 
-            _statusReporter.OnDownloadEnded();
+            _status.IsActive.Value = false;
         }
     }
 }
