@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PatchKit.Unity.Patcher.Status
+namespace PatchKit.Unity.Patcher.AppUpdater.Status
 {
     public class DownloadSpeedCalculator
     {
@@ -10,14 +10,14 @@ namespace PatchKit.Unity.Patcher.Status
         {
             public long Bytes;
 
-            public long Duration;
+            public TimeSpan Duration;
 
             public DateTime AddTime;
         }
 
-        private const long SampleLifeTime = 10000;
+        private static readonly TimeSpan SampleLifeTime = TimeSpan.FromSeconds(10.0);
 
-        private const long MinimumDelayBetweenSamples = 1000;
+        private static readonly TimeSpan MinimumDelayBetweenSamples = TimeSpan.FromSeconds(1.0);
 
         private readonly List<Sample> _samples = new List<Sample>();
 
@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher.Status
 
         private void CleanOldSamples(DateTime time)
         {
-            _samples.RemoveAll(s => (time - s.AddTime).TotalMilliseconds > SampleLifeTime);
+            _samples.RemoveAll(s => time - s.AddTime > SampleLifeTime);
         }
 
         public void Restart(DateTime time)
@@ -39,7 +39,12 @@ namespace PatchKit.Unity.Patcher.Status
 
         public void AddSample(long bytes, DateTime time)
         {
-            long duration = (long) (time - _lastTime).TotalMilliseconds;
+            if (_lastBytes > bytes)
+            {
+                Restart(time);
+            }
+
+            var duration = time - _lastTime;
 
             if (duration < MinimumDelayBetweenSamples)
             {
@@ -64,14 +69,14 @@ namespace PatchKit.Unity.Patcher.Status
             get
             {
                 long bytes = _samples.Sum(s => s.Bytes);
-                long duration = _samples.Sum(s => s.Duration);
+                double duration = _samples.Sum(s => s.Duration.TotalSeconds);
 
-                if (bytes == 0)
+                if (bytes > 0 && duration > 0.0)
                 {
-                    return 0.0;
+                    return bytes / duration;
                 }
 
-                return bytes / (duration / 1000.0);
+                return 0.0;
             }
         }
     }

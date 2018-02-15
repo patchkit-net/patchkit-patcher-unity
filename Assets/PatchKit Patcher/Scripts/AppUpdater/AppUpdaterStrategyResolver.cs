@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Linq;
+using JetBrains.Annotations;
+using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -8,11 +11,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 {
     public class AppUpdaterStrategyResolver: IAppUpdaterStrategyResolver
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterStrategyResolver));
+        private readonly ILogger _logger;
 
-        public AppUpdaterStrategyResolver()
+        private readonly UpdaterStatus _status;
+
+        public AppUpdaterStrategyResolver(UpdaterStatus status)
         {
-            DebugLogger.LogConstructor();
+            _logger = PatcherLogManager.DefaultLogger;
+            _status = status;
         }
 
         public IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context)
@@ -22,13 +28,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 case StrategyType.Empty:
                     return new AppUpdaterEmptyStrategy();
                 case StrategyType.Content:
-                    return new AppUpdaterContentStrategy(context);
+                    return new AppUpdaterContentStrategy(context, _status);
                 case StrategyType.Diff:
-                    return new AppUpdaterDiffStrategy(context);
+                    return new AppUpdaterDiffStrategy(context, _status);
                 case StrategyType.ContentRepair:
-                    return new ContentRepairStrategy(context);
+                    return new ContentRepairStrategy(context, _status);
                 default:
-                    return new AppUpdaterContentStrategy(context);
+                    return new AppUpdaterContentStrategy(context, _status);
             }
         }
 
@@ -49,139 +55,171 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
         }
 
-        public StrategyType Resolve(AppUpdaterContext context)
+        public StrategyType Resolve([NotNull] AppUpdaterContext context)
         {
-            Checks.ArgumentNotNull(context, "context");
-
-            DebugLogger.Log("Resolving best strategy for updating...");
-
-            if (context.App.IsInstalled())
+            if (context == null)
             {
-                int installedVersionId = context.App.GetInstalledVersionId();
-                int latestVersionId = context.App.GetLatestVersionId();
+                throw new ArgumentNullException("context");
+            }
 
-                if (installedVersionId == latestVersionId)
+            try
+            {
+                _logger.LogDebug("Resolving best strategy for updating...");
+
+                if (context.App.IsInstalled())
                 {
-                    DebugLogger.Log("Installed version is the same as the latest version. Using empty strategy.");
+                    int installedVersionId = context.App.GetInstalledVersionId();
+                    _logger.LogTrace("installedVersionId = " + installedVersionId);
 
-                    return StrategyType.Empty;
-                }
+                    int latestVersionId = context.App.GetLatestVersionId();
+                    _logger.LogTrace("latestVersionId = " + latestVersionId);
 
-                if (installedVersionId < latestVersionId)
-                {
+                    if (installedVersionId == latestVersionId)
+                    {
+                        _logger.LogDebug("Installed version is the same as the latest version. Using empty strategy.");
+
+                        return StrategyType.Empty;
+                    }
+
+                    if (installedVersionId < latestVersionId)
+                    {
+                        _logger.LogDebug("Installed verison is older than latest version...");
+
 #if PATCHKIT_DONT_USE_DIFF_UPDATES
-                    DebugLogger.Log(
+                    _logger.LogDebug(
                         "Installed version is older than the latest version. " +
                         "Using content strategy due to define PATCHKIT_DONT_USE_DIFF_UPDATES");
-                    
+
                     return StrategyType.Content;
 #else
-                    DebugLogger.Log(
-                        "Installed version is older than the latest version. Checking whether cost of updating with diff is lower than cost of updating with content...");
-
-                    if (context.Configuration.CheckConsistencyBeforeDiffUpdate)
-                    {
-                        DebugLogger.Log("Checking consitency before allowing diff update...");
-
-                        if (!IsVersionIntegral(context))
+                        if (DoesVersionSupportDiffUpdates(context, installedVersionId))
                         {
-                            return StrategyType.ContentRepair;
+                            _logger.LogDebug("Installed version does not support diff updates. Using content strategy");
+
+                            return StrategyType.Content;
                         }
-                    }
 
-                    ulong contentCost = (ulong)GetContentCost(context); // bytes
-                    ulong diffCost = GetDiffCost(context); // bytes
-                    DebugLogger.LogVariable(contentCost, "contentCost");
-                    DebugLogger.LogVariable(diffCost, "diffCost");
-                    DebugLogger.Log(string.Format("Cost of updating with diff equals {0}.", diffCost));
-                    DebugLogger.Log(string.Format("Cost of updating with content equals {0}.", contentCost));
+                        _logger.LogDebug(
+                            "Checking whether cost of updating with diff is lower than cost of updating with content...");
 
-                    if (diffCost < contentCost)
-                    {
-                        DebugLogger.Log(
-                            "Cost of updating with diff is lower than cost of updating with content. Using diff strategy.");
+                        long contentSize = GetLatestVersionContentSize(context);
+                        _logger.LogTrace("contentSize = " + contentSize);
 
-                        return StrategyType.Diff;
-                    }
+                        long sumDiffSize = GetLatestVersionDiffSizeSum(context);
+                        _logger.LogTrace("sumDiffSize = " + sumDiffSize);
 
-                    DebugLogger.Log(
-                        "Cost of updating with content is lower than cost of updating with diff. Using content strategy.");
+                        if (sumDiffSize < contentSize)
+                        {
+                            _logger.LogDebug(
+                                "Cost of updating with diff is lower than cost of updating with content.");
+
+                            if (context.Configuration.CheckConsistencyBeforeDiffUpdate)
+                            {
+                                _logger.LogDebug("Checking consitency before allowing diff update...");
+
+                                if (!IsVersionIntegral(contentSize, context))
+                                {
+                                    _logger.LogDebug("Installed version is broken. Using repair&diff strategy.");
+                                    return StrategyType.ContentRepair;
+                                }
+
+                                _logger.LogDebug("Installed verison is ready for diff updating.");
+                            }
+
+                            _logger.LogDebug("Using diff strategy.");
+
+                            return StrategyType.Diff;
+                        }
+
+                        _logger.LogDebug(
+                            "Cost of updating with content is lower than cost of updating with diff. Using content strategy.");
 #endif
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Installed version is newer than the latest version. Using content strategy.");
+                    }
                 }
                 else
                 {
-                    DebugLogger.Log("Installed version is newer than the latest version. Using content strategy.");
+                    _logger.LogDebug("Application is not installed. Using content strategy.");
                 }
-            }
-            else
-            {
-                DebugLogger.Log("Application is not installed. Using content strategy.");
-            }
 
-            return StrategyType.Content;
+                return StrategyType.Content;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Failed to resolve best strategy for updating.", e);
+                throw;
+            }
         }
 
-        private bool IsVersionIntegral(AppUpdaterContext context)
+        private bool DoesVersionSupportDiffUpdates(AppUpdaterContext context, int versionId)
+        {
+            int lowestVersionWithDiffId = GetLowestVersionWithDiffId(context);
+            _logger.LogTrace("lowestVersionWithDiffId = " + lowestVersionWithDiffId);
+
+            return versionId + 1 < lowestVersionWithDiffId;
+        }
+
+        private bool IsVersionIntegral(long contentSize, AppUpdaterContext context)
         {
             var commandFactory = new AppUpdaterCommandFactory();
             int installedVersionId = context.App.GetInstalledVersionId();
-            long contentCost = GetContentCost(context); // bytes
+            _logger.LogTrace("installedVersionId = " + installedVersionId);
+            _logger.LogTrace("context.Configuration.HashSizeThreshold = " + context.Configuration.HashSizeThreshold);
 
-            long sizeThreshold = context.Configuration.HashSizeThreshold;
-            bool isCheckingHash = contentCost < sizeThreshold;
-
-            DebugLogger.LogFormat("IsCheckingHash: {0}, for content size: {1} and contentSizeThreshold: {2}",
-                isCheckingHash, contentCost, sizeThreshold);
+            bool isCheckingHash = contentSize < context.Configuration.HashSizeThreshold;
+            _logger.LogTrace("isCheckingHash = " + isCheckingHash);
 
             var checkVersionIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(
                 installedVersionId, context, isCheckingHash);
 
-            checkVersionIntegrity.Prepare(context.StatusMonitor);
+            checkVersionIntegrity.Prepare(_status);
             checkVersionIntegrity.Execute(CancellationToken.Empty);
 
             bool isValid = checkVersionIntegrity.Results.Files.All(
                 fileIntegrity => fileIntegrity.Status == FileIntegrityStatus.Ok);
 
-            if (isValid)
-            {
-                DebugLogger.Log("Version is consistent. Diff update is allowed.");
-            }
-            else
+            if (!isValid)
             {
                 foreach (var fileIntegrity in checkVersionIntegrity.Results.Files)
                 {
                     if (fileIntegrity.Status != FileIntegrityStatus.Ok)
                     {
-                        DebugLogger.Log(string.Format("File {0} is not consistent - {1}",
+                        _logger.LogDebug(string.Format("File {0} is not consistent - {1}",
                             fileIntegrity.FileName, fileIntegrity.Status));
                     }
                 }
-
-                DebugLogger.Log(
-                    "Version is not consistent. Diff update is forbidden - using content strategy.");
             }
 
             return isValid;
         }
 
-        private long GetContentCost(AppUpdaterContext context)
+        private static int GetLowestVersionWithDiffId(AppUpdaterContext context)
+        {
+            var appInfo = context.App.RemoteMetaData.GetAppInfo();
+            return appInfo.LowestVersionWithDiff;
+        }
+
+        private static long GetLatestVersionContentSize(AppUpdaterContext context)
         {
             int latestVersionId = context.App.GetLatestVersionId();
             var contentSummary = context.App.RemoteMetaData.GetContentSummary(latestVersionId);
             return contentSummary.Size;
         }
 
-        private ulong GetDiffCost(AppUpdaterContext context)
+        private static long GetLatestVersionDiffSizeSum(AppUpdaterContext context)
         {
             int latestVersionId = context.App.GetLatestVersionId();
             int currentLocalVersionId = context.App.GetInstalledVersionId();
 
-            ulong cost = 0;
+            long cost = 0;
 
             for (int i = currentLocalVersionId + 1; i <= latestVersionId; i++)
             {
                 var diffSummary = context.App.RemoteMetaData.GetDiffSummary(i);
-                cost += (ulong)diffSummary.Size;
+                cost += diffSummary.Size;
             }
 
             return cost;

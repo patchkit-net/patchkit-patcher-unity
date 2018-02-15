@@ -3,7 +3,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Local;
 
-namespace PatchKit.Unity.Patcher.Status
+namespace PatchKit.Unity.Patcher.AppUpdater.Status
 {
     public static class StatusWeightHelper
     {
@@ -51,6 +51,16 @@ namespace PatchKit.Unity.Patcher.Status
         public static double GetResourceDownloadWeight(RemoteResource resource)
         {
             return BytesToWeight(resource.Size)*1;
+        }
+
+        public static double GetDownloadWeight(long bytes)
+        {
+            return BytesToWeight(bytes);
+        }
+
+        public static double GetCopyFileWeight(long bytes)
+        {
+            return BytesToWeight(bytes) *0.01;
         }
 
         private static double BytesToWeight(long bytes)

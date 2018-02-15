@@ -7,6 +7,7 @@ using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using FileIntegrityStatus = PatchKit.Unity.Patcher.AppUpdater.Commands.FileIntegrityStatus;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
@@ -15,13 +16,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     {
         private readonly AppUpdaterContext _context;
 
+        private readonly UpdaterStatus _status;
+
         private readonly ILogger _logger;
 
-        public ContentRepairStrategy(AppUpdaterContext context)
+        public ContentRepairStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
             Assert.IsNotNull(context, "Context is null");
 
             _context = context;
+            _status = status;
 
             _logger = PatcherLogManager.DefaultLogger;
         }
@@ -38,14 +42,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             string metaDestination = _context.App.DownloadDirectory.GetDiffPackageMetaPath(installedVersionId);
 
-            var commandFactory = new Commands.AppUpdaterCommandFactory();
+            var commandFactory = new AppUpdaterCommandFactory();
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_context.StatusMonitor);
+            validateLicense.Prepare(_status);
             validateLicense.Execute(cancellationToken);
 
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
-            geolocateCommand.Prepare(_context.StatusMonitor);
+            geolocateCommand.Prepare(_status);
             geolocateCommand.Execute(cancellationToken);
 
             var resource = _context.App.RemoteData.GetContentPackageResource(
@@ -63,7 +67,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             downloader.Download(cancellationToken);
 
             var checkVersionIntegrityCommand = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context);
-            checkVersionIntegrityCommand.Prepare(_context.StatusMonitor);
+            checkVersionIntegrityCommand.Prepare(_status);
             checkVersionIntegrityCommand.Execute(cancellationToken);
 
             var meta = Pack1Meta.ParseFromFile(metaDestination);
@@ -93,7 +97,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 brokenFiles,
                 meta);
 
-            repairCommand.Prepare(_context.StatusMonitor);
+            repairCommand.Prepare(_status);
             repairCommand.Execute(cancellationToken);
 
             _logger.LogDebug("Repair successful, following up with a diff.");
@@ -117,15 +121,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var commandFactory = new AppUpdaterCommandFactory();
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
 
-            geolocateCommand.Prepare(_context.StatusMonitor);
+            geolocateCommand.Prepare(_status);
             geolocateCommand.Execute(cancellationToken);
 
             var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForDiff(latestVersionId, _context);
-            checkDiskSpaceCommand.Prepare(_context.StatusMonitor);
+            checkDiskSpaceCommand.Prepare(_status);
             checkDiskSpaceCommand.Execute(cancellationToken);
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_context.StatusMonitor);
+            validateLicense.Prepare(_status);
             validateLicense.Execute(cancellationToken);
 
             var diffCommandsList = new List<DiffCommands>();
@@ -136,10 +140,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                 diffCommands.Download = commandFactory.CreateDownloadDiffPackageCommand(i, validateLicense.KeySecret,
                     geolocateCommand.CountryCode, _context);
-                diffCommands.Download.Prepare(_context.StatusMonitor);
+                diffCommands.Download.Prepare(_status);
 
                 diffCommands.Install = commandFactory.CreateInstallDiffCommand(i, _context);
-                diffCommands.Install.Prepare(_context.StatusMonitor);
+                diffCommands.Install.Prepare(_status);
 
                 diffCommandsList.Add(diffCommands);
             }
