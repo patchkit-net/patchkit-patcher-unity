@@ -7,10 +7,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
     public class UnityHttpResponse : IHttpResponse
     {
         private readonly string _data;
-        private readonly int _statusCode;
+        private readonly System.Net.HttpStatusCode _statusCode;
         private MemoryStream _contentStream;
 
-        public UnityHttpResponse(string data, int statusCode, string charset)
+        public UnityHttpResponse(string data, System.Net.HttpStatusCode statusCode, string charset)
         {
             if (data == null) throw new ArgumentNullException("data");
             
@@ -42,7 +42,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public System.Net.HttpStatusCode StatusCode
         {
-            get { return (System.Net.HttpStatusCode) _statusCode; }
+            get { return _statusCode; }
         }
 
         public void Dispose()
