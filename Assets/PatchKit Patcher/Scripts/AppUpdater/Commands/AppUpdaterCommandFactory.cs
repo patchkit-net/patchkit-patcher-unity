@@ -54,25 +54,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 versionId,
                 versionContentSummary,
                 context.App.LocalDirectory,
-                context.App.LocalMetaData,
-                context.App.TemporaryDirectory);
+                context.App.LocalMetaData);
         }
 
         public IInstallDiffCommand CreateInstallDiffCommand(int versionId, AppUpdaterContext context)
         {
             var packagePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
             var packageMetaPath = context.App.DownloadDirectory.GetDiffPackageMetaPath(versionId);
-            var versionDiffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId);
             var packagePassword = context.App.RemoteData.GetDiffPackageResourcePassword(versionId);
 
             return new InstallDiffCommand(packagePath,
                 packageMetaPath,
                 packagePassword,
                 versionId,
-                versionDiffSummary,
                 context.App.LocalDirectory,
                 context.App.LocalMetaData,
-                context.App.TemporaryDirectory);
+                context.App.RemoteMetaData);
         }
 
         public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context,

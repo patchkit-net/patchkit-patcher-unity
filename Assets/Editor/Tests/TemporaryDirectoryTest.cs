@@ -19,12 +19,10 @@ class TemporaryDirectoryTest
     }
 
     [Test]
-    public void PrepareForWriting_CreatesDirectory()
+    public void Constructor_CreatesDirectory()
     {
-        using (var temporaryDirectory = new TemporaryDirectory(_dirPath))
+        using (new TemporaryDirectory(_dirPath))
         {
-            temporaryDirectory.PrepareForWriting();
-
             Assert.IsTrue(Directory.Exists(_dirPath));
         }
     }
@@ -32,9 +30,8 @@ class TemporaryDirectoryTest
     [Test]
     public void Dispose_DeletesDirectory()
     {
-        using (var temporaryDirectory = new TemporaryDirectory(_dirPath))
+        using (new TemporaryDirectory(_dirPath))
         {
-            temporaryDirectory.PrepareForWriting();
         }
 
         Assert.IsFalse(Directory.Exists(_dirPath));
@@ -45,7 +42,6 @@ class TemporaryDirectoryTest
     {
         using (var temporaryDirectory = new TemporaryDirectory(_dirPath))
         {
-            temporaryDirectory.PrepareForWriting();
             File.WriteAllText(temporaryDirectory.GetUniquePath(), "a");
         }
 
@@ -57,8 +53,6 @@ class TemporaryDirectoryTest
     {
         using (var temporaryData = new TemporaryDirectory(_dirPath))
         {
-            temporaryData.PrepareForWriting();
-
             for (int i = 0; i < 100; i++)
             {
                 string path = temporaryData.GetUniquePath();
