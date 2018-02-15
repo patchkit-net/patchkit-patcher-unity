@@ -7,10 +7,9 @@ namespace PatchKit.Unity
 {
     public class GameTitle : MonoBehaviour
     {
-        [SerializeField]
-        private Text targetText;
+        public Text Text;
 
-        void Start()
+        private void Start()
         {
             var patcher = Patcher.Patcher.Instance;
 
@@ -18,16 +17,10 @@ namespace PatchKit.Unity
 
             patcher.AppInfo
                 .ObserveOnMainThread()
-                .Subscribe(OnInfoUpdate)
+                .Select(app => app.DisplayName)
+                .Where(s => !string.IsNullOrEmpty(s))
+                .SubscribeToText(Text)
                 .AddTo(this);
-        }
-
-        private void OnInfoUpdate(Api.Models.Main.App appInfo)
-        {
-            if (!string.IsNullOrEmpty(appInfo.DisplayName))
-            {
-                targetText.text = appInfo.DisplayName;
-            }
         }
     }
 }
