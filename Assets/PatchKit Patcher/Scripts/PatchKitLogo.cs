@@ -24,6 +24,10 @@ namespace PatchKit.Unity
         [SerializeField]
         private Button button;
 
+        private bool isLogoVisible = false;
+
+        private const float LogoVisibilityChangeDelay = 3; // in seconds
+
         void Awake()
         {
             Assert.IsNotNull(button);
@@ -45,12 +49,23 @@ namespace PatchKit.Unity
                 .ObserveOnMainThread()
                 .Subscribe(app => Resolve(app.PatcherWhitelabel))
                 .AddTo(this);
+
+            StartCoroutine(ChangeVisibility());
+        }
+
+        private IEnumerator ChangeVisibility()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(LogoVisibilityChangeDelay);
+                image.enabled = isLogoVisible;
+                button.enabled = isLogoVisible;
+            }
         }
 
         private void Resolve(bool isWhitelabel)
         {
-            image.enabled = !isWhitelabel;
-            button.enabled = !isWhitelabel;
+            isLogoVisible = !isWhitelabel;
         }
 
         public void OnMouseEnter()
