@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for partial pack1 processing
 - Support for new lowest_version_diff property
 - An inspector warning if the default editor app secret has been modified
+- Repairing invalid files before diff update
+- Including version information in Sentry reports
+- Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
+- Example scenes with double progress bars
+
 
 ### Changed
 - Update API servers configuration
