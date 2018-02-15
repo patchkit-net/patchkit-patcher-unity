@@ -24,7 +24,7 @@ namespace PatchKit.Unity.Patcher
     // - this component is destroyed only when application quits
     public class Patcher : MonoBehaviour
     {
-        private const string EditorAllowedSecret = "ac20fc855b75a7ea5f3e936dfd38ccd8";
+        public const string EditorAllowedSecret = "ac20fc855b75a7ea5f3e936dfd38ccd8";
 
         public enum UserDecision
         {
