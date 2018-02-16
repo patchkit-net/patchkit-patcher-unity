@@ -8,7 +8,6 @@ using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents.Protocol;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -16,11 +15,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// Provides an easy access for torrent client program.
     /// </summary>
     /// <seealso cref="System.IDisposable" />
-    public sealed class TorrentClient : IDisposable
+    public sealed class TorrentClient : ITorrentClient
     {
-        private readonly ILogger _logger;
-
         private readonly ITorrentClientProcessStartInfoProvider _processStartInfoProvider;
+
+        private readonly ILogger _logger;
 
         private readonly Process _process;
 
@@ -30,11 +29,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private bool _disposed;
 
-        public TorrentClient(ITorrentClientProcessStartInfoProvider processStartInfoProvider)
+        public TorrentClient(ITorrentClientProcessStartInfoProvider processStartInfoProvider, ILogger logger)
         {
             _processStartInfoProvider = processStartInfoProvider;
-
-            _logger = DependencyResolver.Resolve<ILogger>();
+            _logger = logger;
             _process = StartProcess();
             _stdOutput = CreateStdOutputStream();
             _stdInput = CreateStdInputStream();

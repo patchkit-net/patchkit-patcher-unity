@@ -64,7 +64,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 {
                     _logger.LogTrace("tempDir = " + tempDir.Path);
 
-                    using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
+                    using (var torrentClient = DependencyResolver.Resolve<ITorrentClient>())
                     {
                         torrentClient.AddTorrent(_torrentFilePath, tempDir.Path, cancellationToken);
 
@@ -127,7 +127,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private TorrentStatus GetAndCheckTorrentStatus(TorrentClient torrentClient,
+        private TorrentStatus GetAndCheckTorrentStatus(ITorrentClient torrentClient,
             CancellationToken cancellationToken)
         {
             var torrentClientStatus = torrentClient.GetStatus(cancellationToken);

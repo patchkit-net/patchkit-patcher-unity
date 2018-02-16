@@ -1,5 +1,6 @@
 ﻿using Microsoft.Practices.Unity;
 using PatchKit.Logging;
+using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -10,6 +11,10 @@ namespace PatchKit.Unity.Patcher
         static DependencyResolver()
         {
             RegisterLogger();
+
+            _container
+                .RegisterType<ITorrentClientProcessStartInfoProvider, UnityTorrentClientProcessStartInfoProvider>();
+            _container.RegisterType<ITorrentClient, TorrentClient>();
         }
 
         private static void RegisterLogger()
