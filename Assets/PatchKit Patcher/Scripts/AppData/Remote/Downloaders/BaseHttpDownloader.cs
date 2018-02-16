@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         public event DataAvailableHandler DataAvailable;
 
         public BaseHttpDownloader(string url, int timeout) :
-            this(url, timeout, new DefaultHttpClient(), PatcherLogManager.DefaultLogger)
+            this(url, timeout, new DefaultHttpClient(), DependencyResolver.Resolve<ILogger>())
         {
         }
 

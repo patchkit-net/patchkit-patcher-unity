@@ -56,7 +56,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _localData = localData;
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
         }
         
         public override void Execute(CancellationToken cancellationToken)

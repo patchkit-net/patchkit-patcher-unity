@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using PatchKit.Api;
 using PatchKit.Api.Models.Main;
+using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -34,14 +35,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 HttpClient = new UnityHttpClient(),
                 RequestTimeoutCalculator = requestTimeoutCalculator,
                 RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
-                Logger = PatcherLogManager.DefaultLogger
+                Logger = DependencyResolver.Resolve<ILogger>()
             };
 
             _mainApiConnectionWithoutRetry = new MainApiConnection(mainSettings)
             {
                 HttpClient = new UnityHttpClient(),
                 RequestTimeoutCalculator = requestTimeoutCalculator,
-                Logger = PatcherLogManager.DefaultLogger
+                Logger = DependencyResolver.Resolve<ILogger>()
             };
 
             var keysSettings = Settings.GetKeysApiConnectionSettings();
@@ -50,7 +51,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             {
                 HttpClient = new UnityHttpClient(),
                 RequestTimeoutCalculator = requestTimeoutCalculator,
-                Logger = PatcherLogManager.DefaultLogger
+                Logger = DependencyResolver.Resolve<ILogger>()
             };
         }
 

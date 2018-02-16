@@ -2,13 +2,14 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using PatchKit.Logging;
+using PatchKit.Unity.Patcher;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Utilities
 {
     public static class LauncherUtilities
     {
-        private static readonly ILogger Logger = PatcherLogManager.DefaultLogger;
+        private static readonly ILogger Logger = DependencyResolver.Resolve<ILogger>();
 
         private const string LauncherPathFileName = "launcher_path";
 

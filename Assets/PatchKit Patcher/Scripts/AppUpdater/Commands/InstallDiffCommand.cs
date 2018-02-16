@@ -69,7 +69,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new ArgumentNullException("remoteMetaData");
             }
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
             _packagePath = packagePath;
             _packageMetaPath = packageMetaPath;
             _packagePassword = packagePassword;

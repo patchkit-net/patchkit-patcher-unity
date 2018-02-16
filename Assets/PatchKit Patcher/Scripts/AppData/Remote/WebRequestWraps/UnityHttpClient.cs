@@ -28,7 +28,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public UnityHttpClient()
         {
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
         }
 
         private IEnumerator GetWWW(HttpGetRequest getRequest, WWWResult result)

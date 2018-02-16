@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using PatchKit.Api;
+using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -40,7 +41,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 HttpClient = new UnityHttpClient(),
                 RequestTimeoutCalculator = requestTimeoutCalculator,
                 RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
-                Logger = PatcherLogManager.DefaultLogger
+                Logger = DependencyResolver.Resolve<ILogger>()
             };
         }
 

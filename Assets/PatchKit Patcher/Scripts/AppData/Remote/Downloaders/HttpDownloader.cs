@@ -35,7 +35,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             if (destinationFilePath == null) throw new ArgumentNullException("destinationFilePath");
             if (urls == null) throw new ArgumentNullException("urls");
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
             _destinationFilePath = destinationFilePath;
             _urls = urls;
         }

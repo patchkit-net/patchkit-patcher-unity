@@ -61,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             if (urls == null) throw new ArgumentNullException("urls");
             if (size <= 0) throw new ArgumentOutOfRangeException("size");
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
             _destinationFilePath = destinationFilePath;
             _urls = urls;
             _chunksData = chunksData;

@@ -74,7 +74,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             if (fileSize <= 0) throw new ArgumentOutOfRangeException("fileSize");
             if (hashFunction == null) throw new ArgumentNullException("hashFunction");
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
             _chunksData = chunksData;
             _hashFunction = hashFunction;
 

@@ -10,14 +10,6 @@ namespace PatchKit.Unity.Patcher.Debug
 {
     public class PatcherLogManager : MonoBehaviour, IIssueReporter
     {
-        private static DefaultLogger _defaultLogger;
-
-        [NotNull]
-        public static DefaultLogger DefaultLogger
-        {
-            get { return _defaultLogger ?? (_defaultLogger = new DefaultLogger(new DefaultLogStackFrameLocator())); }
-        }
-
         private static PatcherLogManager _instance;
         
         [NotNull]
@@ -54,7 +46,8 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private void Awake()
         {
-            DefaultLogger.AddWriter(new UnityMessageWriter(new SimpleMessageFormatter()));
+            var messagesStream = DependencyResolver.Resolve<IMessagesStream>();
+            messagesStream.Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
 
             _isEditor = Application.isEditor;
             _stream = new PatcherLogStream();

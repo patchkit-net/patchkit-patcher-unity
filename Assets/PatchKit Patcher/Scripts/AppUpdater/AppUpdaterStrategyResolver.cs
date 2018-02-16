@@ -17,7 +17,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public AppUpdaterStrategyResolver(UpdaterStatus status)
         {
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
             _status = status;
         }
 

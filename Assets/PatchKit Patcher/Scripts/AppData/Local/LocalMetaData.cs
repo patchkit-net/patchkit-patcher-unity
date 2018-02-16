@@ -60,7 +60,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             _filePath = filePath;
             _deprecatedFilePath = deprecatedFilePath;
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
 
             LoadData();
         }

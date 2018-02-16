@@ -57,7 +57,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             if (destinationFilePath == null) throw new ArgumentNullException("destinationFilePath");
             if (destinationMetaPath == null) throw new ArgumentNullException("destinationMetaPath");
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
             _destinationFilePath = destinationFilePath;
             _destinationMetaPath = destinationMetaPath;
             _resource = resource;

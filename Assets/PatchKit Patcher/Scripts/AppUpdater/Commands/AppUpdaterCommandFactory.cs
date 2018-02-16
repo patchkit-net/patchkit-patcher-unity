@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using PatchKit.Api.Models.Main;
+using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -100,7 +101,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)
         {
-            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, context.App.LocalMetaData, new UnityCache(), PatcherLogManager.DefaultLogger, PatcherLogManager.Instance);
+            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, context.App.LocalMetaData, new UnityCache(), DependencyResolver.Resolve<ILogger>(), PatcherLogManager.Instance);
         }
 
         public ICheckDiskSpace CreateCheckDiskSpaceCommandForDiff(int versionId, AppUpdaterContext context)

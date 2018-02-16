@@ -34,7 +34,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             _processStartInfoProvider = processStartInfoProvider;
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
             _process = StartProcess();
             _stdOutput = CreateStdOutputStream();
             _stdInput = CreateStdInputStream();

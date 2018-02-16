@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             _context = context;
             _status = status;
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
         }
 
         public StrategyType GetStrategyType()

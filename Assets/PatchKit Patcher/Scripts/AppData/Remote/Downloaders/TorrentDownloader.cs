@@ -43,7 +43,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             if (torrentFilePath == null) throw new ArgumentNullException("torrentFilePath");
             if (totalBytes <= 0) throw new ArgumentOutOfRangeException("totalBytes");
 
-            _logger = PatcherLogManager.DefaultLogger;
+            _logger = DependencyResolver.Resolve<ILogger>();
             _destinationFilePath = destinationFilePath;
             _torrentFilePath = torrentFilePath;
             _totalBytes = totalBytes;
