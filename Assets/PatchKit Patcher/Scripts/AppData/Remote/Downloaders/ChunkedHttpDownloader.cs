@@ -266,7 +266,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             int partCount = (int) (effectiveDataSize / partSize) + 1;
 
             _logger.LogDebug(string.Format("Download jobs will be separated into {0} parts, starting at {1}.", partCount, startingPart));
-            for (int i = startingPart; i < startingPart + partCount; i++)
+            for (int i = startingPart; i <= startingPart + partCount; i++)
             {
                 string url = resourceUrl.Url;
                 if (i > 0)
@@ -280,6 +280,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 long localLowerBound = lowerBound < partBottom ? 0 : lowerBound - partBottom;
                 long localUpperBound = upperBound > partTop ? -1 : upperBound - partBottom;
+
+                if (upperBound == -1)
+                {
+                    localUpperBound = -1;
+                }
 
                 long effectivePartSize = localUpperBound != -1 ? (localUpperBound - localLowerBound) : (partSize - localLowerBound);
 
