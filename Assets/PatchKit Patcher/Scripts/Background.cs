@@ -21,7 +21,7 @@ public class Background : MonoBehaviour
         public PatcherBannerImageDimensions dimensions;
     }
 
-    public struct InitializationData
+    public struct Data
     {
         public PatcherBannerData bannerData;
         public string bannerFilePath;
@@ -31,7 +31,33 @@ public class Background : MonoBehaviour
 
     private const string CachedBannerUrlKey = "cached-banner-url-key";
     private const string CachedBannerPathKey = "cached-banner-path-key";
-    private string _bannerFilePath;
+
+    private const string BannerImageFilename = "banner";
+
+    public string CachedBannerPath
+    {
+        get 
+        {
+            return _cache.GetValue(CachedBannerPathKey);
+        }
+        private set
+        {
+            _cache.SetValue(CachedBannerPathKey, value);
+        }
+    }
+
+    public string CachedBannerImageUrl
+    {
+        get
+        {
+            return _cache.GetValue(CachedBannerUrlKey);
+        }
+
+        private set 
+        {
+            _cache.SetValue(CachedBannerUrlKey, value);
+        }
+    }
 
     public Image targetImage;
 
@@ -41,48 +67,35 @@ public class Background : MonoBehaviour
     {
         _logger = PatcherLogManager.DefaultLogger;
 
-        _logger.LogDebug("Starting background image script.");
-
         var patcher = Patcher.Instance;
 
         if (IsCachedBannerAvailable())
         {
             _logger.LogDebug("A cached banner image is available.");
-            LoadCachedBanner();
+            LoadCachedBanner(CachedBannerPath);
         }
 
         Assert.IsNotNull(patcher);
 
         var patcherData = patcher.Data
-            // .Skip(1)
             .ObserveOnMainThread()
-            .Select(data => data.AppDataPath);
+            .Select(data => data.AppDataPath)
+            .SkipWhile(val => string.IsNullOrEmpty(val))
+            .Select(val => Path.Combine(val, BannerImageFilename));
 
         var appInfo = patcher.AppInfo
-            // .Skip(1)
             .ObserveOnMainThread()
-            .Select(info => new PatcherBannerData{imageUrl = "https://i.imgur.com/N95DUhU.jpg", dimensions = info.PatcherBannerImageDimensions});
+            .Select(info => new PatcherBannerData{imageUrl = info.PatcherBannerImage, dimensions = info.PatcherBannerImageDimensions});
 
-        patcherData.CombineLatest(appInfo, (lhs, rhs) => new InitializationData{bannerData = rhs, bannerFilePath = lhs}).Subscribe(OnBannerDataUpdate);
+        patcherData
+            .CombineLatest(appInfo, (lhs, rhs) => new Data{bannerData = rhs, bannerFilePath = lhs})
+            .Subscribe(OnBannerDataUpdate);
     }
 
-    private void OnBannerDataUpdate(InitializationData data)
+    private void OnBannerDataUpdate(Data data)
     {
         _logger.LogDebug("On patcher data update.");
         var bannerData = data.bannerData;
-
-        if (string.IsNullOrEmpty(data.bannerFilePath))
-        {
-            return;
-        }
-
-        _bannerFilePath = Path.Combine(data.bannerFilePath, "banner_image");
-
-        if (IsCachedBannerAvailable() && IsCachedBannerSameAsRemote(bannerData.imageUrl))
-        {
-            _logger.LogDebug("The cached banner is the same as remote.");
-            return;
-        }
 
         if (string.IsNullOrEmpty(bannerData.imageUrl))
         {
@@ -90,27 +103,34 @@ public class Background : MonoBehaviour
             return;
         }
 
-        AquireRemoteBanner(bannerData);
+        if (IsCachedBannerAvailable() && IsCachedBannerSameAsRemote(bannerData.imageUrl))
+        {
+            _logger.LogDebug("The cached banner is the same as remote.");
+            return;
+        }
+
+        AquireRemoteBanner(data);
     }
 
     private bool IsCachedBannerAvailable()
     {
-        return !string.IsNullOrEmpty(_cache.GetValue(CachedBannerUrlKey));
+        return !string.IsNullOrEmpty(CachedBannerImageUrl);
     }
 
     private bool IsCachedBannerSameAsRemote(string remoteBannerUrl)
     {
-        var cachedBannerUrl = _cache.GetValue(CachedBannerUrlKey);
+        var cachedBannerUrl = CachedBannerImageUrl;
 
         return remoteBannerUrl == cachedBannerUrl;
     }
 
-    private void AquireRemoteBanner(PatcherBannerData bannerData)
+    private void AquireRemoteBanner(Data data)
     {
+        _logger.LogDebug(string.Format("Aquiring the remote banner image from {0}", data.bannerData.imageUrl));
         var coroutine = Threading.StartThreadCoroutine(() => {
             CancellationTokenSource source = new CancellationTokenSource();
 
-            var downloader = new HttpDownloader(_bannerFilePath, new string[]{bannerData.imageUrl});
+            var downloader = new HttpDownloader(data.bannerFilePath, new string[]{data.bannerData.imageUrl});
 
             try
             {
@@ -125,33 +145,34 @@ public class Background : MonoBehaviour
         }, (bool result) => {
             if (result)
             {
-                _cache.SetValue(CachedBannerUrlKey, bannerData.imageUrl);
-                _cache.SetValue(CachedBannerPathKey, _bannerFilePath);
-                LoadCachedBanner();
+                CachedBannerImageUrl = data.bannerData.imageUrl;
+                CachedBannerPath = data.bannerFilePath;
+                LoadCachedBanner(data.bannerFilePath);
             }
         });
 
         StartCoroutine(coroutine);
-
     }
 
-    private void ActivateDefaultBanner()
+    private void LoadCachedBanner(string filepath)
     {
+        Texture2D texture = new Texture2D(0, 0);
 
-    }
-
-    private void LoadCachedBanner()
-    {
-        Texture2D texture = new Texture2D(200, 200);
-
-        if (string.IsNullOrEmpty(_bannerFilePath))
+        if (string.IsNullOrEmpty(filepath))
         {
-            _bannerFilePath = _cache.GetValue(CachedBannerPathKey);
+            filepath = CachedBannerPath;
+
+            if (string.IsNullOrEmpty(filepath))
+            {
+                _logger.LogWarning("Banner file path was null or empty.");
+                return;
+            }
         }
 
-        if (File.Exists(_bannerFilePath))
+        if (File.Exists(filepath))
         {
-            var fileBytes = File.ReadAllBytes(_bannerFilePath);
+            _logger.LogDebug(string.Format("Loading the banner image from {0}", filepath));
+            var fileBytes = File.ReadAllBytes(filepath);
             texture.LoadImage(fileBytes);
 
             var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
