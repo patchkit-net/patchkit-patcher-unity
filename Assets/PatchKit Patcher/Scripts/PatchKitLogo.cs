@@ -9,26 +9,21 @@ namespace PatchKit.Unity
 
     public class PatchKitLogo : MonoBehaviour
     {
-        [SerializeField]
-        private string patchKitWebsiteUrl;
+        public string patchKitWebsiteUrl;
 
-        [SerializeField]
-        private Texture2D cursorTexture;
+        public Texture2D cursorTexture;
 
-        [SerializeField]
-        private Vector2 cursorHotspot;
+        public Vector2 cursorHotspot;
 
-        [SerializeField]
-        private Image image;
+        public Image image;
 
-        [SerializeField]
-        private Button button;
+        public Button button;
 
-        private bool isLogoVisible = false;
+        private bool _isLogoVisible = false;
 
         private const float LogoVisibilityChangeDelay = 3; // in seconds
 
-        void Awake()
+        private void Awake()
         {
             Assert.IsNotNull(button);
             Assert.IsNotNull(image);
@@ -39,7 +34,7 @@ namespace PatchKit.Unity
             image.enabled = false;
         }
 
-        void Start()
+        private void Start()
         {
             var patcher = Patcher.Patcher.Instance;
 
@@ -47,7 +42,8 @@ namespace PatchKit.Unity
 
             patcher.AppInfo
                 .ObserveOnMainThread()
-                .Subscribe(app => Resolve(app.PatcherWhitelabel))
+                .Select(app => app.PatcherWhitelabel)
+                .Subscribe(Resolve)
                 .AddTo(this);
 
             StartCoroutine(ChangeVisibility());
@@ -58,14 +54,14 @@ namespace PatchKit.Unity
             while (true)
             {
                 yield return new WaitForSeconds(LogoVisibilityChangeDelay);
-                image.enabled = isLogoVisible;
-                button.enabled = isLogoVisible;
+                image.enabled = _isLogoVisible;
+                button.enabled = _isLogoVisible;
             }
         }
 
         private void Resolve(bool isWhitelabel)
         {
-            isLogoVisible = !isWhitelabel;
+            _isLogoVisible = !isWhitelabel;
         }
 
         public void OnMouseEnter()
