@@ -937,8 +937,8 @@ MonoBehaviour:
       CheckConsistencyBeforeDiffUpdate: 1
       HashSizeThreshold: 1073741824
     AutomaticallyStartApp: 0
-    AutomaticallyCheckForAppUpdates: 1
-    AutomaticallyInstallApp: 1
+    AutomaticallyCheckForAppUpdates: 0
+    AutomaticallyInstallApp: 0
 --- !u!114 &377531154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4353,6 +4353,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b1e6947329b98246a4b4191d1198ecf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  targetImage: {fileID: 848268043}
 --- !u!222 &1627480856
 CanvasRenderer:
   m_ObjectHideFlags: 0

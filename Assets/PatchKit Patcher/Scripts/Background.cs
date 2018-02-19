@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
+using PatchKit.Logging;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher;
 using PatchKit.Unity.Patcher.Debug;
@@ -20,39 +21,72 @@ public class Background : MonoBehaviour
         public PatcherBannerImageDimensions dimensions;
     }
 
+    public struct InitializationData
+    {
+        public PatcherBannerData bannerData;
+        public string bannerFilePath;
+    }
+
     private ICache _cache = new UnityCache();
 
     private const string CachedBannerUrlKey = "cached-banner-url-key";
-    private const string CachedBannerFilePath = "banner";
+    private const string CachedBannerPathKey = "cached-banner-path-key";
+    private string _bannerFilePath;
 
     public Image targetImage;
 
-    private ILogger _logger;
+    private PatchKit.Logging.ILogger _logger;
 
-    private void Start()
+    void Start()
     {
-        _logger = (ILogger) PatcherLogManager.DefaultLogger;
+        _logger = PatcherLogManager.DefaultLogger;
+
+        _logger.LogDebug("Starting background image script.");
 
         var patcher = Patcher.Instance;
 
         if (IsCachedBannerAvailable())
         {
+            _logger.LogDebug("A cached banner image is available.");
             LoadCachedBanner();
         }
 
         Assert.IsNotNull(patcher);
 
-        patcher.AppInfo
+        var patcherData = patcher.Data
+            // .Skip(1)
             .ObserveOnMainThread()
-            .Skip(1)    // Skip the first update
-            .Select(info => new PatcherBannerData{imageUrl = info.PatcherBannerImage, dimensions = info.PatcherBannerImageDimensions})
-            .Subscribe(OnBannerDataUpdate);
+            .Select(data => data.AppDataPath);
+
+        var appInfo = patcher.AppInfo
+            // .Skip(1)
+            .ObserveOnMainThread()
+            .Select(info => new PatcherBannerData{imageUrl = "https://i.imgur.com/N95DUhU.jpg", dimensions = info.PatcherBannerImageDimensions});
+
+        patcherData.CombineLatest(appInfo, (lhs, rhs) => new InitializationData{bannerData = rhs, bannerFilePath = lhs}).Subscribe(OnBannerDataUpdate);
     }
 
-    private void OnBannerDataUpdate(PatcherBannerData bannerData)
+    private void OnBannerDataUpdate(InitializationData data)
     {
+        _logger.LogDebug("On patcher data update.");
+        var bannerData = data.bannerData;
+
+        if (string.IsNullOrEmpty(data.bannerFilePath))
+        {
+            return;
+        }
+
+        _bannerFilePath = Path.Combine(data.bannerFilePath, "banner_image");
+
         if (IsCachedBannerAvailable() && IsCachedBannerSameAsRemote(bannerData.imageUrl))
         {
+            _logger.LogDebug("The cached banner is the same as remote.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(bannerData.imageUrl))
+        {
+            _logger.LogDebug("No banner is available.");
             return;
         }
 
@@ -61,7 +95,7 @@ public class Background : MonoBehaviour
 
     private bool IsCachedBannerAvailable()
     {
-        return _cache.GetValue(CachedBannerUrlKey) != null;
+        return !string.IsNullOrEmpty(_cache.GetValue(CachedBannerUrlKey));
     }
 
     private bool IsCachedBannerSameAsRemote(string remoteBannerUrl)
@@ -73,10 +107,10 @@ public class Background : MonoBehaviour
 
     private void AquireRemoteBanner(PatcherBannerData bannerData)
     {
-        Threading.StartThreadCoroutine(() => {
+        var coroutine = Threading.StartThreadCoroutine(() => {
             CancellationTokenSource source = new CancellationTokenSource();
 
-            var downloader = new HttpDownloader(CachedBannerFilePath, new string[]{bannerData.imageUrl});
+            var downloader = new HttpDownloader(_bannerFilePath, new string[]{bannerData.imageUrl});
 
             try
             {
@@ -91,9 +125,13 @@ public class Background : MonoBehaviour
         }, (bool result) => {
             if (result)
             {
+                _cache.SetValue(CachedBannerUrlKey, bannerData.imageUrl);
+                _cache.SetValue(CachedBannerPathKey, _bannerFilePath);
                 LoadCachedBanner();
             }
         });
+
+        StartCoroutine(coroutine);
 
     }
 
@@ -106,9 +144,14 @@ public class Background : MonoBehaviour
     {
         Texture2D texture = new Texture2D(200, 200);
 
-        if (File.Exists(CachedBannerFilePath))
+        if (string.IsNullOrEmpty(_bannerFilePath))
         {
-            var fileBytes = File.ReadAllBytes(CachedBannerFilePath);
+            _bannerFilePath = _cache.GetValue(CachedBannerPathKey);
+        }
+
+        if (File.Exists(_bannerFilePath))
+        {
+            var fileBytes = File.ReadAllBytes(_bannerFilePath);
             texture.LoadImage(fileBytes);
 
             var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
