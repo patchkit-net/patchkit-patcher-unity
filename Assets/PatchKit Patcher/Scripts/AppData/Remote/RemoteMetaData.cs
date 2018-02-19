@@ -79,6 +79,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         public int GetLatestVersionId(bool retryRequests = true)
         {
             DebugLogger.Log("Getting latest version id.");
+            DebugLogger.Log("retryRequests = " + retryRequests);
             var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
             return m.GetAppLatestAppVersionId(_appSecret).Id;
         }
@@ -86,6 +87,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         public Api.Models.Main.App GetAppInfo(bool retryRequests = true)
         {
             DebugLogger.Log("Getting app info.");
+            DebugLogger.Log("retryRequests = " + retryRequests);
             var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
             return m.GetApplicationInfo(_appSecret);
         }
