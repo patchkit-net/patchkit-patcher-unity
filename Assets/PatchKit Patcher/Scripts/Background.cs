@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using UniRx;
+using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -23,8 +25,14 @@ public class Background : MonoBehaviour
     private const string CachedBannerUrlKey = "cached-banner-url-key";
     private const string CachedBannerFilePath = "banner";
 
+    public Image targetImage;
+
+    private ILogger _logger;
+
     private void Start()
     {
+        _logger = (ILogger) PatcherLogManager.DefaultLogger;
+
         var patcher = Patcher.Instance;
 
         if (IsCachedBannerAvailable())
@@ -65,7 +73,28 @@ public class Background : MonoBehaviour
 
     private void AquireRemoteBanner(PatcherBannerData bannerData)
     {
-        HttpDownloader downloader = new HttpDownloader(CachedBannerFilePath, new string[]{bannerData.imageUrl});
+        Threading.StartThreadCoroutine(() => {
+            CancellationTokenSource source = new CancellationTokenSource();
+
+            var downloader = new HttpDownloader(CachedBannerFilePath, new string[]{bannerData.imageUrl});
+
+            try
+            {
+                downloader.Download(source.Token);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+        }, (bool result) => {
+            if (result)
+            {
+                LoadCachedBanner();
+            }
+        });
+
     }
 
     private void ActivateDefaultBanner()
@@ -81,6 +110,10 @@ public class Background : MonoBehaviour
         {
             var fileBytes = File.ReadAllBytes(CachedBannerFilePath);
             texture.LoadImage(fileBytes);
+
+            var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+
+            targetImage.sprite = sprite;
         }
     }
 }
