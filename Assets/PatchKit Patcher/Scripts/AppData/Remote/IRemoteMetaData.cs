@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         /// <summary>
         /// Returns app info.
         /// </summary>
-        Api.Models.Main.App GetAppInfo();
+        Api.Models.Main.App GetAppInfo(bool retryRequests = true);
 
         /// <summary>
         /// Returns certain version content summary.
