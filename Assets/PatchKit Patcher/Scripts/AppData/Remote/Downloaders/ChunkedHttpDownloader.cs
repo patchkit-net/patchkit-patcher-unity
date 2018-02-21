@@ -261,7 +261,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             for (int i = firstPart; i < lastPart; i++)
             {
                 string url = resourceUrl.Url;
-                if (i > 0)  
+                if (i > 0)
                 {
                     // second and later indices should have index numebr at the end
                     url += "." + i;
