@@ -27,11 +27,14 @@ namespace PatchKit.Unity.Utilities
             return Make(0, -1);
         }
 
-        public static bool IsFull(this BytesRange range)
+        public static BytesRange Empty()
         {
-            return range.Start == 0 && range.End == -1;
+            return Make(0, 0);
         }
 
+        /// <summary>
+        /// Makes the Start and End values of a given range correspond to provided chunk sizes.
+        /// </summary>
         public static BytesRange Chunkify(this BytesRange range, ChunksData chunksData)
         {
             long chunkSize = chunksData.ChunkSize;
@@ -52,6 +55,11 @@ namespace PatchKit.Unity.Utilities
             return new BytesRange(bottom, top);
         }
 
+        /// <summary>
+        /// Limits one range inside the other, examples:
+        /// 0:-1 contained in range 20:30 becomes 20:30.
+        /// 0:100 contained in range 50:-1 becomes 50:100
+        /// </summary>
         public static BytesRange ContainIn(this BytesRange range, BytesRange outer)
         {
             if (Contains(outer, range))
@@ -78,8 +86,20 @@ namespace PatchKit.Unity.Utilities
             return Make(start, end);
         }
 
+        /// <summary>
+        /// Localizes one range inside another, the resulting range is limited and local to the relative ("parent") range
+        /// If the ranges don't overlap, an empty range will be returned.
+        /// Examples:
+        /// 50:95 localized within 10:90 becomes 40:-1
+        /// 5:15 localized withing 10:90 becomes 0:5
+        /// </summary>
         public static BytesRange LocalizeTo(this BytesRange range, BytesRange relative)
         {
+            if (!Overlaps(range, relative))
+            {
+                return Empty();
+            }
+
             long localStart = range.Start >= relative.Start ? range.Start - relative.Start : 0;
             long localEnd = range.End <= relative.End ? range.End - relative.Start : -1;
 
@@ -93,7 +113,10 @@ namespace PatchKit.Unity.Utilities
 
         public static bool Overlaps(this BytesRange lhs, BytesRange rhs)
         {
-            return Contains(lhs, rhs.Start) || Contains(lhs, rhs.End);
+            return Contains(lhs, rhs)
+                || Contains(rhs, lhs)
+                || Contains(lhs, rhs.Start)
+                || Contains(lhs, rhs.End);
         }
 
         public static bool Contains(this BytesRange outer, BytesRange inner)
