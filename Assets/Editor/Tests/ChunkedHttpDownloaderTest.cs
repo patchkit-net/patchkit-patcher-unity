@@ -114,6 +114,16 @@ public class ChunkedHttpDownloaderTest
     }
 
     [Test]
+    public void ChunksCalculations_RangeIsExactWithChunks()
+    {
+        BytesRange range = BytesRangeUtils.Make(ChunkSize, (ChunkSize * 3) - 1); // Exactly 3 chunks
+
+        var chunksRange = range.Chunkify(_chunksData);
+
+        Assert.That(chunksRange, Is.EqualTo(range));
+    }
+
+    [Test]
     public void ChunksCalculations_WithRangeExactlyAsDataSize()
     {
         BytesRange range = BytesRangeUtils.Make(0, DataSize);
