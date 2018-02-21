@@ -5,7 +5,6 @@ using JetBrains.Annotations;
 using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -15,66 +14,56 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private const int BufferSize = 1024;
 
-        private readonly string _url;
-        private readonly int _timeout;
         private readonly IHttpClient _httpClient;
 
-        private readonly byte[] _buffer;
-
-        private bool _downloadHasBeenCalled;
-        private BytesRange? _bytesRange;
-
-        public event DataAvailableHandler DataAvailable;
-
-        public BaseHttpDownloader(string url, int timeout) :
-            this(url, timeout, new DefaultHttpClient(), DependencyResolver.Resolve<ILogger>())
+        public BaseHttpDownloader([NotNull] IHttpClient httpClient, [NotNull] ILogger logger)
         {
-        }
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
 
-        public BaseHttpDownloader([NotNull] string url, int timeout, [NotNull] IHttpClient httpClient,
-            [NotNull] ILogger logger)
-        {
-            if (string.IsNullOrEmpty(url)) throw new ArgumentException("Value cannot be null or empty.", "url");
-            if (timeout <= 0) throw new ArgumentOutOfRangeException("timeout");
-            if (httpClient == null) throw new ArgumentNullException("httpClient");
-            if (logger == null) throw new ArgumentNullException("logger");
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
 
-            _url = url;
-            _timeout = timeout;
             _httpClient = httpClient;
             _logger = logger;
-
-            _buffer = new byte[BufferSize];
 
             ServicePointManager.ServerCertificateValidationCallback =
                 (sender, certificate, chain, errors) => true;
             ServicePointManager.DefaultConnectionLimit = 65535;
         }
 
-        public void SetBytesRange(BytesRange? range)
+        public void Download(string url, BytesRange? bytesRange, int timeout, DataAvailableHandler onDataAvailable,
+            CancellationToken cancellationToken)
         {
-            _bytesRange = range;
-        }
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentException("Value cannot be null or empty.", "url");
+            }
 
-        public void Download(CancellationToken cancellationToken)
-        {
+            if (timeout <= 0)
+            {
+                throw new ArgumentOutOfRangeException("timeout");
+            }
+
             try
             {
                 _logger.LogDebug("Downloading...");
-                _logger.LogTrace("url = " + _url);
-                _logger.LogTrace("bufferSize = " + BufferSize);
-                _logger.LogTrace("bytesRange = " + (_bytesRange.HasValue
-                                     ? _bytesRange.Value.Start + "-" + _bytesRange.Value.End
+                _logger.LogTrace("url = " + url);
+                _logger.LogTrace("bytesRange = " + (bytesRange.HasValue
+                                     ? bytesRange.Value.Start + "-" + bytesRange.Value.End
                                      : "(none)"));
-                _logger.LogTrace("timeout = " + _timeout);
-
-                Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
+                _logger.LogTrace("timeout = " + timeout);
+                _logger.LogTrace("bufferSize = " + BufferSize);
 
                 var request = new HttpGetRequest
                 {
-                    Address = new Uri(_url),
-                    Range = _bytesRange,
-                    Timeout = _timeout
+                    Address = new Uri(url),
+                    Range = bytesRange,
+                    Timeout = timeout
                 };
 
                 using (var response = _httpClient.Get(request))
@@ -90,20 +79,20 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         //TODO: Could response.ContentStream be null? Need to check it.
 
-                        ReadResponseStream(response.ContentStream, cancellationToken);
+                        ReadResponseStream(response.ContentStream, onDataAvailable, cancellationToken);
 
                         _logger.LogDebug("Stream has been read.");
                     }
                     else if (Is4XXStatus(response.StatusCode))
                     {
                         throw new DataNotAvailableException(string.Format(
-                            "Request data for {0} is not available (status: {1})", _url, response.StatusCode));
+                            "Request data for {0} is not available (status: {1})", url, response.StatusCode));
                     }
                     else
                     {
                         throw new ServerErrorException(string.Format(
                             "Server has experienced some issues with request for {0} which resulted in {1} status code.",
-                            _url, response.StatusCode));
+                            url, response.StatusCode));
                     }
                 }
 
@@ -113,7 +102,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 _logger.LogError("Downloading has failed.", webException);
                 throw new ConnectionFailureException(
-                    string.Format("Connection to server has failed while requesting {0}", _url), webException);
+                    string.Format("Connection to server has failed while requesting {0}", url), webException);
             }
             catch (Exception e)
             {
@@ -122,14 +111,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private void ReadResponseStream(Stream responseStream, CancellationToken cancellationToken)
+        private void ReadResponseStream(Stream responseStream, DataAvailableHandler onDataAvailable, CancellationToken cancellationToken)
         {
+            var buffer = new byte[BufferSize];
             int bufferRead;
-            while ((bufferRead = responseStream.Read(_buffer, 0, BufferSize)) > 0)
+            while ((bufferRead = responseStream.Read(buffer, 0, BufferSize)) > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                OnDataAvailable(_buffer, bufferRead);
+                onDataAvailable(buffer, bufferRead);
             }
         }
 
@@ -143,12 +133,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private static bool Is4XXStatus(HttpStatusCode statusCode)
         {
             return (int) statusCode >= 400 && (int) statusCode <= 499;
-        }
-
-        private void OnDataAvailable(byte[] data, int length)
-        {
-            var handler = DataAvailable;
-            if (handler != null) handler(data, length);
         }
     }
 }

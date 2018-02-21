@@ -35,6 +35,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly ILogger _logger;
 
+        private readonly IBaseHttpDownloader _baseHttpDownloader = DependencyResolver.Resolve<IBaseHttpDownloader>();
+
         private readonly IRequestTimeoutCalculator _timeoutCalculator = new SimpleRequestTimeoutCalculator();
 
         private readonly IRequestRetryStrategy _retryStrategy = new SimpleInfiniteRequestRetryStrategy();
@@ -175,16 +177,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
                     _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
 
-                    var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeoutCalculator.Timeout);
-                    baseHttpDownloader.SetBytesRange(downloadJob.Range);
-
                     const long downloadStatusLogInterval = 5000L;
                     var stopwatch = Stopwatch.StartNew();
 
                     long downloadedBytes = 0;
 
                     var job = downloadJob;
-                    baseHttpDownloader.DataAvailable += (bytes, length) =>
+                    DataAvailableHandler onDataAvailable = (bytes, length) =>
                     {
                         fileStream.Write(bytes, 0, length);
 
@@ -203,7 +202,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                         OnDownloadProgressChanged(fileStream.VerifiedLength);
                     };
 
-                    baseHttpDownloader.Download(cancellationToken);
+                    _baseHttpDownloader.Download(downloadJob.Url, downloadJob.Range, _timeoutCalculator.Timeout, onDataAvailable, cancellationToken);
 
                     _logger.LogDebug("Download job execution success.");
                     _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);

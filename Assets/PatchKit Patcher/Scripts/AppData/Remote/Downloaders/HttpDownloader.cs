@@ -22,6 +22,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private readonly IRequestTimeoutCalculator _requestTimeoutCalculator = new SimpleRequestTimeoutCalculator();
         private readonly IRequestRetryStrategy _retryStrategy = new SimpleInfiniteRequestRetryStrategy();
 
+        private readonly IBaseHttpDownloader _baseHttpDownloader = DependencyResolver.Resolve<IBaseHttpDownloader>();
+
         private readonly string _destinationFilePath;
 
         private readonly string[] _urls;
@@ -119,8 +121,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 const long downloadStatusLogInterval = 5000L;
                 var stopwatch = Stopwatch.StartNew();
 
-                var baseHttpDownloader = new BaseHttpDownloader(url, _requestTimeoutCalculator.Timeout);
-                baseHttpDownloader.DataAvailable += (bytes, length) =>
+                DataAvailableHandler onDataAvailable = (bytes, length) =>
                 {
                     fileStream.Write(bytes, 0, length);
 
@@ -136,7 +137,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     OnDownloadProgressChanged(downloadedBytes);
                 };
 
-                baseHttpDownloader.Download(cancellationToken);
+                _baseHttpDownloader.Download(url, null, _requestTimeoutCalculator.Timeout, onDataAvailable, cancellationToken);
 
                 _logger.LogDebug(string.Format("Download from {0} has been successful.", url));
 

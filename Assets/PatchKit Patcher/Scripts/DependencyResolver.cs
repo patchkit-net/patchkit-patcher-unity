@@ -18,6 +18,10 @@ namespace PatchKit.Unity.Patcher
                 .RegisterType<ITorrentClientProcessStartInfoProvider, UnityTorrentClientProcessStartInfoProvider>();
             _container.RegisterType<ITorrentClient, TorrentClient>();
             _container.RegisterType<IHttpClient, UnityHttpClient>();
+
+            // We are overriding IHttpClient to DefaultHttpClient since it works better for downloaders
+            _container.RegisterInstance<IBaseHttpDownloader>(new BaseHttpDownloader(new DefaultHttpClient(),
+                _container.Resolve<ILogger>()));
         }
 
         private static void RegisterLogger()

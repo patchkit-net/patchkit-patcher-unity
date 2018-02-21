@@ -8,10 +8,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// </summary>
     public interface IBaseHttpDownloader
     {
-        event DataAvailableHandler DataAvailable;
-
-        void SetBytesRange(BytesRange? range);
-
-        void Download(CancellationToken cancellationToken);
+        void Download(string url, BytesRange? bytesRange, int timeout, DataAvailableHandler onDataAvailable, CancellationToken cancellationToken);
     }
 }
