@@ -1,5 +1,7 @@
 ﻿using Microsoft.Practices.Unity;
 using PatchKit.Logging;
+using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 
 namespace PatchKit.Unity.Patcher
@@ -15,6 +17,7 @@ namespace PatchKit.Unity.Patcher
             _container
                 .RegisterType<ITorrentClientProcessStartInfoProvider, UnityTorrentClientProcessStartInfoProvider>();
             _container.RegisterType<ITorrentClient, TorrentClient>();
+            _container.RegisterType<IHttpClient, UnityHttpClient>();
         }
 
         private static void RegisterLogger()

@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using PatchKit.Api;
+using PatchKit.Network;
+using PatchKit.Unity.Patcher;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using UnityEngine;
 
@@ -48,7 +50,7 @@ namespace PatchKit.Unity.UI
         protected virtual void Awake()
         {
             _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
-            _mainApiConnection.HttpClient = new UnityHttpClient();
+            _mainApiConnection.HttpClient = DependencyResolver.Resolve<IHttpClient>();
         }
 
         protected virtual void Start()

@@ -38,7 +38,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             _mainApiConnection = new MainApiConnection(mainSettings)
             {
-                HttpClient = new UnityHttpClient(),
+                HttpClient = DependencyResolver.Resolve<IHttpClient>(),
                 RequestTimeoutCalculator = requestTimeoutCalculator,
                 RequestRetryStrategy = new SimpleInfiniteRequestRetryStrategy(),
                 Logger = DependencyResolver.Resolve<ILogger>()
