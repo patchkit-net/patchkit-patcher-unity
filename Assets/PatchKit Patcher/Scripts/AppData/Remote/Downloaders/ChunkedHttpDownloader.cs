@@ -21,7 +21,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// </summary>
     public sealed class ChunkedHttpDownloader : IChunkedHttpDownloader
     {
-        private struct DownloadJob
+        public struct DownloadJob
         {
             public DownloadJob(string url, long start = 0, long end = -1)
             {
@@ -76,7 +76,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 Directory.CreateDirectory(parentDirectory);
             }
 
-            var chunksRange = CalculateContainingChunksRange(_range);
+            var chunksRange = CalculateContainingChunksRange(_range, _chunksData);
             int startChunk = (int) (chunksRange.Start / _chunksData.ChunkSize);
             int endChunk = _range.End == -1 ? -1 : (int) (chunksRange.End / _chunksData.ChunkSize);
 
@@ -230,7 +230,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public BytesRange CalculateContainingChunksRange(BytesRange range)
         {
-            long chunkSize = _chunksData.ChunkSize;
+            return CalculateContainingChunksRange(range, _chunksData);
+        }
+
+        public static BytesRange CalculateContainingChunksRange(BytesRange range, ChunksData chunksData)
+        {
+            long chunkSize = chunksData.ChunkSize;
             long bottom = (range.Start / chunkSize) * chunkSize;
 
             if (range.End == -1)
@@ -238,7 +243,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return new BytesRange(bottom, -1);
             }
 
-            long top = Math.Min((range.End / chunkSize) * (chunkSize + 1), range.End);
+            long top = ((range.End / chunkSize) + 1) * (chunkSize);
+
+            if (top > chunksData.Chunks.Length * chunkSize)
+            {
+                top = range.End;
+            }
 
             Assert.IsTrue(top >= range.End && bottom <= range.Start, "Effective range must contain the original range.");
 
@@ -247,15 +257,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
         {
-            _logger.LogDebug("Building download jobs.");
-            var effectiveRange = CalculateContainingChunksRange(_range);
+            return BuildDownloadJobQueue(resourceUrl, currentOffset, _range, _size, _chunksData);
+        }
+
+        public static IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset, BytesRange range, long dataSize, ChunksData chunksData)
+        {
+            var effectiveRange = CalculateContainingChunksRange(range, chunksData);
             long lowerBound = Math.Max(currentOffset, effectiveRange.Start);
             long upperBound = effectiveRange.End != -1 ? effectiveRange.End - 1 : -1;
-            long effectiveDataSize = upperBound != -1 ? upperBound - lowerBound + 1 : _size - lowerBound;
+            long effectiveDataSize = upperBound != -1 ? upperBound - lowerBound + 1 : dataSize - lowerBound;
 
             if (resourceUrl.PartSize == 0)
             {
-                _logger.LogDebug("No parts, returning a single download job");
                 yield return new DownloadJob(resourceUrl.Url, lowerBound, upperBound);
                 yield break;
             }
@@ -263,10 +276,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             long partSize = resourceUrl.PartSize;
 
             int startingPart = (int) (lowerBound / partSize);
-            int partCount = (int) (_size / partSize);
+            int endPart = (int) (upperBound / partSize);
+            int totalPartCount = (int) (dataSize / partSize);
 
-            _logger.LogDebug(string.Format("Download jobs will be separated into {0} parts, starting at {1}.", partCount, startingPart));
-            for (int i = startingPart; i < partCount; i++)
+            if (upperBound == -1)
+            {
+                endPart = totalPartCount;
+            }
+
+            for (int i = startingPart; i <= endPart; i++)
             {
                 string url = resourceUrl.Url;
                 if (i > 0)
@@ -276,7 +294,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 }
 
                 long partBottom = i * partSize;
-                long partTop = (i+1) * partSize - 1;
+                long partTop = (i+1) * partSize;
 
                 long localLowerBound = lowerBound < partBottom ? 0 : lowerBound - partBottom;
                 long localUpperBound = upperBound > partTop ? -1 : upperBound - partBottom;
