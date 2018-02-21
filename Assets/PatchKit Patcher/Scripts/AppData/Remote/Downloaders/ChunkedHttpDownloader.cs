@@ -77,8 +77,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
 
             var chunksRange = CalculateContainingChunksRange(_range);
-            int startChunk = (int) Math.Floor((double) chunksRange.Start / (double) _chunksData.ChunkSize);
-            int endChunk = _range.End == -1 ? -1 : (int) Math.Ceiling((double) chunksRange.End / (double) _chunksData.ChunkSize);
+            int startChunk = (int) (chunksRange.Start / _chunksData.ChunkSize);
+            int endChunk = (int) _range.End;
+
+            if (_range.End != -1)
+            {
+                endChunk = (int) (chunksRange.End / _chunksData.ChunkSize);
+
+                if (chunksRange.End % _chunksData.ChunkSize != 0)
+                {
+                    endChunk += 1;
+                }
+            }
 
             _logger.LogTrace(string.Format("Opening chunked file stream for chunks {0}-{1}", startChunk, endChunk));
             return new ChunkedFileStream(_destinationFilePath, _size, _chunksData,
@@ -241,10 +251,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         public static IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset, BytesRange range, long dataSize, ChunksData chunksData)
         {
             long lastByte = dataSize - 1;
-            var effectiveRange = range.Chunkify(chunksData);
-            var dataBounds = BytesRangeUtils.Make(currentOffset);
+            BytesRange effectiveRange = range.Chunkify(chunksData);
+            BytesRange dataBounds = BytesRangeUtils.Make(currentOffset);
 
-            var bounds = effectiveRange.ContainIn(dataBounds);
+            BytesRange bounds = effectiveRange.ContainIn(dataBounds);
 
             if (resourceUrl.PartSize == 0)
             {
@@ -254,9 +264,25 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             long partSize = resourceUrl.PartSize;
 
-            int firstPart = (int) Math.Floor((double) bounds.Start / (double) partSize);
-            int totalPartCount = (int) Math.Ceiling((double) dataSize / (double) partSize);
-            int lastPart = bounds.End == -1 ? totalPartCount : (int) Math.Ceiling((double) bounds.End / (double) partSize);
+            int firstPart = (int) (bounds.Start / partSize);
+            int totalPartCount = (int) (dataSize / partSize);
+
+            if (dataSize % partSize != 0)
+            {
+                totalPartCount += 1;
+            }
+
+
+            int lastPart = totalPartCount;
+            
+            if (bounds.End != -1)
+            {
+                lastPart = (int) (bounds.End / partSize);
+                if (bounds.End % partSize != 0)
+                {
+                    lastPart += 1;
+                }
+            }
 
             for (int i = firstPart; i < lastPart; i++)
             {
@@ -267,8 +293,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     url += "." + i;
                 }
 
-                var partRange = BytesRangeUtils.Make(i * partSize, (i+1) * partSize - 1, lastByte);
-                var localBounds = bounds.LocalizeTo(partRange);
+                BytesRange partRange = BytesRangeUtils.Make(i * partSize, (i+1) * partSize - 1, lastByte);
+                BytesRange localBounds = bounds.LocalizeTo(partRange);
 
                 yield return new DownloadJob(url, localBounds.Start, localBounds.End);
             }
