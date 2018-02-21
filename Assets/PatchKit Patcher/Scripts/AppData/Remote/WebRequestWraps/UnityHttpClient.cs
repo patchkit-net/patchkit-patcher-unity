@@ -92,7 +92,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         {
             _logger.LogDebug("Reading status code...");
 
-            if (!result.ResponseHeaders.ContainsKey("STATUS"))
+            if (result.ResponseHeaders == null || !result.ResponseHeaders.ContainsKey("STATUS"))
             {
                 // Based on tests, if response doesn't contain status it has probably timed out.
                 _logger.LogWarning("Response is missing STATUS header. Marking it as timed out.");
