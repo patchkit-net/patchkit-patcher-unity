@@ -91,7 +91,7 @@ namespace PatchKit.Unity.Utilities
         /// If the ranges don't overlap, an empty range will be returned.
         /// Examples:
         /// 50:95 localized within 10:90 becomes 40:-1
-        /// 5:15 localized withing 10:90 becomes 0:5
+        /// 5:15 localized within 10:90 becomes 0:5
         /// </summary>
         public static BytesRange LocalizeTo(this BytesRange range, BytesRange relative)
         {
