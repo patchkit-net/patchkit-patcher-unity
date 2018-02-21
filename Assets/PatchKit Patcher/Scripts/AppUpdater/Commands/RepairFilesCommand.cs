@@ -79,7 +79,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls, _resource.ChunksData, _resource.Size);
 
                     long start = entry.Offset.GetValueOrDefault();
-                    long end = start + entry.Size.GetValueOrDefault();
+                    long end = (start + entry.Size.GetValueOrDefault()) - 1; // Offset by 1 to denote a byte index
 
                     var range = new BytesRange(start, end);
 
