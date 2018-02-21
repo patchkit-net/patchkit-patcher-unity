@@ -76,9 +76,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 Directory.CreateDirectory(parentDirectory);
             }
 
-            var chunksRange = CalculateContainingChunksRange(_range, _chunksData);
-            int startChunk = (int) (chunksRange.Start / _chunksData.ChunkSize);
-            int endChunk = _range.End == -1 ? -1 : (int) (chunksRange.End / _chunksData.ChunkSize);
+            var chunksRange = CalculateContainingChunksRange(_range);
+            int startChunk = (int) Math.Floor((double) chunksRange.Start / (double) _chunksData.ChunkSize);
+            int endChunk = _range.End == -1 ? -1 : (int) Math.Ceiling((double) chunksRange.End / (double) _chunksData.ChunkSize);
 
             _logger.LogTrace(string.Format("Opening chunked file stream for chunks {0}-{1}", startChunk, endChunk));
             return new ChunkedFileStream(_destinationFilePath, _size, _chunksData,
@@ -230,29 +230,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public BytesRange CalculateContainingChunksRange(BytesRange range)
         {
-            return CalculateContainingChunksRange(range, _chunksData);
-        }
-
-        public static BytesRange CalculateContainingChunksRange(BytesRange range, ChunksData chunksData)
-        {
-            long chunkSize = chunksData.ChunkSize;
-            long bottom = (range.Start / chunkSize) * chunkSize;
-
-            if (range.End == -1)
-            {
-                return new BytesRange(bottom, -1);
-            }
-
-            long top = ((range.End / chunkSize) + 1) * (chunkSize);
-
-            if (top > chunksData.Chunks.Length * chunkSize)
-            {
-                top = range.End;
-            }
-
-            Assert.IsTrue(top >= range.End && bottom <= range.Start, "Effective range must contain the original range.");
-
-            return new BytesRange(bottom, top);
+            return range.Chunkify(_chunksData);
         }
 
         private IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset)
@@ -262,54 +240,37 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public static IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset, BytesRange range, long dataSize, ChunksData chunksData)
         {
-            var effectiveRange = CalculateContainingChunksRange(range, chunksData);
-            long lowerBound = Math.Max(currentOffset, effectiveRange.Start);
-            long upperBound = effectiveRange.End != -1 ? effectiveRange.End - 1 : -1;
-            long effectiveDataSize = upperBound != -1 ? upperBound - lowerBound + 1 : dataSize - lowerBound;
+            long lastByte = dataSize - 1;
+            var effectiveRange = range.Chunkify(chunksData);
+            var dataBounds = BytesRangeUtils.Make(currentOffset);
+
+            var bounds = effectiveRange.ContainIn(dataBounds);
 
             if (resourceUrl.PartSize == 0)
             {
-                yield return new DownloadJob(resourceUrl.Url, lowerBound, upperBound);
+                yield return new DownloadJob(resourceUrl.Url, bounds.Start, bounds.End);
                 yield break;
             }
 
             long partSize = resourceUrl.PartSize;
 
-            int startingPart = (int) (lowerBound / partSize);
-            int endPart = (int) (upperBound / partSize);
-            int totalPartCount = (int) (dataSize / partSize);
+            int firstPart = (int) Math.Floor((double) bounds.Start / (double) partSize);
+            int totalPartCount = (int) Math.Ceiling((double) dataSize / (double) partSize);
+            int lastPart = bounds.End == -1 ? totalPartCount : (int) Math.Ceiling((double) bounds.End / (double) partSize);
 
-            if (upperBound == -1)
-            {
-                endPart = totalPartCount;
-            }
-
-            for (int i = startingPart; i <= endPart; i++)
+            for (int i = firstPart; i < lastPart; i++)
             {
                 string url = resourceUrl.Url;
-                if (i > 0)
+                if (i > 0)  
                 {
                     // second and later indices should have index numebr at the end
                     url += "." + i;
                 }
 
-                long partBottom = i * partSize;
-                long partTop = (i+1) * partSize;
+                var partRange = BytesRangeUtils.Make(i * partSize, (i+1) * partSize - 1, lastByte);
+                var localBounds = bounds.LocalizeTo(partRange);
 
-                long localLowerBound = lowerBound < partBottom ? 0 : lowerBound - partBottom;
-                long localUpperBound = upperBound > partTop ? -1 : upperBound - partBottom;
-
-                if (upperBound == -1)
-                {
-                    localUpperBound = -1;
-                }
-
-                long effectivePartSize = localUpperBound != -1 ? (localUpperBound - localLowerBound) : (partSize - localLowerBound);
-
-                if (effectivePartSize > 0)
-                {
-                    yield return new DownloadJob(url, localLowerBound, localUpperBound);
-                }
+                yield return new DownloadJob(url, localBounds.Start, localBounds.End);
             }
         }
 
