@@ -10,7 +10,6 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 using ILogger = PatchKit.Logging.ILogger;
 
@@ -28,6 +27,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalDirectory _localData;
         private readonly ILocalMetaData _localMetaData;
         private readonly IRemoteMetaData _remoteMetaData;
+        private readonly IRsyncFilePatcher _rsyncFilePatcher;
 
         private OperationStatus _addFilesStatusReporter;
         private OperationStatus _modifiedFilesStatusReporter;
@@ -70,6 +70,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 
             _logger = DependencyResolver.Resolve<ILogger>();
+            _rsyncFilePatcher = DependencyResolver.Resolve<IRsyncFilePatcher>();
             _packagePath = packagePath;
             _packageMetaPath = packageMetaPath;
             _packagePassword = packagePassword;
@@ -457,7 +458,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 if (!entryName.EndsWith("/"))
                 {
-                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir);
+                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken);
                 }
 
                 _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.ModifiedFiles.Length;
@@ -471,7 +472,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         }
 
 
-        private void PatchFile(string fileName, string packageDirPath, string suffix, TemporaryDirectory tempDiffDir)
+        private void PatchFile(string fileName, string packageDirPath, string suffix, TemporaryDirectory tempDiffDir, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Processing patch file entry {0}", fileName));
 
@@ -511,8 +512,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 var newFilePath = tempDiffDir.GetUniquePath();
                 _logger.LogTrace("newFilePath = " + newFilePath);
 
-                var filePatcher = new FilePatcher(filePath, sourceDeltaFilePath, newFilePath);
-                filePatcher.Patch();
+                _rsyncFilePatcher.Patch(filePath, sourceDeltaFilePath, newFilePath, cancellationToken);
 
                 _logger.LogDebug("New file generated. Deleting old file in local data...");
                 File.Delete(filePath);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Practices.Unity;
 using PatchKit.Logging;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 
@@ -22,6 +23,8 @@ namespace PatchKit.Unity.Patcher
             // We are overriding IHttpClient to DefaultHttpClient since it works better for downloaders
             _container.RegisterInstance<IBaseHttpDownloader>(new BaseHttpDownloader(new DefaultHttpClient(),
                 _container.Resolve<ILogger>()));
+
+            _container.RegisterType<IRsyncFilePatcher, RsyncFilePatcher>();
         }
 
         private static void RegisterLogger()
