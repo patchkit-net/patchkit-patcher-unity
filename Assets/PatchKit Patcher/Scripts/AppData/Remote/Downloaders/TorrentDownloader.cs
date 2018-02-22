@@ -22,6 +22,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private const int ConnectionTimeout = 10000;
 
         private readonly ILogger _logger;
+        private readonly ITorrentClientFactory _torrentClientFactory;
 
         private readonly string _destinationFilePath;
         private readonly string _torrentFilePath;
@@ -44,6 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             if (totalBytes <= 0) throw new ArgumentOutOfRangeException("totalBytes");
 
             _logger = DependencyResolver.Resolve<ILogger>();
+            _torrentClientFactory = DependencyResolver.Resolve<ITorrentClientFactory>();
             _destinationFilePath = destinationFilePath;
             _torrentFilePath = torrentFilePath;
             _totalBytes = totalBytes;
@@ -64,7 +66,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 {
                     _logger.LogTrace("tempDir = " + tempDir.Path);
 
-                    using (var torrentClient = DependencyResolver.Resolve<ITorrentClient>())
+                    using (var torrentClient = _torrentClientFactory.Create())
                     {
                         torrentClient.AddTorrent(_torrentFilePath, tempDir.Path, cancellationToken);
 
