@@ -13,6 +13,7 @@ using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
+    //TODO: Rename to IChunkedFileHttpDownloader
     /// <summary>
     /// Downloads chunk-hashed file through HTTP.
     /// Chunk hashes are used to interrupt and resume downloading if downloaded chunk will be

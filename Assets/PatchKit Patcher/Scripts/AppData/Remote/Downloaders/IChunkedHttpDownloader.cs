@@ -4,6 +4,7 @@ using PatchKit.Network;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
+    //TODO: Rename to IChunkedFileHttpDownloader
     public interface IChunkedHttpDownloader
     {
         event DownloadProgressChangedHandler DownloadProgressChanged;

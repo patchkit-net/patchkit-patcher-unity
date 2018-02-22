@@ -8,6 +8,7 @@ using PatchKit.Unity.Patcher.Cancellation;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
+    //TODO: Rename to HttpDataDownloader
     public sealed class BaseHttpDownloader : IBaseHttpDownloader
     {
         private readonly ILogger _logger;
