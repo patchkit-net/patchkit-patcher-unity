@@ -33,19 +33,19 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public void Patch([NotNull] string filePath, [NotNull] string diffPath, [NotNull] string outputFilePath,
             CancellationToken cancellationToken)
         {
-            if (filePath == null)
+            if (string.IsNullOrEmpty(filePath))
             {
-                throw new ArgumentNullException("filePath");
+                throw new ArgumentException("Value cannot be null or empty.", "filePath");
             }
 
-            if (diffPath == null)
+            if (string.IsNullOrEmpty(diffPath))
             {
-                throw new ArgumentNullException("diffPath");
+                throw new ArgumentException("Value cannot be null or empty.", "diffPath");
             }
 
-            if (outputFilePath == null)
+            if (string.IsNullOrEmpty(outputFilePath))
             {
-                throw new ArgumentNullException("outputFilePath");
+                throw new ArgumentException("Value cannot be null or empty.", "outputFilePath");
             }
 
             try
