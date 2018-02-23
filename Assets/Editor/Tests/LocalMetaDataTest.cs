@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using NUnit.Framework;
-using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Patching.AppData.Local;
 
 public class LocalMetaDataTest
 {

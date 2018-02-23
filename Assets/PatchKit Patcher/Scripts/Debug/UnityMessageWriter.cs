@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using PatchKit.Logging;
 
-namespace PatchKit.Unity.Patcher.Debug
+namespace PatchKit.Patching.Unity.Debug
 {
     public class UnityMessageWriter : IMessagesStreamObserver
     {

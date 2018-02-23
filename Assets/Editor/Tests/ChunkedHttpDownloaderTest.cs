@@ -1,16 +1,11 @@
-using System.IO;
 using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
-using NSubstitute;
 using NUnit.Framework;
-using PatchKit.Unity.Patcher;
-using PatchKit.Unity.Utilities;
-using UnityEngine;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Api.Models.Main;
 using PatchKit.Network;
-using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Patching.AppData.Remote;
+using PatchKit.Patching.AppData.Remote.Downloaders;
+using PatchKit.Patching.Utilities;
 
 public class ChunkedHttpDownloaderTest
 {

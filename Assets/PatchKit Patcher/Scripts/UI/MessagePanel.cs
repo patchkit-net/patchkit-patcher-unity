@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace PatchKit.Unity.Patcher.UI
+namespace PatchKit.Patching.Unity.UI
 {
     [RequireComponent(typeof(Animator))]
     public class MessagePanel : MonoBehaviour

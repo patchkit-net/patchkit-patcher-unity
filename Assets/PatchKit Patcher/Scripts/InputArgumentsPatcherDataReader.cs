@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Utilities;
+using PatchKit.Patching.Debug;
 using UnityEngine;
 
-namespace PatchKit.Unity.Patcher
+namespace PatchKit.Patching.Unity
 {
     public class InputArgumentsPatcherDataReader
     {
@@ -89,7 +88,7 @@ namespace PatchKit.Unity.Patcher
         {
             string path = Path.GetDirectoryName(Application.dataPath);
 
-            if (Platform.GetRuntimePlatform() == RuntimePlatform.OSXPlayer)
+            if (PlatformResolver.GetRuntimePlatform() == RuntimePlatform.OSXPlayer)
             {
                 path = Path.GetDirectoryName(path);
             }

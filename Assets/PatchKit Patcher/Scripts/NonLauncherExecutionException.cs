@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace PatchKit.Unity.Patcher
+namespace PatchKit.Patching.Unity
 {
     [Serializable]
     public class NonLauncherExecutionException : Exception

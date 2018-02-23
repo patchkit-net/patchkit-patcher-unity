@@ -331,7 +331,7 @@ PlayerSettings:
   psmSplashimage: {fileID: 0}
   spritePackerPolicy: 
   scriptingDefineSymbols:
-    1: UNITY_ASSERTIONS
+    1: UNITY_ASSERTIONS;UniRxLibrary
   metroPackageName: Patcher
   metroPackageVersion: 
   metroCertificatePath: 

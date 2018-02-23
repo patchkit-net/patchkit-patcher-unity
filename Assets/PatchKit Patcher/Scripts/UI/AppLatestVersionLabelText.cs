@@ -1,8 +1,7 @@
 ﻿using System.Collections;
-using PatchKit.Unity.Utilities;
 using UnityEngine.UI;
 
-namespace PatchKit.Unity.UI
+namespace PatchKit.Patching.Unity.UI
 {
     public class AppLatestVersionLabelText : AppCompontent
     {
@@ -10,7 +9,7 @@ namespace PatchKit.Unity.UI
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield return Threading.StartThreadCoroutine(() => MainApiConnection.GetAppLatestAppVersion(AppSecret),
+            yield return UnityThreading.StartThreadCoroutine(() => MainApiConnection.GetAppLatestAppVersion(AppSecret),
                 response =>
                 {
                     Text.text = response.Label;

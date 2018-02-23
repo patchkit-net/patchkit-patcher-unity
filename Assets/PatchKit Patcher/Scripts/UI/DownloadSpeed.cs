@@ -1,11 +1,11 @@
 ﻿using System;
-using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit.Unity.Utilities;
+using PatchKit.Patching.AppUpdater.Status;
+using PatchKit.Patching.Unity.Extensions;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace PatchKit.Unity.Patcher.UI
+namespace PatchKit.Patching.Unity.UI
 {
     public class DownloadSpeed : MonoBehaviour
     {

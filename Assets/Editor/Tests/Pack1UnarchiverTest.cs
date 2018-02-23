@@ -2,8 +2,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using NUnit.Framework;
-using PatchKit.Unity.Patcher.AppData.Local;
-using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Patching.AppData.Local;
+using PatchKit.Patching.Cancellation;
 
 public class Pack1UnarchiverTest
 {

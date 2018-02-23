@@ -3,10 +3,9 @@
  * http://theknightsofunity.com/
  */
 
-using System.IO;
 using PatchKit.Logging;
-using PatchKit.Unity.Patcher.AppData.Local;
-using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Patching.AppData.Local;
+using PatchKit.Patching.Cancellation;
 using UnityEditor;
 using UnityEngine;
 

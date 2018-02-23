@@ -1,10 +1,9 @@
 ﻿using System;
-using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Utilities;
+using PatchKit.Patching.Cancellation;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace PatchKit.Unity.Patcher.UI.Dialogs
+namespace PatchKit.Patching.Unity.UI.Dialogs
 {
     public class LicenseDialog : Dialog<LicenseDialog>, ILicenseDialog
     {

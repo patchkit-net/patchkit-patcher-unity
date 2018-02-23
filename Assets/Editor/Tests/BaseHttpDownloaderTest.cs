@@ -3,8 +3,8 @@ using System.Net;
 using NUnit.Framework;
 using NSubstitute;
 using PatchKit.Network;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
-using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Patching.AppData.Remote.Downloaders;
+using PatchKit.Patching.Cancellation;
 using ILogger = PatchKit.Logging.ILogger;
 using Random = System.Random;
 

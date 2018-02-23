@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using PatchKit.Unity.Patcher.AppData.Remote;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
+using PatchKit.Patching.AppData.Remote;
+using PatchKit.Patching.AppData.Remote.Downloaders;
 
 public class ChunkedFileStreamTest {
     private string _fileName;

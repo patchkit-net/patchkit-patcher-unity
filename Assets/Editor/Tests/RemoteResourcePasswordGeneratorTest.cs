@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Patching.AppData.Remote;
 
 public class RemoteResourcePasswordGeneratorTest
 {

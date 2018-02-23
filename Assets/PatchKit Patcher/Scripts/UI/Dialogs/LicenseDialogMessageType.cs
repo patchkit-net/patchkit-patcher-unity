@@ -1,4 +1,4 @@
-﻿namespace PatchKit.Unity.Patcher.UI.Dialogs
+﻿namespace PatchKit.Patching.Unity.UI.Dialogs
 {
     public enum LicenseDialogMessageType
     {
