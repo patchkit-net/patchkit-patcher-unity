@@ -102,21 +102,19 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                                 }
                             } while (!finished);
                         }
-
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var downloadedFilePath = GetDownloadedFilePath();
-
-                        if (File.Exists(_destinationFilePath))
-                        {
-                            File.Delete(_destinationFilePath);
-                        }
-
-                        File.Move(downloadedFilePath, _destinationFilePath);
                     }
-                }
 
-                // TODO: move file
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var downloadedFilePath = GetDownloadedFilePath();
+
+                    if (File.Exists(_destinationFilePath))
+                    {
+                        File.Delete(_destinationFilePath);
+                    }
+
+                    File.Move(downloadedFilePath, _destinationFilePath);
+                }
             }
             catch (Exception e)
             {
