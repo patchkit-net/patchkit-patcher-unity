@@ -78,26 +78,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 DirectoryOperations.Delete(Path, true);
             }
 
-            DeleteOldTmpDirectories();
-
             DebugLogger.LogDispose();
 
             _disposed = true;
-        }
-
-        private void DeleteOldTmpDirectories()
-        {
-            DebugLogger.Log("TemporaryDirectory: ParentFullName: " + Directory.GetParent(Path).FullName);
-            DirectoryInfo[] tmpDirs = Directory.GetParent(Path).GetDirectories(_prefix + "*");
-
-            for (int i = 0; i < tmpDirs.Length; i++)
-            {
-                if (tmpDirs[i].CreationTime < _createdAt)
-                {
-                    DebugLogger.LogFormat("TemporaryDirectory: Deleting old tmp directory[{0}/{1}]: {2}", (i + 1), tmpDirs.Length, tmpDirs[i].FullName);
-                    DirectoryOperations.Delete(tmpDirs[i].FullName, true);
-                }
-            }
         }
     }
 }
