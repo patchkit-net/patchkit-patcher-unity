@@ -19,6 +19,7 @@ public class Background : MonoBehaviour
     {
         public string imageUrl;
         public PatcherBannerImageDimensions dimensions;
+        public string modificationDate;
     }
 
     public struct Data
@@ -31,6 +32,7 @@ public class Background : MonoBehaviour
 
     private const string CachedBannerUrlKey = "cached-banner-url-key";
     private const string CachedBannerPathKey = "cached-banner-path-key";
+    private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
 
     private const string BannerImageFilename = "banner";
 
@@ -59,11 +61,24 @@ public class Background : MonoBehaviour
         }
     }
 
+    public string CachedBannerModificationDate
+    {
+        get
+        {
+            return _cache.GetValue(CachedBannerModificationDateKey);
+        }
+
+        private set
+        {
+            _cache.SetValue(CachedBannerModificationDateKey, value);
+        }
+    }
+
     public Image targetImage;
 
     private PatchKit.Logging.ILogger _logger;
 
-    void Start()
+    private void Start()
     {
         _logger = PatcherLogManager.DefaultLogger;
 
@@ -85,7 +100,11 @@ public class Background : MonoBehaviour
 
         var appInfo = patcher.AppInfo
             .ObserveOnMainThread()
-            .Select(info => new PatcherBannerData{imageUrl = info.PatcherBannerImage, dimensions = info.PatcherBannerImageDimensions});
+            .Select(info => new PatcherBannerData{
+                imageUrl = info.PatcherBannerImage, 
+                dimensions = info.PatcherBannerImageDimensions,
+                modificationDate = info.PatcherBannerImageUpdatedAt
+                });
 
         patcherData
             .CombineLatest(appInfo, (lhs, rhs) => new Data{bannerData = rhs, bannerFilePath = lhs})
@@ -103,7 +122,7 @@ public class Background : MonoBehaviour
             return;
         }
 
-        if (IsCachedBannerAvailable() && IsCachedBannerSameAsRemote(bannerData.imageUrl))
+        if (IsCachedBannerAvailable() && IsCachedBannerSameAsRemote(bannerData))
         {
             _logger.LogDebug("The cached banner is the same as remote.");
             return;
@@ -117,11 +136,11 @@ public class Background : MonoBehaviour
         return !string.IsNullOrEmpty(CachedBannerImageUrl);
     }
 
-    private bool IsCachedBannerSameAsRemote(string remoteBannerUrl)
+    private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
     {
-        var cachedBannerUrl = CachedBannerImageUrl;
+        var cachedModificationDate = CachedBannerModificationDate;
 
-        return remoteBannerUrl == cachedBannerUrl;
+        return bannerData.modificationDate == cachedModificationDate;
     }
 
     private void AquireRemoteBanner(Data data)
@@ -147,6 +166,8 @@ public class Background : MonoBehaviour
             {
                 CachedBannerImageUrl = data.bannerData.imageUrl;
                 CachedBannerPath = data.bannerFilePath;
+                CachedBannerModificationDate = data.bannerData.modificationDate;
+
                 LoadCachedBanner(data.bannerFilePath);
             }
         });
