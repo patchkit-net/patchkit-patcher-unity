@@ -36,6 +36,9 @@ public class Background : MonoBehaviour
 
     private const string BannerImageFilename = "banner";
 
+    private const string AnimationLoadingParameter = "isLoading";
+    private const string PlaceholderDisappearTrigger = "disappear";
+
     public string CachedBannerPath
     {
         get 
@@ -74,7 +77,10 @@ public class Background : MonoBehaviour
         }
     }
 
-    public Image targetImage;
+    public Image newImage;
+    public Image oldImage;
+
+    public Animator mainAnimator;
 
     private PatchKit.Logging.ILogger _logger;
 
@@ -87,27 +93,29 @@ public class Background : MonoBehaviour
         if (IsCachedBannerAvailable())
         {
             _logger.LogDebug("A cached banner image is available.");
-            LoadCachedBanner(CachedBannerPath);
+            LoadCachedBanner(CachedBannerPath, oldImage);
         }
 
         Assert.IsNotNull(patcher);
+        Assert.IsNotNull(mainAnimator);
+        Assert.IsNotNull(newImage);
+        Assert.IsNotNull(oldImage);
 
         var patcherData = patcher.Data
-            .ObserveOnMainThread()
             .Select(data => data.AppDataPath)
             .SkipWhile(val => string.IsNullOrEmpty(val))
             .Select(val => Path.Combine(val, BannerImageFilename));
 
         var appInfo = patcher.AppInfo
-            .ObserveOnMainThread()
             .Select(info => new PatcherBannerData{
-                imageUrl = info.PatcherBannerImage, 
+                imageUrl = "http://localhost:8081/600_230.jpg", 
                 dimensions = info.PatcherBannerImageDimensions,
                 modificationDate = info.PatcherBannerImageUpdatedAt
                 });
 
         patcherData
             .CombineLatest(appInfo, (lhs, rhs) => new Data{bannerData = rhs, bannerFilePath = lhs})
+            .ObserveOnMainThread()
             .Subscribe(OnBannerDataUpdate);
     }
 
@@ -153,6 +161,10 @@ public class Background : MonoBehaviour
 
             try
             {
+                UnityDispatcher.Invoke(() => {
+                    // loadingIndicator.SetBool(AnimationLoadingParameter, true);
+                });
+
                 downloader.Download(source.Token);
                 return true;
             }
@@ -168,14 +180,17 @@ public class Background : MonoBehaviour
                 CachedBannerPath = data.bannerFilePath;
                 CachedBannerModificationDate = data.bannerData.modificationDate;
 
-                LoadCachedBanner(data.bannerFilePath);
+                // loadingIndicator.SetBool(AnimationLoadingParameter, false);
+                // oldBackgroundAnimator.SetTrigger(PlaceholderDisappearTrigger);
+
+                LoadCachedBanner(data.bannerFilePath, newImage);
             }
         });
 
         StartCoroutine(coroutine);
     }
 
-    private void LoadCachedBanner(string filepath)
+    private void LoadCachedBanner(string filepath, Image target)
     {
         Texture2D texture = new Texture2D(0, 0);
 
@@ -198,7 +213,7 @@ public class Background : MonoBehaviour
 
             var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
 
-            targetImage.sprite = sprite;
+            target.sprite = sprite;
         }
     }
 }
