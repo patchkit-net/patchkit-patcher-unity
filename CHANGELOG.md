@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Skipping patches for files that content remained unchanged in newer version (during diff installation)
 - Support for partial pack1 processing
 - Support for new lowest_version_diff property
+- Displaying the application display name
 - An inspector warning if the default editor app secret has been modified
 - Repairing invalid files before diff update
 - Including version information in Sentry reports
