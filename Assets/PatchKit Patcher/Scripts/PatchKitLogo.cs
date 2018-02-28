@@ -42,7 +42,7 @@ namespace PatchKit.Unity
 
             patcher.AppInfo
                 .ObserveOnMainThread()
-                .Skip(1) // Skip the initialization
+                .Where(app => app.Id != default(int))
                 .Select(app => app.PatcherWhitelabel)
                 .Subscribe(Resolve)
                 .AddTo(this);
