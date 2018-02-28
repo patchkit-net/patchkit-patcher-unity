@@ -330,7 +330,8 @@ PlayerSettings:
   psp2InfoBarColor: 0
   psmSplashimage: {fileID: 0}
   spritePackerPolicy: 
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    1: UNITY_ASSERTIONS
   metroPackageName: Patcher
   metroPackageVersion: 
   metroCertificatePath: 
