@@ -37,7 +37,7 @@ public class Background : MonoBehaviour
     private const string BannerImageFilename = "banner";
 
     private const string AnimationLoadingParameter = "isLoading";
-    private const string PlaceholderDisappearTrigger = "disappear";
+    private const string AnimationSwitchTrigger = "switch";
 
     public string CachedBannerPath
     {
@@ -108,7 +108,7 @@ public class Background : MonoBehaviour
 
         var appInfo = patcher.AppInfo
             .Select(info => new PatcherBannerData{
-                imageUrl = "http://localhost:8081/600_230.jpg", 
+                imageUrl = info.PatcherBannerImage,
                 dimensions = info.PatcherBannerImageDimensions,
                 modificationDate = info.PatcherBannerImageUpdatedAt
                 });
@@ -162,7 +162,7 @@ public class Background : MonoBehaviour
             try
             {
                 UnityDispatcher.Invoke(() => {
-                    // loadingIndicator.SetBool(AnimationLoadingParameter, true);
+                    mainAnimator.SetBool(AnimationLoadingParameter, true);
                 });
 
                 downloader.Download(source.Token);
@@ -180,8 +180,8 @@ public class Background : MonoBehaviour
                 CachedBannerPath = data.bannerFilePath;
                 CachedBannerModificationDate = data.bannerData.modificationDate;
 
-                // loadingIndicator.SetBool(AnimationLoadingParameter, false);
-                // oldBackgroundAnimator.SetTrigger(PlaceholderDisappearTrigger);
+                mainAnimator.SetBool(AnimationLoadingParameter, false);
+                mainAnimator.SetTrigger(AnimationSwitchTrigger);
 
                 LoadCachedBanner(data.bannerFilePath, newImage);
             }
@@ -209,11 +209,20 @@ public class Background : MonoBehaviour
         {
             _logger.LogDebug(string.Format("Loading the banner image from {0}", filepath));
             var fileBytes = File.ReadAllBytes(filepath);
-            texture.LoadImage(fileBytes);
+            
+            if (!texture.LoadImage(fileBytes))
+            {
+                _logger.LogError("Failed to load the banner image.");
+                return;
+            }
 
             var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
 
             target.sprite = sprite;
+        }
+        else
+        {
+            _logger.LogWarning("The cached banner image doesn't exist.");
         }
     }
 }
