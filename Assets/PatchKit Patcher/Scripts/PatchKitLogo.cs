@@ -7,66 +7,61 @@ using PatchKit.Unity.Patcher.Debug;
 namespace PatchKit.Unity
 {
 
+    [RequireComponent(typeof(Button))]
+    [RequireComponent(typeof(Image))]
     public class PatchKitLogo : MonoBehaviour
     {
-        public string patchKitWebsiteUrl;
-
-        public Texture2D cursorTexture;
-
-        public Vector2 cursorHotspot;
-
-        public Image image;
-
-        public Button button;
-
-        private bool _isLogoVisible = false;
-
+        private const string PatchKitWebsiteUrl = "https://patchkit.net/?source=patcher";
         private const float LogoVisibilityChangeDelay = 3; // in seconds
 
-        private void Awake()
-        {
-            Assert.IsNotNull(button);
-            Assert.IsNotNull(image);
+        public Texture2D CursorTexture;
 
-            Assert.IsNotNull(cursorTexture);
+        public Vector2 CursorHotspot;
 
-            button.enabled = false;
-            image.enabled = false;
-        }
+        private Image _image;
+
+        private Button _button;
+
+        private bool _isLogoVisible = false;
 
         private void Start()
         {
             var patcher = Patcher.Patcher.Instance;
 
+            _button = GetComponent<Button>();
+            _image = GetComponent<Image>();
+
+            Assert.IsNotNull(CursorTexture);
+
+            _button.enabled = false;
+            _image.enabled = false;
+
+            _button.onClick.AddListener(GoToPatchKit);
+
             Assert.IsNotNull(patcher);
 
             patcher.AppInfo
                 .ObserveOnMainThread()
+                .Skip(1) // Skip the initialization
                 .Select(app => app.PatcherWhitelabel)
                 .Subscribe(Resolve)
                 .AddTo(this);
-
-            StartCoroutine(ChangeVisibility());
         }
 
-        private IEnumerator ChangeVisibility()
+        private void ChangeVisibility(bool isLogoVisible)
         {
-            while (true)
-            {
-                yield return new WaitForSeconds(LogoVisibilityChangeDelay);
-                image.enabled = _isLogoVisible;
-                button.enabled = _isLogoVisible;
-            }
+            _image.enabled = isLogoVisible;
+            _button.enabled = isLogoVisible;
         }
 
         private void Resolve(bool isWhitelabel)
         {
-            _isLogoVisible = !isWhitelabel;
+            ChangeVisibility(!isWhitelabel);
         }
 
         public void OnMouseEnter()
         {
-            Cursor.SetCursor(cursorTexture, cursorHotspot, CursorMode.Auto);
+            Cursor.SetCursor(CursorTexture, CursorHotspot, CursorMode.Auto);
         }
 
         public void OnMouseExit()
@@ -76,7 +71,7 @@ namespace PatchKit.Unity
 
         public void GoToPatchKit()
         {
-            Application.OpenURL(patchKitWebsiteUrl);
+            Application.OpenURL(PatchKitWebsiteUrl);
         }
     }
 }
