@@ -10,11 +10,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Skipping patches for files that content remained unchanged in newer version (during diff installation)
 - Support for partial pack1 processing
 - Support for new lowest_version_diff property
+- Displaying the application display name
 - An inspector warning if the default editor app secret has been modified
+- Repairing invalid files before diff update
+- Including version information in Sentry reports
+- Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
+- Example scenes with double progress bars
 
 ### Changed
 - Update API servers configuration
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
+- The patcher will now delete the lockfile when quitting
 
 ## [3.9.0]
 ### Added

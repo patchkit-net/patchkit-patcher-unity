@@ -210,6 +210,9 @@ namespace PatchKit.Unity.Patcher
                 if (_lockFileStream != null)
                 {
                     _lockFileStream.Close();
+                    
+                    DebugLogger.Log("Deleting the lock file.");
+                    File.Delete(_data.Value.LockFilePath);
                 }
             }
             catch
@@ -220,6 +223,8 @@ namespace PatchKit.Unity.Patcher
 
         private void Awake()
         {
+            UnityEngine.Assertions.Assert.raiseExceptions = true;
+
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 
@@ -642,17 +647,17 @@ namespace PatchKit.Unity.Patcher
                         break;
                     case UserDecision.InstallAppAutomatically:
                         displayWarningInsteadOfError = _app.IsInstalled();
-                        ThreadUpdateApp(cancellationToken);
+                        ThreadUpdateApp(true, cancellationToken);
                         break;
                     case UserDecision.InstallApp:
-                        ThreadUpdateApp(cancellationToken);
+                        ThreadUpdateApp(false, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdatesAutomatically:
                         displayWarningInsteadOfError = _app.IsInstalled();
-                        ThreadUpdateApp(cancellationToken);
+                        ThreadUpdateApp(true, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdates:
-                        ThreadUpdateApp(cancellationToken);
+                        ThreadUpdateApp(false, cancellationToken);
                         break;
                 }
 
@@ -680,7 +685,15 @@ namespace PatchKit.Unity.Patcher
             catch (ApiConnectionException e)
             {
                 DebugLogger.LogException(e);
-                ThreadDisplayError(PatcherError.NoInternetConnection, cancellationToken);
+                
+                if (displayWarningInsteadOfError)
+                {
+                    _warning.Value = "Unable to check for updates. Please check your internet connection.";
+                }
+                else
+                {
+                    ThreadDisplayError(PatcherError.NoInternetConnection, cancellationToken);
+                }
             }
             catch (NotEnoughtDiskSpaceException e)
             {
@@ -760,12 +773,12 @@ namespace PatchKit.Unity.Patcher
             UnityDispatcher.Invoke(Quit);
         }
 
-        private void ThreadUpdateApp(CancellationToken cancellationToken)
+        private void ThreadUpdateApp(bool automatically, CancellationToken cancellationToken)
         {
             _state.Value = PatcherState.UpdatingApp;
 
-            _appInfo.Value = _app.RemoteMetaData.GetAppInfo();
-            _remoteVersionId.Value = _app.GetLatestVersionId(false);
+            _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically);
+            _remoteVersionId.Value = _app.GetLatestVersionId(!automatically);
             if (_app.IsInstalled())
             {
                 _localVersionId.Value = _app.GetInstalledVersionId();
