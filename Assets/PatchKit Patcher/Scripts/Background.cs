@@ -17,20 +17,19 @@ public class Background : MonoBehaviour
 {
     public struct PatcherBannerData
     {
-        public string imageUrl;
-        public PatcherBannerImageDimensions dimensions;
-        public string modificationDate;
+        public string ImageUrl;
+        public PatcherBannerImageDimensions Dimensions;
+        public string ModificationDate;
     }
 
     public struct Data
     {
-        public PatcherBannerData bannerData;
-        public string bannerFilePath;
+        public PatcherBannerData BannerData;
+        public string BannerFilePath;
     }
 
     private ICache _cache = new UnityCache();
 
-    private const string CachedBannerUrlKey = "cached-banner-url-key";
     private const string CachedBannerPathKey = "cached-banner-path-key";
     private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
 
@@ -51,19 +50,6 @@ public class Background : MonoBehaviour
         }
     }
 
-    public string CachedBannerImageUrl
-    {
-        get
-        {
-            return _cache.GetValue(CachedBannerUrlKey);
-        }
-
-        private set 
-        {
-            _cache.SetValue(CachedBannerUrlKey, value);
-        }
-    }
-
     public string CachedBannerModificationDate
     {
         get
@@ -77,10 +63,10 @@ public class Background : MonoBehaviour
         }
     }
 
-    public Image newImage;
-    public Image oldImage;
+    public Image NewImage;
+    public Image OldImage;
 
-    public Animator mainAnimator;
+    public Animator MainAnimator;
 
     private PatchKit.Logging.ILogger _logger;
 
@@ -93,13 +79,13 @@ public class Background : MonoBehaviour
         if (IsCachedBannerAvailable())
         {
             _logger.LogDebug("A cached banner image is available.");
-            LoadCachedBanner(CachedBannerPath, oldImage);
+            LoadBannerImage(CachedBannerPath, OldImage);
         }
 
         Assert.IsNotNull(patcher);
-        Assert.IsNotNull(mainAnimator);
-        Assert.IsNotNull(newImage);
-        Assert.IsNotNull(oldImage);
+        Assert.IsNotNull(MainAnimator);
+        Assert.IsNotNull(NewImage);
+        Assert.IsNotNull(OldImage);
 
         var patcherData = patcher.Data
             .Select(data => data.AppDataPath)
@@ -108,13 +94,13 @@ public class Background : MonoBehaviour
 
         var appInfo = patcher.AppInfo
             .Select(info => new PatcherBannerData{
-                imageUrl = info.PatcherBannerImage,
-                dimensions = info.PatcherBannerImageDimensions,
-                modificationDate = info.PatcherBannerImageUpdatedAt
+                ImageUrl = info.PatcherBannerImage,
+                Dimensions = info.PatcherBannerImageDimensions,
+                ModificationDate = info.PatcherBannerImageUpdatedAt
                 });
 
         patcherData
-            .CombineLatest(appInfo, (lhs, rhs) => new Data{bannerData = rhs, bannerFilePath = lhs})
+            .CombineLatest(appInfo, (lhs, rhs) => new Data{BannerData = rhs, BannerFilePath = lhs})
             .ObserveOnMainThread()
             .Subscribe(OnBannerDataUpdate);
     }
@@ -122,9 +108,9 @@ public class Background : MonoBehaviour
     private void OnBannerDataUpdate(Data data)
     {
         _logger.LogDebug("On patcher data update.");
-        var bannerData = data.bannerData;
+        var bannerData = data.BannerData;
 
-        if (string.IsNullOrEmpty(bannerData.imageUrl))
+        if (string.IsNullOrEmpty(bannerData.ImageUrl))
         {
             _logger.LogDebug("No banner is available.");
             return;
@@ -141,28 +127,28 @@ public class Background : MonoBehaviour
 
     private bool IsCachedBannerAvailable()
     {
-        return !string.IsNullOrEmpty(CachedBannerImageUrl);
+        return !string.IsNullOrEmpty(CachedBannerPath);
     }
 
     private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
     {
         var cachedModificationDate = CachedBannerModificationDate;
 
-        return bannerData.modificationDate == cachedModificationDate;
+        return bannerData.ModificationDate == cachedModificationDate;
     }
 
     private void AquireRemoteBanner(Data data)
     {
-        _logger.LogDebug(string.Format("Aquiring the remote banner image from {0}", data.bannerData.imageUrl));
+        _logger.LogDebug(string.Format("Aquiring the remote banner image from {0}", data.BannerData.ImageUrl));
         var coroutine = Threading.StartThreadCoroutine(() => {
             CancellationTokenSource source = new CancellationTokenSource();
 
-            var downloader = new HttpDownloader(data.bannerFilePath, new string[]{data.bannerData.imageUrl});
+            var downloader = new HttpDownloader(data.BannerFilePath, new string[]{data.BannerData.ImageUrl});
 
             try
             {
                 UnityDispatcher.Invoke(() => {
-                    mainAnimator.SetBool(AnimationLoadingParameter, true);
+                    MainAnimator.SetBool(AnimationLoadingParameter, true);
                 });
 
                 downloader.Download(source.Token);
@@ -176,21 +162,20 @@ public class Background : MonoBehaviour
         }, (bool result) => {
             if (result)
             {
-                CachedBannerImageUrl = data.bannerData.imageUrl;
-                CachedBannerPath = data.bannerFilePath;
-                CachedBannerModificationDate = data.bannerData.modificationDate;
+                CachedBannerPath = data.BannerFilePath;
+                CachedBannerModificationDate = data.BannerData.ModificationDate;
 
-                mainAnimator.SetBool(AnimationLoadingParameter, false);
-                mainAnimator.SetTrigger(AnimationSwitchTrigger);
+                MainAnimator.SetBool(AnimationLoadingParameter, false);
+                MainAnimator.SetTrigger(AnimationSwitchTrigger);
 
-                LoadCachedBanner(data.bannerFilePath, newImage);
+                LoadBannerImage(data.BannerFilePath, NewImage);
             }
         });
 
         StartCoroutine(coroutine);
     }
 
-    private void LoadCachedBanner(string filepath, Image target)
+    private void LoadBannerImage(string filepath, Image target)
     {
         Texture2D texture = new Texture2D(0, 0);
 

@@ -3622,8 +3622,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 836955704}
   m_HandleRect: {fileID: 836955703}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0
+  m_Value: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4453,9 +4453,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b1e6947329b98246a4b4191d1198ecf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  newImage: {fileID: 848268043}
-  oldImage: {fileID: 248691752}
-  mainAnimator: {fileID: 1627480855}
+  NewImage: {fileID: 848268043}
+  OldImage: {fileID: 248691752}
+  MainAnimator: {fileID: 1627480855}
 --- !u!95 &1627480855
 Animator:
   serializedVersion: 3
