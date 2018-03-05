@@ -104,6 +104,12 @@ public class ScriptBatch
             .Select(s => s.path)
             .ToArray();
 
+        if (scenes.Count() == 0)
+        {
+            EditorUtility.DisplayDialog("Error", "Add or enable scenes to be included in the Build Settings menu.", "Ok");
+            return;
+        }
+
         BuildOptions buildOptions = BuildOptions.ForceEnableAssertions 
                                   | BuildOptions.ShowBuiltPlayer;
 
