@@ -78,7 +78,13 @@ public class ScriptBatch
 
     private static void Build(BuildTarget target)
     {
-        string path = EditorUtility.SaveFolderPanel("Choose the location of build Patcher", "", "");
+        string path = EditorUtility.SaveFolderPanel("Choose where to build the Patcher", "", "");
+
+        if (string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+
         var patcher = PatchKit.Unity.Patcher.Patcher.Instance;
 
         if (patcher.EditorAppSecret != PatchKit.Unity.Patcher.Patcher.EditorAllowedSecret)
