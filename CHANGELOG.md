@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Including version information in Sentry reports
 - Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
 - Example scenes with double progress bars
+- Support for background image set in PatchKit Panel 
 
 ### Changed
 - Update API servers configuration
