@@ -1,6 +1,7 @@
 // C# example.
 using UnityEditor;
 using System.Diagnostics;
+using System.Linq;
 
 public class ScriptBatch 
 {
@@ -92,12 +93,15 @@ public class ScriptBatch
             }
         }
 
-        string[] levels = new string[] {EditorApplication.currentScene};
+        string[] scenes = EditorBuildSettings.scenes
+            .Where(s => s.enabled)
+            .Select(s => s.path)
+            .ToArray();
 
         BuildOptions buildOptions = BuildOptions.ForceEnableAssertions 
                                   | BuildOptions.ShowBuiltPlayer;
 
-        string error = BuildPipeline.BuildPlayer(levels, path + "/" + PatcherExecutableName(target), target, buildOptions);
+        string error = BuildPipeline.BuildPlayer(scenes, path + "/" + PatcherExecutableName(target), target, buildOptions);
 
         if (!string.IsNullOrEmpty(error))
         {
