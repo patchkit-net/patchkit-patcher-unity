@@ -187,8 +187,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 {
                     if (fileIntegrity.Status != FileIntegrityStatus.Ok)
                     {
-                        _logger.LogDebug(string.Format("File {0} is not consistent - {1}",
-                            fileIntegrity.FileName, fileIntegrity.Status));
+                        string logMessage = string.Format("File {0} is not consistent - {1}", 
+                            fileIntegrity.FileName, fileIntegrity.Status);
+
+                        if (!string.IsNullOrEmpty(fileIntegrity.Message))
+                        {
+                            logMessage += " - " + fileIntegrity.Message;
+                        }
+
+                        _logger.LogDebug(logMessage);
                     }
                 }
             }
