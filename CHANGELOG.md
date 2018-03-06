@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
 - Example scenes with double progress bars
 - A clickable PatchKit logo in non whitelabel patchers
+- Support for background image set in PatchKit Panel 
 
 ### Changed
 - Update API servers configuration
