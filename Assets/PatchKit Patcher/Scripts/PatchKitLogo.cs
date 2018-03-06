@@ -12,7 +12,6 @@ namespace PatchKit.Unity
     public class PatchKitLogo : MonoBehaviour
     {
         private const string PatchKitWebsiteUrl = "https://patchkit.net/?source=patcher";
-        private const float LogoVisibilityChangeDelay = 3; // in seconds
 
         public Texture2D CursorTexture;
 
@@ -21,8 +20,6 @@ namespace PatchKit.Unity
         private Image _image;
 
         private Button _button;
-
-        private bool _isLogoVisible = false;
 
         private void Start()
         {
