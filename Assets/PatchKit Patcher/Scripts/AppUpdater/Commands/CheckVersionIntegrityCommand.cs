@@ -91,30 +91,27 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingMetaData);
             }
 
-            int entryVersionId = _localMetaData.GetEntryVersionId(file.Path);
-            if (entryVersionId != _versionId)
+            int actualVersionId = _localMetaData.GetEntryVersionId(file.Path);
+            if (actualVersionId != _versionId)
             {
-                string message = string.Format("Expected {0}, but is {1}", _versionId, entryVersionId);
-                return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidVersion, message);
+                return FileIntegrity.InvalidVersion(_versionId, actualVersionId, file.Path);
             }
 
             if (_isCheckingSize)
             {
-                long size = new FileInfo(localPath).Length;
-                if (size != file.Size)
+                long actualSize = new FileInfo(localPath).Length;
+                if (actualSize != file.Size)
                 {
-                    string message = string.Format("Expected {0}, but is {1}", file.Size, size);
-                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidSize, message);
+                    return FileIntegrity.InvalidSize(file.Size, actualSize, file.Path);
                 }
             }
 
             if (_isCheckingHash)
             {
-                string hash = HashCalculator.ComputeFileHash(localPath);
-                if (hash != file.Hash)
+                string actualFileHash = HashCalculator.ComputeFileHash(localPath);
+                if (actualFileHash != file.Hash)
                 {
-                    string message = string.Format("Expected {0}, but is {1}", file.Hash, hash);
-                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash, message);
+                    return FileIntegrity.InvalidHash(file.Hash, actualFileHash, file.Path);
                 }
             }
 

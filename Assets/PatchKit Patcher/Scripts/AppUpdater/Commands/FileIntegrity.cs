@@ -14,5 +14,26 @@
         public readonly string Message;
 
         public FileIntegrityStatus Status { get; private set; }
+
+        public static FileIntegrity WithMessage<T>(T expectedValue, T actualValue, FileIntegrityStatus status, string filePath)
+        {
+            string message = string.Format("Expected {0}, but is {1}", expectedValue, actualValue);
+            return new FileIntegrity(filePath, status, message);
+        }
+
+        public static FileIntegrity InvalidVersion(int expectedVersion, int actualVersion, string filePath)
+        {
+            return WithMessage(expectedVersion, actualVersion, FileIntegrityStatus.InvalidVersion, filePath);
+        }
+
+        public static FileIntegrity InvalidSize(long expectedSize, long actualSize, string filePath)
+        {
+            return WithMessage(expectedSize, actualSize, FileIntegrityStatus.InvalidSize, filePath);
+        }
+
+        public static FileIntegrity InvalidHash(string expectedHash, string actualHash, string filePath)
+        {
+            return WithMessage(expectedHash, actualHash, FileIntegrityStatus.InvalidHash, filePath);
+        }
     }
 }
