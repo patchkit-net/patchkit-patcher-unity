@@ -143,7 +143,7 @@ namespace PatchKit.Unity
                 return;
             }
 
-            string error = BuildPipeline.BuildPlayer(scenes, path + "/" + PatcherExecutableName(target), target, buildOptions);
+            string error = BuildPipeline.BuildPlayer(scenePaths, path + "/" + PatcherExecutableName(target), target, buildOptions);
 
             if (!string.IsNullOrEmpty(error))
             {
