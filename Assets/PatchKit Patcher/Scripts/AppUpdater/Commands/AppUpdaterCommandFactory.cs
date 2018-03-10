@@ -20,7 +20,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             appDownloadDirectory.PrepareForWriting();
 
-            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "all" &&
+            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "any" &&
                                context.Configuration.UseTorrents;
             return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
         }
@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             appDownloadDirectory.PrepareForWriting();
 
-            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "all" &&
+            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "any" &&
                                context.Configuration.UseTorrents;
             return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
         }
