@@ -80,13 +80,14 @@ namespace PatchKit.Unity
 
         private static void Build(BuildTarget target)
         {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
             string[] scenePaths = EditorBuildSettings.scenes
                 .Where(s => s.enabled)
                 .Select(s => s.path)
-                .ToArray();
-
-            var scenes = scenePaths
-                .Select(s => EditorSceneManager.OpenScene(s))
                 .ToArray();
 
             if (scenePaths.Count() == 0)
@@ -95,11 +96,10 @@ namespace PatchKit.Unity
                 return;
             }
 
-            EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             Patcher.Patcher patcher = null;
-
-            foreach (var scene in scenes)
+            foreach (var scenePath in scenePaths)
             {
+                var scene = EditorSceneManager.OpenScene(scenePath);
                 EditorSceneManager.SetActiveScene(scene);
 
                 patcher = PatchKit.Unity.Patcher.Patcher.Instance;
