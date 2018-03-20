@@ -560,7 +560,7 @@ namespace PatchKit.Unity.Patcher
 
                 _canRepairApp.Value = false; // not implemented
                 _canInstallApp.Value = !isInstalled;
-                _canCheckForAppUpdates.Value = isInstalled;
+                _canCheckForAppUpdates.Value = false;
                 _canStartApp.Value = isInstalled;
 
                 if (_canInstallApp.Value && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
