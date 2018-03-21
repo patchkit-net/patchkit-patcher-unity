@@ -9,6 +9,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public bool CheckConsistencyBeforeDiffUpdate;
 
+        public bool CreateDesktopShortcut;
+
         public long HashSizeThreshold = 1024 * 1024 * 1024; // in bytes
     }
 }

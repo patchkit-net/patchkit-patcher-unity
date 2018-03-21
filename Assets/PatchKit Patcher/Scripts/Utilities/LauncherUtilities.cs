@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Utilities
             }
         }
 
-        private static string FindLauncherExecutable(PlatformType platformType)
+        public static string FindLauncherExecutable(PlatformType platformType)
         {
             if (File.Exists(LauncherPathFileName))
             {
