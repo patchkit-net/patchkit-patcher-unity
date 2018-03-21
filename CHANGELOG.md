@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.10.0]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
 - Skipping patches for files that content remained unchanged in newer version (during diff installation)
