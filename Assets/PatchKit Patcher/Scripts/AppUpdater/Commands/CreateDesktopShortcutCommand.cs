@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Diagnostics;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.Debug;
@@ -13,18 +14,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     {
         private readonly ILogger _logger;
 
-        private const string PowershellProgram = @"$WshShell = New-Object -comObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut(""{0}"")
-$Shortcut.TargetPath = ""{1}""
-$Shortcut.Save()";
+        private const string PowershellProgramPreamble = @"$WshShell = New-Object -comObject WScript.Shell";
+        private const string PowershellProgramShortcutLocation = @"$Shortcut = $WshShell.CreateShortcut(""{0}"")";
+        private const string PowershellProgramTargetLocation = @"$Shortcut.TargetPath = ""{0}""";
+        private const string PowershellProgramIconLocation = @"$Shortcut.IconLocation = ""{0}""";
+        private const string PowershellProgramFinish = @"$Shortcut.Save()";
+
+        private const string ShortcutExtension = ".lnk";
 
         private readonly string _destinationFilename;
         private readonly string _launcherExePath;
+        private readonly string _iconLocation;
 
-        public CreateDesktopShortcutCommand(string destinationFilename, string launcherExePath)
+        private const string TempScriptFilename = "makeShortcut.ps1";
+
+
+        public CreateDesktopShortcutCommand(string destinationFilename, string launcherExePath, string iconLocation = null)
         {
             _destinationFilename = destinationFilename;
             _launcherExePath = launcherExePath;
+            _iconLocation = iconLocation;
 
             _logger = PatcherLogManager.DefaultLogger;
         }
@@ -41,21 +50,26 @@ $Shortcut.Save()";
             var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             var desktopShortcutPath = Path.Combine(desktopPath, _destinationFilename);
 
-            string effectiveScript = string.Format(PowershellProgram, desktopShortcutPath, _launcherExePath);
+            var writeableLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            writeableLocation = Path.Combine(writeableLocation, "temp_dir_" + Path.GetRandomFileName());
 
-            const string tempDirName = "creatingShortcut";
-            const string scriptFilename = "makeShortcut.ps1";
+            if (!desktopShortcutPath.EndsWith(ShortcutExtension))
+            {
+                desktopShortcutPath = Path.ChangeExtension(desktopShortcutPath, ShortcutExtension);
+            }
 
-            using (var tempDir = new TemporaryDirectory(tempDirName))
+            string effectiveScript = AssemblePowerShellProgram(desktopShortcutPath, _launcherExePath, _iconLocation);
+
+            using (var tempDir = new TemporaryDirectory(writeableLocation))
             {
                 tempDir.PrepareForWriting();
 
-                var scriptFilePath = Path.Combine(tempDir.Path, scriptFilename);
+                var scriptFilePath = Path.Combine(tempDir.Path, TempScriptFilename);
                 File.WriteAllText(scriptFilePath, effectiveScript);
 
                 var processStartInfo = new ProcessStartInfo{
                     FileName = "PowerShell.exe", 
-                    Arguments = scriptFilePath,
+                    Arguments = "-ExecutionPolicy Unrestricted " + scriptFilePath,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -81,6 +95,25 @@ $Shortcut.Save()";
 
                 File.Delete(scriptFilePath);
             }
+        }
+
+        private static string AssemblePowerShellProgram(string shortcutPath, string targetPath, string iconPath = null)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(PowershellProgramPreamble);
+
+            sb.AppendLine(string.Format(PowershellProgramShortcutLocation, shortcutPath));
+            sb.AppendLine(string.Format(PowershellProgramTargetLocation, targetPath));
+
+            if (!string.IsNullOrEmpty(iconPath) && File.Exists(iconPath))
+            {
+                sb.AppendLine(string.Format(PowershellProgramIconLocation, iconPath));
+            }
+
+            sb.AppendLine(PowershellProgramFinish);
+
+            return sb.ToString();
         }
     }
 }
