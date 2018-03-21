@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
 - The patcher will now delete the lockfile when quitting
 
+## [3.9.1]
+### Fixed
+- Use 'any' instead of 'all' for publish method
+
 ## [3.9.0]
 ### Added
 - Add support for download speed unit parameter from application info
