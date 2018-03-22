@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.AppData;
 
 namespace PatchKit.Unity.Utilities
 {
@@ -11,6 +12,8 @@ namespace PatchKit.Unity.Utilities
         private static readonly ILogger Logger = PatcherLogManager.DefaultLogger;
 
         private const string LauncherPathFileName = "launcher_path";
+        private static readonly string[] LauncherPathFileSearchLocations = {".", "..", "../..", "patcher", "Patcher"};
+        private static readonly string[] LauncherExeSearchLocations = {".", "..", "../.."};
 
         private static string GetDefaultLauncherName(PlatformType platformType)
         {
@@ -29,18 +32,24 @@ namespace PatchKit.Unity.Utilities
 
         public static string FindLauncherExecutable(PlatformType platformType)
         {
-            if (File.Exists(LauncherPathFileName))
+            var launcherPathFile = FileOperations.SearchPathsFindOne(LauncherPathFileName, LauncherPathFileSearchLocations);
+
+            if (File.Exists(launcherPathFile))
             {
-                var launcherPath = File.ReadAllText(LauncherPathFileName);
-                if (File.Exists(launcherPath))
+                var relativeLauncherPath = File.ReadAllText(launcherPathFile);
+                var effectiveLauncherPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(launcherPathFile), relativeLauncherPath));
+                if (File.Exists(effectiveLauncherPath))
                 {
-                    return launcherPath;
+                    Logger.LogTrace("Launcher path resolved from file to " + effectiveLauncherPath);
+                    return effectiveLauncherPath;
                 }
             }
+            var defaultLauncherFilename = GetDefaultLauncherName(platformType);
+            var defaultLauncherPath = FileOperations.SearchPathsFindOne(defaultLauncherFilename, LauncherExeSearchLocations);
 
-            var defaultLauncherPath = Path.Combine("..", GetDefaultLauncherName(platformType));
             if (File.Exists(defaultLauncherPath))
             {
+                Logger.LogTrace("Found launcher in " + defaultLauncherPath);
                 return defaultLauncherPath;
             }
 
