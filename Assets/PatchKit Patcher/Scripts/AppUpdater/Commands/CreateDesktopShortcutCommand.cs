@@ -58,6 +58,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 desktopShortcutPath = Path.ChangeExtension(desktopShortcutPath, ShortcutExtension);
             }
 
+            _logger.LogDebug(string.Format("Assembling icon creation script for {0}->{1}, with icon in {2}", desktopShortcutPath, _launcherExePath, _iconLocation));
             string effectiveScript = AssemblePowerShellProgram(desktopShortcutPath, _launcherExePath, _iconLocation);
 
             using (var tempDir = new TemporaryDirectory(writeableLocation))
