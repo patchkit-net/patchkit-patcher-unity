@@ -226,6 +226,8 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
             DebugLogger.LogFormat("Runtime version: {0}", EnvironmentInfo.GetSystemVersion());
 
+            DebugLogger.LogFormat("Working directory: {0}", Path.GetFullPath("."));
+
             CheckEditorAppSecretSecure();
 
             if (_canStartThread)
