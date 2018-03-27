@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using JetBrains.Annotations;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -13,7 +14,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     {
         public string Path { get; private set; }
 
-        public TemporaryDirectory([NotNull] string path)
+        private bool _keep = false;
+
+        private TemporaryDirectory([NotNull] string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -44,9 +47,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             throw new Exception("Cannot find unique path.");
         }
 
+        public void Keep()
+        {
+            _keep = true;
+        }
+
         private void ReleaseUnmanagedResources()
         {
-            if (Directory.Exists(Path))
+            if (!_keep && Directory.Exists(Path))
             {
                 Directory.Delete(Path, true);
             }
@@ -61,6 +69,37 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         ~TemporaryDirectory()
         {
             ReleaseUnmanagedResources();
+        }
+
+        public static void ExecuteIn(string tempDirName, Action<TemporaryDirectory> action)
+        {
+            using (var tempDir = new TemporaryDirectory(tempDirName))
+            {
+                try
+                {
+                    action(tempDir);
+                }
+                catch (Exception)
+                {
+                    if (ShouldKeepFilesOnError())
+                    {
+                        tempDir.Keep();
+                    }
+                    throw;
+                }
+            }
+        }
+
+        private static bool ShouldKeepFilesOnError()
+        {
+            string value = null;
+            
+            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.KeepFilesOnErrorEnvironmentVariable, out value))
+            {
+                return !string.IsNullOrEmpty(value);
+            }
+
+            return false;
         }
     }
 }
