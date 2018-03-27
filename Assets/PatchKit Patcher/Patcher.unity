@@ -1695,11 +1695,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d5faa126dfc8c3429f6e061ca621827, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  patchKitWebsiteUrl: https://patchkit.net/?source=patcher
-  cursorTexture: {fileID: 2800000, guid: 9a9d58e8a026acf4bbb9018ecc4d96e3, type: 3}
-  cursorHotspot: {x: 14, y: 7}
-  image: {fileID: 723082948}
-  button: {fileID: 723082947}
+  CursorTexture: {fileID: 2800000, guid: 9a9d58e8a026acf4bbb9018ecc4d96e3, type: 3}
+  CursorHotspot: {x: 13, y: 4}
 --- !u!114 &723082951
 MonoBehaviour:
   m_ObjectHideFlags: 0
