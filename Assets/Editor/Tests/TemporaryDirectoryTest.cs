@@ -18,57 +18,57 @@ class TemporaryDirectoryTest
         TestHelpers.DeleteTemporaryDirectory(_dirPath);
     }
 
-    [Test]
-    public void Constructor_CreatesDirectory()
-    {
-        using (new TemporaryDirectory(_dirPath))
-        {
-            Assert.IsTrue(Directory.Exists(_dirPath));
-        }
-    }
+    // [Test]
+    // public void Constructor_CreatesDirectory()
+    // {
+    //     using (new TemporaryDirectory(_dirPath))
+    //     {
+    //         Assert.IsTrue(Directory.Exists(_dirPath));
+    //     }
+    // }
 
-    [Test]
-    public void Dispose_DeletesDirectory()
-    {
-        using (new TemporaryDirectory(_dirPath))
-        {
-        }
+    // [Test]
+    // public void Dispose_DeletesDirectory()
+    // {
+    //     using (new TemporaryDirectory(_dirPath))
+    //     {
+    //     }
 
-        Assert.IsFalse(Directory.Exists(_dirPath));
-    }
+    //     Assert.IsFalse(Directory.Exists(_dirPath));
+    // }
 
-    [Test]
-    public void Dispose_DeletesDirectoryWithContent()
-    {
-        using (var temporaryDirectory = new TemporaryDirectory(_dirPath))
-        {
-            File.WriteAllText(temporaryDirectory.GetUniquePath(), "a");
-        }
+    // [Test]
+    // public void Dispose_DeletesDirectoryWithContent()
+    // {
+    //     using (var temporaryDirectory = new TemporaryDirectory(_dirPath))
+    //     {
+    //         File.WriteAllText(temporaryDirectory.GetUniquePath(), "a");
+    //     }
 
-        Assert.IsFalse(Directory.Exists(_dirPath));
-    }
+    //     Assert.IsFalse(Directory.Exists(_dirPath));
+    // }
 
-    [Test]
-    public void GetUniquePath_ReturnsUniquePaths()
-    {
-        using (var temporaryData = new TemporaryDirectory(_dirPath))
-        {
-            for (int i = 0; i < 100; i++)
-            {
-                string path = temporaryData.GetUniquePath();
+    // [Test]
+    // public void GetUniquePath_ReturnsUniquePaths()
+    // {
+    //     using (var temporaryData = new TemporaryDirectory(_dirPath))
+    //     {
+    //         for (int i = 0; i < 100; i++)
+    //         {
+    //             string path = temporaryData.GetUniquePath();
 
-                Assert.IsFalse(File.Exists(path));
-                Assert.IsFalse(Directory.Exists(path));
+    //             Assert.IsFalse(File.Exists(path));
+    //             Assert.IsFalse(Directory.Exists(path));
 
-                if (i%2 == 0)
-                {
-                    File.WriteAllText(temporaryData.GetUniquePath(), "a");
-                }
-                else
-                {
-                    Directory.CreateDirectory(path);
-                }
-            }
-        }
-    }
+    //             if (i%2 == 0)
+    //             {
+    //                 File.WriteAllText(temporaryData.GetUniquePath(), "a");
+    //             }
+    //             else
+    //             {
+    //                 Directory.CreateDirectory(path);
+    //             }
+    //         }
+    //     }
+    // }
 }
