@@ -96,7 +96,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             
             if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.KeepFilesOnErrorEnvironmentVariable, out value))
             {
-                return !string.IsNullOrEmpty(value);
+                return !(string.IsNullOrEmpty(value) || value == "0");
             }
 
             return false;
