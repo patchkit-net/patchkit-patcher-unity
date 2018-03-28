@@ -78,7 +78,7 @@ public class Background : MonoBehaviour
 
         if (IsCachedBannerAvailable())
         {
-            _logger.LogDebug("A cached banner image is available.");
+            _logger.LogDebug(string.Format("A cached banner image is available at {0}", CachedBannerPath));
             LoadBannerImage(CachedBannerPath, OldImage);
         }
 
@@ -113,6 +113,9 @@ public class Background : MonoBehaviour
         if (string.IsNullOrEmpty(bannerData.ImageUrl))
         {
             _logger.LogDebug("No banner is available.");
+
+            MainAnimator.SetTrigger(AnimationSwitchTrigger);
+            
             return;
         }
 
@@ -127,7 +130,7 @@ public class Background : MonoBehaviour
 
     private bool IsCachedBannerAvailable()
     {
-        return !string.IsNullOrEmpty(CachedBannerPath);
+        return !string.IsNullOrEmpty(CachedBannerPath) && File.Exists(CachedBannerPath);
     }
 
     private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
