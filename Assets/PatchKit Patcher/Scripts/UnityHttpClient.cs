@@ -47,6 +47,11 @@ namespace PatchKit.Patching.Unity
             }
         }
 
+        public IHttpResponse Post(HttpPostRequest postRequest)
+        {
+            throw new NotImplementedException();
+        }
+
         public IHttpResponse Get(HttpGetRequest getRequest)
         {
             try

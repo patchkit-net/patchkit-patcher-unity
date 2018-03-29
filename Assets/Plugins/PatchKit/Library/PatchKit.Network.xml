@@ -4,6 +4,21 @@
         <name>PatchKit.Network</name>
     </assembly>
     <members>
+        <member name="T:PatchKit.Network.BaseHttpRequest">
+            <summary>
+            A base http request
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.BaseHttpRequest.Address">
+            <summary>
+            Target request address.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.BaseHttpRequest.Timeout">
+            <summary>
+            Request timeout in miliseconds.
+            </summary>
+        </member>
         <member name="T:PatchKit.Network.DefaultHttpClient">
             <inheritdoc />
             <summary>
@@ -13,19 +28,12 @@
         <member name="M:PatchKit.Network.DefaultHttpClient.Get(PatchKit.Network.HttpGetRequest)">
             <inheritdoc />
         </member>
+        <member name="M:PatchKit.Network.DefaultHttpClient.Post(PatchKit.Network.HttpPostRequest)">
+            <inheritdoc />
+        </member>
         <member name="T:PatchKit.Network.HttpGetRequest">
             <summary>
             Describes HTTP GET request.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.HttpGetRequest.Address">
-            <summary>
-            Target request address.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.HttpGetRequest.Timeout">
-            <summary>
-            Request timeout in miliseconds.
             </summary>
         </member>
         <member name="P:PatchKit.Network.HttpGetRequest.Range">
@@ -53,6 +61,16 @@
         <member name="M:PatchKit.Network.BytesRange.#ctor(System.Int64,System.Int64)">
             <summary>
             Initializes a new instance of <see cref="T:PatchKit.Network.BytesRange"/> struct.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Network.HttpPostRequest">
+            <summary>
+            Describes HTTP POST request.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpPostRequest.Body">
+            <summary>
+            Request body.
             </summary>
         </member>
         <member name="T:PatchKit.Network.HttpWebResponseAdapter">
@@ -85,6 +103,13 @@
             Sends GET request.
             </summary>
             <param name="getRequest">Request to send.</param>
+            <returns>Response for sent request.</returns>
+        </member>
+        <member name="M:PatchKit.Network.IHttpClient.Post(PatchKit.Network.HttpPostRequest)">
+            <summary>
+            Sends POST request.
+            </summary>
+            <param name="postRequest">Request to send.</param>
             <returns>Response for sent request.</returns>
         </member>
         <member name="T:PatchKit.Network.IHttpResponse">
