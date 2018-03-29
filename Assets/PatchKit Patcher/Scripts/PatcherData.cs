@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PatchKit.Unity.Patcher
+namespace PatchKit.Patching.Unity
 {
     [Serializable]
     public struct PatcherData

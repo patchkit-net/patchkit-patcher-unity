@@ -1,12 +1,13 @@
 ﻿using System;
 using JetBrains.Annotations;
 using PatchKit.Api;
-using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Patching.AppData.Remote;
+using PatchKit.Patching.Debug;
 using UnityEngine;
 
-namespace PatchKit.Unity
+namespace PatchKit.Patching.Unity
 {
-    public class Settings : ScriptableObject
+    public class Settings : ScriptableObject, IApiConnectionSettingsProvider
     {
         private const string AssetFileName = "PatchKit Settings";
 
@@ -82,13 +83,9 @@ namespace PatchKit.Unity
             return null;
         }
 
-        public static ApiConnectionSettings GetMainApiConnectionSettings()
+        public ApiConnectionSettings GetMainApiSettings()
         {
-            var instance = FindInstance();
-
-            var settings = instance == null
-                ? MainApiConnection.GetDefaultSettings()
-                : instance.MainApiConnectionSettings;
+            var settings = MainApiConnectionSettings;
 
             var overrideMain = GetApiConnectionServerFromEnvVar(EnvironmentVariables.ApiUrlEnvironmentVariable);
 
@@ -108,13 +105,9 @@ namespace PatchKit.Unity
             return settings;
         }
 
-        public static ApiConnectionSettings GetKeysApiConnectionSettings()
+        public ApiConnectionSettings GetKeysApiSettings()
         {
-            var instance = FindInstance();
-
-            var settings = instance == null
-                ? KeysApiConnection.GetDefaultSettings()
-                : instance.KeysApiConnectionSettings;
+            var settings = KeysApiConnectionSettings;
 
             var overrideKeys = GetApiConnectionServerFromEnvVar(EnvironmentVariables.KeysUrlEnvironmentVariable);
 

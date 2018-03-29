@@ -1,9 +1,9 @@
 using System.Threading;
-using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Patching.Cancellation;
+using PatchKit.Patching.Debug;
 using UnityEngine;
-using PatchKit.Unity.Patcher.Debug;
 
-namespace PatchKit.Unity.Patcher.UI.Dialogs
+namespace PatchKit.Patching.Unity.UI.Dialogs
 {
     public class Dialog<T> : MonoBehaviour where T : Dialog<T>
     {

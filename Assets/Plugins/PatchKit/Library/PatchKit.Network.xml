@@ -1,0 +1,219 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PatchKit.Network</name>
+    </assembly>
+    <members>
+        <member name="T:PatchKit.Network.DefaultHttpClient">
+            <inheritdoc />
+            <summary>
+            Default implementation of <see cref="T:PatchKit.Network.IHttpClient" />.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.DefaultHttpClient.Get(PatchKit.Network.HttpGetRequest)">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Network.HttpGetRequest">
+            <summary>
+            Describes HTTP GET request.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpGetRequest.Address">
+            <summary>
+            Target request address.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpGetRequest.Timeout">
+            <summary>
+            Request timeout in miliseconds.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpGetRequest.Range">
+            <summary>
+            Requested bytes range.
+            If set to <c>null</c> range is not specified.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Network.BytesRange">
+            <summary>
+            Specifies byte range.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Network.BytesRange.Start">
+            <summary>
+            Starting byte of range (inclusive).
+            </summary>
+        </member>
+        <member name="F:PatchKit.Network.BytesRange.End">
+            <summary>
+            Ending byte of range (inclusive).
+            If set to negative value, range is extended to the maximum possible value.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.BytesRange.#ctor(System.Int64,System.Int64)">
+            <summary>
+            Initializes a new instance of <see cref="T:PatchKit.Network.BytesRange"/> struct.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Network.HttpWebResponseAdapter">
+            <summary>
+            Adapter of <see cref="T:System.Net.HttpWebRequest"/> for <see cref="T:PatchKit.Network.IHttpResponse"/>.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.HttpWebResponseAdapter.#ctor(System.Net.HttpWebResponse)">
+            <inheritdoc />
+        </member>
+        <member name="P:PatchKit.Network.HttpWebResponseAdapter.ContentStream">
+            <inheritdoc />
+        </member>
+        <member name="P:PatchKit.Network.HttpWebResponseAdapter.CharacterSet">
+            <inheritdoc />
+        </member>
+        <member name="P:PatchKit.Network.HttpWebResponseAdapter.StatusCode">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Network.HttpWebResponseAdapter.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Network.IHttpClient">
+            <summary>
+            HTTP client with ability to send requests.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.IHttpClient.Get(PatchKit.Network.HttpGetRequest)">
+            <summary>
+            Sends GET request.
+            </summary>
+            <param name="getRequest">Request to send.</param>
+            <returns>Response for sent request.</returns>
+        </member>
+        <member name="T:PatchKit.Network.IHttpResponse">
+            <summary>
+            Provides a HTTP response.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.IHttpResponse.ContentStream">
+            <summary>
+            Gets the stream that is used to read the body of the response from the server.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.IHttpResponse.CharacterSet">
+            <summary>
+            Gets the character set of the response.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.IHttpResponse.StatusCode">
+            <summary>
+            Gets the status of the response.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Network.IRequestRetryStrategy">
+            <summary>
+            Defines retry strategy for requests.
+            Results are based on request success/failure events.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.IRequestRetryStrategy.DelayBeforeNextTry">
+            <summary>
+            Delay (in miliseconds) that should be made before trying next request.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.IRequestRetryStrategy.ShouldRetry">
+            <summary>
+            States whether retry should be done.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.IRequestRetryStrategy.OnRequestSuccess">
+            <summary>
+            Use it to notify about successful request.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.IRequestRetryStrategy.OnRequestFailure">
+            <summary>
+            Use it to notify about failed request.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Network.IRequestTimeoutCalculator">
+            <summary>
+            Calculates request timeout based on success/failure events.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.IRequestTimeoutCalculator.Timeout">
+            <summary>
+            Timeout in miliseconds.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.IRequestTimeoutCalculator.OnRequestSuccess">
+            <summary>
+            Use it to notify about successful request.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.IRequestTimeoutCalculator.OnRequestFailure">
+            <summary>
+            Use it to notify about failed request.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Network.NoneRequestRetryStrategy">
+            <inheritdoc />
+            <summary>
+            Strategy that never allows to make a retry.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.NoneRequestRetryStrategy.DelayBeforeNextTry">
+            <inheritdoc />
+        </member>
+        <member name="P:PatchKit.Network.NoneRequestRetryStrategy.ShouldRetry">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Network.NoneRequestRetryStrategy.OnRequestSuccess">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Network.NoneRequestRetryStrategy.OnRequestFailure">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Network.SimpleInfiniteRequestRetryStrategy">
+            <inheritdoc />
+            <summary>
+            Simple implementation of <see cref="T:PatchKit.Network.IRequestRetryDelayCalculator" /> that never stops making retries.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Network.SimpleInfiniteRequestRetryStrategy"/> class.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.DelayBeforeNextTry">
+            <inheritdoc />
+        </member>
+        <member name="P:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.ShouldRetry">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.OnRequestSuccess">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.OnRequestFailure">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Network.SimpleRequestTimeoutCalculator">
+            <inheritdoc />
+            <summary>
+            Simple implementation of <see cref="T:PatchKit.Network.IRequestTimeoutCalculator" />.
+            Timeout is not reset after <see cref="M:PatchKit.Network.SimpleRequestTimeoutCalculator.OnRequestSuccess"/>.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.SimpleRequestTimeoutCalculator.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Network.SimpleRequestTimeoutCalculator"/> class.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.SimpleRequestTimeoutCalculator.Timeout">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Network.SimpleRequestTimeoutCalculator.OnRequestSuccess">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Network.SimpleRequestTimeoutCalculator.OnRequestFailure">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

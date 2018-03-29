@@ -177,7 +177,7 @@ namespace UniRx.Toolkit
         {
             if (q == null) q = new Queue<T>(preloadCount);
 
-            return Observable.FromMicroCoroutine<Unit>((observer, cancel) => PreloadCore(preloadCount, threshold, observer, cancel));
+            return ObservableUnity.FromMicroCoroutine<Unit>((observer, cancel) => PreloadCore(preloadCount, threshold, observer, cancel));
         }
 
         IEnumerator PreloadCore(int preloadCount, int threshold, IObserver<Unit> observer, CancellationToken cancellationToken)
@@ -407,7 +407,7 @@ namespace UniRx.Toolkit
         {
             if (q == null) q = new Queue<T>(preloadCount);
 
-            return Observable.FromMicroCoroutine<Unit>((observer, cancel) => PreloadCore(preloadCount, threshold, observer, cancel));
+            return ObservableUnity.FromMicroCoroutine<Unit>((observer, cancel) => PreloadCore(preloadCount, threshold, observer, cancel));
         }
 
         IEnumerator PreloadCore(int preloadCount, int threshold, IObserver<Unit> observer, CancellationToken cancellationToken)

@@ -815,11 +815,6 @@ namespace UniRx
             return new UniRx.Operators.DelayFrameObservable<T>(source, frameCount, frameCountType);
         }
 
-        public static IObservable<T> Sample<T, T2>(this IObservable<T> source, IObservable<T2> sampler)
-        {
-            return new UniRx.Operators.SampleObservable<T, T2>(source, sampler);
-        }
-
         public static IObservable<T> SampleFrame<T>(this IObservable<T> source, int frameCount, FrameCountType frameCountType = FrameCountType.Update)
         {
             if (frameCount < 0) throw new ArgumentOutOfRangeException("frameCount");
@@ -899,7 +894,7 @@ namespace UniRx
         /// <summary>Convert to awaitable IEnumerator.</summary>
         public static IEnumerator ToAwaitableEnumerator<T>(this IObservable<T> source, CancellationToken cancel = default(CancellationToken))
         {
-            return ToAwaitableEnumerator<T>(source, Stubs<T>.Ignore, Stubs.Throw, cancel);
+            return ToAwaitableEnumerator<T>(source, Stubs.Ignore, Stubs.Throw, cancel);
         }
 
         /// <summary>Convert to awaitable IEnumerator.</summary>
@@ -911,7 +906,7 @@ namespace UniRx
         /// <summary>Convert to awaitable IEnumerator.</summary>
         public static IEnumerator ToAwaitableEnumerator<T>(this IObservable<T> source, Action<Exception> onError, CancellationToken cancel = default(CancellationToken))
         {
-            return ToAwaitableEnumerator<T>(source, Stubs<T>.Ignore, onError, cancel);
+            return ToAwaitableEnumerator<T>(source, Stubs.Ignore, onError, cancel);
         }
 
         /// <summary>Convert to awaitable IEnumerator.</summary>
@@ -943,7 +938,7 @@ namespace UniRx
         /// <summary>AutoStart observable as coroutine.</summary>
         public static Coroutine StartAsCoroutine<T>(this IObservable<T> source, CancellationToken cancel = default(CancellationToken))
         {
-            return StartAsCoroutine<T>(source, Stubs<T>.Ignore, Stubs.Throw, cancel);
+            return StartAsCoroutine<T>(source, Stubs.Ignore, Stubs.Throw, cancel);
         }
 
         /// <summary>AutoStart observable as coroutine.</summary>
@@ -955,7 +950,7 @@ namespace UniRx
         /// <summary>AutoStart observable as coroutine.</summary>
         public static Coroutine StartAsCoroutine<T>(this IObservable<T> source, Action<Exception> onError, CancellationToken cancel = default(CancellationToken))
         {
-            return StartAsCoroutine<T>(source, Stubs<T>.Ignore, onError, cancel);
+            return StartAsCoroutine<T>(source, Stubs.Ignore, onError, cancel);
         }
 
         /// <summary>AutoStart observable as coroutine.</summary>

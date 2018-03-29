@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using PatchKit.Api;
-using PatchKit.Unity.Patcher.AppUpdater;
-using PatchKit.Unity.Patcher.AppUpdater.Commands;
-using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Utilities;
-using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.UI.Dialogs;
+using PatchKit.Network;
+using PatchKit.Patching.AppData.Local;
+using PatchKit.Patching.AppData.Remote;
+using PatchKit.Patching.AppData.Remote.Downloaders;
+using PatchKit.Patching.AppUpdater;
+using PatchKit.Patching.AppUpdater.Commands;
+using PatchKit.Patching.AppUpdater.Status;
+using PatchKit.Patching.Cancellation;
+using PatchKit.Patching.Debug;
+using PatchKit.Patching.Licensing;
+using PatchKit.Patching.Unity.UI.Dialogs;
+using PatchKit.Patching.Utilities;
 using UniRx;
 using UnityEngine;
-using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
-using System.IO;
-using PatchKit.Network;
-using PatchKit.Unity.Patcher.AppUpdater.Status;
+using CancellationToken = PatchKit.Patching.Cancellation.CancellationToken;
 
-namespace PatchKit.Unity.Patcher
+namespace PatchKit.Patching.Unity
 {
     // Assumptions:
     // - this component is always enabled (coroutines are always executed)
@@ -224,6 +228,12 @@ namespace PatchKit.Unity.Patcher
         private void Awake()
         {
             UnityEngine.Assertions.Assert.raiseExceptions = true;
+
+            DependencyResolver.RegisterInstance<IApiConnectionSettingsProvider>(Settings.FindInstance());
+            DependencyResolver.RegisterType<IPlatformResolver, PlatformResolver>();
+            DependencyResolver.RegisterType<ITorrentClientProcessStartInfoProvider, UnityTorrentClientProcessStartInfoProvider>();
+            DependencyResolver.RegisterType<IHttpClient, UnityHttpClient>();
+            DependencyResolver.RegisterType<ICache, UnityCache>();
 
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
@@ -784,11 +794,24 @@ namespace PatchKit.Unity.Patcher
                 _localVersionId.Value = _app.GetInstalledVersionId();
             }
 
+            AppLicense appLicense;
+            if (_appInfo.Value.UseKeys)
+            {
+                appLicense = GetAppLicense();
+            }
+            else
+            {
+                appLicense = new AppLicense
+                {
+                    Secret = null
+                };
+            }
+
             _updateAppCancellationTokenSource = new CancellationTokenSource();
 
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
-                var appUpdater = new AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration ) );
+                var appUpdater = new Patching.AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration, appLicense ) );
 
                 try
                 {
@@ -801,6 +824,17 @@ namespace PatchKit.Unity.Patcher
                     _updateAppCancellationTokenSource = null;
                 }
             }
+        }
+
+        private AppLicense GetAppLicense()
+        {
+            var validateLicenseCommand =
+                new UnityLicenseValidator(UI.Dialogs.LicenseDialog.Instance, _app.LocalMetaData);
+
+            validateLicenseCommand.Validate(_app.AppSecret);
+
+            // ReSharper disable once PossibleInvalidOperationException
+            return validateLicenseCommand.AppLicense.Value;
         }
 
         private bool ThreadTryRestartWithRequestForPermissions()

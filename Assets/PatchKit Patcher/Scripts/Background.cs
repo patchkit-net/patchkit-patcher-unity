@@ -1,34 +1,34 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UniRx;
 using PatchKit.Logging;
-using PatchKit.Unity.Utilities;
-using PatchKit.Unity.Patcher;
-using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.AppData.Local;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Api.Models.Main;
 using System;
 using System.IO;
-using System.Collections;
+using PatchKit.Patching;
+using PatchKit.Patching.AppData.Local;
+using PatchKit.Patching.AppData.Remote.Downloaders;
+using PatchKit.Patching.Cancellation;
+using PatchKit.Patching.Debug;
+using PatchKit.Patching.Unity;
+using UniRx;
+using ILogger = PatchKit.Logging.ILogger;
 
 public class Background : MonoBehaviour
 {
-    public struct PatcherBannerData
+    private struct PatcherBannerData
     {
         public string ImageUrl;
         public PatcherBannerImageDimensions Dimensions;
         public string ModificationDate;
     }
 
-    public struct Data
+    private struct Data
     {
         public PatcherBannerData BannerData;
         public string BannerFilePath;
     }
 
-    private ICache _cache = new UnityCache();
+    private readonly ICache _cache = new UnityCache();
 
     private const string CachedBannerPathKey = "cached-banner-path-key";
     private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
@@ -50,14 +50,14 @@ public class Background : MonoBehaviour
         }
     }
 
-    public string CachedBannerModificationDate
+    private string CachedBannerModificationDate
     {
         get
         {
             return _cache.GetValue(CachedBannerModificationDateKey);
         }
 
-        private set
+        set
         {
             _cache.SetValue(CachedBannerModificationDateKey, value);
         }
@@ -68,11 +68,11 @@ public class Background : MonoBehaviour
 
     public Animator MainAnimator;
 
-    private PatchKit.Logging.ILogger _logger;
+    private ILogger _logger;
 
     private void Start()
     {
-        _logger = PatcherLogManager.DefaultLogger;
+        _logger = DependencyResolver.Resolve<ILogger>();
 
         var patcher = Patcher.Instance;
 
@@ -89,7 +89,7 @@ public class Background : MonoBehaviour
 
         var patcherData = patcher.Data
             .Select(data => data.AppDataPath)
-            .SkipWhile(val => string.IsNullOrEmpty(val))
+            .SkipWhile(string.IsNullOrEmpty)
             .Select(val => Path.Combine(val, BannerImageFilename));
 
         var appInfo = patcher.AppInfo
@@ -143,10 +143,10 @@ public class Background : MonoBehaviour
     private void AquireRemoteBanner(Data data)
     {
         _logger.LogDebug(string.Format("Aquiring the remote banner image from {0}", data.BannerData.ImageUrl));
-        var coroutine = Threading.StartThreadCoroutine(() => {
+        var coroutine = UnityThreading.StartThreadCoroutine(() => {
             CancellationTokenSource source = new CancellationTokenSource();
 
-            var downloader = new HttpDownloader(data.BannerFilePath, new string[]{data.BannerData.ImageUrl});
+            var downloader = new HttpDownloader(data.BannerFilePath, new[]{data.BannerData.ImageUrl});
 
             try
             {
@@ -162,7 +162,7 @@ public class Background : MonoBehaviour
                 return false;
             }
 
-        }, (bool result) => {
+        }, result => {
             if (result)
             {
                 CachedBannerPath = data.BannerFilePath;

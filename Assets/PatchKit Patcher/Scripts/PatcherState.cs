@@ -1,4 +1,4 @@
-﻿namespace PatchKit.Unity.Patcher
+﻿namespace PatchKit.Patching.Unity
 {
     public enum PatcherState
     {

@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
+using PatchKit.Patching.Debug;
+using PatchKit.Patching.Unity;
 using UniRx;
-using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity
 {
@@ -23,7 +23,7 @@ namespace PatchKit.Unity
 
         private void Start()
         {
-            var patcher = Patcher.Patcher.Instance;
+            var patcher = Patcher.Instance;
 
             _button = GetComponent<Button>();
             _image = GetComponent<Image>();

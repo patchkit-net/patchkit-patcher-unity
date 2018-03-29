@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using PatchKit.Api;
-using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Network;
 using UnityEngine;
 
-namespace PatchKit.Unity.UI
+namespace PatchKit.Patching.Unity.UI
 {
     public abstract class UIApiComponent : MonoBehaviour
     {
@@ -47,8 +47,8 @@ namespace PatchKit.Unity.UI
 
         protected virtual void Awake()
         {
-            _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
-            _mainApiConnection.HttpClient = new UnityHttpClient();
+            _mainApiConnection = new MainApiConnection(Settings.FindInstance().GetMainApiSettings());
+            _mainApiConnection.HttpClient = DependencyResolver.Resolve<IHttpClient>();
         }
 
         protected virtual void Start()

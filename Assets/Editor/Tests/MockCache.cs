@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Patching.AppData.Local;
 
 class MockCache : ICache
 {
@@ -17,5 +17,15 @@ class MockCache : ICache
             return Dictionary[key];
         }
         return defaultValue;
+    }
+
+    public void DeleteKey(string key)
+    {
+        Dictionary.Remove(key);
+    }
+
+    public bool HasKey(string key)
+    {
+        return Dictionary.ContainsKey(key);
     }
 }

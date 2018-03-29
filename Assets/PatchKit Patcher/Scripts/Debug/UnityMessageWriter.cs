@@ -2,23 +2,26 @@
 using JetBrains.Annotations;
 using PatchKit.Logging;
 
-namespace PatchKit.Unity.Patcher.Debug
+namespace PatchKit.Patching.Unity.Debug
 {
-    public class UnityMessageWriter : IMessageWriter
+    public class UnityMessageWriter : IMessagesStreamObserver
     {
         [NotNull]
         private readonly IMessageFormatter _formatter;
 
         public UnityMessageWriter([NotNull] IMessageFormatter formatter)
         {
-            Checks.ArgumentNotNull(formatter, "formatter");
+            if (formatter == null)
+            {
+                throw new ArgumentNullException("formatter");
+            }
 
             _formatter = formatter;
         }
 
-        public void Write(Message message, MessageContext messageContext)
+        public void OnNext(Message message, MessageContext context)
         {
-            var text = _formatter.Format(message, messageContext);
+            var text = _formatter.Format(message, context);
 
             switch (message.Type)
             {

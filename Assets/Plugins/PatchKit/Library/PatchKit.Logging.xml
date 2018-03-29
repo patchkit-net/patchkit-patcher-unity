@@ -1,0 +1,257 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PatchKit.Logging</name>
+    </assembly>
+    <members>
+        <member name="T:PatchKit.Logging.DefaultMessageSourceStackLocator">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Logging.DefaultMessageSourceStackLocator.Locate(System.Diagnostics.StackTrace)">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Logging.IgnoreMessageSourceStackAttribute">
+            <summary>
+            Attribute to mark methods that should be ignored during <see cref="T:PatchKit.Logging.MessageSource"/> location.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Logging.IMessagesStream">
+            <summary>
+            Messages stream.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.IMessagesStream.Subscribe(PatchKit.Logging.IMessagesStreamObserver)">
+            <summary>
+            Subscribes observer to stream of messages.
+            </summary>
+            <returns>Subscription handle. Call <see cref="M:System.IDisposable.Dispose"/> to end subscription.</returns>
+        </member>
+        <member name="T:PatchKit.Logging.IMessagesStreamObserver">
+            <summary>
+            <see cref="T:PatchKit.Logging.IMessagesStream"/> observer.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.IMessagesStreamObserver.OnNext(PatchKit.Logging.Message,PatchKit.Logging.MessageContext)">
+            <summary>
+            Called when new message is distributed through the stream.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Logging.IMessageSourceStackLocator">
+            <summary>
+            Message source stack locator.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.IMessageSourceStackLocator.Locate(System.Diagnostics.StackTrace)">
+            <summary>
+            Locates source of message basing on provided stack trace.
+            Should handle <see cref="T:PatchKit.Logging.IgnoreMessageSourceStackAttribute"/>.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Logging.MessageSource">
+            <summary>
+            Source of logged message.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.MessageSource.#ctor(System.Type,System.Reflection.MethodBase,System.String,System.Nullable{System.Int32})">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Logging.MessageSource"/> struct.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.MessageSource.Type">
+            <summary>
+            Type from which message was logged.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.MessageSource.Method">
+            <summary>
+            Method from which message was logged.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.MessageSource.FileName">
+            <summary>
+            Source file name from which message was logged.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.MessageSource.FileLineNumber">
+            <summary>
+            Source file line number from which message was logged.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Logging.SimpleMessageFormatter">
+            <inheritdoc />
+            <summary>
+            Simple message formatter.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.SimpleMessageFormatter.Format(PatchKit.Logging.Message,PatchKit.Logging.MessageContext)">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Logging.DefaultLogger">
+            <inheritdoc cref="T:PatchKit.Logging.ILogger" />
+            <inheritdoc cref="T:PatchKit.Logging.IMessagesStream" />
+            <summary>
+            Default implementation of <see cref="T:PatchKit.Logging.ILogger"/> which also implements <see cref="T:PatchKit.Logging.IMessagesStream"/>.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.DefaultLogger.#ctor(PatchKit.Logging.IMessageSourceStackLocator)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Logging.DefaultLogger"/> class.
+            </summary>
+            <param name="messageSourceStackLocator"></param>
+        </member>
+        <member name="M:PatchKit.Logging.DefaultLogger.Log(PatchKit.Logging.Message)">
+            <inheritdoc />
+        </member>
+        <member name="M:PatchKit.Logging.DefaultLogger.Subscribe(PatchKit.Logging.IMessagesStreamObserver)">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Logging.DummyLogger">
+            <summary>
+            Dummy implementation of <see cref="T:PatchKit.Logging.ILogger"/>.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.DummyLogger.Instance">
+            <summary>
+            Instance of <see cref="T:PatchKit.Logging.DummyLogger"/>.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.DummyLogger.Log(PatchKit.Logging.Message)">
+            <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Logging.IMessageFormatter">
+            <summary>
+            Message formatter.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.IMessageFormatter.Format(PatchKit.Logging.Message,PatchKit.Logging.MessageContext)">
+            <summary>
+            Formats provided message to text.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Logging.ILogger">
+            <summary>
+            Message logger.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.ILogger.Log(PatchKit.Logging.Message)">
+            <summary>
+            Logs message.
+            </summary>
+            <param name="message">Message that should be logged.</param>
+        </member>
+        <member name="T:PatchKit.Logging.Message">
+            <summary>
+            Message.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.Message.#ctor(System.String,PatchKit.Logging.MessageType,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Logging.Message"/> struct.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.Message.Description">
+            <summary>
+            Message description.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.Message.Type">
+            <summary>
+            Message type.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.Message.Exception">
+            <summary>
+            Associated exception.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Logging.MessageContext">
+            <summary>
+            Context of logged message.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.MessageContext.#ctor(PatchKit.Logging.MessageSource,System.DateTime)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Logging.MessageContext"/> struct.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.MessageContext.Source">
+            <summary>
+            Source.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Logging.MessageContext.DateTime">
+            <summary>
+            Time when message was logged.
+            </summary>
+        </member>
+        <member name="T:PatchKit.Logging.MessageType">
+            <summary>
+            Type of message.
+            </summary>
+        </member>
+        <member name="F:PatchKit.Logging.MessageType.Trace">
+            <summary>
+            Very detailed description about operation.
+            Examples: 
+            * Response from API
+            * Downloaded file size
+            </summary>
+        </member>
+        <member name="F:PatchKit.Logging.MessageType.Debug">
+            <summary>
+            Regular operation description.
+            Examples:
+            * "Unarchiving content package..."
+            * "Requesting application info from API..."
+            * "Unarchiving has been finished."
+            </summary>
+        </member>
+        <member name="F:PatchKit.Logging.MessageType.Warning">
+            <summary>
+            Issue that is recoverable (in scope of current operation).
+            Examples:
+            * "Torrent download has failed. Falling back to HTTP downloader..."
+            * "Connection has timed out. Trying again in 5 seconds..."
+            * "Diff strategy has failed. Falling back to content strategy..."
+            * "Main server didn't respond. Falling back to cache servers..."
+            </summary>
+        </member>
+        <member name="F:PatchKit.Logging.MessageType.Error">
+            <summary>
+            Issue that is not recoverable (in scope of current operation).
+            Examples:
+            * "Received invalid data from server."
+            * "Downloaded file hash is invalid."
+            * "Main server responded with error code 404."
+            </summary>
+        </member>
+        <member name="T:PatchKit.Logging.LoggerExtensions">
+            <summary>
+            Extensions for <see cref="T:PatchKit.Logging.ILogger"/> interface.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.LoggerExtensions.Log(PatchKit.Logging.ILogger,System.String,PatchKit.Logging.MessageType,System.Exception)">
+            <inheritdoc cref="M:PatchKit.Logging.ILogger.Log(PatchKit.Logging.Message)"/>
+        </member>
+        <member name="M:PatchKit.Logging.LoggerExtensions.LogTrace(PatchKit.Logging.ILogger,System.String,System.Exception)">
+            <summary>
+            Logs message of <see cref="F:PatchKit.Logging.MessageType.Trace"/> type.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.LoggerExtensions.LogDebug(PatchKit.Logging.ILogger,System.String,System.Exception)">
+            <summary>
+            Logs message of <see cref="F:PatchKit.Logging.MessageType.Debug"/> type.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.LoggerExtensions.LogWarning(PatchKit.Logging.ILogger,System.String,System.Exception)">
+            <summary>
+            Logs message of <see cref="F:PatchKit.Logging.MessageType.Warning"/> type.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Logging.LoggerExtensions.LogError(PatchKit.Logging.ILogger,System.String,System.Exception)">
+            <summary>
+            Logs message of <see cref="F:PatchKit.Logging.MessageType.Error"/> type.
+            </summary>
+        </member>
+    </members>
+</doc>
