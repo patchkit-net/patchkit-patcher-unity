@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Linq;
-using System.Diagnostics;
+using UnityEngine.SceneManagement;
 
 namespace PatchKit.Unity
 {
@@ -96,13 +96,13 @@ namespace PatchKit.Unity
                 return;
             }
 
-            Patcher.Patcher patcher = null;
+            Patching.Unity.Patcher patcher = null;
             foreach (var scenePath in scenePaths)
             {
                 var scene = EditorSceneManager.OpenScene(scenePath);
-                EditorSceneManager.SetActiveScene(scene);
+                SceneManager.SetActiveScene(scene);
 
-                patcher = PatchKit.Unity.Patcher.Patcher.Instance;
+                patcher = Patching.Unity.Patcher.Instance;
 
                 if (patcher)
                 {
@@ -116,13 +116,13 @@ namespace PatchKit.Unity
                 return;
             }
 
-            if (patcher.EditorAppSecret != PatchKit.Unity.Patcher.Patcher.EditorAllowedSecret)
+            if (patcher.EditorAppSecret != Patching.Unity.Patcher.EditorAllowedSecret)
             {
                 if (EditorUtility.DisplayDialog("Error", "Please reset the editor app secret to continue building.", "Reset the secret and continue", "Cancel"))
                 {
-                    patcher.EditorAppSecret = PatchKit.Unity.Patcher.Patcher.EditorAllowedSecret;
+                    patcher.EditorAppSecret = Patching.Unity.Patcher.EditorAllowedSecret;
 
-                    var activeScene = EditorSceneManager.GetActiveScene();
+                    var activeScene = SceneManager.GetActiveScene();
 
                     EditorSceneManager.MarkSceneDirty(activeScene);
                     EditorSceneManager.SaveScene(activeScene);
