@@ -1,0 +1,455 @@
+fileFormatVersion: 2
+guid: 90263bd719675754d8210f70bbcd00be
+timeCreated: 1519732347
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: banner_loading_animation_0
+    21300002: banner_loading_animation_1
+    21300004: banner_loading_animation_2
+    21300006: banner_loading_animation_3
+    21300008: banner_loading_animation_4
+    21300010: banner_loading_animation_5
+    21300012: banner_loading_animation_6
+    21300014: banner_loading_animation_7
+    21300016: banner_loading_animation_8
+    21300018: banner_loading_animation_9
+    21300020: banner_loading_animation_10
+    21300022: banner_loading_animation_11
+    21300024: banner_loading_animation_12
+    21300026: banner_loading_animation_13
+    21300028: banner_loading_animation_14
+    21300030: banner_loading_animation_15
+    21300032: banner_loading_animation_16
+    21300034: banner_loading_animation_17
+    21300036: banner_loading_animation_18
+    21300038: banner_loading_animation_19
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: banner_loading_animation_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -19, y: 32}
+        - {x: -30, y: 22}
+        - {x: -32, y: 14}
+        - {x: -32, y: -1}
+        - {x: -29, y: -2}
+        - {x: -20, y: -2}
+        - {x: 2, y: 18}
+        - {x: 2, y: 29}
+        - {x: 1, y: 32}
+    - name: banner_loading_animation_1
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -17, y: 32}
+        - {x: -31, y: 20}
+        - {x: -31, y: 5}
+        - {x: -13, y: 5}
+        - {x: 10, y: 20}
+        - {x: 10, y: 29}
+        - {x: 9, y: 32}
+    - name: banner_loading_animation_2
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -21, y: 32}
+        - {x: -26, y: 27}
+        - {x: -26, y: 13}
+        - {x: -25, y: 12}
+        - {x: 5, y: 12}
+        - {x: 18, y: 17}
+        - {x: 18, y: 32}
+    - name: banner_loading_animation_3
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 16, y: 32}
+        - {x: -17, y: 32}
+        - {x: -19, y: 29}
+        - {x: -19, y: 20}
+        - {x: -18, y: 15}
+        - {x: 3, y: 12}
+        - {x: 21, y: 12}
+        - {x: 25, y: 14}
+        - {x: 25, y: 22}
+        - {x: 23, y: 29}
+    - name: banner_loading_animation_4
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -10, y: 32}
+        - {x: -11, y: 31}
+        - {x: -11, y: 24}
+        - {x: -9, y: 17}
+        - {x: 19, y: 5}
+        - {x: 28, y: 5}
+        - {x: 30, y: 10}
+        - {x: 30, y: 20}
+        - {x: 20, y: 32}
+    - name: banner_loading_animation_5
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 14, y: 32}
+        - {x: -1, y: 32}
+        - {x: -3, y: 28}
+        - {x: -3, y: 22}
+        - {x: 21, y: -2}
+        - {x: 32, y: -2}
+        - {x: 32, y: 16}
+        - {x: 22, y: 30}
+    - name: banner_loading_animation_6
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 5, y: 11}
+        - {x: 19, y: -11}
+        - {x: 32, y: -11}
+        - {x: 32, y: 16}
+        - {x: 31, y: 22}
+        - {x: 20, y: 31}
+        - {x: 9, y: 31}
+        - {x: 5, y: 30}
+    - name: banner_loading_animation_7
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 30, y: -18}
+        - {x: 32, y: -17}
+        - {x: 32, y: 22}
+        - {x: 31, y: 26}
+        - {x: 11, y: 26}
+        - {x: 11, y: -18}
+    - name: banner_loading_animation_8
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 19, y: 19}
+        - {x: 15, y: 13}
+        - {x: 16, y: 7}
+        - {x: 12, y: -11}
+        - {x: 12, y: -24}
+        - {x: 16, y: -25}
+        - {x: 29, y: -25}
+        - {x: 31, y: -24}
+        - {x: 32, y: -20}
+        - {x: 32, y: 19}
+    - name: banner_loading_animation_9
+      rect:
+        serializedVersion: 2
+        x: 576
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 18, y: 11}
+        - {x: 5, y: -13}
+        - {x: 5, y: -30}
+        - {x: 20, y: -30}
+        - {x: 32, y: -22}
+        - {x: 32, y: 11}
+    - name: banner_loading_animation_10
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 18, y: 2}
+        - {x: -2, y: -21}
+        - {x: -2, y: -32}
+        - {x: 19, y: -32}
+        - {x: 32, y: -17}
+        - {x: 32, y: 1}
+        - {x: 29, y: 2}
+    - name: banner_loading_animation_11
+      rect:
+        serializedVersion: 2
+        x: 704
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 28, y: -5}
+        - {x: 9, y: -5}
+        - {x: -11, y: -20}
+        - {x: -11, y: -32}
+        - {x: 18, y: -32}
+        - {x: 31, y: -18}
+        - {x: 31, y: -6}
+    - name: banner_loading_animation_12
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -16, y: -12}
+        - {x: -18, y: -18}
+        - {x: -19, y: -24}
+        - {x: -19, y: -29}
+        - {x: -15, y: -32}
+        - {x: 24, y: -32}
+        - {x: 25, y: -29}
+        - {x: 25, y: -12}
+    - name: banner_loading_animation_13
+      rect:
+        serializedVersion: 2
+        x: 832
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -25, y: -12}
+        - {x: -25, y: -31}
+        - {x: -21, y: -32}
+        - {x: 16, y: -32}
+        - {x: 19, y: -29}
+        - {x: 19, y: -17}
+        - {x: 4, y: -12}
+    - name: banner_loading_animation_14
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -27, y: -5}
+        - {x: -30, y: -8}
+        - {x: -30, y: -18}
+        - {x: -29, y: -21}
+        - {x: -15, y: -32}
+        - {x: 11, y: -32}
+        - {x: 11, y: -18}
+        - {x: -8, y: -5}
+    - name: banner_loading_animation_15
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -32, y: 2}
+        - {x: -32, y: -19}
+        - {x: -27, y: -32}
+        - {x: 1, y: -32}
+        - {x: 2, y: -29}
+        - {x: 2, y: -18}
+        - {x: -20, y: 2}
+    - name: banner_loading_animation_16
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -32, y: 11}
+        - {x: -32, y: -18}
+        - {x: -31, y: -23}
+        - {x: -17, y: -31}
+        - {x: -10, y: -31}
+        - {x: -5, y: -30}
+        - {x: -5, y: -7}
+        - {x: -21, y: 11}
+    - name: banner_loading_animation_17
+      rect:
+        serializedVersion: 2
+        x: 1088
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -20, y: 18}
+        - {x: -32, y: 18}
+        - {x: -32, y: -19}
+        - {x: -31, y: -23}
+        - {x: -23, y: -26}
+        - {x: -13, y: -26}
+        - {x: -12, y: -22}
+        - {x: -12, y: 8}
+        - {x: -13, y: 15}
+    - name: banner_loading_animation_18
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -25, y: 25}
+        - {x: -32, y: 17}
+        - {x: -32, y: -17}
+        - {x: -30, y: -19}
+        - {x: -20, y: -19}
+        - {x: -12, y: -15}
+        - {x: -12, y: 21}
+        - {x: -13, y: 25}
+    - name: banner_loading_animation_19
+      rect:
+        serializedVersion: 2
+        x: 1216
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -9, y: 30}
+        - {x: -19, y: 30}
+        - {x: -32, y: 18}
+        - {x: -32, y: -11}
+        - {x: -23, y: -11}
+        - {x: -16, y: -6}
+        - {x: -6, y: 18}
+        - {x: -5, y: 22}
+        - {x: -5, y: 25}
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

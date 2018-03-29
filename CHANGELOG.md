@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.10.0]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
 - Skipping patches for files that content remained unchanged in newer version (during diff installation)
@@ -16,11 +16,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Including version information in Sentry reports
 - Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
 - Example scenes with double progress bars
+- A clickable PatchKit logo in non whitelabel patchers
+- Support for background image set in PatchKit Panel 
 
 ### Changed
 - Update API servers configuration
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
 - The patcher will now delete the lockfile when quitting
+
+## [3.9.1]
+### Fixed
+- Use 'any' instead of 'all' for publish method
 
 ## [3.9.0]
 ### Added
