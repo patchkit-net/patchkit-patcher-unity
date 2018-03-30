@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Linq;
@@ -31,28 +32,10 @@ namespace PatchKit.Unity
             Build(BuildTarget.StandaloneLinux64);
         }
 
-        [MenuItem("Tools/Build/Linux Universal")]
-        public static void BuildLinux ()
-        {
-            Build(BuildTarget.StandaloneLinuxUniversal);
-        }
-
-        [MenuItem("Tools/Build/OSX")]
-        public static void BuildOsx ()
-        {
-            Build(BuildTarget.StandaloneOSXIntel);
-        }
-
         [MenuItem("Tools/Build/OSX x64")]
         public static void BuildOsx64 ()
         {
             Build(BuildTarget.StandaloneOSXIntel64);
-        }
-
-        [MenuItem("Tools/Build/OSX Universal")]
-        public static void BuildOsxUniversal ()
-        {
-            Build(BuildTarget.StandaloneOSXUniversal);
         }
 
         private static string PatcherExecutableName(BuildTarget target)
@@ -65,16 +48,12 @@ namespace PatchKit.Unity
 
                 case BuildTarget.StandaloneLinux:
                 case BuildTarget.StandaloneLinux64:
-                case BuildTarget.StandaloneLinuxUniversal:
                     return "Patcher";
 
-                case BuildTarget.StandaloneOSXIntel:
                 case BuildTarget.StandaloneOSXIntel64:
-                case BuildTarget.StandaloneOSXUniversal:
                     return "Patcher.app";
-
                 default:
-                    return "";
+                    throw new ArgumentOutOfRangeException("target", target, null);
             }
         }
 
