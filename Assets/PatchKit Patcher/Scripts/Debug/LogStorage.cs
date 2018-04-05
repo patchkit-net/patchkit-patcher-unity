@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using Ionic.Zlib;
 using Newtonsoft.Json;
-using PatchKit.Patching.Debug;
+using PatchKit.Apps.Updating.Debug;
 using UnityEngine;
 #if UNITY_5_6_OR_NEWER
 using UnityEngine.Networking;

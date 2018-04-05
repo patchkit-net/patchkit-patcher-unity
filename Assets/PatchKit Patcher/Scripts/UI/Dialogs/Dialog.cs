@@ -1,6 +1,6 @@
 using System.Threading;
-using PatchKit.Patching.Cancellation;
-using PatchKit.Patching.Debug;
+using PatchKit.Apps.Updating.Debug;
+using PatchKit.Core.Cancellation;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity.UI.Dialogs

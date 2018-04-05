@@ -1,4 +1,4 @@
-﻿using PatchKit.Patching.Debug;
+﻿using PatchKit.Apps.Updating.Debug;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;

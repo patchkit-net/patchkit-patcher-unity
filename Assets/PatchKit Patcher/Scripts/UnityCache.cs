@@ -1,4 +1,4 @@
-﻿using PatchKit.Patching.AppData.Local;
+﻿using PatchKit.Apps.Updating.AppData.Local;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity

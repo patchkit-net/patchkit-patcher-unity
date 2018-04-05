@@ -2,9 +2,9 @@
 using System.Net;
 using NUnit.Framework;
 using NSubstitute;
+using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
+using PatchKit.Core.Cancellation;
 using PatchKit.Network;
-using PatchKit.Patching.AppData.Remote.Downloaders;
-using PatchKit.Patching.Cancellation;
 using ILogger = PatchKit.Logging.ILogger;
 using Random = System.Random;
 

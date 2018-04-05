@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using NUnit.Framework;
-using PatchKit.Patching.AppData.Local;
-using PatchKit.Patching.Cancellation;
+using PatchKit.Apps.Updating.AppData.Local;
+using PatchKit.Core.Cancellation;
 
 class UnarchiverTest
 {

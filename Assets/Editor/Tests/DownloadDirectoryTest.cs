@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using NUnit.Framework;
-using PatchKit.Patching.AppData.Local;
+using PatchKit.Apps.Updating.AppData.Local;
 
 public class DownloadDirectoryTest
 {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using PatchKit.Patching.AppData;
-using PatchKit.Patching.AppData.Remote.Downloaders;
-using PatchKit.Patching.Utilities;
+using PatchKit.Apps.Updating.AppData;
+using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
+using PatchKit.Apps.Updating.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity

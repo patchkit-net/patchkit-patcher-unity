@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using PatchKit.Apps.Updating;
 using PatchKit.Logging;
 using PatchKit.Network;
 using UnityEngine;

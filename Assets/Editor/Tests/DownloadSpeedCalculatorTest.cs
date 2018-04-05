@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using PatchKit.Patching.AppUpdater.Status;
+using PatchKit.Apps.Updating.AppUpdater.Status;
 
 class DownloadSpeedCalculatorTest
 {

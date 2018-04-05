@@ -1,5 +1,5 @@
 ﻿using System;
-using PatchKit.Patching.Debug;
+using PatchKit.Apps.Updating.Debug;
 using UniRx;
 
 namespace PatchKit.Patching.Unity.Debug

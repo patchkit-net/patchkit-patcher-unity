@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using PatchKit.Apps.Updating.Debug;
+using UnityEngine;
 using UnityEngine.UI;
-using PatchKit.Patching.Debug;
 using PatchKit.Patching.Unity;
 using UniRx;
 

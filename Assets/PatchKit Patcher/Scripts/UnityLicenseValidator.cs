@@ -1,9 +1,11 @@
 ﻿using System;
 using JetBrains.Annotations;
 using PatchKit.Api;
+using PatchKit.Apps;
+using PatchKit.Apps.Updating;
+using PatchKit.Apps.Updating.AppData.Local;
+using PatchKit.Apps.Updating.Licensing;
 using PatchKit.Logging;
-using PatchKit.Patching.AppData.Local;
-using PatchKit.Patching.Licensing;
 using PatchKit.Patching.Unity.UI.Dialogs;
 
 namespace PatchKit.Patching.Unity
@@ -11,26 +13,20 @@ namespace PatchKit.Patching.Unity
     public class UnityLicenseValidator
     {
         [NotNull] private readonly ILicenseDialog _licenseDialog;
-        [NotNull] private readonly ILocalMetaData _localMetaData;
         [NotNull] private readonly ILogger _logger;
         [NotNull] private readonly IKeysAppLicenseAuthorizer _keysAppLicenseAuthorizer;
+        [NotNull] private readonly IDataClient _dataClient;
 
-        public UnityLicenseValidator([NotNull] ILicenseDialog licenseDialog,
-            [NotNull] ILocalMetaData localMetaData)
+        public UnityLicenseValidator(string path, [NotNull] ILicenseDialog licenseDialog)
         {
             if (licenseDialog == null)
             {
                 throw new ArgumentNullException("licenseDialog");
             }
 
-            if (localMetaData == null)
-            {
-                throw new ArgumentNullException("localMetaData");
-            }
-
             _licenseDialog = licenseDialog;
-            _localMetaData = localMetaData;
             _logger = DependencyResolver.Resolve<ILogger>();
+            _dataClient = DependencyResolver.Resolve<IDataClientFactory>().Create(path);
             _keysAppLicenseAuthorizer = DependencyResolver.Resolve<IKeysAppLicenseAuthorizer>();
         }
 
@@ -168,12 +164,19 @@ namespace PatchKit.Patching.Unity
 
         private void SetCachedKey(string value)
         {
-            _localMetaData.SetProductKey(value);
+            var appInfo = _dataClient.GetAppInfo();
+            _dataClient.SetAppInfo(new AppInfo(appInfo.Secret, value));
         }
 
         private string GetCachedKey()
         {
-            return _localMetaData.GetProductKey();
+            var lastUsedLicenseKey = _dataClient.GetAppInfo().LastUsedLicenseKey;
+            if (lastUsedLicenseKey.HasValue)
+            {
+                return lastUsedLicenseKey.Value.Value;
+            }
+
+            return null;
         }
     }
 }

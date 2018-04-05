@@ -1,5 +1,5 @@
 ﻿using System;
-using PatchKit.Patching.AppUpdater;
+using PatchKit.Apps.Updating.AppUpdater;
 
 namespace PatchKit.Patching.Unity
 {

@@ -5,21 +5,22 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using PatchKit.Api;
+using PatchKit.Apps.Updating;
+using PatchKit.Apps.Updating.AppData.Local;
+using PatchKit.Apps.Updating.AppData.Remote;
+using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
+using PatchKit.Apps.Updating.AppUpdater;
+using PatchKit.Apps.Updating.AppUpdater.Commands;
+using PatchKit.Apps.Updating.AppUpdater.Status;
+using PatchKit.Apps.Updating.Debug;
+using PatchKit.Apps.Updating.Licensing;
+using PatchKit.Apps.Updating.Utilities;
+using PatchKit.Core.Cancellation;
 using PatchKit.Network;
-using PatchKit.Patching.AppData.Local;
-using PatchKit.Patching.AppData.Remote;
-using PatchKit.Patching.AppData.Remote.Downloaders;
-using PatchKit.Patching.AppUpdater;
-using PatchKit.Patching.AppUpdater.Commands;
-using PatchKit.Patching.AppUpdater.Status;
-using PatchKit.Patching.Cancellation;
-using PatchKit.Patching.Debug;
-using PatchKit.Patching.Licensing;
 using PatchKit.Patching.Unity.UI.Dialogs;
-using PatchKit.Patching.Utilities;
 using UniRx;
 using UnityEngine;
-using CancellationToken = PatchKit.Patching.Cancellation.CancellationToken;
+using CancellationToken = PatchKit.Core.Cancellation.CancellationToken;
 
 namespace PatchKit.Patching.Unity
 {
@@ -811,7 +812,7 @@ namespace PatchKit.Patching.Unity
 
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
-                var appUpdater = new Patching.AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration, appLicense ) );
+                var appUpdater = new AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration, appLicense ) );
 
                 try
                 {
@@ -829,7 +830,7 @@ namespace PatchKit.Patching.Unity
         private AppLicense GetAppLicense()
         {
             var validateLicenseCommand =
-                new UnityLicenseValidator(UI.Dialogs.LicenseDialog.Instance, _app.LocalMetaData);
+                new UnityLicenseValidator(_app._appDataPath, UI.Dialogs.LicenseDialog.Instance);
 
             validateLicenseCommand.Validate(_app.AppSecret);
 

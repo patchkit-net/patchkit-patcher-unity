@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using NSubstitute;
 using NUnit.Framework;
 
 class InstallContentCommandTest

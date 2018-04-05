@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using PatchKit.Api;
+using PatchKit.Apps.Updating;
 using PatchKit.Network;
 using UnityEngine;
 

@@ -1,11 +1,11 @@
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using PatchKit.Api.Models.Main;
+using PatchKit.Apps.Updating.AppData.Remote;
+using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
+using PatchKit.Apps.Updating.Utilities;
 using PatchKit.Network;
-using PatchKit.Patching.AppData.Remote;
-using PatchKit.Patching.AppData.Remote.Downloaders;
-using PatchKit.Patching.Utilities;
 
 public class ChunkedHttpDownloaderTest
 {

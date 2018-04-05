@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using PatchKit.Patching.AppData;
+using PatchKit.Apps.Updating.AppData;
 
 public class MagicBytesTest
 {

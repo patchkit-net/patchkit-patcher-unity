@@ -1,8 +1,9 @@
 ﻿using System;
 using JetBrains.Annotations;
+using PatchKit.Apps.Updating;
+using PatchKit.Apps.Updating.Debug;
 using PatchKit.IssueReporting;
 using PatchKit.Logging;
-using PatchKit.Patching.Debug;
 using UniRx;
 using UnityEngine;
 

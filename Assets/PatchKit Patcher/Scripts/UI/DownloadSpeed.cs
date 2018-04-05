@@ -1,5 +1,5 @@
 ﻿using System;
-using PatchKit.Patching.AppUpdater.Status;
+using PatchKit.Apps.Updating.AppUpdater.Status;
 using PatchKit.Patching.Unity.Extensions;
 using UniRx;
 using UnityEngine;

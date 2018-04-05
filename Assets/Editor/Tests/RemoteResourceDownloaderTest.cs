@@ -3,9 +3,9 @@ using System.IO;
 using NSubstitute;
 using NUnit.Framework;
 using PatchKit.Api.Models.Main;
-using PatchKit.Patching.AppData.Remote;
-using PatchKit.Patching.AppData.Remote.Downloaders;
-using PatchKit.Patching.Cancellation;
+using PatchKit.Apps.Updating.AppData.Remote;
+using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
+using PatchKit.Core.Cancellation;
 
 public class RemoteResourceDownloaderTest
 {
