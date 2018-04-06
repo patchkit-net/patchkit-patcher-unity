@@ -24,6 +24,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
 
             Path = path;
+            
+            if (Directory.Exists(Path))
+            {
+                Directory.Delete(Path);
+            }
 
             Directory.CreateDirectory(Path);
         }
