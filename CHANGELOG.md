@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Support for keeping temporary files on error if the PK_PATCHER_KEEP_FILES_ON_ERROR environment variable is set
+
 ## [3.10.0]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
