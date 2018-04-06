@@ -16,6 +16,7 @@ using PatchKit.Apps.Updating.Debug;
 using PatchKit.Apps.Updating.Licensing;
 using PatchKit.Apps.Updating.Utilities;
 using PatchKit.Core.Cancellation;
+using PatchKit.Core.IO;
 using PatchKit.Network;
 using PatchKit.Patching.Unity.UI.Dialogs;
 using UniRx;
@@ -235,6 +236,7 @@ namespace PatchKit.Patching.Unity
             DependencyResolver.RegisterType<ITorrentClientProcessStartInfoProvider, UnityTorrentClientProcessStartInfoProvider>();
             DependencyResolver.RegisterType<IHttpClient, UnityHttpClient>();
             DependencyResolver.RegisterType<ICache, UnityCache>();
+            DependencyResolver.RegisterType<ITemporaryDirectoryExecutor, UnityTemporaryDirectoryExecutor>();
 
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
