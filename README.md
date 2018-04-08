@@ -20,3 +20,4 @@ If you need to recompile it, simply open the project file (`getdiskspaceosx/getd
 * **PK_PATCHER_API_URL** - change used url of API
 * **PK_PATCHER_API_CACHE_URL** - changed used url of API cache
 * **PK_PATCHER_KEYS_URL** - change used url of keys API
+* **PK_PATCHER_KEEP_FILES_ON_ERROR** - keep temporary directories and files in case of patcher error

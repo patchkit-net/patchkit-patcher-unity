@@ -65,7 +65,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             foreach (var entry in _entries)
             {
-                using (var tempDir = new TemporaryDirectory(_packagePath + string.Format("{0}_{1}_{2}", entry.Name, entry.Offset, entry.Size)))
+                var tempDirName = _packagePath + string.Format("{0}_{1}_{2}", entry.Name, entry.Offset, entry.Size);
+                TemporaryDirectory.ExecuteIn(tempDirName, (tempDir) =>
                 {
                     _logger.LogDebug(string.Format("Repairing the file {0}", entry.Name));
                     string packagePath = Path.Combine(tempDir.Path, ".pack" + Path.GetRandomFileName());
@@ -122,7 +123,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     EmplaceFile(Path.Combine(unarchivePath, entry.Name), Path.Combine(_localData.Path, entry.Name));
 
                     repairStatus.IsActive.Value = false;
-                }
+                });
             }
         }
 

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Example scenes with double progress bars
 - A clickable PatchKit logo in non whitelabel patchers
 - Support for background image set in PatchKit Panel 
+- Support for PK_PATCHER_KEEP_FILES_ON_ERROR environment variable
 
 ### Changed
 - Update API servers configuration

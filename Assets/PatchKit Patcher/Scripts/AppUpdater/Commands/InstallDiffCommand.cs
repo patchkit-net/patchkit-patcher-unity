@@ -154,7 +154,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     ReadPack1MetaFile();
                 }
 
-                using (var packageDir = new TemporaryDirectory(_packagePath + ".temp_unpack_" + Path.GetRandomFileName()))
+                TemporaryDirectory.ExecuteIn(_packagePath + ".temp_unpack_" + Path.GetRandomFileName(), (packageDir) =>
                 {
                     _logger.LogTrace("packageDir = " + packageDir.Path);
 
@@ -165,16 +165,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     ProcessAddedFiles(packageDir.Path, usedSuffix, cancellationToken);
                     ProcessRemovedFiles(cancellationToken);
 
-                    using (var tempDiffDir =
-                        new TemporaryDirectory(_packagePath + ".temp_diff_" + Path.GetRandomFileName()))
+                    TemporaryDirectory.ExecuteIn(_packagePath + ".temp_diff_" + Path.GetRandomFileName(), (tempDiffDir) =>
                     {
                         _logger.LogTrace("tempDiffDir = " + tempDiffDir.Path);
 
                         ProcessModifiedFiles(packageDir.Path, usedSuffix, tempDiffDir, cancellationToken);
-                    }
+                    });
 
                     DeleteEmptyMacAppDirectories();
-                }
+                });
 
                 _logger.LogDebug("Diff installed.");
             }

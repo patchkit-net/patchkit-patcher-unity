@@ -7,5 +7,6 @@
         public const string ApiUrlEnvironmentVariable = "PK_PATCHER_API_URL";
         public const string ApiCacheUrlEnvironmentVariable = "PK_PATCHER_API_CACHE_URL";
         public const string KeysUrlEnvironmentVariable = "PK_PATCHER_KEYS_URL";
+        public const string KeepFilesOnErrorEnvironmentVariable = "PK_PATCHER_KEEP_FILES_ON_ERROR";
     }
 }
