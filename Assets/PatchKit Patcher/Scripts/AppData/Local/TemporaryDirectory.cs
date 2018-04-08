@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             
             if (Directory.Exists(Path))
             {
-                Directory.Delete(Path);
+                Directory.Delete(Path, true);
             }
 
             Directory.CreateDirectory(Path);
