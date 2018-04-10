@@ -60,8 +60,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                using (var tempDir = new TemporaryDirectory(DestinationDirectoryPath))
-                {
+                TemporaryDirectory.ExecuteIn(DestinationDirectoryPath, (tempDir) => {
                     _logger.LogTrace("tempDir = " + tempDir.Path);
 
                     using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
@@ -116,7 +115,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     }
 
                     File.Move(downloadedFilePath, _destinationFilePath);
-                }
+                });
             }
             catch (Exception e)
             {

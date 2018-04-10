@@ -2,6 +2,8 @@
 using NUnit.Framework;
 using PatchKit.Unity.Patcher.AppData.Local;
 
+using EnvironmentVariables = PatchKit.Unity.Patcher.Debug.EnvironmentVariables;
+
 class TemporaryDirectoryTest
 {
     private string _dirPath;
@@ -21,18 +23,15 @@ class TemporaryDirectoryTest
     [Test]
     public void Constructor_CreatesDirectory()
     {
-        using (new TemporaryDirectory(_dirPath))
-        {
+        TemporaryDirectory.ExecuteIn(_dirPath, dir => {
             Assert.IsTrue(Directory.Exists(_dirPath));
-        }
+        });
     }
 
     [Test]
     public void Dispose_DeletesDirectory()
     {
-        using (new TemporaryDirectory(_dirPath))
-        {
-        }
+        TemporaryDirectory.ExecuteIn(_dirPath, dir => {});
 
         Assert.IsFalse(Directory.Exists(_dirPath));
     }
@@ -40,19 +39,37 @@ class TemporaryDirectoryTest
     [Test]
     public void Dispose_DeletesDirectoryWithContent()
     {
-        using (var temporaryDirectory = new TemporaryDirectory(_dirPath))
-        {
-            File.WriteAllText(temporaryDirectory.GetUniquePath(), "a");
-        }
+        TemporaryDirectory.ExecuteIn(_dirPath, dir => {
+            File.WriteAllText(dir.GetUniquePath(), "a");
+        });
 
         Assert.IsFalse(Directory.Exists(_dirPath));
     }
 
     [Test]
+    public void Dispose_KeepDirectoryOnException()
+    {
+        System.Environment.SetEnvironmentVariable(EnvironmentVariables.KeepFilesOnErrorEnvironmentVariable, "yes");
+
+        try
+        {
+            TemporaryDirectory.ExecuteIn(_dirPath, dir => {
+                throw new System.Exception();
+            });
+        }
+        catch(System.Exception)
+        {}
+
+        Assert.IsTrue(Directory.Exists(_dirPath));
+
+        Directory.Delete(_dirPath, true);
+        System.Environment.SetEnvironmentVariable(EnvironmentVariables.KeepFilesOnErrorEnvironmentVariable, null);
+    }
+
+    [Test]
     public void GetUniquePath_ReturnsUniquePaths()
     {
-        using (var temporaryData = new TemporaryDirectory(_dirPath))
-        {
+        TemporaryDirectory.ExecuteIn(_dirPath, temporaryData => {
             for (int i = 0; i < 100; i++)
             {
                 string path = temporaryData.GetUniquePath();
@@ -69,6 +86,6 @@ class TemporaryDirectoryTest
                     Directory.CreateDirectory(path);
                 }
             }
-        }
+        });
     }
 }

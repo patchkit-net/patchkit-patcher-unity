@@ -94,8 +94,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Installing content.");
             
-            using (var packageDir = new TemporaryDirectory(_packagePath + ".temp_unpack_" + Path.GetRandomFileName()))
-            {
+            TemporaryDirectory.ExecuteIn(_packagePath + ".temp_unpack_" + Path.GetRandomFileName(), (packageDir) => {
                 DebugLogger.LogVariable(packageDir.Path, "packageDirPath");
 
                 DebugLogger.Log("Unarchiving package.");
@@ -140,7 +139,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 _copyFilesStatus.Progress.Value = 1.0;
                 _copyFilesStatus.IsActive.Value = false;
-            }
+            });
         }
 
         private IUnarchiver CreateUnrachiver(string destinationDir, out string usedSuffix)

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 
 namespace PatchKit.Unity.Patcher
@@ -20,6 +21,7 @@ namespace PatchKit.Unity.Patcher
                 if(GUILayout.Button("Reset"))
                 {
                     patcher.EditorAppSecret = Patcher.EditorAllowedSecret;
+                    EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
                 }
             }
         }
