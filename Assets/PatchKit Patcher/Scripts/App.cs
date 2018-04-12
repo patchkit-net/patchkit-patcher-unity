@@ -33,6 +33,13 @@ namespace PatchKit.Unity.Patcher
 
         private readonly int _overrideLatestVersionId;
 
+        public enum InstallStatus
+        {
+            NotInstalled = 0,
+            MaybeInstalled = 1,
+            Installed = 2
+        }
+
         public App(string appDataPath, string appSecret, int overrideLatestVersionId,
             IRequestTimeoutCalculator requestTimeoutCalculator) : this(
             appDataPath,
@@ -89,13 +96,13 @@ namespace PatchKit.Unity.Patcher
             _overrideLatestVersionId = overrideLatestVersionId;
         }
 
-        public bool IsInstalled()
+        public InstallStatus GetInstallStatus()
         {
             var fileNames = LocalMetaData.GetRegisteredEntries();
 
             if (fileNames.Length == 0)
             {
-                return false;
+                return InstallStatus.NotInstalled;
             }
 
             int installedVersion = LocalMetaData.GetEntryVersionId(fileNames[0]);
@@ -107,7 +114,7 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.LogWarning("File in metadata, but not found on disk: " + fileName + ", search path: " +
                                            path);
-                    return false;
+                    return InstallStatus.MaybeInstalled;
                 }
 
                 int fileVersion = LocalMetaData.GetEntryVersionId(fileName);
@@ -115,11 +122,16 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.LogWarning("File " + fileName + " installed version is " + fileVersion +
                                            " but expected " + installedVersion);
-                    return false;
+                    return InstallStatus.MaybeInstalled;
                 }
             }
 
-            return true;
+            return InstallStatus.Installed;
+        }
+
+        public bool IsDefinitelyInstalled()
+        {
+            return GetInstallStatus() == InstallStatus.Installed;
         }
 
         public int GetInstalledVersionId()
