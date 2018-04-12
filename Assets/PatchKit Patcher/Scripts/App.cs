@@ -134,6 +134,11 @@ namespace PatchKit.Unity.Patcher
             return GetInstallStatus() == InstallStatus.Installed;
         }
 
+        public bool IsProbablyInstalled()
+        {
+            return GetInstallStatus() != InstallStatus.NotInstalled;
+        }
+
         public int GetInstalledVersionId()
         {
             Assert.ApplicationIsInstalled(this);

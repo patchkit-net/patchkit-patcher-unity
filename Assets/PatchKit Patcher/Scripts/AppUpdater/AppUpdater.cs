@@ -51,11 +51,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var installedVersionContentSummary = Context.App.RemoteMetaData.GetContentSummary(installedVersionId);
             var latestVersionContentSummary = Context.App.RemoteMetaData.GetContentSummary(latestVersionId);
             
-            bool updateIsAvailable = installedVersionId < latestVersionId;
+            bool isNewVersionAvailable = installedVersionId < latestVersionId;
 
-            long contentSize = updateIsAvailable
-                ? installedVersionContentSummary.Size
-                : latestVersionContentSummary.Size;
+            long contentSize = isNewVersionAvailable
+                ? latestVersionContentSummary.Size
+                : installedVersionContentSummary.Size;
             
             var checkIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(Context.App.GetInstalledVersionId(), Context, false, true);
             checkIntegrity.Prepare(_status);
@@ -72,18 +72,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             
             var repairStrategy = new AppUpdaterRepairAndDiffStrategy(Context, _status, performDiff: false);
 
-            double repairSize = (missingFiles + invalidSizeFiles) / 2.0;
-
-            if (updateIsAvailable)
+            double repairCost = (missingFiles + invalidSizeFiles) * 2;
+            if (isNewVersionAvailable)
             {
-                repairSize *= latestVersionContentSummary.Chunks.Size;
+                repairCost *= latestVersionContentSummary.Chunks.Size;
             }
             else
             {
-                repairSize *= installedVersionContentSummary.Chunks.Size;
+                repairCost *= installedVersionContentSummary.Chunks.Size;
             }
 
-            if (repairSize < contentSize)
+            if (repairCost < contentSize)
             {
                 DebugLogger.Log("Repair cost is smaller than content cost, repairing...");
                 repairStrategy.Update(cancellationToken);
@@ -98,7 +97,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
 
-            if (Context.App.GetInstallStatus() != App.InstallStatus.NotInstalled)
+            if (Context.App.IsProbablyInstalled())
             {
                 PreUpdate(cancellationToken);
             }

@@ -78,10 +78,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var filesIntegrity = checkVersionIntegrityCommand.Results.Files;
 
             var brokenFiles = filesIntegrity
-                // Filter only files with invalid size or hash
+                // Filter only files with invalid size, hash or missing entirely
                 .Where(f => f.Status == FileIntegrityStatus.InvalidHash 
-                    || f.Status == FileIntegrityStatus.InvalidSize
-                    || f.Status == FileIntegrityStatus.MissingData)
+                         || f.Status == FileIntegrityStatus.InvalidSize
+                         || f.Status == FileIntegrityStatus.MissingData)
                 // Map to file entires from meta
                 .Select(integrity => meta.Files.SingleOrDefault(file => file.Name == integrity.FileName))
                 // Filter only regular files
