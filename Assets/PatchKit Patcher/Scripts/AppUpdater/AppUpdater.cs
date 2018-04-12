@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -36,9 +39,69 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             Context = context;
         }
 
+        private void PreUpdate(CancellationToken cancellationToken)
+        {
+            DebugLogger.Log("Pre update integrity check");
+
+            var commandFactory = new AppUpdaterCommandFactory();
+
+            int installedVersionId = Context.App.GetInstalledVersionId();
+            int latestVersionId = Context.App.GetLatestVersionId();
+
+            var installedVersionContentSummary = Context.App.RemoteMetaData.GetContentSummary(installedVersionId);
+            var latestVersionContentSummary = Context.App.RemoteMetaData.GetContentSummary(latestVersionId);
+            
+            bool updateIsAvailable = installedVersionId < latestVersionId;
+
+            long contentSize = updateIsAvailable
+                ? installedVersionContentSummary.Size
+                : latestVersionContentSummary.Size;
+            
+            var checkIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(Context.App.GetInstalledVersionId(), Context, false, true);
+            checkIntegrity.Prepare(_status);
+            checkIntegrity.Execute(cancellationToken);
+            
+            int missingFiles = checkIntegrity.Results.Files.Select(f => f.Status == FileIntegrityStatus.MissingData).Count();
+            int invalidSizeFiles = checkIntegrity.Results.Files.Select(f => f.Status == FileIntegrityStatus.InvalidSize).Count();
+
+            if (missingFiles + invalidSizeFiles == 0)
+            {
+                DebugLogger.Log("No missing or invalid size files.");
+                return;
+            }
+            
+            var repairStrategy = new AppUpdaterRepairAndDiffStrategy(Context, _status, performDiff: false);
+
+            double repairSize = (missingFiles + invalidSizeFiles) / 2.0;
+
+            if (updateIsAvailable)
+            {
+                repairSize *= latestVersionContentSummary.Chunks.Size;
+            }
+            else
+            {
+                repairSize *= installedVersionContentSummary.Chunks.Size;
+            }
+
+            if (repairSize < contentSize)
+            {
+                DebugLogger.Log("Repair cost is smaller than content cost, repairing...");
+                repairStrategy.Update(cancellationToken);
+            }
+            else
+            {
+                DebugLogger.Log("Content cost is smaller than repair.");
+            }
+        }
+
         public void Update(CancellationToken cancellationToken)
         {
             Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
+
+            if (Context.App.GetInstallStatus() != App.InstallStatus.NotInstalled)
+            {
+                PreUpdate(cancellationToken);
+            }
 
             DebugLogger.Log("Updating.");
 
