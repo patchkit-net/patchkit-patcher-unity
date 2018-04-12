@@ -91,26 +91,27 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingMetaData);
             }
 
-            if (_localMetaData.GetEntryVersionId(file.Path) != _versionId)
+            int actualVersionId = _localMetaData.GetEntryVersionId(file.Path);
+            if (actualVersionId != _versionId)
             {
-                return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidVersion);
+                return FileIntegrity.InvalidVersion(_versionId, actualVersionId, file.Path);
             }
 
             if (_isCheckingSize)
             {
-                long size = new FileInfo(localPath).Length;
-                if (size != file.Size)
+                long actualSize = new FileInfo(localPath).Length;
+                if (actualSize != file.Size)
                 {
-                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidSize);
+                    return FileIntegrity.InvalidSize(file.Size, actualSize, file.Path);
                 }
             }
 
             if (_isCheckingHash)
             {
-                string hash = HashCalculator.ComputeFileHash(localPath);
-                if (hash != file.Hash)
+                string actualFileHash = HashCalculator.ComputeFileHash(localPath);
+                if (actualFileHash != file.Hash)
                 {
-                    return new FileIntegrity(file.Path, FileIntegrityStatus.InvalidHash);
+                    return FileIntegrity.InvalidHash(file.Hash, actualFileHash, file.Path);
                 }
             }
 
