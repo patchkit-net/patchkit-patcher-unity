@@ -20,12 +20,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly ILogger _logger;
 
-        public AppUpdaterRepairAndDiffStrategy(AppUpdaterContext context, UpdaterStatus status)
+        private readonly bool _shouldPerformDiff;
+
+        public AppUpdaterRepairAndDiffStrategy(AppUpdaterContext context, UpdaterStatus status, bool performDiff = true)
         {
             Assert.IsNotNull(context, "Context is null");
 
             _context = context;
             _status = status;
+            _shouldPerformDiff = performDiff;
 
             _logger = PatcherLogManager.DefaultLogger;
         }
@@ -76,7 +79,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var brokenFiles = filesIntegrity
                 // Filter only files with invalid size or hash
-                .Where(f => f.Status == FileIntegrityStatus.InvalidHash || f.Status == FileIntegrityStatus.InvalidSize)
+                .Where(f => f.Status == FileIntegrityStatus.InvalidHash 
+                    || f.Status == FileIntegrityStatus.InvalidSize
+                    || f.Status == FileIntegrityStatus.MissingData)
                 // Map to file entires from meta
                 .Select(integrity => meta.Files.SingleOrDefault(file => file.Name == integrity.FileName))
                 // Filter only regular files
@@ -100,8 +105,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             repairCommand.Prepare(_status);
             repairCommand.Execute(cancellationToken);
 
-            _logger.LogDebug("Repair successful, following up with a diff.");
-            PerformDiff(cancellationToken);
+            if (_shouldPerformDiff)
+            {
+                _logger.LogDebug("Repair successful, following up with a diff.");
+                PerformDiff(cancellationToken);
+            }
         }
 
 #region DIFF_COPY_PASTE
