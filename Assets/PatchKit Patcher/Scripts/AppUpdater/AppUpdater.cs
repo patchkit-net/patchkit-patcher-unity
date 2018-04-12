@@ -57,12 +57,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 ? latestVersionContentSummary.Size
                 : installedVersionContentSummary.Size;
             
-            var checkIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(Context.App.GetInstalledVersionId(), Context, false, true);
+            var checkIntegrity = commandFactory
+                .CreateCheckVersionIntegrityCommand(
+                    versionId: installedVersionId, 
+                    context: Context, 
+                    isCheckingHash: false, 
+                    isCheckingSize: true);
+            
             checkIntegrity.Prepare(_status);
             checkIntegrity.Execute(cancellationToken);
             
-            int missingFiles = checkIntegrity.Results.Files.Select(f => f.Status == FileIntegrityStatus.MissingData).Count();
-            int invalidSizeFiles = checkIntegrity.Results.Files.Select(f => f.Status == FileIntegrityStatus.InvalidSize).Count();
+            int missingFiles = checkIntegrity.Results.Files
+                .Select(f => f.Status == FileIntegrityStatus.MissingData)
+                .Count();
+            
+            int invalidSizeFiles = checkIntegrity.Results.Files
+                .Select(f => f.Status == FileIntegrityStatus.InvalidSize)
+                .Count();
 
             if (missingFiles + invalidSizeFiles == 0)
             {
