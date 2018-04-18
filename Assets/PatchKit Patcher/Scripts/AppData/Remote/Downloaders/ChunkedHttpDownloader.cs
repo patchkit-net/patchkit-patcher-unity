@@ -210,13 +210,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
                 }
 
+                if (fileStream.RemainingLength != 0)
+                {
+                    throw new IncompleteDataException("Chunks downloading must finish downloading whole file");
+                }
+
                 _logger.LogDebug(string.Format("Download from {0} has been successful.", url.Url));
-
-                Assert.AreEqual(0, fileStream.RemainingLength, "Chunks downloading must finish downloading whole file");
-
                 return true;
             }
-            catch (UnityEngine.Assertions.AssertionException e)
+            catch (IncompleteDataException e)
             {
                 _logger.LogWarning(string.Format("Unable to download from {0}", url.Url), e);
                 return false;
