@@ -54,6 +54,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         public void SetBytesRange(BytesRange? range)
         {
             _bytesRange = range;
+
+            if (_bytesRange.HasValue && _bytesRange.Value.Start == 0 && _bytesRange.Value.End == -1)
+            {
+                _bytesRange = null;
+            }
         }
 
         public void Download(CancellationToken cancellationToken)
