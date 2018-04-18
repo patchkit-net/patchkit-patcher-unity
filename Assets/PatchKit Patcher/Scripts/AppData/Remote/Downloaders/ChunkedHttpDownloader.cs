@@ -216,6 +216,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 return true;
             }
+            catch (UnityEngine.Assertions.AssertionException e)
+            {
+                _logger.LogWarning(string.Format("Unable to download from {0}", url.Url), e);
+                return false;
+            }
             catch (InvalidChunkDataException e)
             {
                 _logger.LogWarning(string.Format("Unable to download from {0}", url.Url), e);
