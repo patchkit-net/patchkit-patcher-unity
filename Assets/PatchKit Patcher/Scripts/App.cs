@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher
         public enum InstallStatus
         {
             NotInstalled = 0,
-            MaybeInstalled = 1,
+            Broken = 1,
             Installed = 2
         }
 
@@ -114,7 +114,7 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.LogWarning("File in metadata, but not found on disk: " + fileName + ", search path: " +
                                            path);
-                    return InstallStatus.MaybeInstalled;
+                    return InstallStatus.Broken;
                 }
 
                 int fileVersion = LocalMetaData.GetEntryVersionId(fileName);
@@ -122,7 +122,7 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.LogWarning("File " + fileName + " installed version is " + fileVersion +
                                            " but expected " + installedVersion);
-                    return InstallStatus.MaybeInstalled;
+                    return InstallStatus.Broken;
                 }
             }
 
@@ -134,9 +134,14 @@ namespace PatchKit.Unity.Patcher
             return GetInstallStatus() == InstallStatus.Installed;
         }
 
-        public bool IsProbablyInstalled()
+        public bool IsInstallationBroken()
         {
-            return GetInstallStatus() != InstallStatus.NotInstalled;
+            return GetInstallStatus() == InstallStatus.Broken;
+        }
+
+        public bool IsNotInstalled()
+        {
+            return GetInstallStatus() == InstallStatus.NotInstalled;
         }
 
         public int GetInstalledVersionId()

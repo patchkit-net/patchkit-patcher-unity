@@ -112,7 +112,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
 
-            if (Context.App.IsProbablyInstalled())
+            if (Context.App.IsInstallationBroken() || Context.App.IsFullyInstalled())
             {
                 PreUpdate(cancellationToken);
             }
