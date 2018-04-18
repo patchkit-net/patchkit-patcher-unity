@@ -96,8 +96,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     do
                     {
-                        bool success =
-                            _urls.Any(url => TryDownload(url, fileStream, cancellationToken));
+                        bool success = 
+                            TryDownload(_urls.First(), fileStream, cancellationToken);
+                            // _urls.Any(url => TryDownload(url, fileStream, cancellationToken));
 
                         if (success)
                         {
@@ -115,9 +116,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                                 throw new DownloadFailureException("Download failure.");
                             }
 
-                            _logger.LogDebug(string.Format("Retry is possible. Waiting {0}ms until before attempt...",
-                                _retryStrategy.DelayBeforeNextTry));
-                            Threading.CancelableSleep(_retryStrategy.DelayBeforeNextTry, cancellationToken);
+                            // _logger.LogDebug(string.Format("Retry is possible. Waiting {0}ms until before attempt...",
+                            //     _retryStrategy.DelayBeforeNextTry));
+                            // Threading.CancelableSleep(_retryStrategy.DelayBeforeNextTry, cancellationToken);
                             _logger.LogDebug("Trying to download data once again from each server...");
                         }
                     } while (retry);
