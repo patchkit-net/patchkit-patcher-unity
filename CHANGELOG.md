@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for background image set in PatchKit Panel 
 - Support for PK_PATCHER_KEEP_FILES_ON_ERROR environment variable
 - Light integrity checking every time the Patcher is launched
+- Descriptive integrity check messages
 
 ### Changed
 - Update API servers configuration
