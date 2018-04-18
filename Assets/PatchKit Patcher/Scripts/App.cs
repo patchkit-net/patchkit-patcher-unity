@@ -129,7 +129,7 @@ namespace PatchKit.Unity.Patcher
             return InstallStatus.Installed;
         }
 
-        public bool IsDefinitelyInstalled()
+        public bool IsFullyInstalled()
         {
             return GetInstallStatus() == InstallStatus.Installed;
         }

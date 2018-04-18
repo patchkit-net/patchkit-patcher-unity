@@ -69,15 +69,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var downloader = new HttpDownloader(metaDestination, resource.GetMetaUrls());
             downloader.Download(cancellationToken);
 
-            var checkVersionIntegrityCommand = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context);
+            ICheckVersionIntegrityCommand checkVersionIntegrityCommand 
+                = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context);
+
             checkVersionIntegrityCommand.Prepare(_status);
             checkVersionIntegrityCommand.Execute(cancellationToken);
 
             var meta = Pack1Meta.ParseFromFile(metaDestination);
 
-            var filesIntegrity = checkVersionIntegrityCommand.Results.Files;
+            FileIntegrity[] filesIntegrity = checkVersionIntegrityCommand.Results.Files;
 
-            var brokenFiles = filesIntegrity
+            Pack1Meta.FileEntry[] brokenFiles = filesIntegrity
                 // Filter only files with invalid size, hash or missing entirely
                 .Where(f => f.Status == FileIntegrityStatus.InvalidHash 
                          || f.Status == FileIntegrityStatus.InvalidSize
@@ -95,7 +97,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
             _logger.LogDebug(string.Format("Broken files count: {0}", brokenFiles.Length));
             
-            var repairCommand = commandFactory.CreateRepairFilesCommand(
+            IRepairFilesCommand repairCommand = commandFactory.CreateRepairFilesCommand(
                 installedVersionId,
                 _context,
                 resource,

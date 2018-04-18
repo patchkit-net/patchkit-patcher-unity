@@ -7,6 +7,7 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Api.Models.Main;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
 {
@@ -48,8 +49,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             int installedVersionId = Context.App.GetInstalledVersionId();
             int latestVersionId = Context.App.GetLatestVersionId();
 
-            var installedVersionContentSummary = Context.App.RemoteMetaData.GetContentSummary(installedVersionId);
-            var latestVersionContentSummary = Context.App.RemoteMetaData.GetContentSummary(latestVersionId);
+            AppContentSummary installedVersionContentSummary 
+                = Context.App.RemoteMetaData.GetContentSummary(installedVersionId);
+                
+            AppContentSummary latestVersionContentSummary 
+                = Context.App.RemoteMetaData.GetContentSummary(latestVersionId);
             
             bool isNewVersionAvailable = installedVersionId < latestVersionId;
 
@@ -57,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 ? latestVersionContentSummary.Size
                 : installedVersionContentSummary.Size;
             
-            var checkIntegrity = commandFactory
+            ICheckVersionIntegrityCommand checkIntegrity = commandFactory
                 .CreateCheckVersionIntegrityCommand(
                     versionId: installedVersionId, 
                     context: Context, 
@@ -67,15 +71,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             checkIntegrity.Prepare(_status);
             checkIntegrity.Execute(cancellationToken);
             
-            int missingFiles = checkIntegrity.Results.Files
+            int missingFilesCount = checkIntegrity.Results.Files
                 .Select(f => f.Status == FileIntegrityStatus.MissingData)
                 .Count();
             
-            int invalidSizeFiles = checkIntegrity.Results.Files
+            int invalidSizeFilesCount = checkIntegrity.Results.Files
                 .Select(f => f.Status == FileIntegrityStatus.InvalidSize)
                 .Count();
 
-            if (missingFiles + invalidSizeFiles == 0)
+            if (missingFilesCount + invalidSizeFilesCount == 0)
             {
                 DebugLogger.Log("No missing or invalid size files.");
                 return;
@@ -83,7 +87,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             
             var repairStrategy = new AppUpdaterRepairAndDiffStrategy(Context, _status, performDiff: false);
 
-            double repairCost = (missingFiles + invalidSizeFiles) * 2;
+            double repairCost = (missingFilesCount + invalidSizeFilesCount) * 2;
             if (isNewVersionAvailable)
             {
                 repairCost *= latestVersionContentSummary.Chunks.Size;
@@ -95,7 +99,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             if (repairCost < contentSize)
             {
-                DebugLogger.Log("Repair cost is smaller than content cost, repairing...");
+                DebugLogger.Log(string.Format("Repair cost {0} is smaller than content cost {1}, repairing...", repairCost, contentSize));
                 repairStrategy.Update(cancellationToken);
             }
             else
