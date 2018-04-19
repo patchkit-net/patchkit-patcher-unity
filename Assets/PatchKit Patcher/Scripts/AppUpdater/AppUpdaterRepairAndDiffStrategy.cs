@@ -20,12 +20,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly ILogger _logger;
 
-        public AppUpdaterRepairAndDiffStrategy(AppUpdaterContext context, UpdaterStatus status)
+        private readonly bool _shouldPerformDiff;
+
+        public AppUpdaterRepairAndDiffStrategy(AppUpdaterContext context, UpdaterStatus status, bool performDiff = true)
         {
             Assert.IsNotNull(context, "Context is null");
 
             _context = context;
             _status = status;
+            _shouldPerformDiff = performDiff;
 
             _logger = PatcherLogManager.DefaultLogger;
         }
@@ -66,17 +69,21 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var downloader = new HttpDownloader(metaDestination, resource.GetMetaUrls());
             downloader.Download(cancellationToken);
 
-            var checkVersionIntegrityCommand = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context);
+            ICheckVersionIntegrityCommand checkVersionIntegrityCommand 
+                = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context);
+
             checkVersionIntegrityCommand.Prepare(_status);
             checkVersionIntegrityCommand.Execute(cancellationToken);
 
             var meta = Pack1Meta.ParseFromFile(metaDestination);
 
-            var filesIntegrity = checkVersionIntegrityCommand.Results.Files;
+            FileIntegrity[] filesIntegrity = checkVersionIntegrityCommand.Results.Files;
 
-            var brokenFiles = filesIntegrity
-                // Filter only files with invalid size or hash
-                .Where(f => f.Status == FileIntegrityStatus.InvalidHash || f.Status == FileIntegrityStatus.InvalidSize)
+            Pack1Meta.FileEntry[] brokenFiles = filesIntegrity
+                // Filter only files with invalid size, hash or missing entirely
+                .Where(f => f.Status == FileIntegrityStatus.InvalidHash 
+                         || f.Status == FileIntegrityStatus.InvalidSize
+                         || f.Status == FileIntegrityStatus.MissingData)
                 // Map to file entires from meta
                 .Select(integrity => meta.Files.SingleOrDefault(file => file.Name == integrity.FileName))
                 // Filter only regular files
@@ -90,7 +97,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
             _logger.LogDebug(string.Format("Broken files count: {0}", brokenFiles.Length));
             
-            var repairCommand = commandFactory.CreateRepairFilesCommand(
+            IRepairFilesCommand repairCommand = commandFactory.CreateRepairFilesCommand(
                 installedVersionId,
                 _context,
                 resource,
@@ -100,8 +107,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             repairCommand.Prepare(_status);
             repairCommand.Execute(cancellationToken);
 
-            _logger.LogDebug("Repair successful, following up with a diff.");
-            PerformDiff(cancellationToken);
+            if (_shouldPerformDiff)
+            {
+                _logger.LogDebug("Repair successful, following up with a diff.");
+                PerformDiff(cancellationToken);
+            }
         }
 
 #region DIFF_COPY_PASTE

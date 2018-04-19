@@ -66,7 +66,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             {
                 _logger.LogDebug("Resolving best strategy for updating...");
 
-                if (context.App.IsInstalled())
+                if (context.App.IsFullyInstalled())
                 {
                     int installedVersionId = context.App.GetInstalledVersionId();
                     _logger.LogTrace("installedVersionId = " + installedVersionId);

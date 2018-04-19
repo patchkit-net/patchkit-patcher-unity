@@ -45,7 +45,7 @@
 
         public static void ApplicationIsInstalled(App app)
         {
-            IsTrue(app.IsInstalled(), "Application is not installed.");
+            IsTrue(app.IsFullyInstalled() ||  app.IsInstallationBroken(), "Application is not installed.");
         }
 
         public static void ApplicationVersionEquals(App app, int versionId)

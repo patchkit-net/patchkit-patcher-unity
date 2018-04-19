@@ -558,7 +558,7 @@ namespace PatchKit.Unity.Patcher
 
                 _state.Value = PatcherState.WaitingForUserDecision;
 
-                bool isInstalled = _app.IsInstalled();
+                bool isInstalled = _app.IsFullyInstalled();
 
                 DebugLogger.LogVariable(isInstalled, "isInstalled");
 
@@ -646,14 +646,14 @@ namespace PatchKit.Unity.Patcher
                         ThreadStartApp();
                         break;
                     case UserDecision.InstallAppAutomatically:
-                        displayWarningInsteadOfError = _app.IsInstalled();
+                        displayWarningInsteadOfError = _app.IsFullyInstalled();
                         ThreadUpdateApp(true, cancellationToken);
                         break;
                     case UserDecision.InstallApp:
                         ThreadUpdateApp(false, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdatesAutomatically:
-                        displayWarningInsteadOfError = _app.IsInstalled();
+                        displayWarningInsteadOfError = _app.IsFullyInstalled();
                         ThreadUpdateApp(true, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdates:
@@ -779,7 +779,7 @@ namespace PatchKit.Unity.Patcher
 
             _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically);
             _remoteVersionId.Value = _app.GetLatestVersionId(!automatically);
-            if (_app.IsInstalled())
+            if (_app.IsFullyInstalled())
             {
                 _localVersionId.Value = _app.GetInstalledVersionId();
             }
