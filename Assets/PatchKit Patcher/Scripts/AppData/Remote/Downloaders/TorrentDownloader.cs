@@ -74,7 +74,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     var timeoutWatch = new Stopwatch();
                     timeoutWatch.Start();
 
-                    var status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
+                    TorrentStatus status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
                     double initialProgress = status.Progress;
                     _logger.LogTrace("initialProgress = " + status.Progress);
                     var waitHandle = new AutoResetEvent(false);
@@ -111,7 +111,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var downloadedFilePath = GetDownloadedFilePath();
+                string downloadedFilePath = GetDownloadedFilePath();
 
                 if (File.Exists(_destinationFilePath))
                 {
