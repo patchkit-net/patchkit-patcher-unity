@@ -60,62 +60,65 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                TemporaryDirectory.ExecuteIn(DestinationDirectoryPath, (tempDir) => {
-                    _logger.LogTrace("tempDir = " + tempDir.Path);
+                if (!Directory.Exists(DestinationDirectoryPath))
+                {
+                    DirectoryOperations.CreateDirectory(DestinationDirectoryPath);
+                }
 
-                    using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
+                _logger.LogTrace("download dir  = " + DestinationDirectoryPath);
+
+                using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
+                {
+                    torrentClient.AddTorrent(_torrentFilePath, DestinationDirectoryPath, cancellationToken);
+
+                    var timeoutWatch = new Stopwatch();
+                    timeoutWatch.Start();
+
+                    var status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
+                    double initialProgress = status.Progress;
+                    _logger.LogTrace("initialProgress = " + status.Progress);
+                    var waitHandle = new AutoResetEvent(false);
+
+                    OnDownloadProgressChanged(0);
+
+                    using (cancellationToken.Register(() => waitHandle.Set()))
                     {
-                        torrentClient.AddTorrent(_torrentFilePath, tempDir.Path, cancellationToken);
+                        bool finished = false;
 
-                        var timeoutWatch = new Stopwatch();
-                        timeoutWatch.Start();
-
-                        var status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
-                        double initialProgress = status.Progress;
-                        _logger.LogTrace("initialProgress = " + status.Progress);
-                        var waitHandle = new AutoResetEvent(false);
-
-                        OnDownloadProgressChanged(0);
-
-                        using (cancellationToken.Register(() => waitHandle.Set()))
+                        do
                         {
-                            bool finished = false;
+                            cancellationToken.ThrowIfCancellationRequested();
 
-                            do
+                            status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
+
+                            _logger.LogTrace("progress = " + status.Progress);
+
+                            CheckTimeout(timeoutWatch, status.Progress, initialProgress);
+
+                            OnDownloadProgressChanged((long) (_totalBytes * status.Progress));
+
+                            if (status.IsSeeding)
                             {
-                                cancellationToken.ThrowIfCancellationRequested();
-
-                                status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
-
-                                _logger.LogTrace("progress = " + status.Progress);
-
-                                CheckTimeout(timeoutWatch, status.Progress, initialProgress);
-
-                                OnDownloadProgressChanged((long) (_totalBytes * status.Progress));
-
-                                if (status.IsSeeding)
-                                {
-                                    finished = true;
-                                }
-                                else
-                                {
-                                    waitHandle.WaitOne(UpdateInterval);
-                                }
-                            } while (!finished);
-                        }
+                                finished = true;
+                            }
+                            else
+                            {
+                                waitHandle.WaitOne(UpdateInterval);
+                            }
+                        } while (!finished);
                     }
+                }
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
-                    var downloadedFilePath = GetDownloadedFilePath();
+                var downloadedFilePath = GetDownloadedFilePath();
 
-                    if (File.Exists(_destinationFilePath))
-                    {
-                        File.Delete(_destinationFilePath);
-                    }
+                if (File.Exists(_destinationFilePath))
+                {
+                    File.Delete(_destinationFilePath);
+                }
 
-                    File.Move(downloadedFilePath, _destinationFilePath);
-                });
+                File.Move(downloadedFilePath, _destinationFilePath);
             }
             catch (Exception e)
             {
