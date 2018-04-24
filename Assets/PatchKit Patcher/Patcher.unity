@@ -848,7 +848,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ErrorDialog: {fileID: 272161832}
-  EditorAppSecret: 1fa8d3ad29b1b823d1fcacb6835dea2d
+  EditorAppSecret: ac20fc855b75a7ea5f3e936dfd38ccd8
   EditorOverrideLatestVersionId: 0
   DefaultConfiguration:
     AppUpdaterConfiguration:
