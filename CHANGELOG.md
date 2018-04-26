@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for PK_PATCHER_KEEP_FILES_ON_ERROR environment variable
 - Light integrity checking every time the Patcher is launched
 - Descriptive integrity check messages
+- Support for resuming torrent downloading
 
 ### Changed
 - Update API servers configuration
