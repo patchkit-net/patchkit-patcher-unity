@@ -11,13 +11,13 @@ namespace PatchKit.Unity.Patcher.UI
 
         public Image Image;
 
-        private void SetBar(float min, float max)
+        private void SetBar(float start, float end)
         {
             var anchorMax = Image.rectTransform.anchorMax;
             var anchorMin = Image.rectTransform.anchorMin;
 
-            anchorMin.x = Mathf.Clamp(min, 0f, 1f);
-            anchorMax.x = Mathf.Clamp(max, 0f, 1f);
+            anchorMin.x = Mathf.Clamp(start, 0f, 1f);
+            anchorMax.x = Mathf.Clamp(end, 0f, 1f);
 
             Image.rectTransform.anchorMax = anchorMax;
             Image.rectTransform.anchorMin = anchorMin;
@@ -25,13 +25,16 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void SetProgress(double progress)
         {
+            if (progress <= 0 && _isIdle)
+            {
+                Text.text = "Connecting...";
+                return;
+            }
+
+            _isIdle = false;
+
             Text.text = progress >= 0.0 ? progress.ToString("0.0%") : "";
             float visualProgress = progress >= 0.0 ? (float) progress : 0.0f;
-
-            if (visualProgress > 0)
-            {
-                _isIdle = false;
-            }
 
             SetBar(0, visualProgress);
         }
