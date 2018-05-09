@@ -93,6 +93,7 @@ public class Background : MonoBehaviour
             .Select(val => Path.Combine(val, BannerImageFilename));
 
         var appInfo = patcher.AppInfo
+            .SkipWhile(info => info.Id == default(int))
             .Select(info => new PatcherBannerData{
                 ImageUrl = info.PatcherBannerImage,
                 Dimensions = info.PatcherBannerImageDimensions,
