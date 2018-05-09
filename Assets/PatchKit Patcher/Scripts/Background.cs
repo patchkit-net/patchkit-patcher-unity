@@ -111,12 +111,25 @@ public class Background : MonoBehaviour
         _logger.LogDebug("On patcher data update.");
         var bannerData = data.BannerData;
 
-        if (string.IsNullOrEmpty(bannerData.ImageUrl))
+        if (string.IsNullOrEmpty(bannerData.ImageUrl) && string.IsNullOrEmpty(bannerData.ModificationDate))
         {
             _logger.LogDebug("No banner is available.");
 
+            if (IsCachedBannerAvailable())
+            {
+                _logger.LogWarning("Banner image is not available but a cached banner exists.");
+            }
+
             MainAnimator.SetTrigger(AnimationSwitchTrigger);
-            
+            return;
+        }
+        else if (string.IsNullOrEmpty(bannerData.ImageUrl))
+        {
+            _logger.LogDebug("Banner image has been removed.");
+            ClearCachedBanner();
+            CachedBannerModificationDate = bannerData.ModificationDate;
+
+            MainAnimator.SetTrigger(AnimationSwitchTrigger);
             return;
         }
 
@@ -139,6 +152,19 @@ public class Background : MonoBehaviour
         var cachedModificationDate = CachedBannerModificationDate;
 
         return bannerData.ModificationDate == cachedModificationDate;
+    }
+
+    private void ClearCachedBanner()
+    {
+        _logger.LogDebug(string.Format("Clearning the cached banner at {0}", CachedBannerPath));
+        if (!File.Exists(CachedBannerPath))
+        {
+            _logger.LogError("The cached banner doesn't exist.");
+            return;
+        }
+
+        File.Delete(CachedBannerPath);
+        CachedBannerPath = "";
     }
 
     private void AquireRemoteBanner(Data data)
