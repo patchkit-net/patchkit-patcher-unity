@@ -66,6 +66,8 @@ public class Background : MonoBehaviour
     public Image NewImage;
     public Image OldImage;
 
+    public Sprite DefaultBackground;
+
     public Animator MainAnimator;
 
     private PatchKit.Logging.ILogger _logger;
@@ -111,40 +113,53 @@ public class Background : MonoBehaviour
         _logger.LogDebug("On patcher data update.");
         var bannerData = data.BannerData;
 
-        if (string.IsNullOrEmpty(bannerData.ImageUrl) && string.IsNullOrEmpty(bannerData.ModificationDate))
+        if (IsNewBannerAvailable(data))
         {
-            _logger.LogDebug("No banner is available.");
-
-            if (IsCachedBannerAvailable())
-            {
-                _logger.LogWarning("Banner image is not available but a cached banner exists.");
-            }
-
-            MainAnimator.SetTrigger(AnimationSwitchTrigger);
-            return;
+            AquireRemoteBanner(data);
         }
-        else if (string.IsNullOrEmpty(bannerData.ImageUrl))
+        else if (HasBannerBeenRemoved(data))
         {
             _logger.LogDebug("Banner image has been removed.");
             ClearCachedBanner();
             CachedBannerModificationDate = bannerData.ModificationDate;
 
-            MainAnimator.SetTrigger(AnimationSwitchTrigger);
-            return;
+            SwitchToDefault();
         }
-
-        if (IsCachedBannerAvailable() && IsCachedBannerSameAsRemote(bannerData))
+        else if (IsCachedBannerSameAsRemote(data.BannerData))
         {
-            _logger.LogDebug("The cached banner is the same as remote.");
-            return;
+            _logger.LogDebug("Nothing has changed.");
         }
+        else
+        {
+            _logger.LogDebug("Banner has never been set.");
+            SwitchToDefault();
+        }
+    }
 
-        AquireRemoteBanner(data);
+    private void SwitchToDefault()
+    {
+        _logger.LogDebug("Switching to default background");
+        NewImage.sprite = DefaultBackground;
+        MainAnimator.SetTrigger(AnimationSwitchTrigger);
+    }
+
+    private bool IsNewBannerAvailable(Data data)
+    {
+        return !string.IsNullOrEmpty(data.BannerData.ImageUrl) 
+            && !IsCachedBannerSameAsRemote(data.BannerData);
+    }
+
+    private bool HasBannerBeenRemoved(Data data)
+    {
+        return string.IsNullOrEmpty(data.BannerData.ImageUrl) 
+            && !string.IsNullOrEmpty(data.BannerData.ModificationDate)
+            && IsCachedBannerAvailable();
     }
 
     private bool IsCachedBannerAvailable()
     {
-        return !string.IsNullOrEmpty(CachedBannerPath) && File.Exists(CachedBannerPath);
+        return !string.IsNullOrEmpty(CachedBannerPath) 
+             && File.Exists(CachedBannerPath);
     }
 
     private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
