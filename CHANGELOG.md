@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Light integrity checking every time the Patcher is launched
 - Descriptive integrity check messages
 - Support for resuming torrent downloading
+- Animated progress bar during initialization and connecting
 
 ### Changed
 - Update API servers configuration
