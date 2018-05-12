@@ -49,12 +49,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
 
-#else
+#elif UNITY_STANDALONE_LINUX
 
         [DllImport("libgetdiskspace", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
 
+#else
+#error Unsupported platform
 #endif
 
         public void Execute(CancellationToken cancellationToken)
