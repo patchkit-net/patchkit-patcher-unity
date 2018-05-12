@@ -66,6 +66,8 @@ public class Background : MonoBehaviour
     public Image NewImage;
     public Image OldImage;
 
+    public Sprite DefaultBackground;
+
     public Animator MainAnimator;
 
     private PatchKit.Logging.ILogger _logger;
@@ -93,6 +95,7 @@ public class Background : MonoBehaviour
             .Select(val => Path.Combine(val, BannerImageFilename));
 
         var appInfo = patcher.AppInfo
+            .SkipWhile(info => info.Id == default(int))
             .Select(info => new PatcherBannerData{
                 ImageUrl = info.PatcherBannerImage,
                 Dimensions = info.PatcherBannerImageDimensions,
@@ -110,27 +113,53 @@ public class Background : MonoBehaviour
         _logger.LogDebug("On patcher data update.");
         var bannerData = data.BannerData;
 
-        if (string.IsNullOrEmpty(bannerData.ImageUrl))
+        if (IsNewBannerAvailable(data))
         {
-            _logger.LogDebug("No banner is available.");
-
-            MainAnimator.SetTrigger(AnimationSwitchTrigger);
-            
-            return;
+            AquireRemoteBanner(data);
         }
-
-        if (IsCachedBannerAvailable() && IsCachedBannerSameAsRemote(bannerData))
+        else if (HasBannerBeenRemoved(data))
         {
-            _logger.LogDebug("The cached banner is the same as remote.");
-            return;
-        }
+            _logger.LogDebug("Banner image has been removed.");
+            ClearCachedBanner();
+            CachedBannerModificationDate = bannerData.ModificationDate;
 
-        AquireRemoteBanner(data);
+            SwitchToDefault();
+        }
+        else if (IsCachedBannerSameAsRemote(data.BannerData))
+        {
+            _logger.LogDebug("Nothing has changed.");
+        }
+        else
+        {
+            _logger.LogDebug("Banner has never been set.");
+            SwitchToDefault();
+        }
+    }
+
+    private void SwitchToDefault()
+    {
+        _logger.LogDebug("Switching to default background");
+        NewImage.sprite = DefaultBackground;
+        MainAnimator.SetTrigger(AnimationSwitchTrigger);
+    }
+
+    private bool IsNewBannerAvailable(Data data)
+    {
+        return !string.IsNullOrEmpty(data.BannerData.ImageUrl) 
+            && !IsCachedBannerSameAsRemote(data.BannerData);
+    }
+
+    private bool HasBannerBeenRemoved(Data data)
+    {
+        return string.IsNullOrEmpty(data.BannerData.ImageUrl) 
+            && !string.IsNullOrEmpty(data.BannerData.ModificationDate)
+            && IsCachedBannerAvailable();
     }
 
     private bool IsCachedBannerAvailable()
     {
-        return !string.IsNullOrEmpty(CachedBannerPath) && File.Exists(CachedBannerPath);
+        return !string.IsNullOrEmpty(CachedBannerPath) 
+             && File.Exists(CachedBannerPath);
     }
 
     private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
@@ -138,6 +167,19 @@ public class Background : MonoBehaviour
         var cachedModificationDate = CachedBannerModificationDate;
 
         return bannerData.ModificationDate == cachedModificationDate;
+    }
+
+    private void ClearCachedBanner()
+    {
+        _logger.LogDebug(string.Format("Clearning the cached banner at {0}", CachedBannerPath));
+        if (!File.Exists(CachedBannerPath))
+        {
+            _logger.LogError("The cached banner doesn't exist.");
+            return;
+        }
+
+        File.Delete(CachedBannerPath);
+        CachedBannerPath = "";
     }
 
     private void AquireRemoteBanner(Data data)
