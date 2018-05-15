@@ -12,11 +12,8 @@ PluginImporter:
       enabled: 0
       settings:
         CPU: AnyCPU
-    Any:
-      enabled: 1
-      settings: {}
     Editor:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: x86
         DefaultValueInitialized: true
@@ -54,14 +51,12 @@ PluginImporter:
       settings:
         CPU: AnyCPU
     Win64:
-      enabled: 0
+      enabled: 1
       settings:
-        CPU: None
-    iOS:
+        CPU: AnyCPU
+    data:
       enabled: 0
-      settings:
-        CompileFlags: 
-        FrameworkDependencies: 
+      settings: {}
   userData: 
   assetBundleName: 
   assetBundleVariant: 
