@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.9.1]
 ### Fixed
 - Use 'any' instead of 'all' for publish method
+- Checking available space on Linux
+- Compatibility issue with getdiskspaceosx library on older versions of macOS
 
 ## [3.9.0]
 ### Added
