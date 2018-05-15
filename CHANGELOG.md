@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.9.2]
+### Added
+- Logging the probable cause of the Zlib exception when unpacking
+
 ## [3.9.1]
 ### Fixed
 - Use 'any' instead of 'all' for publish method
