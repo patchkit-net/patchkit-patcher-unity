@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.9.1]
 ### Fixed
 - Use 'any' instead of 'all' for publish method
+- Checking available space on Linux
+- Compatibility issue with getdiskspaceosx library on older versions of macOS
 
 ## [3.9.0]
 ### Added
