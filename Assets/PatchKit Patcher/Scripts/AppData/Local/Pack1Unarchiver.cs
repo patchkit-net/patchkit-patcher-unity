@@ -7,6 +7,8 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
+using SharpRaven;
+using SharpRaven.Data;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -149,22 +151,40 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     {
                         using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
                         {
-                            using (var fileWritter = new FileStream(destPath, FileMode.Create))
+                            try
                             {
-                                long bytesProcessed = 0;
-                                const int bufferSize = 131072;
-                                var buffer = new byte[bufferSize];
-                                int count;
-                                while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
+                                using (var fileWritter = new FileStream(destPath, FileMode.Create))
                                 {
-                                    fileWritter.Write(buffer, 0, count);
-                                    bytesProcessed += count;
-                                    onProgress(bytesProcessed / (double) file.Size.Value);
+                                    long bytesProcessed = 0;
+                                    const int bufferSize = 131072;
+                                    var buffer = new byte[bufferSize];
+                                    int count;
+                                    while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
+                                    {
+                                        fileWritter.Write(buffer, 0, count);
+                                        bytesProcessed += count;
+                                        onProgress(bytesProcessed / (double) file.Size.Value);
+                                    }
+                                    if (Platform.IsPosix())
+                                    {
+                                        Chmod.SetMode(file.Mode.Substring(3), destPath);
+                                    }
                                 }
-                                if (Platform.IsPosix())
-                                {
-                                    Chmod.SetMode(file.Mode.Substring(3), destPath);
-                                }
+                            }
+                            catch (Exception e)
+                            {
+                                DebugLogger.LogException(e);
+
+                                var ravenClient
+                                    = new RavenClient("https://cb13d9a4a32f456c8411c79c6ad7be9d:90ba86762829401e925a9e5c4233100c@sentry.io/175617");
+
+                                var sentryEvent = new SentryEvent(e);
+                                var logManager = PatcherLogManager.Instance;
+                                PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
+
+                                ravenClient.Capture(sentryEvent);
+
+                                throw;
                             }
                         }
                     }
