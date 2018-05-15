@@ -214,6 +214,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                         PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
 
                         ravenClient.Capture(sentryEvent);
+
+                        throw;
                     }
                 }
             }
