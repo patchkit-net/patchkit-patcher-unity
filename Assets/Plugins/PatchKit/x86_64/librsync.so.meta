@@ -12,11 +12,8 @@ PluginImporter:
       enabled: 0
       settings:
         CPU: AnyCPU
-    Any:
-      enabled: 1
-      settings: {}
     Editor:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: x86_64
         DefaultValueInitialized: true
@@ -45,19 +42,21 @@ PluginImporter:
       enabled: 0
       settings:
         CPU: None
-    Win:
+    SamsungTV:
       enabled: 0
       settings:
-        CPU: None
+        STV_MODEL: STANDARD_13
+    Win:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
     Win64:
       enabled: 1
       settings:
         CPU: AnyCPU
-    iOS:
+    data:
       enabled: 0
-      settings:
-        CompileFlags: 
-        FrameworkDependencies: 
+      settings: {}
   userData: 
   assetBundleName: 
   assetBundleVariant: 
