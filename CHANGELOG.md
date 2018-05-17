@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Descriptive integrity check messages
 - Support for resuming torrent downloading
 - Animated progress bar during initialization and connecting
+- New manifest format support
 
 ### Changed
 - Update API servers configuration
