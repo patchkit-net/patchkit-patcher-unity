@@ -100,11 +100,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)
         {
-            if (!Patcher.Instance.Data.HasValue)
-            {
-                throw new Exception("Cannot initialize UnityCache without the app secret.");
-            }
-
+            Assert.IsNotNull(Patcher.Instance.Data);
+            
             return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, context.App.LocalMetaData, 
                 new UnityCache(Patcher.Instance.Data.Value.AppSecret), PatcherLogManager.DefaultLogger, PatcherLogManager.Instance);
         }
