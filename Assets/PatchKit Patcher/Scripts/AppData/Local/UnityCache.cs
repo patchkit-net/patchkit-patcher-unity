@@ -1,19 +1,38 @@
-﻿using PatchKit.Unity.Utilities;
+﻿using PatchKit.Logging;
+using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
-    class UnityCache : ICache
+    public class UnityCache : ICache
     {
+        private readonly string _hashedSecret;
+
+        public UnityCache(string appSecret)
+        {
+            _hashedSecret = HashSecret(appSecret);
+        }
+
+        private string HashSecret(string secret)
+        {
+            return HashCalculator.ComputeStringHash(secret);
+        }
+
+        private string FormatKey(string key)
+        {
+            return _hashedSecret + "-" + key;
+        }
+
         public void SetValue(string key, string value)
         {
-            UnityDispatcher.Invoke(() => PlayerPrefs.SetString(key, value)).WaitOne();
+            UnityDispatcher.Invoke(() => PlayerPrefs.SetString(FormatKey(key), value)).WaitOne();
         }
 
         public string GetValue(string key, string defaultValue = null)
         {
             string result = string.Empty;
-            UnityDispatcher.Invoke(() => result = PlayerPrefs.GetString(key, defaultValue)).WaitOne();
+            UnityDispatcher.Invoke(() => result = PlayerPrefs.GetString(FormatKey(key), defaultValue)).WaitOne();
             return result;
         }
     }

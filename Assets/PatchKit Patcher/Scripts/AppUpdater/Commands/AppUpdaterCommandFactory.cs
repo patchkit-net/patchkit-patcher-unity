@@ -100,7 +100,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)
         {
-            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, context.App.LocalMetaData, new UnityCache(), PatcherLogManager.DefaultLogger, PatcherLogManager.Instance);
+            if (!Patcher.Instance.Data.HasValue)
+            {
+                throw new Exception("Cannot initialize UnityCache without the app secret.");
+            }
+
+            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, context.App.LocalMetaData, 
+                new UnityCache(Patcher.Instance.Data.Value.AppSecret), PatcherLogManager.DefaultLogger, PatcherLogManager.Instance);
         }
 
         public ICheckDiskSpace CreateCheckDiskSpaceCommandForDiff(int versionId, AppUpdaterContext context)

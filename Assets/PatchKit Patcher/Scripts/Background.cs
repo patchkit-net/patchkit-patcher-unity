@@ -28,7 +28,7 @@ public class Background : MonoBehaviour
         public string BannerFilePath;
     }
 
-    private ICache _cache = new UnityCache();
+    private ICache _cache = null;
 
     private const string CachedBannerPathKey = "cached-banner-path-key";
     private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
@@ -78,32 +78,40 @@ public class Background : MonoBehaviour
 
         var patcher = Patcher.Instance;
 
-        if (IsCachedBannerAvailable())
-        {
-            _logger.LogDebug(string.Format("A cached banner image is available at {0}", CachedBannerPath));
-            LoadBannerImage(CachedBannerPath, OldImage);
-        }
-
         Assert.IsNotNull(patcher);
         Assert.IsNotNull(MainAnimator);
         Assert.IsNotNull(NewImage);
         Assert.IsNotNull(OldImage);
 
         var patcherData = patcher.Data
-            .Select(data => data.AppDataPath)
-            .SkipWhile(val => string.IsNullOrEmpty(val))
-            .Select(val => Path.Combine(val, BannerImageFilename));
+            .SkipWhile(data => string.IsNullOrEmpty(data.AppSecret))
+            .First()
+            .ObserveOnMainThread()
+            .Subscribe(Initialize);
+    }
+
+    private void Initialize(PatcherData data)
+    {
+        _cache = new UnityCache(data.AppSecret);
+
+        if (IsCachedBannerAvailable())
+        {
+            _logger.LogDebug(string.Format("A cached banner image is available at {0}", CachedBannerPath));
+            LoadBannerImage(CachedBannerPath, OldImage);
+        }
+
+        var patcher = Patcher.Instance;
 
         var appInfo = patcher.AppInfo
             .SkipWhile(info => info.Id == default(int))
-            .Select(info => new PatcherBannerData{
-                ImageUrl = info.PatcherBannerImage,
-                Dimensions = info.PatcherBannerImageDimensions,
-                ModificationDate = info.PatcherBannerImageUpdatedAt
-                });
-
-        patcherData
-            .CombineLatest(appInfo, (lhs, rhs) => new Data{BannerData = rhs, BannerFilePath = lhs})
+            .Select(info => new Data{ 
+                BannerData = new PatcherBannerData{
+                    ImageUrl = info.PatcherBannerImage,
+                    Dimensions = info.PatcherBannerImageDimensions,
+                    ModificationDate = info.PatcherBannerImageUpdatedAt
+                },
+                BannerFilePath = Path.Combine(data.AppDataPath, BannerImageFilename) 
+            })
             .ObserveOnMainThread()
             .Subscribe(OnBannerDataUpdate);
     }

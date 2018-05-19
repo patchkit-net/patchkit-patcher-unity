@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher.AppData
 
         public static string ComputeStringHash(string str)
         {
-            return string.Concat(new xxHash(Seed).ComputeHash(Encoding.UTF8.GetBytes(str)).Select(b => b.ToString("X2")));
+            return string.Concat(new xxHash(Seed).ComputeHash(Encoding.UTF8.GetBytes(str)).Select(b => b.ToString("X2")).ToArray());
         }
 
         public static string ComputeFileHash(string filePath)
