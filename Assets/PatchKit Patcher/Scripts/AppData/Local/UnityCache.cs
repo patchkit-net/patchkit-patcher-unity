@@ -9,14 +9,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     {
         private readonly string _hashedSecret;
 
-        private Logging.ILogger _logger;
-
         public UnityCache(string appSecret)
         {
-            _logger = PatcherLogManager.DefaultLogger;
             _hashedSecret = HashSecret(appSecret);
-
-            _logger.LogDebug("Initializing with: " + _hashedSecret);
         }
 
         private string HashSecret(string secret)
