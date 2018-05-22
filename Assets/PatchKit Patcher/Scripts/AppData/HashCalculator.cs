@@ -3,6 +3,7 @@ using System.Data.HashFunction;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace PatchKit.Unity.Patcher.AppData
 {
@@ -28,6 +29,15 @@ namespace PatchKit.Unity.Patcher.AppData
         public static string ComputeStringHash(string str)
         {
             return string.Concat(new xxHash(Seed).ComputeHash(Encoding.UTF8.GetBytes(str)).Select(b => b.ToString("X2")).ToArray());
+        }
+
+        public static string ComputeMD5Hash(string str)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(str);
+                return string.Join("", md5.ComputeHash(bytes).Select(b => b.ToString("x2")).ToArray());
+            }
         }
 
         public static string ComputeFileHash(string filePath)
