@@ -244,11 +244,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     {
                         DebugLogger.LogException(e);
 
-                        var ravenClient
-                            = new RavenClient("https://cb13d9a4a32f456c8411c79c6ad7be9d:90ba86762829401e925a9e5c4233100c@sentry.io/175617");
+                        var logManager = PatcherLogManager.Instance;
+                        PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
+                        RavenClient ravenClient = sentryRegistry.RavenClient;
 
                         var sentryEvent = new SentryEvent(e);
-                        var logManager = PatcherLogManager.Instance;
                         PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
 
                         ravenClient.Capture(sentryEvent);

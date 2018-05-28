@@ -36,6 +36,14 @@ namespace PatchKit.Unity.Patcher.Debug
             }
         }
 
+        public PatcherLogSentryRegistry SentryRegistry
+        {
+            get 
+            {
+                return _sentryRegistry;
+            }
+        }
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLogManager));
 
         private PatcherLogStream _stream;
