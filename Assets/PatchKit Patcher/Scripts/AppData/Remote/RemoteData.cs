@@ -56,7 +56,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             var summary = _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId);
             var torrentUrl = _mainApiConnection.GetAppVersionContentTorrentUrl(_appSecret, versionId, keySecret);
-            var urls = _mainApiConnection.GetAppVersionContentUrls(_appSecret, versionId, countryCode, keySecret); // TODO: Add key secret checking
+            var urls = _mainApiConnection.GetAppVersionContentUrls(_appSecret, versionId, countryCode, keySecret);
 
             resource.Size = summary.Size;
             resource.HashCode = summary.HashCode;
@@ -79,7 +79,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             var summary = _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
             var torrentUrl = _mainApiConnection.GetAppVersionDiffTorrentUrl(_appSecret, versionId, keySecret);
-            var urls = _mainApiConnection.GetAppVersionDiffUrls(_appSecret, versionId, countryCode, keySecret); // TODO: Add key secret checking
+            var urls = _mainApiConnection.GetAppVersionDiffUrls(_appSecret, versionId, countryCode, keySecret);
 
             resource.Size = summary.Size;
             resource.HashCode = summary.HashCode;
