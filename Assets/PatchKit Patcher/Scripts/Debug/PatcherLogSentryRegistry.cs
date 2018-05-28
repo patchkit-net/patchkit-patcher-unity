@@ -41,7 +41,7 @@ namespace PatchKit.Unity.Patcher.Debug
             }, logFileGuid);
         }
 
-        private static void AddDataToSentryEvent(SentryEvent sentryEvent, string logFileGuid)
+        public static void AddDataToSentryEvent(SentryEvent sentryEvent, string logFileGuid)
         {
             sentryEvent.Exception.Data.Add("log-guid", logFileGuid);
             sentryEvent.Exception.Data.Add("log-link", string.Format(

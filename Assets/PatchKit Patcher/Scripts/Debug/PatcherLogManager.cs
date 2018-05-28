@@ -45,6 +45,8 @@ namespace PatchKit.Unity.Patcher.Debug
         private PatcherLogRegisterTriggers _registerTriggers;
 
         private PatcherLogStorage _storage;
+
+        public PatcherLogStorage Storage { get { return _storage; } }
         
         private PatcherLogSentryRegistry _sentryRegistry;
 
