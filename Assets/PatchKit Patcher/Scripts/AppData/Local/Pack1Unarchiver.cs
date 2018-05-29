@@ -8,6 +8,8 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
+using SharpRaven;
+using SharpRaven.Data;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -225,16 +227,33 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
                 {
-                    long bytesProcessed = 0;
-                    const int bufferSize = 128 * 1024;
-                    var buffer = new byte[bufferSize];
-                    int count;
-                    while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
+                    try
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        targetStream.Write(buffer, 0, count);
-                        bytesProcessed += count;
-                        onProgress((double) gzipStream.Position / file.Size.Value);
+                        long bytesProcessed = 0;
+                        const int bufferSize = 128 * 1024;
+                        var buffer = new byte[bufferSize];
+                        int count;
+                        while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
+                        {
+                            targetStream.Write(buffer, 0, count);
+                            bytesProcessed += count;
+                            onProgress(bytesProcessed / (double) file.Size.Value);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        DebugLogger.LogException(e);
+
+                        var logManager = PatcherLogManager.Instance;
+                        PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
+                        RavenClient ravenClient = sentryRegistry.RavenClient;
+
+                        var sentryEvent = new SentryEvent(e);
+                        PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
+
+                        ravenClient.Capture(sentryEvent);
+
+                        throw;
                     }
                 }
             }

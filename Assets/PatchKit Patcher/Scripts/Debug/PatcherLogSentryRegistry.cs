@@ -8,15 +8,23 @@ namespace PatchKit.Unity.Patcher.Debug
 {
     public class PatcherLogSentryRegistry
     {
+        public RavenClient RavenClient
+        {
+            get 
+            {
+                return _ravenClient;
+            }
+        }
+        
         private readonly RavenClient _ravenClient;
+
+        public static readonly string RavenClientId = "https://cb13d9a4a32f456c8411c79c6ad7be9d:90ba86762829401e925a9e5c4233100c@sentry.io/175617"; 
 
         public PatcherLogSentryRegistry()
         {
             ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true; 
             
-            _ravenClient
-                = new RavenClient( 
-                    "https://cb13d9a4a32f456c8411c79c6ad7be9d:90ba86762829401e925a9e5c4233100c@sentry.io/175617"); 
+            _ravenClient = new RavenClient(RavenClientId); 
         }
 
         public void RegisterWithException(Issue issue, string logFileGuid)
@@ -41,7 +49,7 @@ namespace PatchKit.Unity.Patcher.Debug
             }, logFileGuid);
         }
 
-        private static void AddDataToSentryEvent(SentryEvent sentryEvent, string logFileGuid)
+        public static void AddDataToSentryEvent(SentryEvent sentryEvent, string logFileGuid)
         {
             sentryEvent.Exception.Data.Add("log-guid", logFileGuid);
             sentryEvent.Exception.Data.Add("log-link", string.Format(
