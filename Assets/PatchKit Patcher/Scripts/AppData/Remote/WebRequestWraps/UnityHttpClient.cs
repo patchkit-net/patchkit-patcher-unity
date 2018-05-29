@@ -117,5 +117,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             return (HttpStatusCode) statusCode;
         }
+
+        public IHttpResponse Post(HttpPostRequest postRequest)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
