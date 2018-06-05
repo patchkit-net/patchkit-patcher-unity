@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update API servers configuration
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
 - The patcher will now delete the lockfile when quitting
+- Sending the key secrets to content and diff url requests
+
+### Fixed
+- Handling of the ZLib exception
 
 ## [3.9.2]
 ### Added
