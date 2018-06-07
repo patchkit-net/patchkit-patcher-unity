@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
+using System.Collections.Generic;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
@@ -72,12 +73,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             checkIntegrity.Execute(cancellationToken);
             
             var missingFiles = checkIntegrity.Results.Files
-                .Select(f => f.Status == FileIntegrityStatus.MissingData);
+                .Where(f => f.Status == FileIntegrityStatus.MissingData);
 
             int missingFilesCount = missingFiles.Count();
             
             var invalidSizeFiles = checkIntegrity.Results.Files
-                .Select(f => f.Status == FileIntegrityStatus.InvalidSize);
+                .Where(f => f.Status == FileIntegrityStatus.InvalidSize);
 
             int invalidSizeFilesCount = invalidSizeFiles.Count();
 
@@ -87,15 +88,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 return;
             }
             
-            double repairCost = (missingFilesCount + invalidSizeFilesCount) * 2;
-            if (isNewVersionAvailable)
-            {
-                repairCost *= latestVersionContentSummary.Chunks.Size;
-            }
-            else
-            {
-                repairCost *= installedVersionContentSummary.Chunks.Size;
-            }
+            double repairCost = CalculateRepairCost(installedVersionContentSummary, missingFiles.Concat(invalidSizeFiles));
 
             if (repairCost < contentSize)
             {
@@ -110,6 +103,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 uninstall.Prepare(_status);
                 uninstall.Execute(cancellationToken);
             }
+        }
+
+        private long CalculateRepairCost(AppContentSummary contentSummary, IEnumerable<FileIntegrity> filesToRepair)
+        {
+            return filesToRepair
+                .Select(f => contentSummary.Files.FirstOrDefault(e => e.Path == f.FileName))
+                .Sum(f => f.Size);
         }
 
         public void Update(CancellationToken cancellationToken)
