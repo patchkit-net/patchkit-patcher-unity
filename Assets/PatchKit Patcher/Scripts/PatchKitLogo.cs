@@ -33,8 +33,6 @@ namespace PatchKit.Unity
             _button.enabled = false;
             _image.enabled = false;
 
-            _button.onClick.AddListener(GoToPatchKit);
-
             Assert.IsNotNull(patcher);
 
             patcher.AppInfo
