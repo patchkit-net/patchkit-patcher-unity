@@ -409,6 +409,8 @@ namespace PatchKit.Unity.Patcher
 
                 UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
+                UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent("patcher_started", _data.Value.AppSecret));
+
                 while (true)
                 {
                     cancellationToken.ThrowIfCancellationRequested();

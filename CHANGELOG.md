@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for resuming torrent downloading
 - Animated progress bar during initialization and connecting
 - New manifest format support
+- Sending 'patcher_started' event to Statistics Reporting Service
 
 ### Changed
 - Update API servers configuration
