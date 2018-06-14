@@ -5,6 +5,7 @@ using PatchKit.Apps;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppData.Local;
 using PatchKit.Apps.Updating.Licensing;
+using PatchKit.Core.Cancellation;
 using PatchKit.Logging;
 using PatchKit.Patching.Unity.UI.Dialogs;
 
@@ -30,7 +31,7 @@ namespace PatchKit.Patching.Unity
             _keysAppLicenseAuthorizer = DependencyResolver.Resolve<IKeysAppLicenseAuthorizer>();
         }
 
-        public void Validate(string appSecret)
+        public void Validate(string appSecret, CancellationToken cancellationToken)
         {
             try
             {
@@ -54,7 +55,7 @@ namespace PatchKit.Patching.Unity
 
                         _logger.LogDebug("Validating key...");
 
-                        AppLicense = _keysAppLicenseAuthorizer.Authorize(appSecret, key);
+                        AppLicense = _keysAppLicenseAuthorizer.Authorize(appSecret, key, cancellationToken);
 
                         _logger.LogDebug("License has been validated!");
 

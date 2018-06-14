@@ -19,7 +19,7 @@ namespace PatchKit.Patching.Unity.Debug
     {
         private const string PutUrlRequestUrl = "https://se5ia30ji3.execute-api.us-west-2.amazonaws.com/production/v1/request-put-url";
 
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(LogStorage));
+        private DebugLogger _debugLogger;
 
         public Guid Guid { get; private set; }
 
@@ -48,9 +48,9 @@ namespace PatchKit.Patching.Unity.Debug
 
             IsLogBeingSent = true;
 
-            DebugLogger.Log("Sending log...");
+            _debugLogger.Log("Sending log...");
 
-            DebugLogger.Log("Requesting PUT URL...");
+            _debugLogger.Log("Requesting PUT URL...");
 
             var putLinkRequest = new PutLinkRequest()
             {
@@ -77,14 +77,14 @@ namespace PatchKit.Patching.Unity.Debug
             if (putUrlRequest.isError)
 #endif
             {
-                DebugLogger.LogError("Error while requesting PUT URL: " + putUrlRequest.error);
+                _debugLogger.LogError("Error while requesting PUT URL: " + putUrlRequest.error);
                 IsLogBeingSent = false;
                 yield break;
             }
 
 
             var responseText = putUrlRequest.downloadHandler.text;
-            DebugLogger.Log("Got response: " + responseText);
+            _debugLogger.Log("Got response: " + responseText);
 
             var requestPutUrlJson = JsonConvert.DeserializeObject<PutLinkResponse>(responseText);
             var putUrl = requestPutUrlJson.Url;
@@ -99,16 +99,16 @@ namespace PatchKit.Patching.Unity.Debug
             if (putRequest.isError)
 #endif
             {
-                DebugLogger.LogError("Error while sending log file: " + putRequest.error);
+                _debugLogger.LogError("Error while sending log file: " + putRequest.error);
                 IsLogBeingSent = false;
                 yield break;
             }
 
-            DebugLogger.Log("Log file sent!");
+            _debugLogger.Log("Log file sent!");
 
             const float sendDelaySeconds = 5f;
             
-            DebugLogger.Log(string.Format("Waiting {0} seconds before next log could be sent...", sendDelaySeconds));
+            _debugLogger.Log(string.Format("Waiting {0} seconds before next log could be sent...", sendDelaySeconds));
 
             float startWaitTime = Time.unscaledTime;
             while (Time.unscaledTime - startWaitTime < sendDelaySeconds && !_shouldAbortSending)
@@ -118,7 +118,7 @@ namespace PatchKit.Patching.Unity.Debug
 
             _shouldAbortSending = false;
 
-            DebugLogger.Log("Next log can be now send.");
+            _debugLogger.Log("Next log can be now send.");
 
             IsLogBeingSent = false;
         }

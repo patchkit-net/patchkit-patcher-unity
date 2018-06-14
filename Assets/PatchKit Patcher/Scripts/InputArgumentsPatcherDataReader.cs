@@ -9,30 +9,30 @@ namespace PatchKit.Patching.Unity
 {
     public class InputArgumentsPatcherDataReader
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InputArgumentsPatcherDataReader));
+        private DebugLogger _debugLogger;
         private static readonly List<string> _commandLineArgs = Environment.GetCommandLineArgs().ToList();
 
         public InputArgumentsPatcherDataReader()
         {
-            DebugLogger.LogConstructor();
+            _debugLogger.LogConstructor();
         }
 
         public PatcherData Read()
         {
-            DebugLogger.Log("Reading.");
+            _debugLogger.Log("Reading.");
 
             PatcherData data = new PatcherData();
 
             if (!HasArgument("--secret") || !HasArgument("--installdir"))
             {
-                DebugLogger.Log("Expected the secret and installdir to be present in the command line arguments.");
+                _debugLogger.Log("Expected the secret and installdir to be present in the command line arguments.");
                 throw new NonLauncherExecutionException("Patcher has been started without a Launcher.");
             }
 
             string forceAppSecret;
             if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceSecretEnvironmentVariable, out forceAppSecret))
             {
-                DebugLogger.LogFormat("Setting forced app secret {0}", forceAppSecret);
+                _debugLogger.LogFormat("Setting forced app secret {0}", forceAppSecret);
                 data.AppSecret = forceAppSecret;
             }
             else
@@ -53,7 +53,7 @@ namespace PatchKit.Patching.Unity
 
                 if (int.TryParse(forceOverrideLatestVersionIdString, out forceOverrideLatestVersionId))
                 {
-                    DebugLogger.LogFormat("Setting forced version id {0}", forceOverrideLatestVersionId);
+                    _debugLogger.LogFormat("Setting forced version id {0}", forceOverrideLatestVersionId);
                     data.OverrideLatestVersionId = forceOverrideLatestVersionId;
                 }
             }
@@ -74,11 +74,11 @@ namespace PatchKit.Patching.Unity
             if (TryReadArgument("--lockfile", out lockFilePath))
             {
                 data.LockFilePath = lockFilePath;
-                DebugLogger.LogFormat("Using lock file: {0}", lockFilePath);
+                _debugLogger.LogFormat("Using lock file: {0}", lockFilePath);
             }
             else
             {
-                DebugLogger.LogWarning("Lock file not provided.");
+                _debugLogger.LogWarning("Lock file not provided.");
             }
 
             return data;

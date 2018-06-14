@@ -19,7 +19,7 @@ namespace PatchKit.Unity.Editor
                 exeArguments = "--installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"";  
             }
 
-            if (buildTarget == BuildTarget.StandaloneOSXUniversal ||
+            if (buildTarget == BuildTarget.StandaloneOSX ||
                 buildTarget == BuildTarget.StandaloneOSXIntel ||
                 buildTarget == BuildTarget.StandaloneOSXIntel64)
             {

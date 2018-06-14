@@ -4,93 +4,191 @@
         <name>PatchKit.Network</name>
     </assembly>
     <members>
-        <member name="T:PatchKit.Network.BaseHttpRequest">
-            <summary>
-            A base http request
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.BaseHttpRequest.Address">
-            <summary>
-            Target request address.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.BaseHttpRequest.Timeout">
-            <summary>
-            Request timeout in miliseconds.
-            </summary>
-        </member>
-        <member name="T:PatchKit.Network.DefaultHttpClient">
+        <member name="T:PatchKit.Network.HttpClient">
             <inheritdoc />
             <summary>
-            Default implementation of <see cref="T:PatchKit.Network.IHttpClient" />.
+            Implementation of <see cref="T:PatchKit.Network.IHttpClient" /> that uses .NET Framework classes.
             </summary>
         </member>
-        <member name="M:PatchKit.Network.DefaultHttpClient.Get(PatchKit.Network.HttpGetRequest)">
+        <member name="M:PatchKit.Network.HttpClient.SendRequest(PatchKit.Network.HttpGetRequest,System.Nullable{PatchKit.Core.Timeout},PatchKit.Core.Cancellation.CancellationToken)">
             <inheritdoc />
         </member>
-        <member name="M:PatchKit.Network.DefaultHttpClient.Post(PatchKit.Network.HttpPostRequest)">
+        <member name="M:PatchKit.Network.HttpClient.SendRequest(PatchKit.Network.HttpPostRequest,System.Nullable{PatchKit.Core.Timeout},PatchKit.Core.Cancellation.CancellationToken)">
             <inheritdoc />
+        </member>
+        <member name="T:PatchKit.Network.BytesRangeExtensions">
+            <summary>
+            Extensions methods allowing for more declarative approach to byte range operations.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.BytesRangeExtensions.IsEmpty(PatchKit.Network.BytesRange)">
+            <summary>
+            Returns true if the Start and End of given range are equal.
+            Otherwise returns false.
+            </summary>
+            <param name="range"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PatchKit.Network.BytesRangeExtensions.IsFull(PatchKit.Network.BytesRange)">
+            <summary>
+            Returns true if given range is in form 0:-1.
+            Otherwise returns false.
+            </summary>
+            <param name="range"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PatchKit.Network.BytesRangeExtensions.ContainIn(PatchKit.Network.BytesRange,PatchKit.Network.BytesRange)">
+            <summary>
+            Limits one range inside the other, examples:
+            0:-1 contained in range 20:30 becomes 20:30.
+            0:100 contained in range 50:-1 becomes 50:100
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.BytesRangeExtensions.LocalizeTo(PatchKit.Network.BytesRange,PatchKit.Network.BytesRange)">
+            <summary>
+            Localizes one range inside another, the resulting range is limited and local to the relative ("parent") range
+            If the ranges don't overlap, an empty range will be returned.
+            Examples:
+            50:95 localized within 10:90 becomes 40:-1
+            5:15 localized within 10:90 becomes 0:5
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.BytesRangeExtensions.Overlaps(PatchKit.Network.BytesRange,PatchKit.Network.BytesRange)">
+            <summary>
+            Returns true if given ranges overlap.
+            </summary>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PatchKit.Network.BytesRangeExtensions.Contains(PatchKit.Network.BytesRange,PatchKit.Network.BytesRange)">
+            <summary>
+            Returns true if the outer range fully contains the inner range.
+            </summary>
+            <param name="outer"></param>
+            <param name="inner"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PatchKit.Network.BytesRangeExtensions.Contains(PatchKit.Network.BytesRange,System.Nullable{System.Int64})">
+            <summary>
+            Returns true if the given range contains the specified value.
+            </summary>
+            <param name="range"></param>
+            <param name="value"></param>
+            <returns></returns>
         </member>
         <member name="T:PatchKit.Network.HttpGetRequest">
             <summary>
             Describes HTTP GET request.
             </summary>
         </member>
-        <member name="P:PatchKit.Network.HttpGetRequest.Range">
+        <member name="M:PatchKit.Network.HttpGetRequest.#ctor(PatchKit.Network.HttpAddress)">
             <summary>
-            Requested bytes range.
-            If set to <c>null</c> range is not specified.
+            Initializes a new instance of the <see cref="T:PatchKit.Network.HttpGetRequest"/> struct.
             </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpGetRequest.Address">
+            <summary>
+            Target request address.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpGetRequest.ValidationError">
+            <inheritdoc />
         </member>
         <member name="T:PatchKit.Network.BytesRange">
             <summary>
             Specifies byte range.
             </summary>
         </member>
-        <member name="F:PatchKit.Network.BytesRange.Start">
+        <member name="P:PatchKit.Network.BytesRange.Start">
             <summary>
-            Starting byte of range (inclusive).
+            Starting byte of the range (inclusive).
             </summary>
         </member>
-        <member name="F:PatchKit.Network.BytesRange.End">
+        <member name="P:PatchKit.Network.BytesRange.End">
             <summary>
-            Ending byte of range (inclusive).
-            If set to negative value, range is extended to the maximum possible value.
+            Ending byte of the range (inclusive).
+            If set to null, range is extended to the end.
             </summary>
         </member>
-        <member name="M:PatchKit.Network.BytesRange.#ctor(System.Int64,System.Int64)">
+        <member name="M:PatchKit.Network.BytesRange.#ctor(System.Int64,System.Nullable{System.Int64})">
             <summary>
             Initializes a new instance of <see cref="T:PatchKit.Network.BytesRange"/> struct.
             </summary>
+        </member>
+        <member name="M:PatchKit.Network.BytesRange.Empty">
+            <summary>
+            Returns an empty range 0:0
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:PatchKit.Network.BytesRange.ValidationError">
+            <inheritdoc />
         </member>
         <member name="T:PatchKit.Network.HttpPostRequest">
             <summary>
             Describes HTTP POST request.
             </summary>
         </member>
-        <member name="P:PatchKit.Network.HttpPostRequest.Body">
+        <member name="M:PatchKit.Network.HttpPostRequest.#ctor(PatchKit.Network.HttpAddress,PatchKit.Core.Collections.Immutable.ImmutableArray{System.Byte},PatchKit.Network.HttpPostRequestContentType)">
             <summary>
-            Request body.
+            Initializes a new instance of the <see cref="T:PatchKit.Network.HttpPostRequest"/> struct.
             </summary>
         </member>
-        <member name="T:PatchKit.Network.HttpWebResponseAdapter">
+        <member name="P:PatchKit.Network.HttpPostRequest.Address">
             <summary>
-            Adapter of <see cref="T:System.Net.HttpWebRequest"/> for <see cref="T:PatchKit.Network.IHttpResponse"/>.
+            Target request address.
             </summary>
         </member>
-        <member name="M:PatchKit.Network.HttpWebResponseAdapter.#ctor(System.Net.HttpWebResponse)">
+        <member name="P:PatchKit.Network.HttpPostRequest.ContentType">
+            <summary>
+            Content type.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpPostRequest.Content">
+            <summary>
+            Content data.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpPostRequest.ValidationError">
             <inheritdoc />
         </member>
-        <member name="P:PatchKit.Network.HttpWebResponseAdapter.ContentStream">
-            <inheritdoc />
+        <member name="T:PatchKit.Network.HttpPostRequestContentType">
+            <summary>
+            Type of HTTP POST request content.
+            </summary>
         </member>
-        <member name="P:PatchKit.Network.HttpWebResponseAdapter.CharacterSet">
-            <inheritdoc />
+        <member name="F:PatchKit.Network.HttpPostRequestContentType.ApplicationXWWWFormUrlEncoded">
+            <summary>
+            application/x-www-form-urlencoded
+            </summary>
         </member>
-        <member name="P:PatchKit.Network.HttpWebResponseAdapter.StatusCode">
-            <inheritdoc />
+        <member name="F:PatchKit.Network.HttpPostRequestContentType.MultipartFormData">
+            <summary>
+            multipart/form-data
+            </summary>
         </member>
-        <member name="M:PatchKit.Network.HttpWebResponseAdapter.Dispose">
+        <member name="T:PatchKit.Network.HttpResponse">
+            <summary>
+            HTTP response.
+            </summary>
+        </member>
+        <member name="M:PatchKit.Network.HttpResponse.#ctor(System.String,System.Net.HttpStatusCode)">
+            <summary>
+            Initializes a new instance of the <see cref="T:PatchKit.Network.HttpResponse"/> struct.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpResponse.Body">
+            <summary>
+            Response body.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpResponse.StatusCode">
+            <summary>
+            Response status code.
+            </summary>
+        </member>
+        <member name="P:PatchKit.Network.HttpResponse.ValidationError">
             <inheritdoc />
         </member>
         <member name="T:PatchKit.Network.IHttpClient">
@@ -98,147 +196,28 @@
             HTTP client with ability to send requests.
             </summary>
         </member>
-        <member name="M:PatchKit.Network.IHttpClient.Get(PatchKit.Network.HttpGetRequest)">
+        <member name="M:PatchKit.Network.IHttpClient.SendRequest(PatchKit.Network.HttpGetRequest,System.Nullable{PatchKit.Core.Timeout},PatchKit.Core.Cancellation.CancellationToken)">
             <summary>
             Sends GET request.
             </summary>
-            <param name="getRequest">Request to send.</param>
+            <param name="request">Request to send.</param>
+            <param name="timeout">Timeout. If set to <c>null</c> then timeout is diabled.</param>
+            <param name="cancellationToken">Cancellation token.</param>
             <returns>Response for sent request.</returns>
         </member>
-        <member name="M:PatchKit.Network.IHttpClient.Post(PatchKit.Network.HttpPostRequest)">
+        <member name="M:PatchKit.Network.IHttpClient.SendRequest(PatchKit.Network.HttpPostRequest,System.Nullable{PatchKit.Core.Timeout},PatchKit.Core.Cancellation.CancellationToken)">
             <summary>
             Sends POST request.
             </summary>
-            <param name="postRequest">Request to send.</param>
+            <param name="request">Request to send.</param>
+            <param name="timeout">Timeout. If set to <c>null</c> then timeout is diabled.</param>
+            <param name="cancellationToken">Cancellation token.</param>
             <returns>Response for sent request.</returns>
         </member>
-        <member name="T:PatchKit.Network.IHttpResponse">
+        <member name="M:PatchKit.Network.IHttpDownloader.Download(PatchKit.Network.HttpAddress,System.Nullable{PatchKit.Network.BytesRange},PatchKit.Network.OnBytesDownloadedHandler,System.Nullable{PatchKit.Core.Timeout},PatchKit.Core.Cancellation.CancellationToken)">
             <summary>
-            Provides a HTTP response.
+            Downloads data from specified address.
             </summary>
-        </member>
-        <member name="P:PatchKit.Network.IHttpResponse.ContentStream">
-            <summary>
-            Gets the stream that is used to read the body of the response from the server.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.IHttpResponse.CharacterSet">
-            <summary>
-            Gets the character set of the response.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.IHttpResponse.StatusCode">
-            <summary>
-            Gets the status of the response.
-            </summary>
-        </member>
-        <member name="T:PatchKit.Network.IRequestRetryStrategy">
-            <summary>
-            Defines retry strategy for requests.
-            Results are based on request success/failure events.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.IRequestRetryStrategy.DelayBeforeNextTry">
-            <summary>
-            Delay (in miliseconds) that should be made before trying next request.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.IRequestRetryStrategy.ShouldRetry">
-            <summary>
-            States whether retry should be done.
-            </summary>
-        </member>
-        <member name="M:PatchKit.Network.IRequestRetryStrategy.OnRequestSuccess">
-            <summary>
-            Use it to notify about successful request.
-            </summary>
-        </member>
-        <member name="M:PatchKit.Network.IRequestRetryStrategy.OnRequestFailure">
-            <summary>
-            Use it to notify about failed request.
-            </summary>
-        </member>
-        <member name="T:PatchKit.Network.IRequestTimeoutCalculator">
-            <summary>
-            Calculates request timeout based on success/failure events.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.IRequestTimeoutCalculator.Timeout">
-            <summary>
-            Timeout in miliseconds.
-            </summary>
-        </member>
-        <member name="M:PatchKit.Network.IRequestTimeoutCalculator.OnRequestSuccess">
-            <summary>
-            Use it to notify about successful request.
-            </summary>
-        </member>
-        <member name="M:PatchKit.Network.IRequestTimeoutCalculator.OnRequestFailure">
-            <summary>
-            Use it to notify about failed request.
-            </summary>
-        </member>
-        <member name="T:PatchKit.Network.NoneRequestRetryStrategy">
-            <inheritdoc />
-            <summary>
-            Strategy that never allows to make a retry.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.NoneRequestRetryStrategy.DelayBeforeNextTry">
-            <inheritdoc />
-        </member>
-        <member name="P:PatchKit.Network.NoneRequestRetryStrategy.ShouldRetry">
-            <inheritdoc />
-        </member>
-        <member name="M:PatchKit.Network.NoneRequestRetryStrategy.OnRequestSuccess">
-            <inheritdoc />
-        </member>
-        <member name="M:PatchKit.Network.NoneRequestRetryStrategy.OnRequestFailure">
-            <inheritdoc />
-        </member>
-        <member name="T:PatchKit.Network.SimpleInfiniteRequestRetryStrategy">
-            <inheritdoc />
-            <summary>
-            Simple implementation of <see cref="T:PatchKit.Network.IRequestRetryDelayCalculator" /> that never stops making retries.
-            </summary>
-        </member>
-        <member name="M:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:PatchKit.Network.SimpleInfiniteRequestRetryStrategy"/> class.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.DelayBeforeNextTry">
-            <inheritdoc />
-        </member>
-        <member name="P:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.ShouldRetry">
-            <inheritdoc />
-        </member>
-        <member name="M:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.OnRequestSuccess">
-            <inheritdoc />
-        </member>
-        <member name="M:PatchKit.Network.SimpleInfiniteRequestRetryStrategy.OnRequestFailure">
-            <inheritdoc />
-        </member>
-        <member name="T:PatchKit.Network.SimpleRequestTimeoutCalculator">
-            <inheritdoc />
-            <summary>
-            Simple implementation of <see cref="T:PatchKit.Network.IRequestTimeoutCalculator" />.
-            Timeout is not reset after <see cref="M:PatchKit.Network.SimpleRequestTimeoutCalculator.OnRequestSuccess"/>.
-            </summary>
-        </member>
-        <member name="M:PatchKit.Network.SimpleRequestTimeoutCalculator.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:PatchKit.Network.SimpleRequestTimeoutCalculator"/> class.
-            </summary>
-        </member>
-        <member name="P:PatchKit.Network.SimpleRequestTimeoutCalculator.Timeout">
-            <inheritdoc />
-        </member>
-        <member name="M:PatchKit.Network.SimpleRequestTimeoutCalculator.OnRequestSuccess">
-            <inheritdoc />
-        </member>
-        <member name="M:PatchKit.Network.SimpleRequestTimeoutCalculator.OnRequestFailure">
-            <inheritdoc />
         </member>
     </members>
 </doc>

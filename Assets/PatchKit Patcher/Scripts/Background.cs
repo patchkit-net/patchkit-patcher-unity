@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using PatchKit.Logging;
-using PatchKit.Api.Models.Main;
+using PatchKit.Api.Models;
 using System;
 using System.IO;
 using PatchKit.Apps.Updating;

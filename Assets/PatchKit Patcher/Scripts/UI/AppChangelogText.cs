@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using PatchKit.Api.Utilities;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace PatchKit.Patching.Unity.UI
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield return UnityThreading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(AppSecret), response =>
+            yield return UnityThreading.StartThreadCoroutine(() => ApiConnection.GetAppVersionList(AppSecret, null, null, CancellationToken), response =>
             {
                 Text.text = string.Join("\n",
                     response.OrderByDescending(version => version.Id).Select(version =>

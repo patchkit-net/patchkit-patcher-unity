@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using PatchKit.Apps.Updating;
+using PatchKit.Core;
+using PatchKit.Core.Cancellation;
 using PatchKit.Logging;
 using PatchKit.Network;
 using UnityEngine;
@@ -22,8 +24,6 @@ namespace PatchKit.Patching.Unity
         }
 
         private readonly ILogger _logger;
-
-        private const string ResponseEncoding = "iso-8859-2";
 
         public UnityHttpClient()
         {
@@ -45,50 +45,6 @@ namespace PatchKit.Patching.Unity
                     result.ResponseHeaders = www.responseHeaders;
                     result.Text = www.text;
                 }
-            }
-        }
-
-        public IHttpResponse Post(HttpPostRequest postRequest)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IHttpResponse Get(HttpGetRequest getRequest)
-        {
-            try
-            {
-                _logger.LogDebug("Sending GET request to " + getRequest.Address);
-
-                if (getRequest.Range != null)
-                {
-                    throw new NotImplementedException();
-                }
-
-                _logger.LogTrace("timeout  = " + getRequest.Timeout);
-            
-                var result = new WWWResult();
-
-                var waitHandle = UnityDispatcher.InvokeCoroutine(GetWWW(getRequest, result));
-            
-                waitHandle.WaitOne(TimeSpan.FromMilliseconds(getRequest.Timeout));
-
-                lock (result)
-                {
-                    if (!result.IsDone)
-                    {
-                        throw new WebException("Timeout.", WebExceptionStatus.Timeout);
-                    }
-
-                    var statusCode = ReadStatusCode(result);
-
-                    _logger.LogDebug("Successfuly received response.");
-                    return new UnityHttpResponse(result.Text, statusCode, ResponseEncoding);
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("Failed to get response.", e);
-                throw;
             }
         }
 
@@ -120,6 +76,45 @@ namespace PatchKit.Patching.Unity
             _logger.LogTrace("statusCode (as enum) = " + (HttpStatusCode) statusCode);
 
             return (HttpStatusCode) statusCode;
+        }
+
+        public HttpResponse SendRequest(HttpGetRequest request, Timeout? timeout, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogDebug("Sending GET request to " + request.Address);
+
+                _logger.LogTrace("timeout  = " + timeout);
+            
+                var result = new WWWResult();
+
+                var waitHandle = UnityDispatcher.InvokeCoroutine(GetWWW(request, result));
+            
+                waitHandle.WaitOne(timeout.HasValue ? timeout.Value.Value : TimeSpan.FromMilliseconds(0));
+
+                lock (result)
+                {
+                    if (!result.IsDone)
+                    {
+                        throw new WebException("Timeout.", WebExceptionStatus.Timeout);
+                    }
+
+                    var statusCode = ReadStatusCode(result);
+
+                    _logger.LogDebug("Successfuly received response.");
+                    return new HttpResponse(result.Text, statusCode);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Failed to get response.", e);
+                throw;
+            }
+        }
+
+        public HttpResponse SendRequest(HttpPostRequest request, Timeout? timeout, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

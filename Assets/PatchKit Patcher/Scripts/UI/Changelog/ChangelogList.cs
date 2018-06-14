@@ -1,6 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
-using PatchKit.Api.Models.Main;
+using PatchKit.Api.Models;
 
 namespace PatchKit.Patching.Unity.UI.Changelog
 {
@@ -18,7 +19,7 @@ namespace PatchKit.Patching.Unity.UI.Changelog
             }
 
             yield return
-                UnityThreading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Data.Value.AppSecret),
+                UnityThreading.StartThreadCoroutine(() => ApiConnection.GetAppVersionList(Patcher.Instance.Data.Value.AppSecret, null, null, Patcher.Instance.ThreadCancellationToken),
                     response =>
                     {
                         foreach (var version in response.OrderByDescending(version => version.Id))
