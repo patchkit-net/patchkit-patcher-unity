@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Linq;
+using UnityEditor.Build.Reporting;
 using UnityEngine.SceneManagement;
 
 namespace PatchKit.Unity
@@ -122,11 +123,11 @@ namespace PatchKit.Unity
                 return;
             }
 
-            string error = BuildPipeline.BuildPlayer(scenePaths, path + "/" + PatcherExecutableName(target), target, buildOptions);
+            var buildReport = BuildPipeline.BuildPlayer(scenePaths, path + "/" + PatcherExecutableName(target), target, buildOptions);
 
-            if (!string.IsNullOrEmpty(error))
+            if (buildReport.summary.result != BuildResult.Succeeded)
             {
-                EditorUtility.DisplayDialog("Error", error, "Ok");
+                EditorUtility.DisplayDialog("Error", "Build failed.", "Ok");
             }
         }
     }
