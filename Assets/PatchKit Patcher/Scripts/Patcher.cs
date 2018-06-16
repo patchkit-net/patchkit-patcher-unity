@@ -233,13 +233,10 @@ namespace PatchKit.Patching.Unity
             }
         }
 
-        static Patcher()
-        {
-            DependencyConfiguration.Execute();
-        }
-
         private void Awake()
         {
+            _debugLogger = new DebugLogger(typeof(Patcher));
+
             UnityEngine.Assertions.Assert.raiseExceptions = true;
 
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");

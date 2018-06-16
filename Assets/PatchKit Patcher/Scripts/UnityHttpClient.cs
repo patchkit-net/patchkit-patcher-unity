@@ -89,8 +89,15 @@ namespace PatchKit.Patching.Unity
                 var result = new WWWResult();
 
                 var waitHandle = UnityDispatcher.InvokeCoroutine(GetWWW(request, result));
-            
-                waitHandle.WaitOne(timeout.HasValue ? timeout.Value.Value : TimeSpan.FromMilliseconds(0));
+
+                if (timeout.HasValue)
+                {
+                    waitHandle.WaitOne((int) timeout.Value.Value.TotalMilliseconds);
+                }
+                else
+                {
+                    waitHandle.WaitOne(Int32.MaxValue);
+                }
 
                 lock (result)
                 {
