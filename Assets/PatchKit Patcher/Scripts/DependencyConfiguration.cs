@@ -15,25 +15,15 @@ namespace PatchKit.Patching.Unity
             UnityEngine.Debug.Log("Dependency injection configuration.");
             RegisterLogger();
 
-            ProcessBindings(Apps.Updating.Properties.AssemblyModule.Container.Bindings);
-
             DependencyResolver.RegisterType<IPlatformResolver, PlatformResolver>();
             DependencyResolver.RegisterType<ITorrentClientProcessStartInfoProvider, UnityTorrentClientProcessStartInfoProvider>();
             DependencyResolver.RegisterType<IHttpClient, UnityHttpClient>();
             DependencyResolver.RegisterType<ICache, UnityCache>();
         }
 
-        private static void ProcessBindings(ImmutableArray<Binding> bindings)
-        {
-            foreach (Binding binding in bindings)
-            {
-                DependencyResolver.RegisterType(binding.Type, binding.TargetType);
-            }
-        }
-
         private static void RegisterLogger()
         {
-            var logger = new Logging.DefaultLogger(new Logging.DefaultMessageSourceStackLocator()); 
+            var logger = new Logging.DefaultLogger(new Logging.MessageSourceStackLocator());
             DependencyResolver.RegisterInstance<Logging.ILogger>(logger); 
             DependencyResolver.RegisterInstance<Logging.IMessagesStream>(logger); 
         }

@@ -1,15 +1,14 @@
-﻿using System;
-using PatchKit.Apps.Updating.Debug;
+﻿using PatchKit.Apps.Updating.Debug;
 using UniRx;
 
 namespace PatchKit.Patching.Unity.Debug
 {
-    public class LogRegisterTriggers : IDisposable
+    public class LogRegisterTriggers : System.IDisposable
     {
-        private readonly Subject<Exception> _exceptionTrigger
-            = new Subject<Exception>();
+        private readonly Subject<System.Exception> _exceptionTrigger
+            = new Subject<System.Exception>();
         
-        public IObservable<Exception> ExceptionTrigger
+        public IObservable<System.Exception> ExceptionTrigger
         {
             get { return _exceptionTrigger; }
         }
@@ -24,7 +23,7 @@ namespace PatchKit.Patching.Unity.Debug
             DebugLogger.ExceptionOccured -= OnExceptionOccured;
         }
         
-        private void OnExceptionOccured(Exception exception)
+        private void OnExceptionOccured(System.Exception exception)
         {
             _exceptionTrigger.OnNext(exception);
         }

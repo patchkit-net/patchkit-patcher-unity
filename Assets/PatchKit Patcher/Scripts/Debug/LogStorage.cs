@@ -69,7 +69,7 @@ namespace PatchKit.Patching.Unity.Debug
             putUrlRequest.downloadHandler = new DownloadHandlerBuffer();
             putUrlRequest.SetRequestHeader("Content-Type", "application/json");
 
-            yield return putUrlRequest.Send();
+            yield return putUrlRequest.SendWebRequest();
 
 #if UNITY_5_6_OR_NEWER
             if (putUrlRequest.isNetworkError)
@@ -91,7 +91,7 @@ namespace PatchKit.Patching.Unity.Debug
 
 
             UnityWebRequest putRequest = UnityWebRequest.Put(putUrl, GetCompressedLogFileData(logFilePath));
-            yield return putRequest.Send();
+            yield return putRequest.SendWebRequest();
 
 #if UNITY_5_6_OR_NEWER
             if (putRequest.isNetworkError)

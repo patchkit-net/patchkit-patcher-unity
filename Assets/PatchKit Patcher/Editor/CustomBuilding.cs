@@ -33,10 +33,10 @@ namespace PatchKit.Unity
             Build(BuildTarget.StandaloneLinux64);
         }
 
-        [MenuItem("Tools/Build/OSX x64")]
+        [MenuItem("Tools/Build/OSX")]
         public static void BuildOsx64 ()
         {
-            Build(BuildTarget.StandaloneOSXIntel64);
+            Build(BuildTarget.StandaloneOSX);
         }
 
         private static string PatcherExecutableName(BuildTarget target)
@@ -51,7 +51,7 @@ namespace PatchKit.Unity
                 case BuildTarget.StandaloneLinux64:
                     return "Patcher";
 
-                case BuildTarget.StandaloneOSXIntel64:
+                case BuildTarget.StandaloneOSX:
                     return "Patcher.app";
                 default:
                     throw new ArgumentOutOfRangeException("target", target, null);

@@ -2,6 +2,7 @@ using System.Threading;
 using PatchKit.Apps.Updating.Debug;
 using PatchKit.Core.Cancellation;
 using UnityEngine;
+using CancellationToken = PatchKit.Core.Cancellation.CancellationToken;
 
 namespace PatchKit.Patching.Unity.UI.Dialogs
 {

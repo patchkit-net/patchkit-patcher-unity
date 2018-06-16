@@ -29,22 +29,22 @@ namespace PatchKit.Unity.Editor
 
         public static void BuildOSX32Release()
         {
-            Build(BuildTarget.StandaloneOSXIntel, false);
+            throw new NotSupportedException();
         }
 
         public static void BuildOSX32Development()
         {
-            Build(BuildTarget.StandaloneOSXIntel, true);
+            throw new NotSupportedException();
         }
 
         public static void BuildOSX64Release()
         {
-            Build(BuildTarget.StandaloneOSXIntel64, false);
+            Build(BuildTarget.StandaloneOSX, false);
         }
 
         public static void BuildOSX64Development()
         {
-            Build(BuildTarget.StandaloneOSXIntel64, true);
+            Build(BuildTarget.StandaloneOSX, true);
         }
 
         public static void BuildLinux32Release()

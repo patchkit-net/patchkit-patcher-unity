@@ -19,9 +19,7 @@ namespace PatchKit.Unity.Editor
                 exeArguments = "--installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"";  
             }
 
-            if (buildTarget == BuildTarget.StandaloneOSX ||
-                buildTarget == BuildTarget.StandaloneOSXIntel ||
-                buildTarget == BuildTarget.StandaloneOSXIntel64)
+            if (buildTarget == BuildTarget.StandaloneOSX)
             {
                 exeFileName = "open";
                 exeArguments = string.Format("\\\"{{exedir}}/{0}\\\" --args --installdir \\\"{{installdir}}\\\" --secret \\\"{{secret}}\\\"", Path.GetFileName(buildPath));

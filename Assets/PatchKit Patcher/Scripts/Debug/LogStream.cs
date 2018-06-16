@@ -1,10 +1,9 @@
-﻿using System;
-using UniRx;
+﻿using UniRx;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity.Debug
 {
-    public class LogStream : IDisposable
+    public class LogStream : System.IDisposable
     {
         private readonly Subject<string> _messages
             = new Subject<string>();
