@@ -2,13 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using PatchKit.Apps.Updating;
-using PatchKit.Core;
-using PatchKit.Core.Cancellation;
 using PatchKit.Logging;
 using PatchKit.Network;
 using UnityEngine;
 using ILogger = PatchKit.Logging.ILogger;
+using Timeout = PatchKit.Core.Timeout;
 
 namespace PatchKit.Patching.Unity
 {

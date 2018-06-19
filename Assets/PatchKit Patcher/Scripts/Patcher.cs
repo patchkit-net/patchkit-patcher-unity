@@ -15,15 +15,12 @@ using PatchKit.Apps.Updating.AppUpdater.Status;
 using PatchKit.Apps.Updating.Debug;
 using PatchKit.Apps.Updating.Licensing;
 using PatchKit.Apps.Updating.Utilities;
-using PatchKit.Core.Cancellation;
 using PatchKit.Core.Collections.Immutable;
-using PatchKit.Core.DependencyInjection;
 using PatchKit.Network;
 using PatchKit.Patching.Unity.UI.Dialogs;
 using UniRx;
 using UnityEngine;
-using CancellationToken = PatchKit.Core.Cancellation.CancellationToken;
-using CancellationTokenSource = PatchKit.Core.Cancellation.CancellationTokenSource;
+using CancellationToken = System.Threading.CancellationToken;
 
 namespace PatchKit.Patching.Unity
 {

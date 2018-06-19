@@ -1,6 +1,4 @@
-﻿using System;
-using PatchKit.Core;
-using PatchKit.Core.Cancellation;
+﻿using System.Threading;
 
 namespace PatchKit.Patching.Unity.UI
 {

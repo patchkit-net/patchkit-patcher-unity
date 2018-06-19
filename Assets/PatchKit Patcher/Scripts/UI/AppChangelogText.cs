@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using PatchKit.Api.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,12 +23,19 @@ namespace PatchKit.Patching.Unity.UI
 
                         changelog = changelog.Replace("{label}", version.Label);
                         changelog = changelog.Replace("{changelog}", version.Changelog);
-                        string publishDate = UnixTimeConvert.FromUnixTimeStamp(version.PublishDate).ToString("g");
+                        string publishDate = FromUnixTimeStamp(version.PublishDate).ToString("g");
                         changelog = changelog.Replace("{publishdate}", publishDate);
 
                         return changelog;
                     }).ToArray());
             });
+        }
+
+        public static DateTime FromUnixTimeStamp(double unixTimeStamp)
+        {
+            var baseDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            baseDateTime = baseDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            return baseDateTime;
         }
 
         private void Reset()

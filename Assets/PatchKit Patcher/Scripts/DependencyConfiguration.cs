@@ -1,12 +1,11 @@
-using PatchKit.Api;
+using Autofac;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppData.Local;
 using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
 using PatchKit.Apps.Updating.Utilities;
-using PatchKit.Core.Collections.Immutable;
-using PatchKit.Core.DependencyInjection;
-using PatchKit.Network;
+using PatchKit.Logging;
 using UnityEngine;
+using ILogger = PatchKit.Logging.ILogger;
 
 namespace PatchKit.Patching.Unity
 {
@@ -15,23 +14,28 @@ namespace PatchKit.Patching.Unity
         private void Awake()
         {
             UnityEngine.Debug.Log("Dependency injection configuration.");
-            RegisterLogger();
 
-            DependencyResolver.RegisterType<IPlatformResolver, PlatformResolver>();
-            DependencyResolver.RegisterType<ITorrentClientFactory, TorrentClientFactory>();
-            DependencyResolver
-                .RegisterType<ITorrentClientProcessStartInfoProvider, UnityTorrentClientProcessStartInfoProvider>();
+            DependencyResolver.ContainerBuilder.RegisterModule(new Core.Properties.AssemblyModule(true));
+            DependencyResolver.ContainerBuilder.RegisterModule(new Logging.Properties.AssemblyModule());
+            DependencyResolver.ContainerBuilder.RegisterModule(new Network.Properties.AssemblyModule(1024));
+            DependencyResolver.ContainerBuilder.RegisterModule(new Api.Properties.AssemblyModule());
+            DependencyResolver.ContainerBuilder.RegisterModule(new Apps.Properties.AssemblyModule());
+            DependencyResolver.ContainerBuilder.RegisterModule(new Apps.Updating.Properties.AssemblyModule());
+
+            DependencyResolver.ContainerBuilder.RegisterType<DefaultLogger>()
+                .SingleInstance()
+                .As<ILogger>()
+                .As<IMessagesStream>();
+
+            DependencyResolver.ContainerBuilder.RegisterType<PlatformResolver>().As<IPlatformResolver>();
+            DependencyResolver.ContainerBuilder.RegisterType<TorrentClientFactory>().As<ITorrentClientFactory>();
+            DependencyResolver.ContainerBuilder.RegisterType<UnityTorrentClientProcessStartInfoProvider>()
+                .As<ITorrentClientProcessStartInfoProvider>();
+            DependencyResolver.ContainerBuilder.RegisterType<UnityCache>().As<ICache>();
+
             //DependencyResolver.RegisterType<IHttpClient, UnityHttpClient>();
-            DependencyResolver.RegisterType<ICache, UnityCache>();
 
             DependencyResolver.Build();
-        }
-
-        private static void RegisterLogger()
-        {
-            var logger = new Logging.DefaultLogger(new Logging.MessageSourceStackLocator());
-            DependencyResolver.RegisterInstance<Logging.ILogger>(logger);
-            DependencyResolver.RegisterInstance<Logging.IMessagesStream>(logger);
         }
     }
 }

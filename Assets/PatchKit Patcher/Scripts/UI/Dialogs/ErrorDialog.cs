@@ -1,4 +1,4 @@
-﻿using PatchKit.Core.Cancellation;
+﻿using System.Threading;
 using UnityEngine.UI;
 
 namespace PatchKit.Patching.Unity.UI.Dialogs

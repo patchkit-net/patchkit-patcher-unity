@@ -32,8 +32,6 @@ namespace PatchKit.Patching.Unity
             }
 
             var settings = CreateInstance<Settings>();
-            settings.MainApiConnectionSettings = ApiConnectionSettings.DefaultApi;
-            settings.KeysApiConnectionSettings = ApiConnectionSettings.DefaultKeysApi;
 
             UnityEditor.AssetDatabase.CreateAsset(settings,
                 string.Format("Assets/PatchKit Patcher/Resources/{0}.asset", AssetFileName));
