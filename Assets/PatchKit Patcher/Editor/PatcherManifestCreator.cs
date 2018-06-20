@@ -54,8 +54,8 @@ namespace PatchKit.Unity.Editor
         {
             string targetFile = Path.GetFileName(buildPath);
             return new Manifest {
-                ExeFileName = string.Format("\\\"{{exedir}}/{0}\\\"", targetFile),
-                ExeArguments = "--installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"",
+                ExeFileName = string.Format("\"{{exedir}}/{0}\"", targetFile),
+                ExeArguments = "--installdir \"{installdir}\" --secret \"{secret}\"",
 
                 Version = ManifestVersion,
                 Target = "{exedir}/" + targetFile,
@@ -78,7 +78,7 @@ namespace PatchKit.Unity.Editor
             string targetFile = Path.GetFileName(buildPath);
             return new Manifest {
                 ExeFileName = "open",
-                ExeArguments = string.Format("\\\"{{exedir}}/{0}\\\" --args --installdir \\\"{{installdir}}\\\" --secret \\\"{{secret}}\\\"", targetFile),
+                ExeArguments = string.Format("\"{{exedir}}/{0}\" --args --installdir \"{{installdir}}\" --secret \"{{secret}}\"", targetFile),
 
                 Version = ManifestVersion,
                 Target = "open",
