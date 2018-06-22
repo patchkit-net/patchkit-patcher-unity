@@ -1257,6 +1257,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NewImage: {fileID: 1273088004}
   OldImage: {fileID: 2022074167}
+  DefaultBackground: {fileID: 21300000, guid: a5af1375423374756bb0a6abd630deff, type: 3}
   MainAnimator: {fileID: 478039521}
 --- !u!222 &478039523
 CanvasRenderer:
