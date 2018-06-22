@@ -3,7 +3,9 @@ using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppData.Local;
 using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
 using PatchKit.Apps.Updating.Utilities;
+using PatchKit.Core.IO;
 using PatchKit.Logging;
+using PatchKit_Patcher.Scripts;
 using UnityEngine;
 using ILogger = PatchKit.Logging.ILogger;
 
@@ -34,6 +36,8 @@ namespace PatchKit.Patching.Unity
             DependencyResolver.ContainerBuilder.RegisterType<UnityCache>().As<ICache>();
 
             //DependencyResolver.RegisterType<IHttpClient, UnityHttpClient>();
+
+            DependencyResolver.ContainerBuilder.RegisterType<UnityDiskSpaceChecker>().As<IDiskSpaceChecker>();
 
             DependencyResolver.Build();
         }
