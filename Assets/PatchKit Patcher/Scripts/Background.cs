@@ -1,258 +1,260 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using PatchKit.Logging;
-using PatchKit.Api.Models;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
+using PatchKit.Api.Models;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppData.Local;
 using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
 using PatchKit.Apps.Updating.Debug;
-using PatchKit.Patching.Unity;
+using PatchKit.Logging;
 using UniRx;
+using UnityEngine;
+using UnityEngine.UI;
 using ILogger = PatchKit.Logging.ILogger;
 
-public class Background : MonoBehaviour
+namespace PatchKit.Patching.Unity
 {
-    private struct PatcherBannerData
+    public class Background : MonoBehaviour
     {
-        public string ImageUrl;
-        public PatcherBannerImageDimensions Dimensions;
-        public string ModificationDate;
-    }
-
-    private struct Data
-    {
-        public PatcherBannerData BannerData;
-        public string BannerFilePath;
-    }
-
-    private readonly ICache _cache = new UnityCache();
-
-    private const string CachedBannerPathKey = "cached-banner-path-key";
-    private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
-
-    private const string BannerImageFilename = "banner";
-
-    private const string AnimationLoadingParameter = "isLoading";
-    private const string AnimationSwitchTrigger = "switch";
-
-    public string CachedBannerPath
-    {
-        get 
+        private struct PatcherBannerData
         {
-            return _cache.GetValue(CachedBannerPathKey);
-        }
-        private set
-        {
-            _cache.SetValue(CachedBannerPathKey, value);
-        }
-    }
-
-    private string CachedBannerModificationDate
-    {
-        get
-        {
-            return _cache.GetValue(CachedBannerModificationDateKey);
+            public string ImageUrl;
+            public PatcherBannerImageDimensions Dimensions;
+            public string ModificationDate;
         }
 
-        set
+        private struct Data
         {
-            _cache.SetValue(CachedBannerModificationDateKey, value);
-        }
-    }
-
-    public Image NewImage;
-    public Image OldImage;
-
-    public Sprite DefaultBackground;
-
-    public Animator MainAnimator;
-
-    private ILogger _logger;
-
-    private void Start()
-    {
-        _logger = DependencyResolver.Resolve<ILogger>();
-
-        var patcher = Patcher.Instance;
-
-        if (IsCachedBannerAvailable())
-        {
-            _logger.LogDebug(string.Format("A cached banner image is available at {0}", CachedBannerPath));
-            LoadBannerImage(CachedBannerPath, OldImage);
+            public PatcherBannerData BannerData;
+            public string BannerFilePath;
         }
 
-        Assert.IsNotNull(patcher);
-        Assert.IsNotNull(MainAnimator);
-        Assert.IsNotNull(NewImage);
-        Assert.IsNotNull(OldImage);
+        private readonly ICache _cache = new UnityCache();
 
-        var patcherData = patcher.Data
-            .Select(data => data.AppDataPath)
-            .SkipWhile(string.IsNullOrEmpty)
-            .Select(val => Path.Combine(val, BannerImageFilename));
+        private const string CachedBannerPathKey = "cached-banner-path-key";
+        private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
 
-        var appInfo = patcher.AppInfo
-            .SkipWhile(info => info.Id == default(int))
-            .Select(info => new PatcherBannerData{
-                ImageUrl = info.PatcherBannerImage,
-                Dimensions = info.PatcherBannerImageDimensions,
-                ModificationDate = info.PatcherBannerImageUpdatedAt
+        private const string BannerImageFilename = "banner";
+
+        private const string AnimationLoadingParameter = "isLoading";
+        private const string AnimationSwitchTrigger = "switch";
+
+        private string CachedBannerPath
+        {
+            get 
+            {
+                return _cache.GetValue(CachedBannerPathKey);
+            }
+            set
+            {
+                _cache.SetValue(CachedBannerPathKey, value);
+            }
+        }
+
+        private string CachedBannerModificationDate
+        {
+            get
+            {
+                return _cache.GetValue(CachedBannerModificationDateKey);
+            }
+
+            set
+            {
+                _cache.SetValue(CachedBannerModificationDateKey, value);
+            }
+        }
+
+        public Image NewImage;
+        public Image OldImage;
+
+        public Sprite DefaultBackground;
+
+        public Animator MainAnimator;
+
+        private ILogger _logger;
+
+        private void Start()
+        {
+            _logger = DependencyResolver.Resolve<ILogger>();
+
+            var patcher = Patcher.Instance;
+
+            if (IsCachedBannerAvailable())
+            {
+                _logger.LogDebug($"A cached banner image is available at {CachedBannerPath}");
+                LoadBannerImage(CachedBannerPath, OldImage);
+            }
+
+            Assert.IsNotNull(patcher);
+            Assert.IsNotNull(MainAnimator);
+            Assert.IsNotNull(NewImage);
+            Assert.IsNotNull(OldImage);
+
+            var patcherData = patcher.Data
+                .Select(data => data.AppDataPath)
+                .SkipWhile(string.IsNullOrEmpty)
+                .Select(val => Path.Combine(val, BannerImageFilename));
+
+            var appInfo = patcher.AppInfo
+                .SkipWhile(info => info.Id == default(int))
+                .Select(info => new PatcherBannerData{
+                    ImageUrl = info.PatcherBannerImage,
+                    Dimensions = info.PatcherBannerImageDimensions,
+                    ModificationDate = info.PatcherBannerImageUpdatedAt
                 });
 
-        patcherData
-            .CombineLatest(appInfo, (lhs, rhs) => new Data{BannerData = rhs, BannerFilePath = lhs})
-            .ObserveOnMainThread()
-            .Subscribe(OnBannerDataUpdate);
-    }
-
-    private void OnBannerDataUpdate(Data data)
-    {
-        _logger.LogDebug("On patcher data update.");
-        var bannerData = data.BannerData;
-
-        if (IsNewBannerAvailable(data))
-        {
-            AquireRemoteBanner(data);
-        }
-        else if (HasBannerBeenRemoved(data))
-        {
-            _logger.LogDebug("Banner image has been removed.");
-            ClearCachedBanner();
-            CachedBannerModificationDate = bannerData.ModificationDate;
-
-            SwitchToDefault();
-        }
-        else if (IsCachedBannerSameAsRemote(data.BannerData))
-        {
-            _logger.LogDebug("Nothing has changed.");
-        }
-        else
-        {
-            _logger.LogDebug("Banner has never been set.");
-            SwitchToDefault();
-        }
-    }
-
-    private void SwitchToDefault()
-    {
-        _logger.LogDebug("Switching to default background");
-        NewImage.sprite = DefaultBackground;
-        MainAnimator.SetTrigger(AnimationSwitchTrigger);
-    }
-
-    private bool IsNewBannerAvailable(Data data)
-    {
-        return !string.IsNullOrEmpty(data.BannerData.ImageUrl) 
-            && !IsCachedBannerSameAsRemote(data.BannerData);
-    }
-
-    private bool HasBannerBeenRemoved(Data data)
-    {
-        return string.IsNullOrEmpty(data.BannerData.ImageUrl) 
-            && !string.IsNullOrEmpty(data.BannerData.ModificationDate)
-            && IsCachedBannerAvailable();
-    }
-
-    private bool IsCachedBannerAvailable()
-    {
-        return !string.IsNullOrEmpty(CachedBannerPath) 
-             && File.Exists(CachedBannerPath);
-    }
-
-    private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
-    {
-        var cachedModificationDate = CachedBannerModificationDate;
-
-        return bannerData.ModificationDate == cachedModificationDate;
-    }
-
-    private void ClearCachedBanner()
-    {
-        _logger.LogDebug(string.Format("Clearning the cached banner at {0}", CachedBannerPath));
-        if (!File.Exists(CachedBannerPath))
-        {
-            _logger.LogError("The cached banner doesn't exist.");
-            return;
+            patcherData
+                .CombineLatest(appInfo, (lhs, rhs) => new Data{BannerData = rhs, BannerFilePath = lhs})
+                .ObserveOnMainThread()
+                .Subscribe(OnBannerDataUpdate);
         }
 
-        File.Delete(CachedBannerPath);
-        CachedBannerPath = "";
-    }
+        private void OnBannerDataUpdate(Data data)
+        {
+            _logger.LogDebug("On patcher data update.");
+            var bannerData = data.BannerData;
 
-    private void AquireRemoteBanner(Data data)
-    {
-        _logger.LogDebug(string.Format("Aquiring the remote banner image from {0}", data.BannerData.ImageUrl));
-        var coroutine = UnityThreading.StartThreadCoroutine(() => {
-            CancellationTokenSource source = new CancellationTokenSource();
-
-            var downloader = new HttpDownloader(data.BannerFilePath, new[]{data.BannerData.ImageUrl});
-
-            try
+            if (IsNewBannerAvailable(data))
             {
-                UnityDispatcher.Invoke(() => {
-                    MainAnimator.SetBool(AnimationLoadingParameter, true);
-                });
-
-                downloader.Download(source.Token);
-                return true;
+                AquireRemoteBanner(data);
             }
-            catch (Exception)
+            else if (HasBannerBeenRemoved(data))
             {
-                return false;
+                _logger.LogDebug("Banner image has been removed.");
+                ClearCachedBanner();
+                CachedBannerModificationDate = bannerData.ModificationDate;
+
+                SwitchToDefault();
+            }
+            else if (IsCachedBannerSameAsRemote(data.BannerData))
+            {
+                _logger.LogDebug("Nothing has changed.");
+            }
+            else
+            {
+                _logger.LogDebug("Banner has never been set.");
+                SwitchToDefault();
+            }
+        }
+
+        private void SwitchToDefault()
+        {
+            _logger.LogDebug("Switching to default background");
+            NewImage.sprite = DefaultBackground;
+            MainAnimator.SetTrigger(AnimationSwitchTrigger);
+        }
+
+        private bool IsNewBannerAvailable(Data data)
+        {
+            return !string.IsNullOrEmpty(data.BannerData.ImageUrl) 
+                   && !IsCachedBannerSameAsRemote(data.BannerData);
+        }
+
+        private bool HasBannerBeenRemoved(Data data)
+        {
+            return string.IsNullOrEmpty(data.BannerData.ImageUrl) 
+                   && !string.IsNullOrEmpty(data.BannerData.ModificationDate)
+                   && IsCachedBannerAvailable();
+        }
+
+        private bool IsCachedBannerAvailable()
+        {
+            return !string.IsNullOrEmpty(CachedBannerPath) 
+                   && File.Exists(CachedBannerPath);
+        }
+
+        private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
+        {
+            var cachedModificationDate = CachedBannerModificationDate;
+
+            return bannerData.ModificationDate == cachedModificationDate;
+        }
+
+        private void ClearCachedBanner()
+        {
+            _logger.LogDebug($"Clearning the cached banner at {CachedBannerPath}");
+            if (!File.Exists(CachedBannerPath))
+            {
+                _logger.LogError("The cached banner doesn't exist.");
+                return;
             }
 
-        }, result => {
-            if (result)
-            {
-                CachedBannerPath = data.BannerFilePath;
-                CachedBannerModificationDate = data.BannerData.ModificationDate;
+            File.Delete(CachedBannerPath);
+            CachedBannerPath = "";
+        }
 
-                MainAnimator.SetBool(AnimationLoadingParameter, false);
-                MainAnimator.SetTrigger(AnimationSwitchTrigger);
-
-                LoadBannerImage(data.BannerFilePath, NewImage);
-            }
-        });
-
-        StartCoroutine(coroutine);
-    }
-
-    private void LoadBannerImage(string filepath, Image target)
-    {
-        Texture2D texture = new Texture2D(0, 0);
-
-        if (string.IsNullOrEmpty(filepath))
+        private void AquireRemoteBanner(Data data)
         {
-            filepath = CachedBannerPath;
+            _logger.LogDebug($"Aquiring the remote banner image from {data.BannerData.ImageUrl}");
+            var coroutine = UnityThreading.StartThreadCoroutine(() => {
+                var source = new CancellationTokenSource();
+
+                var downloader = new HttpDownloader(data.BannerFilePath, new[]{data.BannerData.ImageUrl});
+
+                try
+                {
+                    UnityDispatcher.Invoke(() => {
+                        MainAnimator.SetBool(AnimationLoadingParameter, true);
+                    });
+
+                    downloader.Download(source.Token);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
+            }, result => {
+                if (result)
+                {
+                    CachedBannerPath = data.BannerFilePath;
+                    CachedBannerModificationDate = data.BannerData.ModificationDate;
+
+                    MainAnimator.SetBool(AnimationLoadingParameter, false);
+                    MainAnimator.SetTrigger(AnimationSwitchTrigger);
+
+                    LoadBannerImage(data.BannerFilePath, NewImage);
+                }
+            });
+
+            StartCoroutine(coroutine);
+        }
+
+        private void LoadBannerImage(string filepath, Image target)
+        {
+            Texture2D texture = new Texture2D(0, 0);
 
             if (string.IsNullOrEmpty(filepath))
             {
-                _logger.LogWarning("Banner file path was null or empty.");
-                return;
-            }
-        }
+                filepath = CachedBannerPath;
 
-        if (File.Exists(filepath))
-        {
-            _logger.LogDebug(string.Format("Loading the banner image from {0}", filepath));
-            var fileBytes = File.ReadAllBytes(filepath);
-            
-            if (!texture.LoadImage(fileBytes))
+                if (string.IsNullOrEmpty(filepath))
+                {
+                    _logger.LogWarning("Banner file path was null or empty.");
+                    return;
+                }
+            }
+
+            if (File.Exists(filepath))
             {
-                _logger.LogError("Failed to load the banner image.");
-                return;
+                _logger.LogDebug($"Loading the banner image from {filepath}");
+                var fileBytes = File.ReadAllBytes(filepath);
+            
+                if (!texture.LoadImage(fileBytes))
+                {
+                    _logger.LogError("Failed to load the banner image.");
+                    return;
+                }
+
+                var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+
+                target.sprite = sprite;
             }
-
-            var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
-
-            target.sprite = sprite;
-        }
-        else
-        {
-            _logger.LogWarning("The cached banner image doesn't exist.");
+            else
+            {
+                _logger.LogWarning("The cached banner image doesn't exist.");
+            }
         }
     }
 }
