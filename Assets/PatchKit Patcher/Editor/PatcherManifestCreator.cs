@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Editor
         [PostProcessBuild, UsedImplicitly]
         private static void PostProcessBuild(BuildTarget buildTarget, string buildPath)
         {
-            Manifest manifest = new Manifest();
+            var manifest = new Manifest();
             
             if (buildTarget == BuildTarget.StandaloneWindows || buildTarget == BuildTarget.StandaloneWindows64)
             {
@@ -52,7 +52,7 @@ namespace PatchKit.Unity.Editor
         {
             string targetFile = Path.GetFileName(buildPath);
             return new Manifest {
-                ExeFileName = string.Format("\"{{exedir}}/{0}\"", targetFile),
+                ExeFileName = $"\"{{exedir}}/{targetFile}\"",
                 ExeArguments = "--installdir \"{installdir}\" --secret \"{secret}\"",
 
                 Version = ManifestVersion,
@@ -76,7 +76,8 @@ namespace PatchKit.Unity.Editor
             string targetFile = Path.GetFileName(buildPath);
             return new Manifest {
                 ExeFileName = "open",
-                ExeArguments = string.Format("\"{{exedir}}/{0}\" --args --installdir \"{{installdir}}\" --secret \"{{secret}}\"", targetFile),
+                ExeArguments =
+                    $"\"{{exedir}}/{targetFile}\" --args --installdir \"{{installdir}}\" --secret \"{{secret}}\"",
 
                 Version = ManifestVersion,
                 Target = "open",
