@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
@@ -7,41 +8,96 @@ namespace PatchKit.Unity.Editor
 {
     public static class PatcherManifestCreator
     {
+        private const int ManifestVersion = 2;
+
         [PostProcessBuild, UsedImplicitly]
         private static void PostProcessBuild(BuildTarget buildTarget, string buildPath)
         {
-            string exeFileName = string.Empty;
-            string exeArguments = string.Empty;
+            Manifest manifest = new Manifest();
             
             if (buildTarget == BuildTarget.StandaloneWindows || buildTarget == BuildTarget.StandaloneWindows64)
             {
-                exeFileName = string.Format("\\\"{{exedir}}/{0}\\\"", Path.GetFileName(buildPath));
-                exeArguments = "--installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"";  
+                manifest = WindowsManifest(buildPath);
             }
 
             if (buildTarget == BuildTarget.StandaloneOSX)
             {
-                exeFileName = "open";
-                exeArguments = string.Format("\\\"{{exedir}}/{0}\\\" --args --installdir \\\"{{installdir}}\\\" --secret \\\"{{secret}}\\\"", Path.GetFileName(buildPath));
+                manifest = OsxManifest(buildPath);
             }
 
             if (buildTarget == BuildTarget.StandaloneLinux ||
                 buildTarget == BuildTarget.StandaloneLinux64 ||
                 buildTarget == BuildTarget.StandaloneLinuxUniversal)
             {
-                exeFileName = string.Format("\\\"{{exedir}}/{0}\\\"", Path.GetFileName(buildPath));
-                exeArguments = "--installdir \\\"{installdir}\\\" --secret \\\"{secret}\\\"";
+                manifest = LinuxManifest(buildPath);
             }
 
-            // ReSharper disable once AssignNullToNotNullAttribute
             string manifestPath = Path.Combine(Path.GetDirectoryName(buildPath), "patcher.manifest");
-
-            string manifestContent = "{" + "\n" +
-                                        string.Format("    \"exe_fileName\" : \"{0}\"", exeFileName) + "," + "\n" +
-                                        string.Format("    \"exe_arguments\" : \"{0}\"", exeArguments) + "\n" +
-                                        "}";
+            string manifestContent = JsonConvert.SerializeObject(manifest, Formatting.Indented);
 
             File.WriteAllText(manifestPath, manifestContent);
+        }
+
+        private static Manifest WindowsManifest(string buildPath)
+        {
+            return CommonManifest(buildPath);
+        }
+
+        private static Manifest LinuxManifest(string buildPath)
+        {
+            return CommonManifest(buildPath);
+        }
+
+        private static Manifest CommonManifest(string buildPath)
+        {
+            string targetFile = Path.GetFileName(buildPath);
+            return new Manifest {
+                ExeFileName = string.Format("\"{{exedir}}/{0}\"", targetFile),
+                ExeArguments = "--installdir \"{installdir}\" --secret \"{secret}\"",
+
+                Version = ManifestVersion,
+                Target = "{exedir}/" + targetFile,
+                Arguments = new Manifest.Argument[] {
+                    new Manifest.Argument { Value = new string[] {
+                        "--installdir", "{installdir}"
+                    }},
+                    new Manifest.Argument { Value = new string[] {
+                        "--lockfile", "{lockfile}"
+                    }},
+                    new Manifest.Argument { Value = new string[] {
+                        "--secret", "{secret}"
+                    }},
+                }
+            };
+        }
+
+        private static Manifest OsxManifest(string buildPath)
+        {
+            string targetFile = Path.GetFileName(buildPath);
+            return new Manifest {
+                ExeFileName = "open",
+                ExeArguments = string.Format("\"{{exedir}}/{0}\" --args --installdir \"{{installdir}}\" --secret \"{{secret}}\"", targetFile),
+
+                Version = ManifestVersion,
+                Target = "open",
+                Arguments = new Manifest.Argument[] {
+                    new Manifest.Argument { Value = new string[] {
+                        "{exedir}/" + targetFile
+                    }},
+                    new Manifest.Argument { Value = new string[] {
+                        "--args"
+                    }},
+                    new Manifest.Argument { Value = new string[] {
+                        "--installdir", "{installdir}"
+                    }},
+                    new Manifest.Argument { Value = new string[] {
+                        "--lockfile", "{lockfile}"
+                    }},
+                    new Manifest.Argument { Value = new string[] {
+                        "--secret", "{secret}"
+                    }},
+                }
+            };
         }
     }
 }
