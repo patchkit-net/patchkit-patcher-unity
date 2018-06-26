@@ -29,7 +29,7 @@ namespace PatchKit.Patching.Unity
             public string BannerFilePath;
         }
 
-        private readonly ICache _cache = new UnityCache();
+        private ICache _cache;
 
         private const string CachedBannerPathKey = "cached-banner-path-key";
         private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
@@ -79,35 +79,43 @@ namespace PatchKit.Patching.Unity
 
             var patcher = Patcher.Instance;
 
-            if (IsCachedBannerAvailable())
-            {
-                _logger.LogDebug($"A cached banner image is available at {CachedBannerPath}");
-                LoadBannerImage(CachedBannerPath, OldImage);
-            }
+        Assert.IsNotNull(patcher);
+        Assert.IsNotNull(MainAnimator);
+        Assert.IsNotNull(NewImage);
+        Assert.IsNotNull(OldImage);
 
-            Assert.IsNotNull(patcher);
-            Assert.IsNotNull(MainAnimator);
-            Assert.IsNotNull(NewImage);
-            Assert.IsNotNull(OldImage);
+        var patcherData = patcher.Data
+            .SkipWhile(data => string.IsNullOrEmpty(data.AppSecret))
+            .First()
+            .ObserveOnMainThread()
+            .Subscribe(Initialize);
+    }
 
-            var patcherData = patcher.Data
-                .Select(data => data.AppDataPath)
-                .SkipWhile(string.IsNullOrEmpty)
-                .Select(val => Path.Combine(val, BannerImageFilename));
+    private void Initialize(PatcherData data)
+    {
+        _cache = DependencyResolver.Resolve<ICache>();
 
-            var appInfo = patcher.AppInfo
-                .SkipWhile(info => info.Id == default(int))
-                .Select(info => new PatcherBannerData{
+        if (IsCachedBannerAvailable())
+        {
+            _logger.LogDebug($"A cached banner image is available at {CachedBannerPath}");
+            LoadBannerImage(CachedBannerPath, OldImage);
+        }
+
+        var patcher = Patcher.Instance;
+
+        var appInfo = patcher.AppInfo
+            .SkipWhile(info => info.Id == default(int))
+            .Select(info => new Data{ 
+                BannerData = new PatcherBannerData{
                     ImageUrl = info.PatcherBannerImage,
                     Dimensions = info.PatcherBannerImageDimensions,
                     ModificationDate = info.PatcherBannerImageUpdatedAt
-                });
-
-            patcherData
-                .CombineLatest(appInfo, (lhs, rhs) => new Data{BannerData = rhs, BannerFilePath = lhs})
-                .ObserveOnMainThread()
-                .Subscribe(OnBannerDataUpdate);
-        }
+                },
+                BannerFilePath = Path.Combine(data.AppDataPath, BannerImageFilename) 
+            })
+            .ObserveOnMainThread()
+            .Subscribe(OnBannerDataUpdate);
+    }
 
         private void OnBannerDataUpdate(Data data)
         {
@@ -223,7 +231,7 @@ namespace PatchKit.Patching.Unity
 
         private void LoadBannerImage(string filepath, Image target)
         {
-            Texture2D texture = new Texture2D(0, 0);
+            var texture = new Texture2D(0, 0);
 
             if (string.IsNullOrEmpty(filepath))
             {
