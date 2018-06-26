@@ -25,12 +25,12 @@ namespace PatchKit.Patching.Unity
         
         private string FormatKey(string key)
         {
-            if (!Patcher.Instance.AppInfo.HasValue)
+            if (!Patcher.Instance.Data.HasValue)
             {
                 throw new ApplicationException("Cannot cache without application secret.");
             }
             
-            return FormatKey(key, Patcher.Instance.AppInfo.Value.Secret);
+            return FormatKey(key, Patcher.Instance.Data.Value.AppSecret);
         }
         
         public void SetValue(string key, string value)
