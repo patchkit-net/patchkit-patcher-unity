@@ -79,43 +79,43 @@ namespace PatchKit.Patching.Unity
 
             var patcher = Patcher.Instance;
 
-        Assert.IsNotNull(patcher);
-        Assert.IsNotNull(MainAnimator);
-        Assert.IsNotNull(NewImage);
-        Assert.IsNotNull(OldImage);
-
-        var patcherData = patcher.Data
-            .SkipWhile(data => string.IsNullOrEmpty(data.AppSecret))
-            .First()
-            .ObserveOnMainThread()
-            .Subscribe(Initialize);
-    }
-
-    private void Initialize(PatcherData data)
-    {
-        _cache = DependencyResolver.Resolve<ICache>();
-
-        if (IsCachedBannerAvailable())
-        {
-            _logger.LogDebug($"A cached banner image is available at {CachedBannerPath}");
-            LoadBannerImage(CachedBannerPath, OldImage);
+            Assert.IsNotNull(patcher);
+            Assert.IsNotNull(MainAnimator);
+            Assert.IsNotNull(NewImage);
+            Assert.IsNotNull(OldImage);
+    
+            patcher.Data
+                .SkipWhile(data => string.IsNullOrEmpty(data.AppSecret))
+                .First()
+                .ObserveOnMainThread()
+                .Subscribe(Initialize);
         }
 
-        var patcher = Patcher.Instance;
-
-        var appInfo = patcher.AppInfo
-            .SkipWhile(info => info.Id == default(int))
-            .Select(info => new Data{ 
-                BannerData = new PatcherBannerData{
-                    ImageUrl = info.PatcherBannerImage,
-                    Dimensions = info.PatcherBannerImageDimensions,
-                    ModificationDate = info.PatcherBannerImageUpdatedAt
-                },
-                BannerFilePath = Path.Combine(data.AppDataPath, BannerImageFilename) 
-            })
-            .ObserveOnMainThread()
-            .Subscribe(OnBannerDataUpdate);
-    }
+        private void Initialize(PatcherData data)
+        {
+            _cache = DependencyResolver.Resolve<ICache>();
+    
+            if (IsCachedBannerAvailable())
+            {
+                _logger.LogDebug($"A cached banner image is available at {CachedBannerPath}");
+                LoadBannerImage(CachedBannerPath, OldImage);
+            }
+    
+            var patcher = Patcher.Instance;
+    
+            var appInfo = patcher.AppInfo
+                .SkipWhile(info => info.Id == default(int))
+                .Select(info => new Data{ 
+                    BannerData = new PatcherBannerData{
+                        ImageUrl = info.PatcherBannerImage,
+                        Dimensions = info.PatcherBannerImageDimensions,
+                        ModificationDate = info.PatcherBannerImageUpdatedAt
+                    },
+                    BannerFilePath = Path.Combine(data.AppDataPath, BannerImageFilename) 
+                })
+                .ObserveOnMainThread()
+                .Subscribe(OnBannerDataUpdate);
+        }
 
         private void OnBannerDataUpdate(Data data)
         {
