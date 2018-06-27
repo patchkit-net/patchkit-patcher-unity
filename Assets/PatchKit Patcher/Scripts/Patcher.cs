@@ -35,12 +35,15 @@ namespace PatchKit.Patching.Unity
         {
             None,
             RepairApp,
+            RepairAppAutomatically,
             StartApp,
             StartAppAutomatically,
             InstallApp,
             InstallAppAutomatically,
             CheckForAppUpdates,
-            CheckForAppUpdatesAutomatically
+            CheckForAppUpdatesAutomatically,
+            CheckIntegrity,
+            CheckIntegrityAutomatically,
         }
 
         private DebugLogger _debugLogger;
@@ -80,6 +83,10 @@ namespace PatchKit.Patching.Unity
         private bool _hasAutomaticallyInstalledApp;
 
         private bool _hasAutomaticallyCheckedForAppUpdate;
+
+        private bool _hasAutomaticallyCheckVersionIntegrity;
+
+        private bool _hasAutomaticallyRepaired;
 
         private bool _hasAutomaticallyStartedApp;
 
@@ -290,7 +297,7 @@ namespace PatchKit.Patching.Unity
         private AppLicense GetAppLicense(CancellationToken cancellationToken)
         {
             var validateLicenseCommand =
-                new UnityLicenseValidator(_app._appDataPath, UI.Dialogs.LicenseDialog.Instance);
+                new UnityLicenseValidator(_app.AppDataPath, UI.Dialogs.LicenseDialog.Instance);
 
             validateLicenseCommand.Validate(_app.AppSecret, cancellationToken);
 

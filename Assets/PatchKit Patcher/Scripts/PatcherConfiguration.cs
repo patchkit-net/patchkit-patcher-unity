@@ -13,5 +13,7 @@ namespace PatchKit.Patching.Unity
         public bool AutomaticallyCheckForAppUpdates;
 
         public bool AutomaticallyInstallApp;
+
+        public bool AutomaticallyCheckForVersionIntegrity;
     }
 }

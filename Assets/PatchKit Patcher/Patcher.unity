@@ -901,6 +901,7 @@ MonoBehaviour:
     AutomaticallyStartApp: 0
     AutomaticallyCheckForAppUpdates: 1
     AutomaticallyInstallApp: 1
+    AutomaticallyCheckForVersionIntegrity: 0
 --- !u!114 &377531154
 MonoBehaviour:
   m_ObjectHideFlags: 0
