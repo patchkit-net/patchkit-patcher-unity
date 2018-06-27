@@ -1,4 +1,5 @@
-﻿using PatchKit.Patching.Unity.Extensions;
+﻿using PatchKit.Apps.Updating.AppUpdater.Status;
+using PatchKit.Patching.Unity.Extensions;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,7 +26,7 @@ namespace PatchKit.Patching.Unity.UI
 
         private void SetProgress(double progress)
         {
-            if (progress <= 0 && _isIdle)
+            if (progress < 0 && _isIdle)
             {
                 Text.text = "Connecting...";
                 return;
@@ -33,7 +34,7 @@ namespace PatchKit.Patching.Unity.UI
 
             _isIdle = false;
 
-            Text.text = progress >= 0.0 ? progress.ToString("0.0%") : "";
+            Text.text = progress > 0.0 ? progress.ToString("0.0%") : "";
             float visualProgress = progress >= 0.0 ? (float) progress : 0.0f;
 
             SetBar(0, visualProgress);
@@ -53,6 +54,7 @@ namespace PatchKit.Patching.Unity.UI
         private const float IdleBarWidth = 0.2f;
         private const float IdleBarSpeed = 1.2f;
         private float _idleProgress = -IdleBarWidth;
+        
         private void Update()
         {
             if (_isIdle)
