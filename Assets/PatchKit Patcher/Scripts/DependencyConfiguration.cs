@@ -5,7 +5,6 @@ using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
 using PatchKit.Apps.Updating.Utilities;
 using PatchKit.Core.IO;
 using PatchKit.Logging;
-using PatchKit_Patcher.Scripts;
 using UnityEngine;
 using ILogger = PatchKit.Logging.ILogger;
 

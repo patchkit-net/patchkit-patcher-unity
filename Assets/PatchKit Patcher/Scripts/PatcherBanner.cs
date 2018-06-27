@@ -14,7 +14,7 @@ using ILogger = PatchKit.Logging.ILogger;
 
 namespace PatchKit.Patching.Unity
 {
-    public class Background : MonoBehaviour
+    public class PatcherBanner : MonoBehaviour
     {
         private struct PatcherBannerData
         {

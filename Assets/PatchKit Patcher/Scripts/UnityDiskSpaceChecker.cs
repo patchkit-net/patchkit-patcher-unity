@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using PatchKit.Core.Assertions;
 using PatchKit.Core.IO;
 
-namespace PatchKit_Patcher.Scripts
+namespace PatchKit.Patching.Unity
 {
     public class UnityDiskSpaceChecker : IDiskSpaceChecker
     {

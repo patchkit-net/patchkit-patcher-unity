@@ -33,8 +33,7 @@ namespace PatchKit.Patching.Unity
 
             var settings = CreateInstance<Settings>();
 
-            UnityEditor.AssetDatabase.CreateAsset(settings,
-                string.Format("Assets/PatchKit Patcher/Resources/{0}.asset", AssetFileName));
+            UnityEditor.AssetDatabase.CreateAsset(settings, $"Assets/PatchKit Patcher/Resources/{AssetFileName}.asset");
             UnityEditor.EditorUtility.SetDirty(settings);
 
             UnityEditor.AssetDatabase.Refresh();

@@ -18,7 +18,7 @@ namespace PatchKit.Patching.Unity
             T result = default(T);
             Exception exception = null;
 
-            Thread thread = new Thread(() =>
+            var thread = new Thread(() =>
             {
                 try
                 {

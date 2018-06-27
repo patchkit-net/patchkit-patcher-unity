@@ -1,10 +1,9 @@
 ﻿using PatchKit.Apps.Updating.Debug;
 using UnityEngine;
 using UnityEngine.UI;
-using PatchKit.Patching.Unity;
 using UniRx;
 
-namespace PatchKit.Unity
+namespace PatchKit.Patching.Unity
 {
 
     [RequireComponent(typeof(Button))]

@@ -21,7 +21,7 @@ namespace PatchKit.Patching.Unity
         {
             if (licenseDialog == null)
             {
-                throw new ArgumentNullException("licenseDialog");
+                throw new ArgumentNullException(nameof(licenseDialog));
             }
 
             _licenseDialog = licenseDialog;
@@ -131,7 +131,7 @@ namespace PatchKit.Patching.Unity
             _logger.LogDebug("License dialog has returned result.");
 
             _logger.LogTrace("result.Key = " + result.Key);
-            _logger.LogTrace(string.Format("result.Type = {0}", result.Type));
+            _logger.LogTrace($"result.Type = {result.Type}");
 
             switch (result.Type)
             {
@@ -151,7 +151,7 @@ namespace PatchKit.Patching.Unity
         {
             if (!isUsingCachedKey)
             {
-                _logger.LogDebug(string.Format("Setting license dialog message to {0}", licenseDialogMessageType));
+                _logger.LogDebug($"Setting license dialog message to {licenseDialogMessageType}");
                 messageType = licenseDialogMessageType;
             }
             else
@@ -172,12 +172,7 @@ namespace PatchKit.Patching.Unity
         private string GetCachedKey()
         {
             var lastUsedLicenseKey = _dataClient.GetAppInfo().LastUsedLicenseKey;
-            if (lastUsedLicenseKey.HasValue)
-            {
-                return lastUsedLicenseKey.Value.Value;
-            }
-
-            return null;
+            return lastUsedLicenseKey?.Value;
         }
     }
 }

@@ -98,80 +98,48 @@ namespace PatchKit.Patching.Unity
         #region ReactiveProperties
         private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
 
-        public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus
-        {
-            get { return _updaterStatus; }
-        }
+        public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus => _updaterStatus;
 
         private readonly BoolReactiveProperty _canRepairApp = new BoolReactiveProperty(false);
 
-        public IReadOnlyReactiveProperty<bool> CanRepairApp
-        {
-            get { return _canRepairApp; }
-        }
+        public IReadOnlyReactiveProperty<bool> CanRepairApp => _canRepairApp;
 
         private readonly BoolReactiveProperty _canStartApp = new BoolReactiveProperty(false);
 
-        public IReadOnlyReactiveProperty<bool> CanStartApp
-        {
-            get { return _canStartApp; }
-        }
+        public IReadOnlyReactiveProperty<bool> CanStartApp => _canStartApp;
 
         private readonly BoolReactiveProperty _canInstallApp = new BoolReactiveProperty(false);
 
-        public IReadOnlyReactiveProperty<bool> CanInstallApp
-        {
-            get { return _canInstallApp; }
-        }
+        public IReadOnlyReactiveProperty<bool> CanInstallApp => _canInstallApp;
 
         private readonly BoolReactiveProperty _canCheckForAppUpdates = new BoolReactiveProperty(false);
 
-        public IReadOnlyReactiveProperty<bool> CanCheckForAppUpdates
-        {
-            get { return _canCheckForAppUpdates; }
-        }
+        public IReadOnlyReactiveProperty<bool> CanCheckForAppUpdates => _canCheckForAppUpdates;
 
         private readonly ReactiveProperty<PatcherState> _state = new ReactiveProperty<PatcherState>(PatcherState.None);
 
-        public IReadOnlyReactiveProperty<PatcherState> State
-        {
-            get { return _state; }
-        }
+        public IReadOnlyReactiveProperty<PatcherState> State => _state;
 
         private readonly ReactiveProperty<PatcherData> _data = new ReactiveProperty<PatcherData>();
 
-        public IReadOnlyReactiveProperty<PatcherData> Data
-        {
-            get { return _data; }
-        }
-        
+        public IReadOnlyReactiveProperty<PatcherData> Data => _data;
+
         private readonly ReactiveProperty<string> _warning = new ReactiveProperty<string>();
 
-        public IReadOnlyReactiveProperty<string> Warning
-        {
-            get { return _warning; }
-        }
+        public IReadOnlyReactiveProperty<string> Warning => _warning;
 
         private readonly ReactiveProperty<int?> _remoteVersionId = new ReactiveProperty<int?>();
 
-        public IReadOnlyReactiveProperty<int?> RemoteVersionId
-        {
-            get { return _remoteVersionId; }
-        }
+        public IReadOnlyReactiveProperty<int?> RemoteVersionId => _remoteVersionId;
 
         private readonly ReactiveProperty<int?> _localVersionId = new ReactiveProperty<int?>();
 
-        public IReadOnlyReactiveProperty<int?> LocalVersionId
-        {
-            get { return _localVersionId; }
-        }
+        public IReadOnlyReactiveProperty<int?> LocalVersionId => _localVersionId;
 
         private readonly ReactiveProperty<Api.Models.App> _appInfo = new ReactiveProperty<Api.Models.App>();
 
-        public IReadOnlyReactiveProperty<Api.Models.App> AppInfo
-        {
-            get { return _appInfo; }
-        }
+        public IReadOnlyReactiveProperty<Api.Models.App> AppInfo => _appInfo;
+
         #endregion
 
         public void SetUserDecision(UserDecision userDecision)
