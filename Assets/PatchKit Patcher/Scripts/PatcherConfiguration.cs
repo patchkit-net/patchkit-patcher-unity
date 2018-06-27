@@ -6,7 +6,7 @@ namespace PatchKit.Patching.Unity
     [Serializable]
     public struct PatcherConfiguration
     {
-        public AppUpdaterConfiguration AppUpdaterConfiguration;
+        public Configuration AppUpdaterConfiguration;
 
         public bool AutomaticallyStartApp;
 
