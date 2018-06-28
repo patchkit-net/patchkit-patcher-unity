@@ -1,13 +1,22 @@
-﻿using PatchKit.Apps.Updating.AppUpdater.Status;
+﻿using System.Runtime.InteropServices;
+using PatchKit.Apps.Updating;
 using PatchKit.Patching.Unity.Extensions;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
+using ILogger = PatchKit.Logging.ILogger;
 
 namespace PatchKit.Patching.Unity.UI
 {
     public class ProgressBar : MonoBehaviour
     {
+        private struct Data
+        {
+            public double Progress;
+            public string Description;
+            public PatcherState State;
+        }
+
         public Text Text;
 
         public Image Image;
@@ -24,29 +33,43 @@ namespace PatchKit.Patching.Unity.UI
             Image.rectTransform.anchorMin = anchorMin;
         }
 
-        private void SetProgress(double progress)
+        private void SetProgress(Data data)
         {
-            if (progress < 0 && _isIdle)
+            if (data.State == PatcherState.None
+             || data.State == PatcherState.LoadingPatcherConfiguration
+             || data.State == PatcherState.LoadingPatcherData)
             {
+                _isIdle = true;
                 Text.text = "Connecting...";
                 return;
             }
 
+            double progress = data.Progress;
+
+            Text.text = data.Description;
             _isIdle = false;
 
-            Text.text = progress > 0.0 ? progress.ToString("0.0%") : "";
-            float visualProgress = progress >= 0.0 ? (float) progress : 0.0f;
+            Text.text = progress.ToString("0.0%");
+            float visualProgress = (float) progress;
 
             SetBar(0, visualProgress);
         }
 
         private void Start()
         {
-            Patcher.Instance.UpdaterStatus
-                .SelectSwitchOrDefault(s => s.Progress, -1.0)
-                .ObserveOnMainThread()
-                .Subscribe(SetProgress)
-                .AddTo(this);
+            var operationStatus = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
+            var statusDescription = operationStatus.SelectSwitchOrDefault(s => s.Description, string.Empty);
+            var statusProgress = operationStatus.SelectSwitchOrDefault(s => s.Progress, 0);
+
+            var data = Patcher.Instance.State.CombineLatest(statusDescription, statusProgress,
+                (status, desc, progress) => new Data
+                {
+                    State =  status,
+                    Progress =  progress,
+                    Description = desc,
+                });
+
+            data.ObserveOnMainThread().Subscribe(SetProgress).AddTo(this);
         }
 
 
@@ -54,7 +77,7 @@ namespace PatchKit.Patching.Unity.UI
         private const float IdleBarWidth = 0.2f;
         private const float IdleBarSpeed = 1.2f;
         private float _idleProgress = -IdleBarWidth;
-        
+
         private void Update()
         {
             if (_isIdle)
