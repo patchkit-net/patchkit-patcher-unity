@@ -164,11 +164,11 @@ namespace PatchKit.Patching.Unity
             catch (ThreadAbortException)
             {
                 _debugLogger.Log("Patcher thread finished: thread has been aborted.");
-            }            
+            }
             catch (MultipleInstancesException exception)
             {
                 _debugLogger.LogException(exception);
-                Quit();                
+                Quit();
             }
             catch (Exception exception)
             {
@@ -272,11 +272,11 @@ namespace PatchKit.Patching.Unity
 
                 _debugLogger.LogVariable(isInstalled, nameof(isInstalled));
 
-                _canRepairApp.Value = isInstalled; // not implemented
+                _canRepairApp.Value = isInstalled;
                 _canInstallApp.Value = !isInstalled;
                 _canCheckForAppUpdates.Value = isInstalled;
                 _canStartApp.Value = isInstalled;
-                
+
                 if (_canInstallApp.Value && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
                 {
                     _debugLogger.Log("Automatically deciding to install app.");
@@ -285,14 +285,7 @@ namespace PatchKit.Patching.Unity
                     _userDecision = UserDecision.InstallAppAutomatically;
                     return;
                 }
-                
-                if (!_hasAutomaticallyRepaired && _hasAutomaticallyCheckVersionIntegrity && _userDecision == UserDecision.RepairAppAutomatically)
-                {
-                    _debugLogger.Log("Automatically deciding to repair.");
-                    _hasAutomaticallyRepaired = true;
-                    return;
-                }
-                
+
                 if (!_hasAutomaticallyCheckVersionIntegrity && _configuration.AutomaticallyCheckForVersionIntegrity)
                 {
                     _debugLogger.Log("Automatically deciding to check version integrity.");
@@ -353,20 +346,16 @@ namespace PatchKit.Patching.Unity
         private void ThreadExecuteUserDecision(CancellationToken cancellationToken)
         {
             bool displayWarningInsteadOfError = false;
-            
+
             try
             {
                 _warning.Value = string.Empty;
-                
+
                 _debugLogger.Log($"Executing user decision {_userDecision}...");
 
                 switch (_userDecision)
                 {
                     case UserDecision.None:
-                        break;
-                    case UserDecision.RepairAppAutomatically:
-                    case UserDecision.RepairApp:
-                        ThreadRepairApp(cancellationToken);
                         break;
                     case UserDecision.StartAppAutomatically:
                     case UserDecision.StartApp:
@@ -415,7 +404,7 @@ namespace PatchKit.Patching.Unity
             catch (ApiConnectionException e)
             {
                 _debugLogger.LogException(e);
-                
+
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";
@@ -518,20 +507,20 @@ namespace PatchKit.Patching.Unity
                     Secret = null
                 };
             }
-            
+
             var appIntegrityChecker = new AppIntegrityChecker(new Context(_app, _configuration.AppUpdaterConfiguration, appLicense));
 
-            _updaterStatus.Value = appIntegrityChecker.UpdaterStatus;
 
             try
             {
+                _updaterStatus.Value = appIntegrityChecker.UpdaterStatus;
                 FileIntegrity[] integrityResults = appIntegrityChecker.CheckIntegrity(
                     _app.GetInstalledVersionId(), cancellationToken);
-                
+
                 if (integrityResults.Any(integrity => integrity.Status != FileIntegrityStatus.Ok))
                 {
                     _debugLogger.Log("Version is not integral, deciding to repair.");
-                    SetUserDecision(UserDecision.RepairAppAutomatically);
+                    ThreadRepairApp(cancellationToken);
                 }
             }
             finally
@@ -554,11 +543,12 @@ namespace PatchKit.Patching.Unity
                     Secret = null
                 };
             }
-            
+
             var appRepairer = new AppRepairer(new Context( _app, _configuration.AppUpdaterConfiguration, appLicense));
-            
+
             try
             {
+                _updaterStatus.Value = appRepairer.UpdaterStatus;
                 appRepairer.Repair(cancellationToken);
             }
             finally

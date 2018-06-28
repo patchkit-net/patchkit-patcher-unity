@@ -34,8 +34,6 @@ namespace PatchKit.Patching.Unity
         public enum UserDecision
         {
             None,
-            RepairApp,
-            RepairAppAutomatically,
             StartApp,
             StartAppAutomatically,
             InstallApp,
@@ -85,8 +83,6 @@ namespace PatchKit.Patching.Unity
         private bool _hasAutomaticallyCheckedForAppUpdate;
 
         private bool _hasAutomaticallyCheckVersionIntegrity;
-
-        private bool _hasAutomaticallyRepaired;
 
         private bool _hasAutomaticallyStartedApp;
 
