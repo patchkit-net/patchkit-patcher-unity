@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
 - The patcher will now delete the lockfile when quitting
 - Sending the key secrets to content and diff url requests
+- Split the RepairAndDiff strategy into separate strategies.
+- Pre update integrity checking uses the Repair strategy
 
 ### Fixed
 - Handling of the ZLib exception
