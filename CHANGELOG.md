@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.0]
+### Added
+- Caching API responses to minimize the amount of requests
+
+### Changed
+- Moved patcher code into separate library
+
 ## [3.10.0]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
