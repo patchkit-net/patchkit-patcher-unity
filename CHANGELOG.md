@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Handling of the ZLib exception
+- Patcher would sometimes become unresponsive when trying to quit
 
 ## [3.9.2]
 ### Added
