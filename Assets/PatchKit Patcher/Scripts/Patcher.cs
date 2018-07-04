@@ -737,6 +737,8 @@ namespace PatchKit.Unity.Patcher
         {
             try
             {
+                _state.Value = PatcherState.DisplayingError;
+
                 DebugLogger.Log(string.Format("Displaying patcher error {0}...", error));
 
                 ErrorDialog.Display(error, cancellationToken);
@@ -777,7 +779,7 @@ namespace PatchKit.Unity.Patcher
 
         private void ThreadUpdateApp(bool automatically, CancellationToken cancellationToken)
         {
-            _state.Value = PatcherState.UpdatingApp;
+            _state.Value = PatcherState.Connecting;
 
             _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically);
             _remoteVersionId.Value = _app.GetLatestVersionId(!automatically);
@@ -795,10 +797,15 @@ namespace PatchKit.Unity.Patcher
                 try
                 {
                     _updaterStatus.Value = appUpdater.Status;
+
+                    _updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp);
+
                     appUpdater.Update(_updateAppCancellationTokenSource.Token);
                 }
                 finally
                 {
+                    _state.Value = PatcherState.None;
+
                     _updaterStatus.Value = null;
                     _updateAppCancellationTokenSource = null;
                 }
