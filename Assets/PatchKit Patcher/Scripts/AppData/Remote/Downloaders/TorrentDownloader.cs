@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Logging;
+using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents.Protocol;
 
@@ -17,6 +18,43 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     /// <seealso cref="System.IDisposable" />
     public sealed class TorrentDownloader : ITorrentDownloader
     {
+        private class RetryStrategy : IRequestRetryStrategy
+        {
+            private readonly int _tryCount;
+            private int _currentTry = 0;
+
+            public RetryStrategy(int count)
+            {
+                _tryCount = count;
+            }
+
+            public void OnRequestSuccess()
+            {
+                // Do nothing
+            }
+
+            public void OnRequestFailure()
+            {
+                _currentTry++;
+            }
+
+            public int DelayBeforeNextTry
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public bool ShouldRetry
+            {
+                get
+                {
+                    return _currentTry <= _tryCount;
+                }
+            }
+        }
+
         private const int UpdateInterval = 1000;
 
         private const int ConnectionTimeout = 10000;
@@ -67,47 +105,25 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 _logger.LogTrace("download dir  = " + DestinationDirectoryPath);
 
-                using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
+                IRequestRetryStrategy retryStrategy = new RetryStrategy(3);
+
+                do
                 {
-                    torrentClient.AddTorrent(_torrentFilePath, DestinationDirectoryPath, cancellationToken);
-
-                    var timeoutWatch = new Stopwatch();
-                    timeoutWatch.Start();
-
-                    TorrentStatus status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
-                    double initialProgress = status.Progress;
-                    _logger.LogTrace("initialProgress = " + status.Progress);
-                    var waitHandle = new AutoResetEvent(false);
-
-                    OnDownloadProgressChanged(0);
-
-                    using (cancellationToken.Register(() => waitHandle.Set()))
+                    try
                     {
-                        bool finished = false;
-
-                        do
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
-
-                            _logger.LogTrace("progress = " + status.Progress);
-
-                            CheckTimeout(timeoutWatch, status.Progress, initialProgress);
-
-                            OnDownloadProgressChanged((long) (_totalBytes * status.Progress));
-
-                            if (status.IsSeeding)
-                            {
-                                finished = true;
-                            }
-                            else
-                            {
-                                waitHandle.WaitOne(UpdateInterval);
-                            }
-                        } while (!finished);
+                        DownloadInternal(cancellationToken);
                     }
-                }
+                    catch (TorrentClientException e)
+                    {
+                        _logger.LogError("Exception in torrent client.", e);
+                        retryStrategy.OnRequestFailure();
+
+                        if (!retryStrategy.ShouldRetry)
+                        {
+                            throw new DownloadFailureException("Failed to download with torrent-client.");
+                        }
+                    }
+                } while (retryStrategy.ShouldRetry);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -124,6 +140,51 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             {
                 _logger.LogError("Downloading has failed.", e);
                 throw;
+            }
+        }
+
+        private void DownloadInternal(CancellationToken cancellationToken)
+        {
+            using (var torrentClient = new TorrentClient(new UnityTorrentClientProcessStartInfoProvider()))
+            {
+                torrentClient.AddTorrent(_torrentFilePath, DestinationDirectoryPath, cancellationToken);
+
+                var timeoutWatch = new Stopwatch();
+                timeoutWatch.Start();
+
+                TorrentStatus status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
+                double initialProgress = status.Progress;
+                _logger.LogTrace("initialProgress = " + status.Progress);
+                var waitHandle = new AutoResetEvent(false);
+
+                OnDownloadProgressChanged(0);
+
+                using (cancellationToken.Register(() => waitHandle.Set()))
+                {
+                    bool finished = false;
+
+                    do
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        status = GetAndCheckTorrentStatus(torrentClient, cancellationToken);
+
+                        _logger.LogTrace("progress = " + status.Progress);
+
+                        CheckTimeout(timeoutWatch, status.Progress, initialProgress);
+
+                        OnDownloadProgressChanged((long) (_totalBytes * status.Progress));
+
+                        if (status.IsSeeding)
+                        {
+                            finished = true;
+                        }
+                        else
+                        {
+                            waitHandle.WaitOne(UpdateInterval);
+                        }
+                    } while (!finished);
+                }
             }
         }
 
