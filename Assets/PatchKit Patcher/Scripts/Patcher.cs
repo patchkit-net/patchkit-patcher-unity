@@ -198,6 +198,7 @@ namespace PatchKit.Unity.Patcher
             else
 #endif
             {
+                _threadCancellationTokenSource.Cancel();
                 CloseLockFile();
                 Application.Quit();
             }
