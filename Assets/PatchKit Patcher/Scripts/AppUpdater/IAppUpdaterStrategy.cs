@@ -9,6 +9,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         Empty,
         Content,
         Diff,
+        Repair,
         RepairAndDiff
     }
 
