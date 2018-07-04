@@ -105,6 +105,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         {
             if (command == null) throw new ArgumentNullException("command");
 
+            if (_process.HasExited)
+            {
+                throw new TorrentClientException(string.Format("TorrentClient has exited with error code {0}", _process.ExitCode));
+            }
+
             _logger.LogDebug(string.Format("Executing command {0}", command));
 
             _stdInput.WriteLine(command);

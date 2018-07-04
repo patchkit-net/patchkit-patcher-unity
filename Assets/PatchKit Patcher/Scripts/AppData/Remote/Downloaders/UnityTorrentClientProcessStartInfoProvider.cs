@@ -76,7 +76,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return processStartInfo;
             }
 
-            throw new TorrentClientException("Unsupported platform by torrent-client.");
+            throw new UnsupportedPlatformException("Unsupported platform by torrent-client.");
         }
     }
 }
