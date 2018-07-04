@@ -41,10 +41,11 @@ namespace PatchKit.Patching.Unity.UI
 
         private void SetProgress(UpdateData data)
         {
+            _isIdle = data.State == PatcherState.Connecting;
+
             if (data.State == PatcherState.None)
             {
                 Text.text = "";
-                _isIdle = false;
                 SetBar(0, 0);
                 return;
             }
@@ -52,7 +53,6 @@ namespace PatchKit.Patching.Unity.UI
             if (data.State == PatcherState.DisplayingError)
             {
                 Text.text = "Error!";
-                _isIdle = false;
                 SetBar(0, 0);
                 return;
             }
@@ -60,7 +60,6 @@ namespace PatchKit.Patching.Unity.UI
             if (data.State == PatcherState.Connecting)
             {
                 Text.text = "Connecting...";
-                _isIdle = true;
                 return;
             }
 
