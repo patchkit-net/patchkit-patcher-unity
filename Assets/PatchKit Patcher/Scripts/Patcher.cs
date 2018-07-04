@@ -71,7 +71,7 @@ namespace PatchKit.Unity.Patcher
         private readonly ManualResetEvent _userDecisionSetEvent = new ManualResetEvent(false);
 
         private readonly IRequestTimeoutCalculator _requestTimeoutCalculator = new SimpleRequestTimeoutCalculator();
-        
+
         private bool _hasAutomaticallyInstalledApp;
 
         private bool _hasAutomaticallyCheckedForAppUpdate;
@@ -138,7 +138,7 @@ namespace PatchKit.Unity.Patcher
         {
             get { return _data; }
         }
-        
+
         private readonly ReactiveProperty<string> _warning = new ReactiveProperty<string>();
 
         public IReadOnlyReactiveProperty<string> Warning
@@ -206,11 +206,11 @@ namespace PatchKit.Unity.Patcher
         private void CloseLockFile()
         {
             try
-            { 
+            {
                 if (_lockFileStream != null)
                 {
                     _lockFileStream.Close();
-                    
+
                     DebugLogger.Log("Deleting the lock file.");
                     File.Delete(_data.Value.LockFilePath);
                 }
@@ -278,7 +278,7 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.Log("Cancelling application quit because patcher thread is alive.");
 
                 Application.CancelQuit();
-                
+
                 StartCoroutine(KillThread());
             }
         }
@@ -433,11 +433,11 @@ namespace PatchKit.Unity.Patcher
             catch (ThreadAbortException)
             {
                 DebugLogger.Log("Patcher thread finished: thread has been aborted.");
-            }            
+            }
             catch (MultipleInstancesException exception)
             {
                 DebugLogger.LogException(exception);
-                Quit();                
+                Quit();
             }
             catch (Exception exception)
             {
@@ -630,11 +630,11 @@ namespace PatchKit.Unity.Patcher
         private void ThreadExecuteUserDecision(CancellationToken cancellationToken)
         {
             bool displayWarningInsteadOfError = false;
-            
+
             try
             {
                 _warning.Value = string.Empty;
-                
+
                 DebugLogger.Log(string.Format("Executing user decision {0}...", _userDecision));
 
                 switch (_userDecision)
@@ -687,7 +687,7 @@ namespace PatchKit.Unity.Patcher
             catch (ApiConnectionException e)
             {
                 DebugLogger.LogException(e);
-                
+
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";
