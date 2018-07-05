@@ -15,7 +15,31 @@ namespace PatchKit.Unity.Patcher
 {
     public class PatcherStatistics
     {
-        public static IEnumerator SendEvent(string eventName, string appSecret)
+        public struct OptionalParams
+        {
+            public int? VersionId;
+            public string FileName;
+            public long? Size;
+            public long? Time;
+        }
+
+        public static void DispatchSendEvent(string eventName, OptionalParams? parameters = null)
+        {
+            UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(eventName, parameters));
+        }
+
+        public static void DispatchSendEvent(string eventName, string appSecret, OptionalParams? parameters = null)
+        {
+            UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(eventName, appSecret, parameters));
+        }
+
+        public static IEnumerator SendEvent(string eventName, OptionalParams? parameters = null)
+        {
+            string appSecret = Patcher.Instance.Data.Value.AppSecret;
+            return SendEvent(eventName, appSecret, parameters);
+        }
+
+        public static IEnumerator SendEvent(string eventName, string appSecret, OptionalParams? parameters = null)
         {
             string senderId = PatcherSenderId.Get();
             string caller = string.Format("patcher_unity:{0}.{1}.{2}", Version.Major, Version.Minor, Version.Release);
@@ -46,6 +70,30 @@ namespace PatchKit.Unity.Patcher
             json["app_secret"] = appSecret;
             json["operating_system_family"] = operatingSystemFamily;
             json["operating_system_version"] = operatingSystemVersion;
+
+            if (parameters.HasValue)
+            {
+                var v = parameters.Value;
+                if (v.VersionId.HasValue)
+                {
+                    json["version_id"] = v.VersionId.Value;
+                }
+
+                if (v.Time.HasValue)
+                {
+                    json["time"] = v.Time.Value;
+                }
+
+                if (v.Size.HasValue)
+                {
+                    json["size"] = v.Size.Value;
+                }
+
+                if (!string.IsNullOrEmpty(v.FileName))
+                {
+                    json["file_name"] = v.FileName;
+                }
+            }
 
             UnityWebRequest request = new UnityWebRequest("https://stats.patchkit.net/v1/entry", "POST");
             byte[] bodyRaw = Encoding.UTF8.GetBytes(json.ToString(Formatting.None));
