@@ -101,14 +101,19 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
+        private void ThrowIfProcessExited()
+        {
+            if (_process.HasExited)
+            {
+                throw new TorrentClientException(string.Format("torrent-client has exited with error code {0}", _process.ExitCode));
+            }
+        }
+
         private TResult ExecuteCommand<TResult>([NotNull] string command, CancellationToken cancellationToken)
         {
             if (command == null) throw new ArgumentNullException("command");
 
-            if (_process.HasExited)
-            {
-                throw new TorrentClientException(string.Format("TorrentClient has exited with error code {0}", _process.ExitCode));
-            }
+            ThrowIfProcessExited();
 
             _logger.LogDebug(string.Format("Executing command {0}", command));
 
@@ -133,6 +138,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
             while (!str.ToString().EndsWith("#=end"))
             {
+                ThrowIfProcessExited();
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 str.Append((char) _stdOutput.Read());
