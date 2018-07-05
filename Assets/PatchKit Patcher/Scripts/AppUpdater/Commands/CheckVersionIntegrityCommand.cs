@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Linq;
+using System.Diagnostics;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -60,6 +62,40 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Execute(cancellationToken);
 
+            var integrityCheckStopwatch = new Stopwatch();
+            var optionalParams = new PatcherStatistics.OptionalParams 
+            {
+                VersionId = _versionId,
+            };
+
+            System.Func<PatcherStatistics.OptionalParams> timedParams = () => new PatcherStatistics.OptionalParams {
+                VersionId = optionalParams.VersionId,
+                Time = integrityCheckStopwatch.Elapsed.Seconds,
+            };
+
+            try
+            {
+                PatcherStatistics.DispatchSendEvent("validation_started", optionalParams);
+                ExecuteInternal(cancellationToken);
+                
+                if (Results.Files.All(integrity => integrity.Status == FileIntegrityStatus.Ok))
+                {
+                    PatcherStatistics.DispatchSendEvent("validation_succeeded", timedParams());
+                }
+                else
+                {
+                    PatcherStatistics.DispatchSendEvent("validation_failed", timedParams());
+                }
+            }
+            catch (System.OperationCanceledException)
+            {
+                PatcherStatistics.DispatchSendEvent("validation_canceled", timedParams());
+                throw;
+            }
+        }
+
+        private void ExecuteInternal(CancellationToken cancellationToken)
+        {
             DebugLogger.Log("Checking version integrity.");
 
             _status.IsActive.Value = true;

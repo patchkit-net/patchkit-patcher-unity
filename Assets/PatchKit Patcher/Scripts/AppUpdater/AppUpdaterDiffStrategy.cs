@@ -10,7 +10,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     {
         private struct DiffCommands
         {
-            public IDownloadPackageCommand Download;
+            public struct Context<CommandType>
+            {
+                public CommandType Command;
+                public int VersionId;
+                public long Size;
+            }
+
+            public Context<IDownloadPackageCommand> Download;
             public IInstallDiffCommand Install;
         }
 
@@ -70,9 +77,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             {
                 DiffCommands diffCommands;
 
-                diffCommands.Download = commandFactory.CreateDownloadDiffPackageCommand(i, validateLicense.KeySecret,
-                    geolocateCommand.CountryCode, _context);
-                diffCommands.Download.Prepare(_status);
+                var resource = _context.App.RemoteData.GetDiffPackageResource(i, validateLicense.KeySecret, geolocateCommand.CountryCode);
+
+                diffCommands.Download = new DiffCommands.Context<IDownloadPackageCommand>{
+                    Command = commandFactory.CreateDownloadDiffPackageCommand(i, validateLicense.KeySecret,
+                        geolocateCommand.CountryCode, _context),
+                    VersionId = i,
+                    Size = resource.Size,
+                };
+                diffCommands.Download.Command.Prepare(_status);
 
                 diffCommands.Install = commandFactory.CreateInstallDiffCommand(i, _context);
                 diffCommands.Install.Prepare(_status);
@@ -82,7 +95,30 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             foreach (var diffCommands in diffCommandsList)
             {
-                diffCommands.Download.Execute(cancellationToken);
+                var optionalParams = new PatcherStatistics.OptionalParams 
+                {
+                    Size = diffCommands.Download.Size,
+                    VersionId = diffCommands.Download.VersionId
+                };
+
+                try
+                {
+                    
+                    PatcherStatistics.DispatchSendEvent("patch_download_started", optionalParams);
+                    diffCommands.Download.Command.Execute(cancellationToken);
+                    PatcherStatistics.DispatchSendEvent("patch_download_succeeded", optionalParams);
+                }
+                catch (System.OperationCanceledException)
+                {
+                    PatcherStatistics.DispatchSendEvent("patch_download_canceled", optionalParams);
+                    throw;
+                }
+                catch (System.Exception)
+                {
+                    PatcherStatistics.DispatchSendEvent("patch_download_failed", optionalParams);
+                    throw;
+                }
+
                 diffCommands.Install.Execute(cancellationToken);
             }
 

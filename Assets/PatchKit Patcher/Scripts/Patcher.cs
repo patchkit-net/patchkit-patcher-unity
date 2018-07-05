@@ -78,6 +78,9 @@ namespace PatchKit.Unity.Patcher
 
         private bool _hasAutomaticallyStartedApp;
 
+        private bool _wasUpdateSuccessfulOrNotNecessary = false;
+        private bool _hasGameBeenStarted = false;
+
         private FileStream _lockFileStream;
 
         private CancellationTokenSource _updateAppCancellationTokenSource;
@@ -189,6 +192,11 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Quitting application.");
             _canStartThread = false;
+
+            if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
+            {
+                PatcherStatistics.DispatchSendEvent("patcher_succeeded_closed");
+            }
 
 #if UNITY_EDITOR
             if (Application.isEditor)
@@ -358,6 +366,8 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Cancelling patcher thread...");
 
+            PatcherStatistics.DispatchSendEvent("patcher_cancelled");
+
             _threadCancellationTokenSource.Cancel();
         }
 
@@ -409,7 +419,7 @@ namespace PatchKit.Unity.Patcher
 
                 UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
-                UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent("patcher_started", _data.Value.AppSecret));
+                PatcherStatistics.DispatchSendEvent("patcher_started");
 
                 while (true)
                 {
@@ -675,6 +685,8 @@ namespace PatchKit.Unity.Patcher
                     _userDecision));
                 DebugLogger.LogException(e);
 
+                PatcherStatistics.DispatchSendEvent("patcher_failed");
+
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
                     UnityDispatcher.Invoke(Quit);
@@ -687,6 +699,8 @@ namespace PatchKit.Unity.Patcher
             catch (ApiConnectionException e)
             {
                 DebugLogger.LogException(e);
+
+                PatcherStatistics.DispatchSendEvent("patcher_failed");
                 
                 if (displayWarningInsteadOfError)
                 {
@@ -700,6 +714,7 @@ namespace PatchKit.Unity.Patcher
             catch (NotEnoughtDiskSpaceException e)
             {
                 DebugLogger.LogException(e);
+                PatcherStatistics.DispatchSendEvent("patcher_failed");
                 ThreadDisplayError(PatcherError.NotEnoughDiskSpace, cancellationToken);
             }
             catch (ThreadInterruptedException)
@@ -721,6 +736,8 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.LogWarning(string.Format(
                     "Error while executing user decision {0}: an exception has occured.", _userDecision));
                 DebugLogger.LogException(exception);
+
+                PatcherStatistics.DispatchSendEvent("patcher_failed");
 
                 if (displayWarningInsteadOfError)
                 {
@@ -772,6 +789,9 @@ namespace PatchKit.Unity.Patcher
 
             appStarter.Start();
 
+            PatcherStatistics.DispatchSendEvent("patcher_succeeded_game_started");
+            _hasGameBeenStarted = true;
+
             UnityDispatcher.Invoke(Quit);
         }
 
@@ -796,6 +816,8 @@ namespace PatchKit.Unity.Patcher
                 {
                     _updaterStatus.Value = appUpdater.Status;
                     appUpdater.Update(_updateAppCancellationTokenSource.Token);
+
+                    _wasUpdateSuccessfulOrNotNecessary = true;
                 }
                 finally
                 {

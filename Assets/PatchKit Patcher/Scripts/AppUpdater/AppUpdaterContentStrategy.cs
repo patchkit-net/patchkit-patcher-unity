@@ -1,4 +1,5 @@
-﻿using PatchKit.Unity.Patcher.AppUpdater.Status;
+﻿using System.Diagnostics;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -56,6 +57,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var uninstall = commandFactory.CreateUninstallCommand(_context);
             uninstall.Prepare(_status);
 
+            var resource = _context.App.RemoteData.GetContentPackageResource(latestVersionId, validateLicense.KeySecret, geolocateCommand.CountryCode);
+
             var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId,
                 validateLicense.KeySecret, geolocateCommand.CountryCode, _context);
             downloadContentPackage.Prepare(_status);
@@ -64,7 +67,38 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             installContent.Prepare(_status);
 
             uninstall.Execute(cancellationToken);
-            downloadContentPackage.Execute(cancellationToken);
+
+            var downloadStopwatch = new Stopwatch();
+            var optionalParams = new PatcherStatistics.OptionalParams 
+            {
+                VersionId = latestVersionId,
+                Size = resource.Size,
+            };
+
+            System.Func<PatcherStatistics.OptionalParams> timedParams = () => new PatcherStatistics.OptionalParams {
+                VersionId = optionalParams.VersionId,
+                Size = optionalParams.Size,
+                Time = downloadStopwatch.Elapsed.Seconds,
+            };
+
+            try
+            {
+                PatcherStatistics.DispatchSendEvent("content_download_started", optionalParams);
+                downloadStopwatch.Start();
+                downloadContentPackage.Execute(cancellationToken);
+                PatcherStatistics.DispatchSendEvent("content_download_succeeded", timedParams());
+            }
+            catch (System.OperationCanceledException)
+            {
+                PatcherStatistics.DispatchSendEvent("content_download_canceled", timedParams());
+                throw;
+            }
+            catch (System.Exception)
+            {
+                PatcherStatistics.DispatchSendEvent("content_download_failed", timedParams());
+                throw;
+            }
+
             installContent.Execute(cancellationToken);
 
             _context.App.DownloadDirectory.Clear();
