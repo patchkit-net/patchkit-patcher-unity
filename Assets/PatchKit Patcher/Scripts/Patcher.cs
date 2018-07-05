@@ -798,9 +798,10 @@ namespace PatchKit.Unity.Patcher
                 {
                     _updaterStatus.Value = appUpdater.Status;
 
-                    _updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp);
-
-                    appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                    using (_updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
+                    {
+                        appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                    }
                 }
                 finally
                 {
