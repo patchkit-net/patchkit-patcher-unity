@@ -96,6 +96,10 @@ namespace PatchKit.Unity
                 return;
             }
 
+            PlayerSettings.defaultScreenWidth = 600;
+            PlayerSettings.defaultScreenHeight = 400;
+            PlayerSettings.defaultIsFullScreen = false;
+
             Patcher.Patcher patcher = null;
             foreach (var scenePath in scenePaths)
             {
