@@ -49,12 +49,6 @@ namespace PatchKit.Unity
             Build(BuildTarget.StandaloneOSXIntel64);
         }
 
-        [MenuItem("Tools/Build/OSX Universal")]
-        public static void BuildOsxUniversal ()
-        {
-            Build(BuildTarget.StandaloneOSXUniversal);
-        }
-
         private static string PatcherExecutableName(BuildTarget target)
         {
             switch (target)
