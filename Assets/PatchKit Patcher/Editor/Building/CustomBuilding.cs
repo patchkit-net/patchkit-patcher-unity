@@ -133,7 +133,7 @@ namespace PatchKit.Unity
                 }
             }
 
-            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions 
+            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions
                                     | BuildOptions.ShowBuiltPlayer;
 
             string path = EditorUtility.SaveFolderPanel("Choose where to build the Patcher", "", "");
