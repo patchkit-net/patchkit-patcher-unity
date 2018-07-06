@@ -2,6 +2,7 @@
 using System.IO;
 using JetBrains.Annotations;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
@@ -25,10 +26,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
 
             Path = path;
-            
+
             if (Directory.Exists(Path))
             {
-                DirectoryOperations.Delete(Path, true);
+                DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
             }
 
             DirectoryOperations.CreateDirectory(Path);
@@ -62,7 +63,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             if (!_keep && Directory.Exists(Path))
             {
-                DirectoryOperations.Delete(Path, true);
+                DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
             }
         }
 
@@ -99,7 +100,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private static bool ShouldKeepFilesOnError()
         {
             string value = null;
-            
+
             if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.KeepFilesOnErrorEnvironmentVariable, out value))
             {
                 return !(string.IsNullOrEmpty(value) || value == "0");

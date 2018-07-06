@@ -173,7 +173,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         ProcessModifiedFiles(packageDir.Path, usedSuffix, tempDiffDir, cancellationToken);
                     });
 
-                    DeleteEmptyMacAppDirectories();
+                    DeleteEmptyMacAppDirectories(cancellationToken);
                 });
 
                 _logger.LogDebug("Diff installed.");
@@ -276,7 +276,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                RemoveFile(fileName);
+                RemoveFile(fileName, cancellationToken);
 
                 counter++;
                 _removeFilesStatusReporter.Progress.Value = counter / (double) _diffSummary.RemovedFiles.Length;
@@ -287,7 +287,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                RemoveDir(dirName);
+                RemoveDir(dirName, cancellationToken);
 
                 counter++;
                 _removeFilesStatusReporter.Progress.Value = counter / (double) _diffSummary.RemovedFiles.Length;
@@ -300,7 +300,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Diff removed files processed.");
         }
 
-        private void RemoveFile(string fileName)
+        private void RemoveFile(string fileName, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Processing remove file entry {0}", fileName));
 
@@ -311,7 +311,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             if (File.Exists(filePath))
             {
                 _logger.LogDebug("File exists. Deleting it...");
-                FileOperations.Delete(filePath);
+                FileOperations.Delete(filePath, cancellationToken);
                 _logger.LogDebug("File deleted.");
             }
             else
@@ -324,7 +324,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Remove file entry processed.");
         }
 
-        private void RemoveDir(string dirName)
+        private void RemoveDir(string dirName, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Processing remove directory entry {0}", dirName));
 
@@ -339,7 +339,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 if (IsDirectoryEmpty(dirPath))
                 {
                     _logger.LogDebug("Directory is empty. Deleting it...");
-                    DirectoryOperations.Delete(dirPath);
+                    DirectoryOperations.Delete(dirPath, cancellationToken);
                     _logger.LogDebug("Directory deleted.");
                 }
                 else
@@ -382,7 +382,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 }
                 else
                 {
-                    AddFile(entryName, packageDirPath, suffix);
+                    AddFile(entryName, packageDirPath, suffix, cancellationToken);
                 }
 
                 _addFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.AddedFiles.Length;
@@ -409,7 +409,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Add directory entry processed.");
         }
 
-        private void AddFile(string fileName, string packageDirPath, string suffix)
+        private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Processing add file entry {0}", fileName));
 
@@ -433,7 +433,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("File parent directories created in local data.");
 
             _logger.LogDebug("Copying file to local data (overwriting if needed)...");
-            FileOperations.Copy(sourceFilePath, filePath, true);
+            FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
             _logger.LogDebug("File copied to local data.");
 
             _localMetaData.RegisterEntry(fileName, _versionId);
@@ -457,7 +457,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 if (!entryName.EndsWith("/"))
                 {
-                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir);
+                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken);
                 }
 
                 _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.ModifiedFiles.Length;
@@ -471,7 +471,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         }
 
 
-        private void PatchFile(string fileName, string packageDirPath, string suffix, TemporaryDirectory tempDiffDir)
+        private void PatchFile(
+            string fileName, string packageDirPath, string suffix,
+            TemporaryDirectory tempDiffDir, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Processing patch file entry {0}", fileName));
 
@@ -515,10 +517,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 filePatcher.Patch();
 
                 _logger.LogDebug("New file generated. Deleting old file in local data...");
-                FileOperations.Delete(filePath);
+                FileOperations.Delete(filePath, cancellationToken);
 
                 _logger.LogDebug("Old file deleted. Moving new file to local data...");
-                FileOperations.Move(newFilePath, filePath);
+                FileOperations.Move(newFilePath, filePath, cancellationToken);
 
                 _logger.LogDebug("New file moved.");
             }
@@ -542,7 +544,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         }
 
         // TODO: Temporary solution for situation when .app directory is not deleted
-        private void DeleteEmptyMacAppDirectories()
+        private void DeleteEmptyMacAppDirectories(CancellationToken cancellationToken)
         {
             if (!Platform.IsOSX())
             {
@@ -554,7 +556,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             foreach (var dir in FindEmptyMacAppDirectories())
             {
                 _logger.LogDebug(string.Format("Deleting {0}", dir));
-                DirectoryOperations.Delete(dir, true);
+                DirectoryOperations.Delete(dir, cancellationToken, true);
                 _logger.LogDebug("Directory deleted.");
             }
 

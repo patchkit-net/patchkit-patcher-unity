@@ -71,7 +71,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 if (File.Exists(filePath))
                 {
-                    FileOperations.Delete(filePath);
+                    FileOperations.Delete(filePath, cancellationToken);
                 }
 
                 _localMetaData.UnregisterEntry(fileName);
@@ -99,7 +99,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     {
                         if (DirectoryOperations.IsDirectoryEmpty(parentDirPath))
                         {
-                            DirectoryOperations.Delete(parentDirPath, false);
+                            DirectoryOperations.Delete(parentDirPath, cancellationToken, false);
                         }
                         else
                         {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using PatchKit.Network;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.FileSystem
@@ -21,8 +23,8 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static bool IsDirectoryEmpty(string dirPath)
         {
-            Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
-            Checks.DirectoryExists(dirPath);
+            Assert.IsFalse(string.IsNullOrEmpty(dirPath));
+            Assert.IsTrue(Directory.Exists(dirPath));
 
             try
             {
@@ -51,7 +53,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void CreateParentDirectory(string path)
         {
-            Checks.ArgumentNotNullOrEmpty(path, "path");
+            Assert.IsFalse(string.IsNullOrEmpty(path));
 
             try
             {
@@ -81,7 +83,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void CreateDirectory(string dirPath)
         {
-            Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
+            Assert.IsFalse(string.IsNullOrEmpty(dirPath));
 
             try
             {
@@ -106,10 +108,18 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// <exception cref="ArgumentException"><paramref name="dirPath" /> is null or empty.</exception>
         /// <exception cref="DirectoryNotFoundException"><paramref name="dirPath" /> doesn't exist.</exception>
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
-        public static void Delete(string dirPath, bool recursive = false)
+        public static void Delete(string dirPath, CancellationToken cancellationToken, bool recursive = false)
         {
-            Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
-            Checks.DirectoryExists(dirPath);
+            Assert.IsFalse(string.IsNullOrEmpty(dirPath));
+            Assert.IsTrue(Directory.Exists(dirPath));
+
+            RetryStrategy.TryExecute(() => DeleteInternal(dirPath, recursive), cancellationToken);
+        }
+
+        private static void DeleteInternal(string dirPath, bool recursive)
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(dirPath));
+            Assert.IsTrue(Directory.Exists(dirPath));
 
             try
             {

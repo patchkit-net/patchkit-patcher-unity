@@ -94,7 +94,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 
             DebugLogger.Log("Installing content.");
-            
+
             TemporaryDirectory.ExecuteIn(_packagePath + ".temp_unpack_" + Path.GetRandomFileName(), (packageDir) => {
                 DebugLogger.LogVariable(packageDir.Path, "packageDirPath");
 
@@ -132,7 +132,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    InstallFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
+                    InstallFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix, cancellationToken);
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
                     _copyFilesStatus.Description.Value = string.Format("Installing ({0}/{1})...", i + 1, _versionContentSummary.Files.Length);
@@ -159,7 +159,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private void InstallFile(string fileName, string packageDirPath, string suffix)
+        private void InstallFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken)
         {
             DebugLogger.Log(string.Format("Installing file {0}", fileName+suffix));
 
@@ -176,10 +176,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             if (File.Exists(destinationFilePath))
             {
                 DebugLogger.LogFormat("Destination file {0} already exists, removing it.", destinationFilePath);
-                FileOperations.Delete(destinationFilePath);
+                FileOperations.Delete(destinationFilePath, cancellationToken);
             }
-            
-            FileOperations.Move(sourceFilePath, destinationFilePath);
+
+            FileOperations.Move(sourceFilePath, destinationFilePath, cancellationToken);
             _localMetaData.RegisterEntry(fileName, _versionId);
         }
     }
