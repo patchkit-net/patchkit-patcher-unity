@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
@@ -281,7 +282,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
 
             int lastPart = totalPartCount;
-            
+
             if (bounds.End != -1)
             {
                 lastPart = (int) (bounds.End / partSize);

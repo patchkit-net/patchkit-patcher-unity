@@ -5,6 +5,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using PatchKit.Logging;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;

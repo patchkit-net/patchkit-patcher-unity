@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Collections;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 
 public class Background : MonoBehaviour
 {

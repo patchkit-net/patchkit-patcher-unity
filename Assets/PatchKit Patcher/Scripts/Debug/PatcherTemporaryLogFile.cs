@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 
 namespace PatchKit.Unity.Patcher.Debug
 {

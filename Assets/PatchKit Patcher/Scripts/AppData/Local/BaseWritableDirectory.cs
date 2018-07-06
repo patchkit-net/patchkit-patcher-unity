@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local

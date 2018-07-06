@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Ionic.Zlib;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;

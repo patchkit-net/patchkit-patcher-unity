@@ -16,6 +16,7 @@ using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 
 namespace PatchKit.Unity.Patcher

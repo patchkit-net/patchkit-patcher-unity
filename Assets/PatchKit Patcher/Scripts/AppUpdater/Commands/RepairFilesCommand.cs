@@ -4,6 +4,7 @@ using System.IO;
 using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
