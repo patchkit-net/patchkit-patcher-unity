@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using PatchKit.Unity.Patcher.AppData;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
@@ -65,7 +66,7 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 if (File.Exists(FilePath))
                 {
-                    File.Delete(FilePath);
+                    FileOperations.Delete(FilePath);
                 }
             }
             catch

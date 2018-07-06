@@ -12,6 +12,7 @@ using PatchKit.Api.Models.Main;
 using System;
 using System.IO;
 using System.Collections;
+using PatchKit.Unity.Patcher.AppData;
 
 public class Background : MonoBehaviour
 {
@@ -186,7 +187,7 @@ public class Background : MonoBehaviour
             return;
         }
 
-        File.Delete(CachedBannerPath);
+        FileOperations.Delete(CachedBannerPath);
         CachedBannerPath = "";
     }
 

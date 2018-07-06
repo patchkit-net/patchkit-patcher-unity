@@ -15,6 +15,7 @@ using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 
 namespace PatchKit.Unity.Patcher
@@ -212,7 +213,7 @@ namespace PatchKit.Unity.Patcher
                     _lockFileStream.Close();
                     
                     DebugLogger.Log("Deleting the lock file.");
-                    File.Delete(_data.Value.LockFilePath);
+                    FileOperations.Delete(_data.Value.LockFilePath);
                 }
             }
             catch

@@ -310,7 +310,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             if (File.Exists(filePath))
             {
                 _logger.LogDebug("File exists. Deleting it...");
-                File.Delete(filePath);
+                FileOperations.Delete(filePath);
                 _logger.LogDebug("File deleted.");
             }
             else
@@ -514,7 +514,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 filePatcher.Patch();
 
                 _logger.LogDebug("New file generated. Deleting old file in local data...");
-                File.Delete(filePath);
+                FileOperations.Delete(filePath);
 
                 _logger.LogDebug("Old file deleted. Moving new file to local data...");
                 File.Move(newFilePath, filePath);

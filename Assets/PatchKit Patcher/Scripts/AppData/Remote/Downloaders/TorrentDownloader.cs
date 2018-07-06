@@ -115,7 +115,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 if (File.Exists(_destinationFilePath))
                 {
-                    File.Delete(_destinationFilePath);
+                    FileOperations.Delete(_destinationFilePath);
                 }
 
                 File.Move(downloadedFilePath, _destinationFilePath);
