@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace PatchKit.Unity
 {
-    public class CustomBuildScripts 
+    public static class CustomBuilding
     {
         [MenuItem("Tools/Build/Windows x86")]
         public static void BuildWindows86 ()
