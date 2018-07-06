@@ -71,6 +71,7 @@ namespace PatchKit.Unity.Patcher.Debug
                     sentryEvent.Exception.Data.Add("remote-version", patcher.RemoteVersionId.Value.ToString());
                 }
 
+                sentryEvent.Tags.Add("system-info", EnvironmentInfo.GetSystemInformation());
                 sentryEvent.Tags.Add("patcher-version", Version.Value);
             }
 
