@@ -338,7 +338,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 if (IsDirectoryEmpty(dirPath))
                 {
                     _logger.LogDebug("Directory is empty. Deleting it...");
-                    Directory.Delete(dirPath);
+                    DirectoryOperations.Delete(dirPath);
                     _logger.LogDebug("Directory deleted.");
                 }
                 else
@@ -402,7 +402,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("dirPath = " + dirPath);
 
             _logger.LogDebug("Creating directory in local data...");
-            Directory.CreateDirectory(dirPath);
+            DirectoryOperations.CreateDirectory(dirPath);
             _logger.LogDebug("Directory created.");
 
             _logger.LogDebug("Add directory entry processed.");
@@ -428,11 +428,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
             //TODO: Assert that fileParentDirPath is not null
             // ReSharper disable once AssignNullToNotNullAttribute
-            Directory.CreateDirectory(fileParentDirPath);
+            DirectoryOperations.CreateDirectory(fileParentDirPath);
             _logger.LogDebug("File parent directories created in local data.");
 
             _logger.LogDebug("Copying file to local data (overwriting if needed)...");
-            File.Copy(sourceFilePath, filePath, true);
+            FileOperations.Copy(sourceFilePath, filePath, true);
             _logger.LogDebug("File copied to local data.");
 
             _localMetaData.RegisterEntry(fileName, _versionId);
@@ -517,7 +517,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 FileOperations.Delete(filePath);
 
                 _logger.LogDebug("Old file deleted. Moving new file to local data...");
-                File.Move(newFilePath, filePath);
+                FileOperations.Move(newFilePath, filePath);
 
                 _logger.LogDebug("New file moved.");
             }
@@ -553,7 +553,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             foreach (var dir in FindEmptyMacAppDirectories())
             {
                 _logger.LogDebug(string.Format("Deleting {0}", dir));
-                Directory.Delete(dir, true);
+                DirectoryOperations.Delete(dir, true);
                 _logger.LogDebug("Directory deleted.");
             }
 

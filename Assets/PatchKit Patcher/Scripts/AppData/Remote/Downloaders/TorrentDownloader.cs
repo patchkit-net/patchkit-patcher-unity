@@ -118,7 +118,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     FileOperations.Delete(_destinationFilePath);
                 }
 
-                File.Move(downloadedFilePath, _destinationFilePath);
+                FileOperations.Move(downloadedFilePath, _destinationFilePath);
             }
             catch (Exception e)
             {

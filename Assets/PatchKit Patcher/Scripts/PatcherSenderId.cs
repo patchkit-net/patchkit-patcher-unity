@@ -33,7 +33,7 @@ namespace PatchKit.Unity.Patcher
             string parentDirPath = Path.GetDirectoryName(filePath);
             if (parentDirPath != null)
             {
-                Directory.CreateDirectory(parentDirPath);
+                DirectoryOperations.CreateDirectory(parentDirPath);
             }
 
             File.WriteAllText(filePath, senderId);

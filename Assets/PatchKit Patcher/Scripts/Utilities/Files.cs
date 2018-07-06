@@ -11,7 +11,7 @@ namespace PatchKit.Unity.Utilities
             var dirName = Path.GetDirectoryName(path);
             if (dirName != null)
             {
-                Directory.CreateDirectory(dirName);
+                DirectoryOperations.CreateDirectory(dirName);
             }
         }
 

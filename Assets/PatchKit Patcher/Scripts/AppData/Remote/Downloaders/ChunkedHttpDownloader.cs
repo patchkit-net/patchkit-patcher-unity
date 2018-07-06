@@ -73,7 +73,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
             if (!string.IsNullOrEmpty(parentDirectory))
             {
-                Directory.CreateDirectory(parentDirectory);
+                DirectoryOperations.CreateDirectory(parentDirectory);
             }
 
             var chunksRange = CalculateContainingChunksRange(_range);

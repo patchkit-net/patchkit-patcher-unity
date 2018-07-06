@@ -167,7 +167,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             string destPath = Path.Combine(_destinationDirPath, file.Name);
 
             DebugLogger.Log("Creating directory " + destPath);
-            Directory.CreateDirectory(destPath);
+            DirectoryOperations.CreateDirectory(destPath);
             DebugLogger.Log("Directory " + destPath + " created successfully!");
         }
 

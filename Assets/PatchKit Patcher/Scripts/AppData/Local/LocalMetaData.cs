@@ -177,7 +177,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             string dirPath = Path.GetDirectoryName(_filePath);
             if (dirPath != null)
             {
-                Directory.CreateDirectory(dirPath);
+                DirectoryOperations.CreateDirectory(dirPath);
             }
         }
 
@@ -205,7 +205,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     _logger.LogDebug("Deprecated data file exists. Moving it to a new location...");
                     CreateDataDir();
-                    File.Move(_deprecatedFilePath, _filePath);
+                    FileOperations.Move(_deprecatedFilePath, _filePath);
                     _logger.LogDebug("Deprecated data file moved.");
 
                     if (TryLoadDataFromFile())

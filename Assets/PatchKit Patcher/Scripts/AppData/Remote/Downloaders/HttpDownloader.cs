@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
             if (!string.IsNullOrEmpty(parentDirectory))
             {
-                Directory.CreateDirectory(parentDirectory);
+                DirectoryOperations.CreateDirectory(parentDirectory);
             }
 
             return new FileStream(_destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None);

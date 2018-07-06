@@ -27,10 +27,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             
             if (Directory.Exists(Path))
             {
-                Directory.Delete(Path, true);
+                DirectoryOperations.Delete(Path, true);
             }
 
-            Directory.CreateDirectory(Path);
+            DirectoryOperations.CreateDirectory(Path);
         }
 
         //TODO: Move it to some extension method.
@@ -61,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             if (!_keep && Directory.Exists(Path))
             {
-                Directory.Delete(Path, true);
+                DirectoryOperations.Delete(Path, true);
             }
         }
 
