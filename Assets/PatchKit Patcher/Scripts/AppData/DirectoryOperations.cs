@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.AppData
                 DebugLogger.LogError("Error while checking whether directory is empty: an exception occured. Rethrowing exception.");
                 throw;
             }
-            
+
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace PatchKit.Unity.Patcher.AppData
         /// <exception cref="ArgumentException"><paramref name="dirPath" /> is null or empty.</exception>
         /// <exception cref="DirectoryNotFoundException"><paramref name="dirPath" /> doesn't exist.</exception>
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
-        public static void Delete(string dirPath, bool recursive)
+        public static void Delete(string dirPath, bool recursive = false)
         {
             Checks.ArgumentNotNullOrEmpty(dirPath, "dirPath");
             Checks.DirectoryExists(dirPath);
