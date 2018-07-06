@@ -10,21 +10,21 @@ namespace PatchKit.Unity.Patcher.Debug
     {
         public RavenClient RavenClient
         {
-            get 
+            get
             {
                 return _ravenClient;
             }
         }
-        
+
         private readonly RavenClient _ravenClient;
 
-        public static readonly string RavenClientId = "https://cb13d9a4a32f456c8411c79c6ad7be9d:90ba86762829401e925a9e5c4233100c@sentry.io/175617"; 
+        public static readonly string RavenClientId = "https://cb13d9a4a32f456c8411c79c6ad7be9d:90ba86762829401e925a9e5c4233100c@sentry.io/175617";
 
         public PatcherLogSentryRegistry()
         {
-            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true; 
-            
-            _ravenClient = new RavenClient(RavenClientId); 
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+
+            _ravenClient = new RavenClient(RavenClientId);
         }
 
         public void RegisterWithException(Issue issue, string logFileGuid)
@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.Debug
             AddDataToSentryEvent(sentryEvent, logFileGuid);
             _ravenClient.Capture(sentryEvent);
         }
-        
+
         public void RegisterWithException(Exception exception, string logFileGuid)
         {
             RegisterWithException(new Issue()
@@ -74,7 +74,7 @@ namespace PatchKit.Unity.Patcher.Debug
                 sentryEvent.Tags.Add("system-info", EnvironmentInfo.GetSystemInformation());
                 sentryEvent.Tags.Add("patcher-version", Version.Value);
             }
-
         }
+
     }
 }
