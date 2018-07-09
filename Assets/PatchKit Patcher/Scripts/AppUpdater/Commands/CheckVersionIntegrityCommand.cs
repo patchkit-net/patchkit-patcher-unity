@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using PatchKit.Api.Models.Main;
@@ -63,7 +64,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             base.Execute(cancellationToken);
 
             var integrityCheckStopwatch = new Stopwatch();
-            var optionalParams = new PatcherStatistics.OptionalParams 
+            var optionalParams = new PatcherStatistics.OptionalParams
             {
                 VersionId = _versionId,
             };
@@ -77,7 +78,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 PatcherStatistics.DispatchSendEvent("validation_started", optionalParams);
                 ExecuteInternal(cancellationToken);
-                
+
                 if (Results.Files.All(integrity => integrity.Status == FileIntegrityStatus.Ok))
                 {
                     PatcherStatistics.DispatchSendEvent("validation_succeeded", timedParams());
@@ -116,20 +117,32 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private FileIntegrity CheckFile(AppContentSummaryFile file)
         {
+            Action onVerificationFailed = () =>
+            {
+                PatcherStatistics.DispatchSendEvent("file_verification_failed", new PatcherStatistics.OptionalParams
+                {
+                    FileName = file.Path,
+                    Size = file.Size,
+                });
+            };
+
             string localPath = _localDirectory.Path.PathCombine(file.Path);
             if (!File.Exists(localPath))
             {
+                onVerificationFailed();
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingData);
             }
 
             if (!_localMetaData.IsEntryRegistered(file.Path))
             {
+                onVerificationFailed();
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingMetaData);
             }
 
             int actualVersionId = _localMetaData.GetEntryVersionId(file.Path);
             if (actualVersionId != _versionId)
             {
+                onVerificationFailed();
                 return FileIntegrity.InvalidVersion(_versionId, actualVersionId, file.Path);
             }
 
@@ -138,6 +151,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 long actualSize = new FileInfo(localPath).Length;
                 if (actualSize != file.Size)
                 {
+                    onVerificationFailed();
                     return FileIntegrity.InvalidSize(file.Size, actualSize, file.Path);
                 }
             }
@@ -147,6 +161,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 string actualFileHash = HashCalculator.ComputeFileHash(localPath);
                 if (actualFileHash != file.Hash)
                 {
+                    onVerificationFailed();
                     return FileIntegrity.InvalidHash(file.Hash, actualFileHash, file.Path);
                 }
             }
