@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace PatchKit.Unity
 {
-    public class CustomBuildScripts 
+    public static class CustomBuilding
     {
         [MenuItem("Tools/Build/Windows x86")]
         public static void BuildWindows86 ()
@@ -47,12 +47,6 @@ namespace PatchKit.Unity
         public static void BuildOsx64 ()
         {
             Build(BuildTarget.StandaloneOSXIntel64);
-        }
-
-        [MenuItem("Tools/Build/OSX Universal")]
-        public static void BuildOsxUniversal ()
-        {
-            Build(BuildTarget.StandaloneOSXUniversal);
         }
 
         private static string PatcherExecutableName(BuildTarget target)
@@ -133,7 +127,7 @@ namespace PatchKit.Unity
                 }
             }
 
-            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions 
+            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions
                                     | BuildOptions.ShowBuiltPlayer;
 
             string path = EditorUtility.SaveFolderPanel("Choose where to build the Patcher", "", "");

@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Handling of the ZLib exception
 
+### Removed
+- StandaloneOSXUniversal architecture from building options
+
 ## [3.9.2]
 ### Added
 - Logging the probable cause of the Zlib exception when unpacking
