@@ -38,12 +38,6 @@ namespace PatchKit.Unity
         }
 
         [MenuItem("Tools/Build/With build settings/OSX")]
-        public static void BuildOsx()
-        {
-            BuildFromBuildSettings(BuildTarget.StandaloneOSXIntel);
-        }
-
-        [MenuItem("Tools/Build/With build settings/OSX x64")]
         public static void BuildOsxx64()
         {
             BuildFromBuildSettings(BuildTarget.StandaloneOSXIntel64);
@@ -83,12 +77,6 @@ namespace PatchKit.Unity
         }
 
         [MenuItem("Tools/Build/Current scene/OSX")]
-        public static void BuildOsxWithCurrentScene()
-        {
-            BuildFromCurrentScene(BuildTarget.StandaloneOSXIntel);
-        }
-
-        [MenuItem("Tools/Build/Current scene/OSX x64")]
         public static void BuildOsx64WithCurrentScene()
         {
             BuildFromCurrentScene(BuildTarget.StandaloneOSXIntel64);
@@ -150,6 +138,7 @@ namespace PatchKit.Unity
             PlayerSettings.defaultScreenWidth = 600;
             PlayerSettings.defaultScreenHeight = 400;
             PlayerSettings.defaultIsFullScreen = false;
+            PlayerSettings.apiCompatibilityLevel = ApiCompatibilityLevel.NET_2_0;
 
             Patcher.Patcher patcher = null;
             foreach (var scenePath in scenePaths)
