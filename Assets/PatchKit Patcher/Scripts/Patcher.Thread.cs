@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using PatchKit.Api;
@@ -10,7 +9,9 @@ using PatchKit.Apps.Updating.AppUpdater;
 using PatchKit.Apps.Updating.AppUpdater.Commands;
 using PatchKit.Apps.Updating.Licensing;
 using PatchKit.Apps.Updating.Utilities;
+using UniRx;
 using UnityEngine;
+using CancellationToken = System.Threading.CancellationToken;
 
 namespace PatchKit.Patching.Unity
 {
@@ -452,6 +453,8 @@ namespace PatchKit.Patching.Unity
         {
             try
             {
+                _state.Value = PatcherState.DisplayingError;
+
                 _debugLogger.Log($"Displaying patcher error {error}...");
 
                 ErrorDialog.Display(error, cancellationToken);
@@ -559,7 +562,7 @@ namespace PatchKit.Patching.Unity
 
         private void ThreadUpdateApp(bool automatically, CancellationToken cancellationToken)
         {
-            _state.Value = PatcherState.UpdatingApp;
+            _state.Value = PatcherState.Connecting;
 
             _appInfo.Value = _app.GetAppInfo(cancellationToken);
             _remoteVersionId.Value = _app.GetLatestVersionId(!automatically);
@@ -590,10 +593,14 @@ namespace PatchKit.Patching.Unity
                 try
                 {
                     _updaterStatus.Value = appUpdater.Status;
-                    appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                    using (UpdaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
+                    {
+                        appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                    }
                 }
                 finally
                 {
+                    _state.Value = PatcherState.None;
                     _updaterStatus.Value = null;
                     _updateAppCancellationTokenSource = null;
                 }

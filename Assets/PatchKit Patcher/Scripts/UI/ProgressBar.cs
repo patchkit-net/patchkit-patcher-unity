@@ -39,36 +39,48 @@ namespace PatchKit.Patching.Unity.UI
             Image.rectTransform.anchorMin = anchorMin;
         }
 
+        private static string StateToMessage(PatcherState state)
+        {
+            switch (state)
+            {
+                case PatcherState.LoadingPatcherConfiguration:
+                    return "Loading configuration...";
+
+                case PatcherState.LoadingPatcherData:
+                    return "Loading data...";
+
+                case PatcherState.DisplayingError:
+                    return "Error!";
+
+                case PatcherState.Connecting:
+                    return "Connecting...";
+
+                default:
+                    return "";
+            }
+        }
+
         private void SetProgress(UpdateData data)
         {
-            _isIdle = data.State == PatcherState.Connecting;
+            UnityEngine.Debug.Log($"Updating with {data.Progress} and {data.State}");
+            _isIdle = data.State != PatcherState.UpdatingApp || data.Progress < 0;
 
-            if (data.State == PatcherState.None)
-            {
-                Text.text = "";
-                SetBar(0, 0);
-                return;
-            }
+            Text.text = StateToMessage(data.State);
 
-            if (data.State == PatcherState.DisplayingError)
+            if (_isIdle)
             {
-                Text.text = "Error!";
-                SetBar(0, 0);
-                return;
-            }
-
-            if (data.State == PatcherState.Connecting)
-            {
-                Text.text = "Connecting...";
                 return;
             }
 
             double progress = data.Progress;
 
-            Text.text = progress.ToString("0.0%");
-            float visualProgress = (float) progress;
+            if (progress >= 0)
+            {
+                Text.text = progress.ToString("0.0%");
+                float visualProgress = (float) progress;
 
-            SetBar(0, visualProgress);
+                SetBar(0, visualProgress);
+            }
         }
 
         private void Start()
