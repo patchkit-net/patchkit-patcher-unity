@@ -202,7 +202,7 @@ namespace PatchKit.Patching.Unity
                     };
                 }).WaitOne();
 #else
-                DebugLogger.Log("Using command line patcher data reader.");
+                _debugLogger.Log("Using command line patcher data reader.");
                 var inputArgumentsPatcherDataReader = new InputArgumentsPatcherDataReader();
                 _data.Value = inputArgumentsPatcherDataReader.Read();
 #endif
