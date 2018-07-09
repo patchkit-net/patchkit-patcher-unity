@@ -1,52 +1,85 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Linq;
-using System.Diagnostics;
+using UnityEngine.SceneManagement;
 
 namespace PatchKit.Unity
 {
     public static class CustomBuilding
     {
-        [MenuItem("Tools/Build/Windows x86")]
-        public static void BuildWindows86 ()
+        [MenuItem("Tools/Build/With build settings/Windows x86")]
+        public static void BuildWindows86()
         {
-            Build(BuildTarget.StandaloneWindows);
+            BuildFromBuildSettings(BuildTarget.StandaloneWindows);
         }
 
-        [MenuItem("Tools/Build/Windows x64")]
-        public static void BuildWindows64 ()
+        [MenuItem("Tools/Build/With build settings/Windows x64")]
+        public static void BuildWindows64()
         {
-            Build(BuildTarget.StandaloneWindows64);
+            BuildFromBuildSettings(BuildTarget.StandaloneWindows64);
         }
 
-        [MenuItem("Tools/Build/Linux x86")]
-        public static void BuildLinux86 ()
+        [MenuItem("Tools/Build/With build settings/Linux x86")]
+        public static void BuildLinux86()
         {
-            Build(BuildTarget.StandaloneLinux);
+            BuildFromBuildSettings(BuildTarget.StandaloneLinux);
         }
 
-        [MenuItem("Tools/Build/Linux x64")]
-        public static void BuildLinux64 ()
+        [MenuItem("Tools/Build/With build settings/Linux x64")]
+        public static void BuildLinux64()
         {
-            Build(BuildTarget.StandaloneLinux64);
+            BuildFromBuildSettings(BuildTarget.StandaloneLinux64);
         }
 
-        [MenuItem("Tools/Build/Linux Universal")]
-        public static void BuildLinux ()
+        [MenuItem("Tools/Build/With build settings/Linux Universal")]
+        public static void BuildLinux()
         {
-            Build(BuildTarget.StandaloneLinuxUniversal);
+            BuildFromBuildSettings(BuildTarget.StandaloneLinuxUniversal);
         }
 
-        [MenuItem("Tools/Build/OSX")]
-        public static void BuildOsx ()
+        [MenuItem("Tools/Build/With build settings/OSX")]
+        public static void BuildOsxx64()
         {
-            Build(BuildTarget.StandaloneOSXIntel);
+            BuildFromBuildSettings(BuildTarget.StandaloneOSXIntel64);
         }
 
-        [MenuItem("Tools/Build/OSX x64")]
-        public static void BuildOsx64 ()
+        /////////////////////////////////////////////////////////////////////
+
+
+        [MenuItem("Tools/Build/Current scene/Windows x86")]
+        public static void BuildWindows86WithCurrentScene()
         {
-            Build(BuildTarget.StandaloneOSXIntel64);
+            BuildFromCurrentScene(BuildTarget.StandaloneWindows);
+        }
+
+        [MenuItem("Tools/Build/Current scene/Windows x64")]
+        public static void BuildWindows64WithCurrentScene()
+        {
+            BuildFromCurrentScene(BuildTarget.StandaloneWindows64);
+        }
+
+        [MenuItem("Tools/Build/Current scene/Linux x86")]
+        public static void BuildLinux86WithCurrentScene()
+        {
+            BuildFromCurrentScene(BuildTarget.StandaloneLinux);
+        }
+
+        [MenuItem("Tools/Build/Current scene/Linux x64")]
+        public static void BuildLinux64WithCurrentScene()
+        {
+            BuildFromCurrentScene(BuildTarget.StandaloneLinux64);
+        }
+
+        [MenuItem("Tools/Build/Current scene/Linux Universal")]
+        public static void BuildLinuxWithCurrentScene()
+        {
+            BuildFromCurrentScene(BuildTarget.StandaloneLinuxUniversal);
+        }
+
+        [MenuItem("Tools/Build/Current scene/OSX")]
+        public static void BuildOsx64WithCurrentScene()
+        {
+            BuildFromCurrentScene(BuildTarget.StandaloneOSXIntel64);
         }
 
         private static string PatcherExecutableName(BuildTarget target)
@@ -72,23 +105,40 @@ namespace PatchKit.Unity
             }
         }
 
-        private static void Build(BuildTarget target)
+        private static void BuildFromBuildSettings(BuildTarget target)
+        {
+            string[] scenePaths = EditorBuildSettings.scenes
+                .Where(s => s.enabled)
+                .Select(s => s.path)
+                .ToArray();
+
+            BuildScenes(target, scenePaths);
+        }
+
+        private static void BuildFromCurrentScene(BuildTarget target)
+        {
+            string[] scenePaths = {SceneManager.GetActiveScene().path};
+
+            BuildScenes(target, scenePaths);
+        }
+
+        private static void BuildScenes(BuildTarget target, string[] scenePaths)
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
             {
                 return;
             }
 
-            string[] scenePaths = EditorBuildSettings.scenes
-                .Where(s => s.enabled)
-                .Select(s => s.path)
-                .ToArray();
-
-            if (scenePaths.Count() == 0)
+            if (!scenePaths.Any())
             {
                 EditorUtility.DisplayDialog("Error", "Add or enable scenes to be included in the Build Settings menu.", "Ok");
                 return;
             }
+
+            PlayerSettings.defaultScreenWidth = 600;
+            PlayerSettings.defaultScreenHeight = 400;
+            PlayerSettings.defaultIsFullScreen = false;
+            PlayerSettings.apiCompatibilityLevel = ApiCompatibilityLevel.NET_2_0;
 
             Patcher.Patcher patcher = null;
             foreach (var scenePath in scenePaths)
