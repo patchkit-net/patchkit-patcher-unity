@@ -16,7 +16,7 @@ namespace PatchKit.Unity
             if (InvalidBuildTargets.Contains(buildTarget))
             {
                 string archString = buildTarget.ToString();
-                EditorUtility.DisplayDialog("Warning", string.Format("PatchKit Patcher doesn't officialy support {0} architecture. Error may occur.", archString), "Ok");
+                EditorUtility.DisplayDialog("Warning", string.Format("PatchKit Patcher doesn't officially support {0} architecture. Errors may occur.", archString), "Ok");
             }
         }
     }
