@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -93,7 +94,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ContentDownloadCanceled, timedParams());
                 throw;
             }
-            catch (System.Exception)
+            catch (ResourceDownloadFailureException)
             {
                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ContentDownloadFailed, timedParams());
                 throw;

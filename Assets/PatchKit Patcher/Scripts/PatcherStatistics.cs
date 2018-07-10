@@ -2,6 +2,7 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PatchKit.Unity.Patcher.Debug;
@@ -73,6 +74,27 @@ namespace PatchKit.Unity.Patcher
             public string FileName;
             public long? Size;
             public long? Time;
+        }
+
+        public static bool TryDispatchSendEvent(Event ev, OptionalParams? parameters = null)
+        {
+            try
+            {
+                DispatchSendEvent(ev, parameters);
+                return true;
+            }
+            catch (ThreadAbortException)
+            {
+                throw;
+            }
+            catch (ThreadInterruptedException)
+            {
+                throw;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static void DispatchSendEvent(Event ev, OptionalParams? parameters = null)
