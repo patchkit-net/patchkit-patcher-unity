@@ -195,7 +195,7 @@ namespace PatchKit.Unity.Patcher
 
             if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
             {
-                PatcherStatistics.DispatchSendEvent("patcher_succeeded_closed");
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededClosed);
             }
 
 #if UNITY_EDITOR
@@ -366,7 +366,7 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Cancelling patcher thread...");
 
-            PatcherStatistics.DispatchSendEvent("patcher_cancelled");
+            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherCanceled);
 
             _threadCancellationTokenSource.Cancel();
         }
@@ -419,7 +419,7 @@ namespace PatchKit.Unity.Patcher
 
                 UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
-                PatcherStatistics.DispatchSendEvent("patcher_started");
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
 
                 while (true)
                 {
@@ -685,7 +685,7 @@ namespace PatchKit.Unity.Patcher
                     _userDecision));
                 DebugLogger.LogException(e);
 
-                PatcherStatistics.DispatchSendEvent("patcher_failed");
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
 
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
@@ -700,7 +700,7 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.LogException(e);
 
-                PatcherStatistics.DispatchSendEvent("patcher_failed");
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
                 
                 if (displayWarningInsteadOfError)
                 {
@@ -714,7 +714,7 @@ namespace PatchKit.Unity.Patcher
             catch (NotEnoughtDiskSpaceException e)
             {
                 DebugLogger.LogException(e);
-                PatcherStatistics.DispatchSendEvent("patcher_failed");
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
                 ThreadDisplayError(PatcherError.NotEnoughDiskSpace, cancellationToken);
             }
             catch (ThreadInterruptedException)
@@ -737,7 +737,7 @@ namespace PatchKit.Unity.Patcher
                     "Error while executing user decision {0}: an exception has occured.", _userDecision));
                 DebugLogger.LogException(exception);
 
-                PatcherStatistics.DispatchSendEvent("patcher_failed");
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
 
                 if (displayWarningInsteadOfError)
                 {
@@ -789,7 +789,7 @@ namespace PatchKit.Unity.Patcher
 
             appStarter.Start();
 
-            PatcherStatistics.DispatchSendEvent("patcher_succeeded_game_started");
+            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededGameStarted);
             _hasGameBeenStarted = true;
 
             UnityDispatcher.Invoke(Quit);

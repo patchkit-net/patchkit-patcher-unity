@@ -76,21 +76,21 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             try
             {
-                PatcherStatistics.DispatchSendEvent("validation_started", optionalParams);
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ValidationStarted, optionalParams);
                 ExecuteInternal(cancellationToken);
 
                 if (Results.Files.All(integrity => integrity.Status == FileIntegrityStatus.Ok))
                 {
-                    PatcherStatistics.DispatchSendEvent("validation_succeeded", timedParams());
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ValidationSucceeded, timedParams());
                 }
                 else
                 {
-                    PatcherStatistics.DispatchSendEvent("validation_failed", timedParams());
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ValidationFailed, timedParams());
                 }
             }
             catch (System.OperationCanceledException)
             {
-                PatcherStatistics.DispatchSendEvent("validation_canceled", timedParams());
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ValidationCanceled, timedParams());
                 throw;
             }
         }
@@ -119,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             Action onVerificationFailed = () =>
             {
-                PatcherStatistics.DispatchSendEvent("file_verification_failed", new PatcherStatistics.OptionalParams
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.FileVerificationFailed, new PatcherStatistics.OptionalParams
                 {
                     FileName = file.Path,
                     Size = file.Size,

@@ -104,18 +104,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 try
                 {
                     
-                    PatcherStatistics.DispatchSendEvent("patch_download_started", optionalParams);
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadStarted, optionalParams);
                     diffCommands.Download.Command.Execute(cancellationToken);
-                    PatcherStatistics.DispatchSendEvent("patch_download_succeeded", optionalParams);
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadSucceeded, optionalParams);
                 }
                 catch (System.OperationCanceledException)
                 {
-                    PatcherStatistics.DispatchSendEvent("patch_download_canceled", optionalParams);
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadCanceled, optionalParams);
                     throw;
                 }
                 catch (System.Exception)
                 {
-                    PatcherStatistics.DispatchSendEvent("patch_download_failed", optionalParams);
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadFailed, optionalParams);
                     throw;
                 }
 

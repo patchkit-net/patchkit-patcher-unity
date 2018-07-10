@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.ComponentModel;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -15,6 +16,57 @@ namespace PatchKit.Unity.Patcher
 {
     public class PatcherStatistics
     {
+        public enum Event
+        {
+            [Description("content_download_started")]
+            ContentDownloadStarted,
+            [Description("content_download_succeeded")]
+            ContentDownloadSucceeded,
+            [Description("content_download_canceled")]
+            ContentDownloadCanceled,
+            [Description("content_download_failed")]
+            ContentDownloadFailed,
+
+            [Description("patch_download_started")]
+            PatchDownloadStarted,
+            [Description("patch_download_succeeded")]
+            PatchDownloadSucceeded,
+            [Description("patch_download_canceled")]
+            PatchDownloadCanceled,
+            [Description("patch_download_failed")]
+            PatchDownloadFailed,
+
+            [Description("validation_started")]
+            ValidationStarted,
+            [Description("validation_succeeded")]
+            ValidationSucceeded,
+            [Description("validation_failed")]
+            ValidationFailed,
+            [Description("validation_canceled")]
+            ValidationCanceled,
+
+            [Description("file_verification_failed")]
+            FileVerificationFailed,
+            
+            [Description("license_key_verification_started")]
+            LicenseKeyVerificationStarted,
+            [Description("license_key_verification_succeeded")]
+            LicenseKeyVerificationSucceeded,
+            [Description("license_key_verification_failed")]
+            LicenseKeyVerificationFailed,
+
+            [Description("patcher_succeeded_closed")]
+            PatcherSucceededClosed,
+            [Description("patcher_canceled")]
+            PatcherCanceled,
+            [Description("patcher_started")]
+            PatcherStarted,
+            [Description("patcher_failed")]
+            PatcherFailed,
+            [Description("patcher_succeeded_game_started")]
+            PatcherSucceededGameStarted
+        }
+
         public struct OptionalParams
         {
             public int? VersionId;
@@ -23,27 +75,42 @@ namespace PatchKit.Unity.Patcher
             public long? Time;
         }
 
-        public static void DispatchSendEvent(string eventName, OptionalParams? parameters = null)
+        public static void DispatchSendEvent(Event ev, OptionalParams? parameters = null)
         {
-            UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(eventName, parameters));
+            UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(ev, parameters));
         }
 
-        public static void DispatchSendEvent(string eventName, string appSecret, OptionalParams? parameters = null)
+        public static void DispatchSendEvent(Event ev, string appSecret, OptionalParams? parameters = null)
         {
-            UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(eventName, appSecret, parameters));
+            UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(ev, appSecret, parameters));
         }
 
-        public static IEnumerator SendEvent(string eventName, OptionalParams? parameters = null)
+        public static IEnumerator SendEvent(Event ev, OptionalParams? parameters = null)
         {
             string appSecret = Patcher.Instance.Data.Value.AppSecret;
-            return SendEvent(eventName, appSecret, parameters);
+            return SendEvent(ev, appSecret, parameters);
         }
 
-        public static IEnumerator SendEvent(string eventName, string appSecret, OptionalParams? parameters = null)
+        private static string GetCustomDescription(object objEnum)
+        {
+            var field = objEnum.GetType().GetField(objEnum.ToString());
+            var attributes = (DescriptionAttribute[]) field.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+            return attributes.Length > 0 ? attributes[0].Description : objEnum.ToString();
+        }
+
+        private static string EventName(Event value)
+        {
+            return GetCustomDescription(value);
+        }
+
+        public static IEnumerator SendEvent(Event ev, string appSecret, OptionalParams? parameters = null)
         {
             string senderId = PatcherSenderId.Get();
             string caller = string.Format("patcher_unity:{0}.{1}.{2}", Version.Major, Version.Minor, Version.Release);
             string operatingSystemFamily;
+
+            string eventName = EventName(ev);
 
             switch (Platform.GetPlatformType())
             {
