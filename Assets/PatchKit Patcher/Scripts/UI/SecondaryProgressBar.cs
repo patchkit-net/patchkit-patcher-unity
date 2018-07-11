@@ -11,9 +11,21 @@ namespace PatchKit.Patching.Unity.UI
 
         public Image Image;
 
-        private void SetProgress(double progress)
+        private void OnProgress(double progress)
         {
-            Text.text = progress.ToString("0.0%");
+            if (progress < 0)
+            {
+                SetProgress(0, "");
+            }
+            else 
+            {
+                SetProgress(progress, progress.ToString("0.0%"));
+            }
+        }
+
+        private void SetProgress(double progress, string text)
+        {
+            Text.text = text;
             var anchorMax = Image.rectTransform.anchorMax;
             anchorMax.x = (float)progress;
             Image.rectTransform.anchorMax = anchorMax;
@@ -22,9 +34,9 @@ namespace PatchKit.Patching.Unity.UI
         private void Start()
         {
             Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation)
-                .SelectSwitchOrDefault(s => s.Progress, 1.0)
+                .SelectSwitchOrDefault(s => s.Progress, -1.0)
                 .ObserveOnMainThread()
-                .Subscribe(SetProgress)
+                .Subscribe(OnProgress)
                 .AddTo(this);
         }
     }
