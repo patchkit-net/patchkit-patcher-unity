@@ -126,6 +126,17 @@ namespace PatchKit.Unity.Patcher
             return GetCustomDescription(value);
         }
 
+        private const string EventNameKey = "event_name";
+        private const string SenderIdKey = "sender_id";
+        private const string CallerKey = "caller";
+        private const string AppSecretKey = "app_secret";
+        private const string OperatingSystemFamilyKey = "operating_system_family";
+        private const string OperatingSystemVersionKey = "operating_system_version";
+        private const string VersionIdKey = "version_id";
+        private const string TimeKey = "time";
+        private const string SizeKey = "size";
+        private const string FileNameKey = "file_name";
+
         public static IEnumerator SendEvent(Event ev, string appSecret, OptionalParams? parameters = null)
         {
             string senderId = PatcherSenderId.Get();
@@ -153,34 +164,34 @@ namespace PatchKit.Unity.Patcher
 
             var json = new JObject();
 
-            json["event_name"] = eventName;
-            json["sender_id"] = senderId;
-            json["caller"] = caller;
-            json["app_secret"] = appSecret;
-            json["operating_system_family"] = operatingSystemFamily;
-            json["operating_system_version"] = operatingSystemVersion;
+            json[EventNameKey] = eventName;
+            json[SenderIdKey] = senderId;
+            json[CallerKey] = caller;
+            json[AppSecretKey] = appSecret;
+            json[OperatingSystemFamilyKey] = operatingSystemFamily;
+            json[OperatingSystemVersionKey] = operatingSystemVersion;
 
             if (parameters.HasValue)
             {
                 var v = parameters.Value;
                 if (v.VersionId.HasValue)
                 {
-                    json["version_id"] = v.VersionId.Value;
+                    json[VersionIdKey] = v.VersionId.Value;
                 }
 
                 if (v.Time.HasValue)
                 {
-                    json["time"] = v.Time.Value;
+                    json[TimeKey] = v.Time.Value;
                 }
 
                 if (v.Size.HasValue)
                 {
-                    json["size"] = v.Size.Value;
+                    json[SizeKey] = v.Size.Value;
                 }
 
                 if (!string.IsNullOrEmpty(v.FileName))
                 {
-                    json["file_name"] = v.FileName;
+                    json[FileNameKey] = v.FileName;
                 }
             }
 
