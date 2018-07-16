@@ -8,8 +8,11 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
+using SharpCompress.Compressors.LZMA;
+using SharpCompress.Compressors.Xz;
 using SharpRaven;
 using SharpRaven.Data;
+using SharpRaven.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -20,6 +23,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     /// </summary>
     public class Pack1Unarchiver : IUnarchiver
     {
+        private delegate void Decompressor(Stream source, Stream target, long size,
+            Action<double> onProgress,
+            CancellationToken cancellationToken);
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Pack1Unarchiver));
 
         private readonly string _packagePath;
@@ -81,7 +88,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public void Unarchive(CancellationToken cancellationToken)
         {
             int entry = 1;
-            
+
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
             foreach (var file in _metaData.Files)
             {
@@ -178,6 +185,21 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // TODO: how to create a symlink?
         }
 
+        private Decompressor ResolveDecompressor(Pack1Meta meta)
+        {
+            switch (meta.Compression)
+            {
+                case Pack1Meta.Lzma2Compression:
+                    return DecompressLzma2;
+
+                case Pack1Meta.GZipCompression:
+                    return DecompressGzip;
+
+                default:
+                    return DecompressGzip;
+            }
+        }
+
         private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
             string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, file.Name + _suffix);
@@ -193,6 +215,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             };
 
             ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
+            Decompressor decompressor = ResolveDecompressor(_metaData);
 
             using (var fs = new FileStream(_packagePath, FileMode.Open))
             {
@@ -202,7 +225,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     using (var target = new FileStream(destPath, FileMode.Create))
                     {
-                        ExtractFileFromStream(limitedStream, target, file, decryptor, onProgress, cancellationToken);
+                        ExtractFileFromStream(limitedStream, target, file, decryptor, decompressor, onProgress, cancellationToken);
                     }
 
                     if (Platform.IsPosix())
@@ -215,48 +238,59 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 
+        private void DecompressLzma2(Stream source, Stream target, long size,
+            Action<double> onProgress,
+            CancellationToken cancellationToken)
+        {
+            byte[] properties = new byte[1];
+            source.Read(properties, 0, 1);
+
+            using (var lzmaStream = new LzmaStream(properties, source))
+            {
+                BufferedCopyWithProgress(lzmaStream, target, onProgress, size, cancellationToken);
+            }
+        }
+
+        private void DecompressGzip(Stream source, Stream target, long size,
+            Action<double> onProgress,
+            CancellationToken cancellationToken)
+        {
+            using (var gzipStream = new GZipStream(source, CompressionMode.Decompress))
+            {
+                BufferedCopyWithProgress(gzipStream, target, onProgress, size, cancellationToken);
+            }
+        }
+
+        private void BufferedCopyWithProgress(Stream source, Stream target, Action<double> onProgress, long fileSize,
+            CancellationToken cancellationToken)
+        {
+            long bytesProcessed = 0;
+            const int bufferSize = 128 * 1024;
+            var buffer = new byte[bufferSize];
+            int count;
+            while ((count = source.Read(buffer, 0, bufferSize)) > 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                target.Write(buffer, 0, count);
+                bytesProcessed += count;
+                onProgress(bytesProcessed / (double) fileSize);
+            }
+        }
+
         private void ExtractFileFromStream(
             Stream sourceStream,
             Stream targetStream,
             Pack1Meta.FileEntry file,
             ICryptoTransform decryptor,
+            Decompressor decompressor,
             Action<double> onProgress,
             CancellationToken cancellationToken)
         {
-            using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
-            {
-                using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
-                {
-                    try
-                    {
-                        long bytesProcessed = 0;
-                        const int bufferSize = 128 * 1024;
-                        var buffer = new byte[bufferSize];
-                        int count;
-                        while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
-                        {
-                            targetStream.Write(buffer, 0, count);
-                            bytesProcessed += count;
-                            onProgress(bytesProcessed / (double) file.Size.Value);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        DebugLogger.LogException(e);
+            var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read);
 
-                        var logManager = PatcherLogManager.Instance;
-                        PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
-                        RavenClient ravenClient = sentryRegistry.RavenClient;
+            decompressor(cryptoStream, targetStream, file.Size.Value, onProgress, cancellationToken);
 
-                        var sentryEvent = new SentryEvent(e);
-                        PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
-
-                        ravenClient.Capture(sentryEvent);
-
-                        throw;
-                    }
-                }
-            }
+            cryptoStream.Dispose();
         }
 
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
