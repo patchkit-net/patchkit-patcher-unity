@@ -68,7 +68,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public const string DirectoryFileType = "directory";
         public const string SymlinkFileType = "symlink";
 
-        public const string Lzma2Compression = "lzma2";
+        public const string XZCompression = "xz";
         public const string GZipCompression = "gzip";
 
         #endregion

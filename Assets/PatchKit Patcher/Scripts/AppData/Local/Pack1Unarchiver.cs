@@ -23,9 +23,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     /// </summary>
     public class Pack1Unarchiver : IUnarchiver
     {
-        private delegate void Decompressor(Stream source, Stream target, long size,
-            Action<double> onProgress,
-            CancellationToken cancellationToken);
+        private delegate Stream Decompressor(Stream source);
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Pack1Unarchiver));
 
@@ -55,7 +53,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // do nothing
         }
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key, string suffix, BytesRange range)
+        private Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key, string suffix, BytesRange range)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
@@ -189,8 +187,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             switch (meta.Compression)
             {
-                case Pack1Meta.Lzma2Compression:
-                    return DecompressLzma2;
+                case Pack1Meta.XZCompression:
+                    return DecompressXz;
 
                 case Pack1Meta.GZipCompression:
                     return DecompressGzip;
@@ -205,9 +203,19 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, file.Name + _suffix);
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
+            if (file.Size == null)
+            {
+                throw new NullReferenceException("File size cannot be null for regular file.");
+            }
+
+            if (file.Offset == null)
+            {
+                throw new NullReferenceException("File offset cannot be null for regular file.");
+            }
+
             Files.CreateParents(destPath);
 
-            RijndaelManaged rijn = new RijndaelManaged
+            var rijn = new RijndaelManaged
             {
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.None,
@@ -225,7 +233,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     using (var target = new FileStream(destPath, FileMode.Create))
                     {
-                        ExtractFileFromStream(limitedStream, target, file, decryptor, decompressor, onProgress, cancellationToken);
+                        ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressor, onProgress, cancellationToken);
                     }
 
                     if (Platform.IsPosix())
@@ -238,59 +246,50 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 
-        private void DecompressLzma2(Stream source, Stream target, long size,
-            Action<double> onProgress,
-            CancellationToken cancellationToken)
+        private Stream DecompressXz(Stream source)
         {
-            byte[] properties = new byte[1];
-            source.Read(properties, 0, 1);
-
-            using (var lzmaStream = new LzmaStream(properties, source))
+            if (source.CanSeek)
             {
-                BufferedCopyWithProgress(lzmaStream, target, onProgress, size, cancellationToken);
+                return new XZStream(source);
+            }
+            else
+            {
+                return new XZStream(new PositionAwareStream(source));
             }
         }
 
-        private void DecompressGzip(Stream source, Stream target, long size,
-            Action<double> onProgress,
-            CancellationToken cancellationToken)
+        private Stream DecompressGzip(Stream source)
         {
-            using (var gzipStream = new GZipStream(source, CompressionMode.Decompress))
-            {
-                BufferedCopyWithProgress(gzipStream, target, onProgress, size, cancellationToken);
-            }
-        }
-
-        private void BufferedCopyWithProgress(Stream source, Stream target, Action<double> onProgress, long fileSize,
-            CancellationToken cancellationToken)
-        {
-            long bytesProcessed = 0;
-            const int bufferSize = 128 * 1024;
-            var buffer = new byte[bufferSize];
-            int count;
-            while ((count = source.Read(buffer, 0, bufferSize)) > 0)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                target.Write(buffer, 0, count);
-                bytesProcessed += count;
-                onProgress(bytesProcessed / (double) fileSize);
-            }
+            return new GZipStream(source, CompressionMode.Decompress);
         }
 
         private void ExtractFileFromStream(
-            Stream sourceStream,
+            LimitedStream sourceStream,
             Stream targetStream,
-            Pack1Meta.FileEntry file,
+            long fileSize,
             ICryptoTransform decryptor,
             Decompressor decompressor,
             Action<double> onProgress,
             CancellationToken cancellationToken)
         {
-            var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read);
+            using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
+            {
+                using (var decompressionStream = decompressor(cryptoStream))
+                {
+                    const int bufferSize = 128 * 1024;
+                    var buffer = new byte[bufferSize];
+                    int count;
 
-            decompressor(cryptoStream, targetStream, file.Size.Value, onProgress, cancellationToken);
+                    while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        targetStream.Write(buffer, 0, count);
 
-            cryptoStream.Dispose();
+                        long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
+                        onProgress(bytesProcessed / (double) fileSize);
+                    }
+                }
+            }
         }
 
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
