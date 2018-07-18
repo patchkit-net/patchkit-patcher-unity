@@ -1,7 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
+using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 
 namespace PatchKit.Unity.Patcher.AppUpdater
@@ -37,6 +40,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             StrategyType type = _strategyResolver.Resolve(Context);
             _strategy = _strategyResolver.Create(type, Context);
             Context.StatusMonitor.Reset();
+
+            if (Context.Configuration.CreateDesktopShortcut && Platform.IsWindows())
+            {
+                try
+                {
+                    var launcherPath = Path.GetFullPath(LauncherUtilities.FindLauncherExecutable(PlatformType.Windows));
+                    var appName = Patcher.Instance.AppInfo.Value.Name;
+
+                    var iconLocation = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "elsword_192.ico"));
+
+                    var createDesktopShortcut = new CreateDesktopShortcutCommand(appName, launcherPath, iconLocation);
+
+                    createDesktopShortcut.Prepare(Context.StatusMonitor);
+                    createDesktopShortcut.Execute(cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    DebugLogger.LogException(e);
+                }
+            }
 
             try
             {

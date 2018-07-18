@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData
@@ -102,6 +103,26 @@ namespace PatchKit.Unity.Patcher.AppData
                 DebugLogger.LogError("Error while moving file: an exception occured. Rethrowing exception.");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Searches for a file specified by <paramref name="filename" /> in <paramref name="paths" />
+        /// </summary> 
+        public static string[] SearchPaths(string filename, string[] paths)
+        {
+            return paths
+                .Select(path => Path.Combine(path, filename))
+                .Where(filepath => File.Exists(filepath))
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Searches for a file specified by <paramref name="filename" /> in <paramref name="paths" />
+        /// Returns the first file found.
+        /// </summary> 
+        public static string SearchPathsFindOne(string filename, string[] paths)
+        {
+            return SearchPaths(filename, paths).FirstOrDefault();
         }
     }
 }

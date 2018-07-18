@@ -73,6 +73,8 @@ namespace PatchKit.Unity.Patcher
                 return false;
             }
 
+            return true;
+
             int installedVersion = LocalMetaData.GetEntryVersionId(fileNames[0]);
 
             foreach (string fileName in fileNames)
