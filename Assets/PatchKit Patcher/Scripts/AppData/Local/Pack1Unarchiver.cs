@@ -23,7 +23,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     /// </summary>
     public class Pack1Unarchiver : IUnarchiver
     {
-        private delegate Stream Decompressor(Stream source);
+        private delegate Stream DecompressorCreator(Stream source);
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Pack1Unarchiver));
 
@@ -183,18 +183,18 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // TODO: how to create a symlink?
         }
 
-        private Decompressor ResolveDecompressor(Pack1Meta meta)
+        private DecompressorCreator ResolveDecompressor(Pack1Meta meta)
         {
             switch (meta.Compression)
             {
                 case Pack1Meta.XZCompression:
-                    return DecompressXz;
+                    return CreateXzDecompressor;
 
                 case Pack1Meta.GZipCompression:
-                    return DecompressGzip;
+                    return CreateGzipDecompressor;
 
                 default:
-                    return DecompressGzip;
+                    return CreateGzipDecompressor;
             }
         }
 
@@ -223,7 +223,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             };
 
             ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
-            Decompressor decompressor = ResolveDecompressor(_metaData);
+            DecompressorCreator decompressorCreator = ResolveDecompressor(_metaData);
 
             using (var fs = new FileStream(_packagePath, FileMode.Open))
             {
@@ -233,7 +233,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     using (var target = new FileStream(destPath, FileMode.Create))
                     {
-                        ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressor, onProgress, cancellationToken);
+                        ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
                     }
 
                     if (Platform.IsPosix())
@@ -246,7 +246,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 
-        private Stream DecompressXz(Stream source)
+        private Stream CreateXzDecompressor(Stream source)
         {
             if (source.CanSeek)
             {
@@ -258,7 +258,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
         }
 
-        private Stream DecompressGzip(Stream source)
+        private Stream CreateGzipDecompressor(Stream source)
         {
             return new GZipStream(source, CompressionMode.Decompress);
         }
@@ -268,13 +268,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Stream targetStream,
             long fileSize,
             ICryptoTransform decryptor,
-            Decompressor decompressor,
+            DecompressorCreator createDecompressor,
             Action<double> onProgress,
             CancellationToken cancellationToken)
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (var decompressionStream = decompressor(cryptoStream))
+                using (var decompressionStream = createDecompressor(cryptoStream))
                 {
                     const int bufferSize = 128 * 1024;
                     var buffer = new byte[bufferSize];
