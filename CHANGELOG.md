@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Handling of the ZLib exception
+- Invalid handling of patcher-data-location argument with spaces
 
 ## [3.9.2]
 ### Added
