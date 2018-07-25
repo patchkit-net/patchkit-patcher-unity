@@ -50,7 +50,7 @@ namespace PatchKit.Unity.Editor
                 ExeArguments = "--installdir \"{installdir}\" --secret \"{secret}\"",
 
                 Version = ManifestVersion,
-                Target = "bash",
+                Target = "sh",
                 Arguments = new Manifest.Argument[] {
                     new Manifest.Argument { Value = new string[] {
                         "{exedir}" + launchScript
