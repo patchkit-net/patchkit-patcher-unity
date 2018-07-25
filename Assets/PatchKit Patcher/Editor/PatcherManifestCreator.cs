@@ -53,7 +53,7 @@ namespace PatchKit.Unity.Editor
                 Target = "sh",
                 Arguments = new Manifest.Argument[] {
                     new Manifest.Argument { Value = new string[] {
-                        "{exedir}" + launchScript
+                        "{exedir}/" + launchScript
                     }},
                     new Manifest.Argument { Value = new string[] {
                         "{exedir}",
