@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New manifest format support
 - Sending 'patcher_started' event to Statistics Reporting Service
 - Attaching "system-info" to Sentry events as tag
+- Support for PK_OFFICIAL define
 
 ### Changed
 - Update API servers configuration
