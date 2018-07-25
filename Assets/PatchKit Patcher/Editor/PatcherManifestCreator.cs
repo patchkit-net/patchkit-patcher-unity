@@ -40,17 +40,35 @@ namespace PatchKit.Unity.Editor
             File.WriteAllText(manifestPath, manifestContent);
         }
 
-        private static Manifest WindowsManifest(string buildPath)
-        {
-            return CommonManifest(buildPath);
-        }
-
         private static Manifest LinuxManifest(string buildPath)
         {
-            return CommonManifest(buildPath);
+            string patcherExe = Path.GetFileName(buildPath);
+            string launchScript = UnixLaunchScriptCreator.LaunchScriptName;
+
+            return new Manifest {
+                ExeFileName = string.Format("\"{{exedir}}/{0}\"", patcherExe),
+                ExeArguments = "--installdir \"{installdir}\" --secret \"{secret}\"",
+
+                Version = ManifestVersion,
+                Target = "sh",
+                Arguments = new Manifest.Argument[] {
+                    new Manifest.Argument { Value = new string[] {
+                        "{exedir}/" + launchScript
+                    }},
+                    new Manifest.Argument { Value = new string[] {
+                        "{exedir}",
+                        patcherExe,
+                        "{secret}",
+                        "{installdir}"
+                    }},
+                    new Manifest.Argument { Value = new string[] {
+                        "{lockfile}"
+                    }}
+                }
+            };
         }
 
-        private static Manifest CommonManifest(string buildPath)
+        private static Manifest WindowsManifest(string buildPath)
         {
             string targetFile = Path.GetFileName(buildPath);
             return new Manifest {
