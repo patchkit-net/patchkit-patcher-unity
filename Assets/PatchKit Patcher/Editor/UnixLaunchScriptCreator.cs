@@ -27,9 +27,8 @@ namespace PatchKit.Unity.Editor
             }
 
             string launchScriptPath = LaunchScriptPath(buildPath);
-            string launchScriptContent = File.ReadAllText(LaunchScriptContentFile);
 
-            File.WriteAllText(launchScriptPath, launchScriptContent);
+            File.Copy(LaunchScriptContentFile, launchScriptPath);
         }
     }
 }
