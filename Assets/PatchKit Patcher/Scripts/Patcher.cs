@@ -71,7 +71,7 @@ namespace PatchKit.Unity.Patcher
         private readonly ManualResetEvent _userDecisionSetEvent = new ManualResetEvent(false);
 
         private readonly IRequestTimeoutCalculator _requestTimeoutCalculator = new SimpleRequestTimeoutCalculator();
-        
+
         private bool _hasAutomaticallyInstalledApp;
 
         private bool _hasAutomaticallyCheckedForAppUpdate;
@@ -138,7 +138,7 @@ namespace PatchKit.Unity.Patcher
         {
             get { return _data; }
         }
-        
+
         private readonly ReactiveProperty<string> _warning = new ReactiveProperty<string>();
 
         public IReadOnlyReactiveProperty<string> Warning
@@ -206,11 +206,11 @@ namespace PatchKit.Unity.Patcher
         private void CloseLockFile()
         {
             try
-            { 
+            {
                 if (_lockFileStream != null)
                 {
                     _lockFileStream.Close();
-                    
+
                     DebugLogger.Log("Deleting the lock file.");
                     File.Delete(_data.Value.LockFilePath);
                 }
@@ -278,7 +278,7 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.Log("Cancelling application quit because patcher thread is alive.");
 
                 Application.CancelQuit();
-                
+
                 StartCoroutine(KillThread());
             }
         }
@@ -433,11 +433,11 @@ namespace PatchKit.Unity.Patcher
             catch (ThreadAbortException)
             {
                 DebugLogger.Log("Patcher thread finished: thread has been aborted.");
-            }            
+            }
             catch (MultipleInstancesException exception)
             {
                 DebugLogger.LogException(exception);
-                Quit();                
+                Quit();
             }
             catch (Exception exception)
             {
@@ -630,11 +630,11 @@ namespace PatchKit.Unity.Patcher
         private void ThreadExecuteUserDecision(CancellationToken cancellationToken)
         {
             bool displayWarningInsteadOfError = false;
-            
+
             try
             {
                 _warning.Value = string.Empty;
-                
+
                 DebugLogger.Log(string.Format("Executing user decision {0}...", _userDecision));
 
                 switch (_userDecision)
@@ -687,7 +687,7 @@ namespace PatchKit.Unity.Patcher
             catch (ApiConnectionException e)
             {
                 DebugLogger.LogException(e);
-                
+
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";
@@ -737,6 +737,8 @@ namespace PatchKit.Unity.Patcher
         {
             try
             {
+                _state.Value = PatcherState.DisplayingError;
+
                 DebugLogger.Log(string.Format("Displaying patcher error {0}...", error));
 
                 ErrorDialog.Display(error, cancellationToken);
@@ -777,7 +779,7 @@ namespace PatchKit.Unity.Patcher
 
         private void ThreadUpdateApp(bool automatically, CancellationToken cancellationToken)
         {
-            _state.Value = PatcherState.UpdatingApp;
+            _state.Value = PatcherState.Connecting;
 
             _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically);
             _remoteVersionId.Value = _app.GetLatestVersionId(!automatically);
@@ -795,10 +797,16 @@ namespace PatchKit.Unity.Patcher
                 try
                 {
                     _updaterStatus.Value = appUpdater.Status;
-                    appUpdater.Update(_updateAppCancellationTokenSource.Token);
+
+                    using (_updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
+                    {
+                        appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                    }
                 }
                 finally
                 {
+                    _state.Value = PatcherState.None;
+
                     _updaterStatus.Value = null;
                     _updateAppCancellationTokenSource = null;
                 }

@@ -11,6 +11,12 @@ namespace PatchKit.Unity.Patcher.UI
 
         public Image Image;
 
+        private struct UpdateData
+        {
+            public double Progress;
+            public PatcherState State;
+        }
+
         private void SetBar(float start, float end)
         {
             var anchorMax = Image.rectTransform.anchorMax;
@@ -23,15 +29,31 @@ namespace PatchKit.Unity.Patcher.UI
             Image.rectTransform.anchorMin = anchorMin;
         }
 
-        private void SetProgress(double progress)
+        private void SetProgress(UpdateData data)
         {
-            if (progress <= 0 && _isIdle)
+            _isIdle = data.State == PatcherState.Connecting;
+
+            if (data.State == PatcherState.None)
+            {
+                Text.text = "";
+                SetBar(0, 0);
+                return;
+            }
+
+            if (data.State == PatcherState.DisplayingError)
+            {
+                Text.text = "Error!";
+                SetBar(0, 0);
+                return;
+            }
+
+            if (data.State == PatcherState.Connecting)
             {
                 Text.text = "Connecting...";
                 return;
             }
 
-            _isIdle = false;
+            double progress = data.Progress;
 
             Text.text = progress >= 0.0 ? progress.ToString("0.0%") : "";
             float visualProgress = progress >= 0.0 ? (float) progress : 0.0f;
@@ -41,15 +63,18 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            Patcher.Instance.UpdaterStatus
-                .SelectSwitchOrDefault(s => s.Progress, -1.0)
+            var progress = Patcher.Instance.UpdaterStatus
+                .SelectSwitchOrDefault(s => s.Progress, -1.0);
+
+            Patcher.Instance.State
+                .CombineLatest(progress, (state, d) => new UpdateData { Progress = d, State = state })
                 .ObserveOnMainThread()
                 .Subscribe(SetProgress)
                 .AddTo(this);
         }
 
 
-        private bool _isIdle = true;
+        private bool _isIdle = false;
         private const float IdleBarWidth = 0.2f;
         private const float IdleBarSpeed = 1.2f;
         private float _idleProgress = -IdleBarWidth;
