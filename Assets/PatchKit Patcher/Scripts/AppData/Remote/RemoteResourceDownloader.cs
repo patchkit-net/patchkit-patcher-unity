@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
+using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using ILogger = PatchKit.Logging.ILogger;
