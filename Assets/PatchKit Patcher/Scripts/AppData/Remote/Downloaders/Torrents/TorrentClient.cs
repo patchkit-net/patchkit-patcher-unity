@@ -10,7 +10,7 @@ using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents.Protocol;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
-namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
+namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 {
     /// <summary>
     /// Provides an easy access for torrent client program.

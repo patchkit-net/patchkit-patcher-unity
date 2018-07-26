@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
+namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 {
     public interface ITorrentClientProcessStartInfoProvider
     {

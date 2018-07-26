@@ -10,7 +10,7 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents.Protocol;
 
-namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
+namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 {
     /// <summary>
     /// Downloads file through torrents by using <see cref="TorrentClient"/>.
@@ -120,7 +120,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         if (!retryStrategy.ShouldRetry)
                         {
-                            throw new DownloadFailureException("Failed to download with torrent-client.");
+                            throw new DownloadFailureException("Failed to download with torrent-client.", e);
                         }
                     }
                 } while (retryStrategy.ShouldRetry);

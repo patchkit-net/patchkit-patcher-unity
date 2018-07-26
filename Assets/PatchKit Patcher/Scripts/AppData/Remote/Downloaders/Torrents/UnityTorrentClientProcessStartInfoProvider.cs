@@ -4,7 +4,7 @@ using System.IO;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 
-namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
+namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 {
     public class UnityTorrentClientProcessStartInfoProvider : ITorrentClientProcessStartInfoProvider
     {
