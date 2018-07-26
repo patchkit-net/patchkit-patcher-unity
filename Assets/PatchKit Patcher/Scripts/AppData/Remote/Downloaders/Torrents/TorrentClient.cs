@@ -105,7 +105,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
         {
             if (_process.HasExited)
             {
-                throw new TorrentClientException(string.Format("torrent-client has exited with error code {0}", _process.ExitCode));
+                throw new TorrentClientCrashException(string.Format("torrent-client has exited with error code {0}", _process.ExitCode));
             }
         }
 
