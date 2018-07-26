@@ -171,7 +171,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 
             string destinationFilePath = _localData.Path.PathCombine(fileName);
-            DirectoryOperations.CreateParentDirectory(destinationFilePath);
+            DirectoryOperations.CreateParentDirectory(destinationFilePath, cancellationToken);
 
             if (File.Exists(destinationFilePath))
             {

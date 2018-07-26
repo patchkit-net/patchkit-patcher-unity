@@ -2,6 +2,7 @@
 using System.IO;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher
@@ -35,7 +36,7 @@ namespace PatchKit.Unity.Patcher
             string parentDirPath = Path.GetDirectoryName(filePath);
             if (parentDirPath != null)
             {
-                DirectoryOperations.CreateDirectory(parentDirPath);
+                DirectoryOperations.CreateDirectory(parentDirPath, CancellationToken.Empty);
             }
 
             File.WriteAllText(filePath, senderId);

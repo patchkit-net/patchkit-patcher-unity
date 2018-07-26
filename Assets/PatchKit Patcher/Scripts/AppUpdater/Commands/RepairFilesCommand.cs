@@ -75,7 +75,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     if (!Directory.Exists(unarchivePath))
                     {
-                        DirectoryOperations.CreateDirectory(unarchivePath);
+                        DirectoryOperations.CreateDirectory(unarchivePath, cancellationToken);
                     }
 
                     var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls, _resource.ChunksData, _resource.Size);
@@ -165,7 +165,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new Exception(string.Format("Source file {0} doesn't exist.", source));
             }
 
-            DirectoryOperations.CreateParentDirectory(target);
+            DirectoryOperations.CreateParentDirectory(target, cancellationToken);
 
             if (File.Exists(target))
             {

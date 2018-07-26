@@ -378,7 +378,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 if (entryName.EndsWith("/"))
                 {
-                    AddDirectory(entryName);
+                    AddDirectory(entryName, cancellationToken);
                 }
                 else
                 {
@@ -395,7 +395,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Diff added files processed.");
         }
 
-        private void AddDirectory(string dirName)
+        private void AddDirectory(string dirName, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Processing add directory entry {0}", dirName));
 
@@ -403,7 +403,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("dirPath = " + dirPath);
 
             _logger.LogDebug("Creating directory in local data...");
-            DirectoryOperations.CreateDirectory(dirPath);
+            DirectoryOperations.CreateDirectory(dirPath, cancellationToken);
             _logger.LogDebug("Directory created.");
 
             _logger.LogDebug("Add directory entry processed.");
@@ -429,7 +429,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
             //TODO: Assert that fileParentDirPath is not null
             // ReSharper disable once AssignNullToNotNullAttribute
-            DirectoryOperations.CreateDirectory(fileParentDirPath);
+            DirectoryOperations.CreateDirectory(fileParentDirPath, cancellationToken);
             _logger.LogDebug("File parent directories created in local data.");
 
             _logger.LogDebug("Copying file to local data (overwriting if needed)...");

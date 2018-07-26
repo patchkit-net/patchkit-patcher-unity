@@ -148,7 +148,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     break;
                 case Pack1Meta.DirectoryFileType:
                     progress(0.0);
-                    UnpackDirectory(file);
+                    UnpackDirectory(file, cancellationToken);
                     progress(1.0);
                     break;
                 case Pack1Meta.SymlinkFileType:
@@ -163,12 +163,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         }
 
-        private void UnpackDirectory(Pack1Meta.FileEntry file)
+        private void UnpackDirectory(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
         {
             string destPath = Path.Combine(_destinationDirPath, file.Name);
 
             DebugLogger.Log("Creating directory " + destPath);
-            DirectoryOperations.CreateDirectory(destPath);
+            DirectoryOperations.CreateDirectory(destPath, cancellationToken);
             DebugLogger.Log("Directory " + destPath + " created successfully!");
         }
 

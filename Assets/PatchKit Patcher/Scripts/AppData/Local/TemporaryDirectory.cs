@@ -32,7 +32,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
             }
 
-            DirectoryOperations.CreateDirectory(Path);
+            DirectoryOperations.CreateDirectory(Path, CancellationToken.Empty);
         }
 
         //TODO: Move it to some extension method.

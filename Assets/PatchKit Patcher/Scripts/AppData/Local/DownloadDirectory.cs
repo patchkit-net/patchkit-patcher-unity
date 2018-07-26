@@ -49,7 +49,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             if (Directory.Exists(Path))
             {
                 DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
-                DirectoryOperations.CreateDirectory(Path);
+                DirectoryOperations.CreateDirectory(Path, CancellationToken.Empty);
             }
         }
     }

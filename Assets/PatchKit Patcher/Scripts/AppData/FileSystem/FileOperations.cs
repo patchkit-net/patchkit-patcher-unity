@@ -24,11 +24,25 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void Copy(string sourceFilePath, string destinationFilePath, bool overwrite, CancellationToken cancellationToken)
         {
-            Assert.IsFalse(string.IsNullOrEmpty(sourceFilePath), "sourceFilePath");
-            Assert.IsFalse(string.IsNullOrEmpty(destinationFilePath), "destinationFilePath");
+            if (string.IsNullOrEmpty(sourceFilePath))
+            {
+                throw new ArgumentException("Value cannot be null or empty", "sourceFilePath");
+            }
 
-            Assert.IsTrue(File.Exists(sourceFilePath));
-            Assert.IsTrue(Directory.Exists(Path.GetDirectoryName(destinationFilePath)));
+            if (string.IsNullOrEmpty(destinationFilePath))
+            {
+                throw new ArgumentException("Value cannot be null or empty", "destinationFilePath");
+            }
+
+            if (!File.Exists(sourceFilePath))
+            {
+                throw new ArgumentException("Source file must exist", "sourceFilePath");
+            }
+
+            if (!Directory.Exists(Path.GetDirectoryName(destinationFilePath)))
+            {
+                throw new ArgumentException("Parent directory of destination must exist", "destinationFilePath");
+            }
 
             RetryStrategy.TryExecute(() => CopyInternal(sourceFilePath, destinationFilePath, overwrite), cancellationToken);
         }
@@ -63,8 +77,15 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void Delete(string filePath, CancellationToken cancellationToken)
         {
-            Assert.IsFalse(string.IsNullOrEmpty(filePath), "filePath");
-            Assert.IsTrue(File.Exists(filePath));
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException("Value cannot be null or empty", "filePath");
+            }
+
+            if (!File.Exists(filePath))
+            {
+                throw new ArgumentException("File must exist", "filePath");
+            }
 
             RetryStrategy.TryExecute(() => DeleteInternal(filePath), cancellationToken);
         }
@@ -99,11 +120,25 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>
         public static void Move(string sourceFilePath, string destinationFilePath, CancellationToken cancellationToken)
         {
-            Assert.IsFalse(string.IsNullOrEmpty(sourceFilePath), "sourceFilePath");
-            Assert.IsFalse(string.IsNullOrEmpty(destinationFilePath), "destinationFilePath");
+            if (string.IsNullOrEmpty(sourceFilePath))
+            {
+                throw new ArgumentException("Value cannot be null or empty", "sourceFilePath");
+            }
 
-            Assert.IsTrue(File.Exists(sourceFilePath));
-            Assert.IsTrue(Directory.Exists(Path.GetDirectoryName(destinationFilePath)));
+            if (string.IsNullOrEmpty(destinationFilePath))
+            {
+                throw new ArgumentException("Value cannot be null or empty", "destinationFilePath");
+            }
+
+            if (!File.Exists(sourceFilePath))
+            {
+                throw new ArgumentException("Source file must exist", "sourceFilePath");
+            }
+
+            if (!Directory.Exists(Path.GetDirectoryName(destinationFilePath)))
+            {
+                throw new ArgumentException("Parent directory of destination must exist", "destinationFilePath");
+            }
 
             RetryStrategy.TryExecute(() => MoveInternal(sourceFilePath, destinationFilePath), cancellationToken);
         }

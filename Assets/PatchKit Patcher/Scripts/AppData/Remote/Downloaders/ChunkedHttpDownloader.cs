@@ -69,12 +69,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _size = size;
         }
 
-        private ChunkedFileStream OpenFileStream()
+        private ChunkedFileStream OpenFileStream(CancellationToken cancellationToken)
         {
             var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
             if (!string.IsNullOrEmpty(parentDirectory))
             {
-                DirectoryOperations.CreateDirectory(parentDirectory);
+                DirectoryOperations.CreateDirectory(parentDirectory, cancellationToken);
             }
 
             var chunksRange = CalculateContainingChunksRange(_range);
@@ -119,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                using (var fileStream = OpenFileStream())
+                using (var fileStream = OpenFileStream(cancellationToken))
                 {
                     bool retry;
 

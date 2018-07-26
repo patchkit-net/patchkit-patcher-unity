@@ -179,7 +179,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             string dirPath = Path.GetDirectoryName(_filePath);
             if (dirPath != null)
             {
-                DirectoryOperations.CreateDirectory(dirPath);
+                DirectoryOperations.CreateDirectory(dirPath, CancellationToken.Empty);
             }
         }
 

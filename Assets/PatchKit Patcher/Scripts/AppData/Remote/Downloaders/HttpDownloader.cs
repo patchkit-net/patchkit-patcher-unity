@@ -41,12 +41,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _urls = urls;
         }
 
-        private FileStream OpenFileStream()
+        private FileStream OpenFileStream(CancellationToken cancellationToken)
         {
             var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
             if (!string.IsNullOrEmpty(parentDirectory))
             {
-                DirectoryOperations.CreateDirectory(parentDirectory);
+                DirectoryOperations.CreateDirectory(parentDirectory, cancellationToken);
             }
 
             return new FileStream(_destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -65,7 +65,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                using (var fileStream = OpenFileStream())
+                using (var fileStream = OpenFileStream(cancellationToken))
                 {
                     bool retry;
 

@@ -63,7 +63,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 if (!Directory.Exists(DestinationDirectoryPath))
                 {
-                    DirectoryOperations.CreateDirectory(DestinationDirectoryPath);
+                    DirectoryOperations.CreateDirectory(DestinationDirectoryPath, cancellationToken);
                 }
 
                 _logger.LogTrace("download dir  = " + DestinationDirectoryPath);
