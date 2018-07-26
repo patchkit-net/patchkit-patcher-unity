@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -76,7 +77,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 Size = resource.Size,
             };
 
-            System.Func<PatcherStatistics.OptionalParams> timedParams = () => new PatcherStatistics.OptionalParams {
+            Func<PatcherStatistics.OptionalParams> timedParams = () => new PatcherStatistics.OptionalParams {
                 VersionId = optionalParams.VersionId,
                 Size = optionalParams.Size,
                 Time = downloadStopwatch.Elapsed.Seconds,
@@ -89,12 +90,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 downloadContentPackage.Execute(cancellationToken);
                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ContentDownloadSucceeded, timedParams());
             }
-            catch (System.OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ContentDownloadCanceled, timedParams());
                 throw;
             }
-            catch (ResourceDownloadFailureException)
+            catch (Exception)
             {
                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.ContentDownloadFailed, timedParams());
                 throw;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.AppData.Remote;
@@ -109,12 +110,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     diffCommands.Download.Command.Execute(cancellationToken);
                     PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadSucceeded, optionalParams);
                 }
-                catch (System.OperationCanceledException)
+                catch (OperationCanceledException)
                 {
                     PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadCanceled, optionalParams);
                     throw;
                 }
-                catch (ResourceDownloadFailureException)
+                catch (Exception)
                 {
                     PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadFailed, optionalParams);
                     throw;
