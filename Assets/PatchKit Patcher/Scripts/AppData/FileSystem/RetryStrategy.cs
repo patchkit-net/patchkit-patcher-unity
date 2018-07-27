@@ -12,21 +12,21 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RetryStrategy));
 
-        public const int DefaultDuration = 5 * 1000;
-        public const int DefaultDelay = 1000 / 2;
+        public const int DefaultTryCount = 10;
+        public const int DefaultDelayMsec = 500;
 
         private readonly int _tryCount;
         private int _currentTry = 0;
         private readonly int _delay;
 
         private RetryStrategy()
-            : this(DefaultDuration, DefaultDelay)
+            : this(DefaultTryCount, DefaultDelayMsec)
         {
         }
 
-        public RetryStrategy(int tryDurationMsec, int delayBetweenEachTryMsec)
+        public RetryStrategy(int tryCount, int delayBetweenEachTryMsec)
         {
-            _tryCount = tryDurationMsec / delayBetweenEachTryMsec;
+            _tryCount = tryCount;
             _delay = delayBetweenEachTryMsec;
         }
 
