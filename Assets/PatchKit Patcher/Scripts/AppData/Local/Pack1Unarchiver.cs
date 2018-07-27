@@ -272,24 +272,24 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Action<double> onProgress,
             CancellationToken cancellationToken)
         {
-            using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
+            Stream cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read);
+            Stream decompressionStream = createDecompressor(cryptoStream);
+
+            const int bufferSize = 128 * 1024;
+            var buffer = new byte[bufferSize];
+            int count;
+
+            while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
             {
-                using (var decompressionStream = createDecompressor(cryptoStream))
-                {
-                    const int bufferSize = 128 * 1024;
-                    var buffer = new byte[bufferSize];
-                    int count;
+                cancellationToken.ThrowIfCancellationRequested();
+                targetStream.Write(buffer, 0, count);
 
-                    while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        targetStream.Write(buffer, 0, count);
-
-                        long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
-                        onProgress(bytesProcessed / (double) fileSize);
-                    }
-                }
+                long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
+                onProgress(bytesProcessed / (double) fileSize);
             }
+
+            decompressionStream.Dispose();
+            cryptoStream.Dispose();
         }
 
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
