@@ -4,9 +4,9 @@ using System.Runtime.Serialization;
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 {
     [Serializable]
-    public class AddTorrentFailureException : Exception
+    public class AddTorrentFailureException : TorrentClientException
     {
-        public AddTorrentFailureException()
+        public AddTorrentFailureException() : base()
         {
         }
 

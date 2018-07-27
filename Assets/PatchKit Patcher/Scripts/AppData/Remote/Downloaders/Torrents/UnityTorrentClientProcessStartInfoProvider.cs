@@ -4,7 +4,7 @@ using System.IO;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 
-namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
+namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 {
     public class UnityTorrentClientProcessStartInfoProvider : ITorrentClientProcessStartInfoProvider
     {
@@ -76,7 +76,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 return processStartInfo;
             }
 
-            throw new TorrentClientException("Unsupported platform by torrent-client.");
+            throw new UnsupportedPlatformException("Unsupported platform by torrent-client.");
         }
     }
 }
