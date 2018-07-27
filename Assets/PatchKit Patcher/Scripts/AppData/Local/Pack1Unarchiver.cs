@@ -272,24 +272,46 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Action<double> onProgress,
             CancellationToken cancellationToken)
         {
-            Stream cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read);
-            Stream decompressionStream = createDecompressor(cryptoStream);
-
-            const int bufferSize = 128 * 1024;
-            var buffer = new byte[bufferSize];
-            int count;
-
-            while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+            using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                targetStream.Write(buffer, 0, count);
+                using (Stream decompressionStream = createDecompressor(cryptoStream))
+                {
+                    try
+                    {
+                        const int bufferSize = 128 * 1024;
+                        var buffer = new byte[bufferSize];
+                        int count;
 
-                long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
-                onProgress(bytesProcessed / (double) fileSize);
+                        while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            targetStream.Write(buffer, 0, count);
+
+                            long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
+                            onProgress(bytesProcessed / (double) fileSize);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        DebugLogger.LogException(e);
+
+                        PatcherLogManager logManager = PatcherLogManager.Instance;
+                        PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
+                        RavenClient ravenClient = sentryRegistry.RavenClient;
+
+                        var sentryEvent = new SentryEvent(e);
+                        PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
+                        ravenClient.Capture(sentryEvent);
+
+                        throw;
+                    }
+                    
+                }
             }
-
-            decompressionStream.Dispose();
-            cryptoStream.Dispose();
         }
 
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
