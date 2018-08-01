@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Handling torrent-client crashes
 - Attaching "system-info" to Sentry events as tag
 - Support for PK_OFFICIAL define
+- Sending events to Statistics Reporting Service
 
 ### Changed
 - Update API servers configuration
