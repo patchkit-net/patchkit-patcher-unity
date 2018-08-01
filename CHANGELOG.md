@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Support for LZMA2 compression using XZ
+- Sending all events to Statistics Reporting Service
 
 ### Fixed
 - Invalid display of progress value when unarchiving
@@ -35,7 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Handling torrent-client crashes
 - Attaching "system-info" to Sentry events as tag
 - Support for PK_OFFICIAL define
-- Sending events to Statistics Reporting Service
+- Sending 'patcher_started' event to Statistics Reporting Service
 
 ### Changed
 - Update API servers configuration
