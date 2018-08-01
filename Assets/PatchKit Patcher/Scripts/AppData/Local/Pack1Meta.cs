@@ -11,6 +11,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public string Encryption { get; set; }
 
+        public string Compression { get; set; }
+
         public string Iv { get; set; }
 
         public FileEntry[] Files { get; set; }
@@ -65,6 +67,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public const string RegularFileType = "regular";
         public const string DirectoryFileType = "directory";
         public const string SymlinkFileType = "symlink";
+
+        public const string XZCompression = "xz";
+        public const string GZipCompression = "gzip";
 
         #endregion
     }

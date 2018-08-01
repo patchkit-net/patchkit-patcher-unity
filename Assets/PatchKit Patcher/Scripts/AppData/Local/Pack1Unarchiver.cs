@@ -8,8 +8,11 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
+using SharpCompress.Compressors.LZMA;
+using SharpCompress.Compressors.Xz;
 using SharpRaven;
 using SharpRaven.Data;
+using SharpRaven.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -20,6 +23,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     /// </summary>
     public class Pack1Unarchiver : IUnarchiver
     {
+        private delegate Stream DecompressorCreator(Stream source);
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Pack1Unarchiver));
 
         private readonly string _packagePath;
@@ -48,7 +53,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // do nothing
         }
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key, string suffix, BytesRange range)
+        private Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key, string suffix, BytesRange range)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
@@ -81,7 +86,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public void Unarchive(CancellationToken cancellationToken)
         {
             int entry = 1;
-            
+
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
             foreach (var file in _metaData.Files)
             {
@@ -178,14 +183,39 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             // TODO: how to create a symlink?
         }
 
+        private DecompressorCreator ResolveDecompressor(Pack1Meta meta)
+        {
+            switch (meta.Compression)
+            {
+                case Pack1Meta.XZCompression:
+                    return CreateXzDecompressor;
+
+                case Pack1Meta.GZipCompression:
+                    return CreateGzipDecompressor;
+
+                default:
+                    return CreateGzipDecompressor;
+            }
+        }
+
         private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
             string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, file.Name + _suffix);
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
+            if (file.Size == null)
+            {
+                throw new NullReferenceException("File size cannot be null for regular file.");
+            }
+
+            if (file.Offset == null)
+            {
+                throw new NullReferenceException("File offset cannot be null for regular file.");
+            }
+
             Files.CreateParents(destPath);
 
-            RijndaelManaged rijn = new RijndaelManaged
+            var rijn = new RijndaelManaged
             {
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.None,
@@ -193,6 +223,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             };
 
             ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
+            DecompressorCreator decompressorCreator = ResolveDecompressor(_metaData);
 
             using (var fs = new FileStream(_packagePath, FileMode.Open))
             {
@@ -202,7 +233,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     using (var target = new FileStream(destPath, FileMode.Create))
                     {
-                        ExtractFileFromStream(limitedStream, target, file, decryptor, onProgress, cancellationToken);
+                        ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
                     }
 
                     if (Platform.IsPosix())
@@ -215,46 +246,70 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 
+        private Stream CreateXzDecompressor(Stream source)
+        {
+            if (source.CanSeek)
+            {
+                return new XZStream(source);
+            }
+            else
+            {
+                return new XZStream(new PositionAwareStream(source));
+            }
+        }
+
+        private Stream CreateGzipDecompressor(Stream source)
+        {
+            return new GZipStream(source, CompressionMode.Decompress);
+        }
+
         private void ExtractFileFromStream(
-            Stream sourceStream,
+            LimitedStream sourceStream,
             Stream targetStream,
-            Pack1Meta.FileEntry file,
+            long fileSize,
             ICryptoTransform decryptor,
+            DecompressorCreator createDecompressor,
             Action<double> onProgress,
             CancellationToken cancellationToken)
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (var gzipStream = new GZipStream(cryptoStream, Ionic.Zlib.CompressionMode.Decompress))
+                using (Stream decompressionStream = createDecompressor(cryptoStream))
                 {
                     try
                     {
-                        long bytesProcessed = 0;
                         const int bufferSize = 128 * 1024;
                         var buffer = new byte[bufferSize];
                         int count;
-                        while ((count = gzipStream.Read(buffer, 0, bufferSize)) != 0)
+
+                        while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
                         {
+                            cancellationToken.ThrowIfCancellationRequested();
                             targetStream.Write(buffer, 0, count);
-                            bytesProcessed += count;
-                            onProgress(bytesProcessed / (double) file.Size.Value);
+
+                            long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
+                            onProgress(bytesProcessed / (double) fileSize);
                         }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
                     }
                     catch (Exception e)
                     {
                         DebugLogger.LogException(e);
 
-                        var logManager = PatcherLogManager.Instance;
+                        PatcherLogManager logManager = PatcherLogManager.Instance;
                         PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
                         RavenClient ravenClient = sentryRegistry.RavenClient;
 
                         var sentryEvent = new SentryEvent(e);
                         PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
-
                         ravenClient.Capture(sentryEvent);
 
                         throw;
                     }
+                    
                 }
             }
         }

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Support for LZMA2 compression using XZ
+
+### Fixed
+- Invalid display of progress value when unarchiving
+
 ## [3.10.0]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
