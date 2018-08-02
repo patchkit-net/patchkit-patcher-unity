@@ -10,3 +10,5 @@
 *.bundle binary
 *.png binary
 *.ttf binary
+
+*.sh text eol=lf
