@@ -45,15 +45,17 @@ namespace PatchKit.Unity.Editor
             string patcherExe = Path.GetFileName(buildPath);
             string launchScript = UnixLaunchScriptCreator.LaunchScriptName;
 
+            string launchScriptPath = "{exedir}/" + launchScript;
+
             return new Manifest {
-                ExeFileName = string.Format("\"{{exedir}}/{0}\"", patcherExe),
-                ExeArguments = "--installdir \"{installdir}\" --secret \"{secret}\"",
+                ExeFileName = "sh",
+                ExeArguments = launchScriptPath + " \"{exedir}\" \"" + patcherExe + "\" \"{secret}\" \"{installdir}\"",
 
                 Version = ManifestVersion,
                 Target = "sh",
                 Arguments = new Manifest.Argument[] {
                     new Manifest.Argument { Value = new string[] {
-                        "{exedir}/" + launchScript
+                        launchScriptPath
                     }},
                     new Manifest.Argument { Value = new string[] {
                         "{exedir}",
