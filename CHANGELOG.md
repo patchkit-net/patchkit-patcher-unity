@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Pre update integrity checking uses the Repair strategy
 
 ### Fixed
+- Availability of user action buttons (update, start & check for updates)
 - Handling of the ZLib exception
 - Invalid handling of patcher-data-location argument with spaces
 
