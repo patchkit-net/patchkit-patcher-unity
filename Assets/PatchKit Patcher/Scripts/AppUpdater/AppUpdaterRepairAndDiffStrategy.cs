@@ -14,23 +14,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 {
     public class AppUpdaterRepairAndDiffStrategy: IAppUpdaterStrategy
     {
-        private readonly AppUpdaterContext _context;
+        private readonly IAppUpdaterStrategy _repairStrategy;
+        private readonly IAppUpdaterStrategy _diffStrategy;
 
-        private readonly UpdaterStatus _status;
-
-        private readonly ILogger _logger;
-
-        private readonly bool _shouldPerformDiff;
-
-        public AppUpdaterRepairAndDiffStrategy(AppUpdaterContext context, UpdaterStatus status, bool performDiff = true)
+        public AppUpdaterRepairAndDiffStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
             Assert.IsNotNull(context, "Context is null");
 
-            _context = context;
-            _status = status;
-            _shouldPerformDiff = performDiff;
-
-            _logger = PatcherLogManager.DefaultLogger;
+            _repairStrategy = new AppUpdaterRepairStrategy(context, status);
+            _diffStrategy = new AppUpdaterDiffStrategy(context, status);
         }
 
         public StrategyType GetStrategyType()
@@ -40,132 +32,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public void Update(CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Executing content repair strategy.");
-            var installedVersionId = _context.App.GetInstalledVersionId();
-
-            string metaDestination = _context.App.DownloadDirectory.GetDiffPackageMetaPath(installedVersionId);
-
-            var commandFactory = new AppUpdaterCommandFactory();
-
-            var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_status);
-            validateLicense.Execute(cancellationToken);
-
-            var geolocateCommand = commandFactory.CreateGeolocateCommand();
-            geolocateCommand.Prepare(_status);
-            geolocateCommand.Execute(cancellationToken);
-
-            var resource = _context.App.RemoteData.GetContentPackageResource(
-                installedVersionId, 
-                validateLicense.KeySecret, 
-                geolocateCommand.CountryCode);
-
-            if (!resource.HasMetaUrls())
-            {
-                throw new ArgumentException("Cannot execute content repair strategy without meta files.");
-            }
-
-            _logger.LogDebug("Downloading the meta file.");
-            var downloader = new HttpDownloader(metaDestination, resource.GetMetaUrls());
-            downloader.Download(cancellationToken);
-
-            ICheckVersionIntegrityCommand checkVersionIntegrityCommand 
-                = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context);
-
-            checkVersionIntegrityCommand.Prepare(_status);
-            checkVersionIntegrityCommand.Execute(cancellationToken);
-
-            var meta = Pack1Meta.ParseFromFile(metaDestination);
-
-            FileIntegrity[] filesIntegrity = checkVersionIntegrityCommand.Results.Files;
-
-            Pack1Meta.FileEntry[] brokenFiles = filesIntegrity
-                // Filter only files with invalid size, hash or missing entirely
-                .Where(f => f.Status == FileIntegrityStatus.InvalidHash 
-                         || f.Status == FileIntegrityStatus.InvalidSize
-                         || f.Status == FileIntegrityStatus.MissingData)
-                // Map to file entires from meta
-                .Select(integrity => meta.Files.SingleOrDefault(file => file.Name == integrity.FileName))
-                // Filter only regular files
-                .Where(file => file.Type == Pack1Meta.RegularFileType)
-                .ToArray();
-
-            if (brokenFiles.Length == 0)
-            {
-                _logger.LogDebug("Nothing to repair.");
-                return;
-            }
-            _logger.LogDebug(string.Format("Broken files count: {0}", brokenFiles.Length));
-            
-            IRepairFilesCommand repairCommand = commandFactory.CreateRepairFilesCommand(
-                installedVersionId,
-                _context,
-                resource,
-                brokenFiles,
-                meta);
-
-            repairCommand.Prepare(_status);
-            repairCommand.Execute(cancellationToken);
-
-            if (_shouldPerformDiff)
-            {
-                _logger.LogDebug("Repair successful, following up with a diff.");
-                PerformDiff(cancellationToken);
-            }
+            _repairStrategy.Update(cancellationToken);
+            _diffStrategy.Update(cancellationToken);
         }
-
-#region DIFF_COPY_PASTE
-        private struct DiffCommands
-        {
-            public IDownloadPackageCommand Download;
-            public IInstallDiffCommand Install;
-        }
-
-        private void PerformDiff(CancellationToken cancellationToken)
-        {
-            _logger.LogDebug("Updating with diff strategy.");
-
-            var latestVersionId = _context.App.GetLatestVersionId();
-            var currentLocalVersionId = _context.App.GetInstalledVersionId();
-
-            var commandFactory = new AppUpdaterCommandFactory();
-            var geolocateCommand = commandFactory.CreateGeolocateCommand();
-
-            geolocateCommand.Prepare(_status);
-            geolocateCommand.Execute(cancellationToken);
-
-            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForDiff(latestVersionId, _context);
-            checkDiskSpaceCommand.Prepare(_status);
-            checkDiskSpaceCommand.Execute(cancellationToken);
-
-            var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_status);
-            validateLicense.Execute(cancellationToken);
-
-            var diffCommandsList = new List<DiffCommands>();
-
-            for (int i = currentLocalVersionId + 1; i <= latestVersionId; i++)
-            {
-                DiffCommands diffCommands;
-
-                diffCommands.Download = commandFactory.CreateDownloadDiffPackageCommand(i, validateLicense.KeySecret,
-                    geolocateCommand.CountryCode, _context);
-                diffCommands.Download.Prepare(_status);
-
-                diffCommands.Install = commandFactory.CreateInstallDiffCommand(i, _context);
-                diffCommands.Install.Prepare(_status);
-
-                diffCommandsList.Add(diffCommands);
-            }
-
-            foreach (var diffCommands in diffCommandsList)
-            {
-                diffCommands.Download.Execute(cancellationToken);
-                diffCommands.Install.Execute(cancellationToken);
-            }
-
-            _context.App.DownloadDirectory.Clear();
-        }
-#endregion
     }
 }

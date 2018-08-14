@@ -33,6 +33,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     return new AppUpdaterDiffStrategy(context, _status);
                 case StrategyType.RepairAndDiff:
                     return new AppUpdaterRepairAndDiffStrategy(context, _status);
+                case StrategyType.Repair:
+                    return new AppUpdaterRepairStrategy(context, _status); 
                 default:
                     return new AppUpdaterContentStrategy(context, _status);
             }
@@ -49,6 +51,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 case StrategyType.Diff:
                     return StrategyType.Content;
                 case StrategyType.RepairAndDiff:
+                    return StrategyType.Content;
+                case StrategyType.Repair:
                     return StrategyType.Content;
                 default:
                     return StrategyType.Content;

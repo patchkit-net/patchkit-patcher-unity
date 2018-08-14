@@ -574,12 +574,17 @@ namespace PatchKit.Unity.Patcher
 
                 DebugLogger.LogVariable(isInstalled, "isInstalled");
 
-                _canRepairApp.Value = false; // not implemented
-                _canInstallApp.Value = !isInstalled;
-                _canCheckForAppUpdates.Value = isInstalled;
-                _canStartApp.Value = isInstalled;
+                bool canRepairApp = false; // not implemented
+                bool canInstallApp = !isInstalled;
+                bool canCheckForAppUpdates = isInstalled;
+                bool canStartApp = isInstalled;
 
-                if (_canInstallApp.Value && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
+                _canRepairApp.Value = false;
+                _canInstallApp.Value = false;
+                _canCheckForAppUpdates.Value = false;
+                _canStartApp.Value = false;
+
+                if (canInstallApp && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
                 {
                     DebugLogger.Log("Automatically deciding to install app.");
                     _hasAutomaticallyInstalledApp = true;
@@ -588,7 +593,7 @@ namespace PatchKit.Unity.Patcher
                     return;
                 }
 
-                if (_canCheckForAppUpdates.Value && _configuration.AutomaticallyCheckForAppUpdates &&
+                if (canCheckForAppUpdates && _configuration.AutomaticallyCheckForAppUpdates &&
                     !_hasAutomaticallyCheckedForAppUpdate)
                 {
                     DebugLogger.Log("Automatically deciding to check for app updates.");
@@ -598,7 +603,7 @@ namespace PatchKit.Unity.Patcher
                     return;
                 }
 
-                if (_canStartApp.Value && _configuration.AutomaticallyStartApp && !_hasAutomaticallyStartedApp)
+                if (canStartApp && _configuration.AutomaticallyStartApp && !_hasAutomaticallyStartedApp)
                 {
                     DebugLogger.Log("Automatically deciding to start app.");
                     _hasAutomaticallyStartedApp = true;
@@ -606,12 +611,23 @@ namespace PatchKit.Unity.Patcher
                     return;
                 }
 
+                _canRepairApp.Value = canRepairApp;
+                _canInstallApp.Value = canInstallApp;
+                _canCheckForAppUpdates.Value = canCheckForAppUpdates;
+                _canStartApp.Value = canStartApp;
+
                 _userDecisionSetEvent.Reset();
                 using (cancellationToken.Register(() => _userDecisionSetEvent.Set()))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     _userDecisionSetEvent.WaitOne();
                 }
+
+                _canRepairApp.Value = false;
+                _canInstallApp.Value = false;
+                _canCheckForAppUpdates.Value = false;
+                _canStartApp.Value = false;
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 DebugLogger.Log(string.Format("Waiting for user decision result: {0}.", _userDecision));
