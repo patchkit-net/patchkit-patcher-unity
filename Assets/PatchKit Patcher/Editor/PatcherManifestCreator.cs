@@ -49,7 +49,7 @@ namespace PatchKit.Unity.Editor
 
             return new Manifest {
                 ExeFileName = "sh",
-                ExeArguments = launchScriptPath + " \"{exedir}\" \"" + patcherExe + "\" \"{secret}\" \"{installdir}\"",
+                ExeArguments = "\"" + launchScriptPath + "\" \"{exedir}\" \"" + patcherExe + "\" \"{secret}\" \"{installdir}\"",
 
                 Version = ManifestVersion,
                 Target = "sh",
