@@ -93,7 +93,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             if (repairCost < contentSize)
             {
                 DebugLogger.Log(string.Format("Repair cost {0} is smaller than content cost {1}, repairing...", repairCost, contentSize));
-                IAppUpdaterStrategy repairStrategy = _strategyResolver.Create(StrategyType.RepairAndDiff, Context);
+                IAppUpdaterStrategy repairStrategy = _strategyResolver.Create(StrategyType.Repair, Context);
                 repairStrategy.Update(cancellationToken);
             }
             else

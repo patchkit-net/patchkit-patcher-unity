@@ -37,15 +37,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Attaching "system-info" to Sentry events as tag
 - Support for PK_OFFICIAL define
 - Sending 'patcher_started' event to Statistics Reporting Service
+- A launch script on Linux platforms
 
 ### Changed
 - Update API servers configuration
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
 - The patcher will now delete the lockfile when quitting
 - Sending the key secrets to content and diff url requests
+- Split the RepairAndDiff strategy into separate strategies.
+- Pre update integrity checking uses the Repair strategy
 
 ### Fixed
+- Availability of user action buttons (update, start & check for updates)
 - Handling of the ZLib exception
+- Invalid handling of patcher-data-location argument with spaces
 
 ## [3.9.2]
 ### Added
