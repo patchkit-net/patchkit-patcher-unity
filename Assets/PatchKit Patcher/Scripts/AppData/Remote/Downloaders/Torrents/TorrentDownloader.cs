@@ -112,6 +112,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
                     try
                     {
                         DownloadInternal(cancellationToken);
+                        break;
                     }
                     catch (TorrentClientException e)
                     {
