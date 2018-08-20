@@ -8,9 +8,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 {
     public class UnityTorrentClientProcessStartInfoProvider : ITorrentClientProcessStartInfoProvider
     {
-        private const string TorrentClientWinPath = "torrent-client/win/torrent-client.exe";
-        private const string TorrentClientOsx64Path = "torrent-client/osx64/torrent-client";
-        private const string TorrentClientLinux64Path = "torrent-client/linux64/torrent-client";
+        private const string TorrentClientDirectory = "patcher-p2p-helper";
+        private const string TorrentClientFileName = "patcher-p2p-helper";
+
+        private static readonly string TorrentClientWinPath = string.Format("{0}/win/{1}.exe", TorrentClientDirectory, TorrentClientFileName);
+        private static readonly string TorrentClientOsx64Path = string.Format("{0}/osx64/{1}", TorrentClientDirectory, TorrentClientFileName);
+        private static readonly string TorrentClientLinux64Path = string.Format("{0}/linux64/{1}", TorrentClientDirectory, TorrentClientFileName);
+        private static readonly string TorrentClientLinux32Path = string.Format("{0}/linux32/{1}", TorrentClientDirectory, TorrentClientFileName);
 
         private string _streamingAssetsPath;
 
@@ -52,16 +56,17 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
                 // make sure that binary can be executed
                 Chmod.SetExecutableFlag(processStartInfo.FileName);
 
-                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/osx64");
+                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, Path.Combine(TorrentClientDirectory, "osx64"));
 
                 return processStartInfo;
             }
 
-            if (Platform.IsLinux() && IntPtr.Size == 8) // Linux 64 bit
+            if (Platform.IsLinux()) // Linux 64 bit
             {
+                string torrentClientPath = IntPtr.Size == 8 ? TorrentClientLinux64Path : TorrentClientLinux32Path;
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = _streamingAssetsPath.PathCombine(TorrentClientLinux64Path),
+                    FileName = _streamingAssetsPath.PathCombine(torrentClientPath),
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -70,8 +75,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 
                 // make sure that binary can be executed
                 Chmod.SetExecutableFlag(processStartInfo.FileName);
-
-                processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/linux64");
 
                 return processStartInfo;
             }
