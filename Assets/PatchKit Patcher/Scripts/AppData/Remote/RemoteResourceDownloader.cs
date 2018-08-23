@@ -6,6 +6,7 @@ using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using ILogger = PatchKit.Logging.ILogger;
+using BytesRange = PatchKit.Network.BytesRange;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {

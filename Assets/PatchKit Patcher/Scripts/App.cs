@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
+using JetBrains.Annotations;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -9,8 +9,14 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher
 {
-    public class App : IDisposable
+    public class App
     {
+        private const string AppCacheFlieName = "patcher_cache.json";
+
+        private const string AppDataFileName = "app_data.json";
+
+        private const string DownloadsDirName = ".downloads";
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(App));
 
         public readonly ILocalDirectory LocalDirectory;
@@ -23,54 +29,80 @@ namespace PatchKit.Unity.Patcher
 
         public readonly IRemoteMetaData RemoteMetaData;
 
-        public ITemporaryDirectory TemporaryDirectory;
-
         private readonly string _appDataPath;
 
         private readonly int _overrideLatestVersionId;
 
-        private bool _disposed;
+        public enum InstallStatus
+        {
+            NotInstalled = 0,
+            Broken = 1,
+            Installed = 2
+        }
 
-        public App(string appDataPath, string appSecret, int overrideLatestVersionId, IRequestTimeoutCalculator requestTimeoutCalculator) : this(
+        public App(string appDataPath, string appSecret, int overrideLatestVersionId,
+            IRequestTimeoutCalculator requestTimeoutCalculator) : this(
             appDataPath,
             CreateDefaultLocalDirectory(appDataPath),
             CreateDefaultLocalMetaData(appDataPath),
-            CreateDefaultTemporaryDirectory(appDataPath),
             CreateDefaultDownloadDirectory(appDataPath),
             CreateDefaultRemoteData(appSecret, requestTimeoutCalculator),
             CreateDefaultRemoteMetaData(appSecret, requestTimeoutCalculator), overrideLatestVersionId)
         {
         }
 
-        public App(string appDataPath, ILocalDirectory localDirectory, ILocalMetaData localMetaData, ITemporaryDirectory temporaryDirectory,
-            IDownloadDirectory downloadDirectory, IRemoteData remoteData, IRemoteMetaData remoteMetaData,
+        public App([NotNull] string appDataPath, [NotNull] ILocalDirectory localDirectory,
+            [NotNull] ILocalMetaData localMetaData,
+            [NotNull] IDownloadDirectory downloadDirectory, [NotNull] IRemoteData remoteData,
+            [NotNull] IRemoteMetaData remoteMetaData,
             int overrideLatestVersionId)
         {
-            Checks.ArgumentNotNull(appDataPath, "appDataPath");
-            Checks.ArgumentNotNull(localDirectory, "localData");
-            Checks.ArgumentNotNull(localMetaData, "localMetaData");
-            Checks.ArgumentNotNull(temporaryDirectory, "temporaryData");
-            Checks.ArgumentNotNull(downloadDirectory, "downloadData");
-            Checks.ArgumentNotNull(remoteData, "remoteData");
-            Checks.ArgumentNotNull(remoteMetaData, "remoteMetaData");
+            if (string.IsNullOrEmpty(appDataPath))
+            {
+                throw new ArgumentException("Value cannot be null or empty.", "appDataPath");
+            }
+
+            if (localDirectory == null)
+            {
+                throw new ArgumentNullException("localDirectory");
+            }
+
+            if (localMetaData == null)
+            {
+                throw new ArgumentNullException("localMetaData");
+            }
+
+            if (downloadDirectory == null)
+            {
+                throw new ArgumentNullException("downloadDirectory");
+            }
+
+            if (remoteData == null)
+            {
+                throw new ArgumentNullException("remoteData");
+            }
+
+            if (remoteMetaData == null)
+            {
+                throw new ArgumentNullException("remoteMetaData");
+            }
 
             _appDataPath = appDataPath;
             LocalDirectory = localDirectory;
             LocalMetaData = localMetaData;
-            TemporaryDirectory = temporaryDirectory;
             DownloadDirectory = downloadDirectory;
             RemoteData = remoteData;
             RemoteMetaData = remoteMetaData;
             _overrideLatestVersionId = overrideLatestVersionId;
         }
 
-        public bool IsInstalled()
+        public InstallStatus GetInstallStatus()
         {
             var fileNames = LocalMetaData.GetRegisteredEntries();
 
             if (fileNames.Length == 0)
             {
-                return false;
+                return InstallStatus.NotInstalled;
             }
 
             int installedVersion = LocalMetaData.GetEntryVersionId(fileNames[0]);
@@ -80,8 +112,9 @@ namespace PatchKit.Unity.Patcher
                 string path = LocalDirectory.Path.PathCombine(fileName);
                 if (!File.Exists(path))
                 {
-                    DebugLogger.LogWarning("File in metadata, but not found on disk: " + fileName + ", search path: " + path);
-                    return false;
+                    DebugLogger.LogWarning("File in metadata, but not found on disk: " + fileName + ", search path: " +
+                                           path);
+                    return InstallStatus.Broken;
                 }
 
                 int fileVersion = LocalMetaData.GetEntryVersionId(fileName);
@@ -89,20 +122,26 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.LogWarning("File " + fileName + " installed version is " + fileVersion +
                                            " but expected " + installedVersion);
-                    return false;
+                    return InstallStatus.Broken;
                 }
             }
 
-            return true;
+            return InstallStatus.Installed;
         }
 
-        public void ReloadTemporaryDirectories()
+        public bool IsFullyInstalled()
         {
-            DebugLogger.Log("App: ReloadTemporaryDirectories");
+            return GetInstallStatus() == InstallStatus.Installed;
+        }
 
-            TemporaryDirectory.Dispose();
-            TemporaryDirectory = null;
-            TemporaryDirectory = CreateDefaultTemporaryDirectory(_appDataPath);
+        public bool IsInstallationBroken()
+        {
+            return GetInstallStatus() == InstallStatus.Broken;
+        }
+
+        public bool IsNotInstalled()
+        {
+            return GetInstallStatus() == InstallStatus.NotInstalled;
         }
 
         public int GetInstalledVersionId()
@@ -122,57 +161,30 @@ namespace PatchKit.Unity.Patcher
             return RemoteMetaData.GetLatestVersionId(retryRequests);
         }
 
-        public void Dispose()
-        {
-            Dispose(false);
-        }
-
-        ~App()
-        {
-            Dispose(false);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                TemporaryDirectory.Dispose();
-            }
-
-            _disposed = true;
-        }
-
         private static ILocalDirectory CreateDefaultLocalDirectory(string appDataPath)
         {
             return new LocalDirectory(appDataPath);
         }
 
-        private static ITemporaryDirectory CreateDefaultTemporaryDirectory(string appDataPath)
-        {
-            return new TemporaryDirectory(appDataPath, ".patcher_temp");
-        }
-
         private static IDownloadDirectory CreateDefaultDownloadDirectory(string appDataPath)
         {
-            return new DownloadDirectory(appDataPath.PathCombine(".downloads"));
+            return new DownloadDirectory(appDataPath.PathCombine(DownloadsDirName));
         }
 
         private static ILocalMetaData CreateDefaultLocalMetaData(string appDataPath)
         {
-            return new LocalMetaData(appDataPath.PathCombine("app_data.json"), appDataPath.PathCombine("patcher_cache.json"));
+            return new LocalMetaData(appDataPath.PathCombine(AppDataFileName),
+                appDataPath.PathCombine(AppCacheFlieName));
         }
 
-        private static IRemoteData CreateDefaultRemoteData(string appSecret, IRequestTimeoutCalculator requestTimeoutCalculator)
+        private static IRemoteData CreateDefaultRemoteData(string appSecret,
+            IRequestTimeoutCalculator requestTimeoutCalculator)
         {
             return new RemoteData(appSecret, requestTimeoutCalculator);
         }
 
-        private static IRemoteMetaData CreateDefaultRemoteMetaData(string appSecret, IRequestTimeoutCalculator requestTimeoutCalculator)
+        private static IRemoteMetaData CreateDefaultRemoteMetaData(string appSecret,
+            IRequestTimeoutCalculator requestTimeoutCalculator)
         {
             return new RemoteMetaData(appSecret, requestTimeoutCalculator);
         }

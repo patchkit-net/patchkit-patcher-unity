@@ -7,7 +7,7 @@ using Ionic.Zlib;
 using Newtonsoft.Json;
 using UnityEngine;
 
-#if UNITY_5_6_OR_NEWER
+#if UNITY_5_4_OR_NEWER
 using UnityEngine.Networking;
 #else
 using UnityEngine.Experimental.Networking;
@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher.Debug
             var putLinkRequest = new PutLinkRequest()
             {
                 AppId = "patcher-unity",
-                Version = PatcherInfo.GetVersion(),
+                Version = Version.Value,
                 Priority = "201",
                 Guid = Guid.ToString(),
                 Compression = "gz"

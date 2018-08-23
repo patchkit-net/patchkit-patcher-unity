@@ -17,5 +17,21 @@ If you need to recompile it, simply open the project file (`getdiskspaceosx/getd
 
 * **PK_PATCHER_FORCE_SECRET** - force certain app secret
 * **PK_PATCHER_FORCE_VERSION** - force certain app version
+* **PK_PATCHER_API_URL** - change used url of API
+* **PK_PATCHER_API_CACHE_URL** - changed used url of API cache
 * **PK_PATCHER_KEYS_URL** - change used url of keys API
-* **PK_PATCHER_MAIN_URL** - change used url of main API
+* **PK_PATCHER_KEEP_FILES_ON_ERROR** - keep temporary directories and files in case of patcher error
+
+## Troubleshooting
+
+### My patcher is opening in fullscreen mode
+
+Head to `File/Build settings...` and click `Player Settings`. Now, open section titled `Resolution and Presentation` and make sure that `Fullscreen Mode` is set to **Windowed**. There you can also change the default resolution of the patcher, by modifying `Default Screen Width/Height`. You might also want to set `Resizable Window` to off.
+
+### My patcher is not working when I minimize it
+
+Head to `File/Build settings...` and click `Player Settings`. Now, open section titled `Resolution and Presentation` and make sure that `Run In Background` is turned on.
+
+### My patcher is displaying *Resolution Dialog*
+
+Head to `File/Build settings...` and click `Player Settings`. Now, open section titled `Resolution and Presentation` and make sure that `Display Resolution Dialog` is set to `Disabled`.

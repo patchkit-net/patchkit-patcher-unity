@@ -29,17 +29,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             var mainSettings = Settings.GetMainApiConnectionSettings();
 
-            string overrideMainUrl;
-
-            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.MainUrlEnvironmentVariable, out overrideMainUrl))
-            {
-                var overrideMainUri = new Uri(overrideMainUrl);
-
-                mainSettings.MainServer.Host = overrideMainUri.Host;
-                mainSettings.MainServer.Port = overrideMainUri.Port;
-                mainSettings.MainServer.UseHttps = overrideMainUri.Scheme == Uri.UriSchemeHttps;
-            }
-
             _mainApiConnection = new MainApiConnection(mainSettings)
             {
                 HttpClient = new UnityHttpClient(),
@@ -56,17 +45,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             };
 
             var keysSettings = Settings.GetKeysApiConnectionSettings();
-
-            string overrideKeysUrl;
-
-            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.KeysUrlEnvironmentVariable, out overrideKeysUrl))
-            {
-                var overrideKeysUri = new Uri(overrideKeysUrl);
-
-                keysSettings.MainServer.Host = overrideKeysUri.Host;
-                keysSettings.MainServer.Port = overrideKeysUri.Port;
-                keysSettings.MainServer.UseHttps = overrideKeysUri.Scheme == Uri.UriSchemeHttps;
-            }
 
             _keysApiConnection = new KeysApiConnection(keysSettings)
             {

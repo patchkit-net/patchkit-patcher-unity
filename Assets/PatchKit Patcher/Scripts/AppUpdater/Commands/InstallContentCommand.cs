@@ -2,9 +2,9 @@
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Status;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -25,21 +25,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly AppContentSummary _versionContentSummary;
         private readonly ILocalDirectory _localData;
         private readonly ILocalMetaData _localMetaData;
-        private readonly ITemporaryDirectory _temporaryData;
 
-        private IGeneralStatusReporter _copyFilesStatusReporter;
-        private IGeneralStatusReporter _unarchivePackageStatusReporter;
+        private OperationStatus _copyFilesStatus;
+        private OperationStatus _unarchivePackageStatus;
         private Pack1Meta _pack1Meta;
 
         public InstallContentCommand(string packagePath, string packageMetaPath, string packagePassword, int versionId,
-            AppContentSummary versionContentSummary, ILocalDirectory localData, ILocalMetaData localMetaData,
-            ITemporaryDirectory temporaryData)
+            AppContentSummary versionContentSummary, ILocalDirectory localData, ILocalMetaData localMetaData)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
             // TODO: Validate the content summary.
             Checks.ArgumentNotNull(localData, "localData");
             Checks.ArgumentNotNull(localMetaData, "localMetaData");
-            Checks.ArgumentNotNull(temporaryData, "temporaryData");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
@@ -52,25 +49,29 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _versionContentSummary = versionContentSummary;
             _localData = localData;
             _localMetaData = localMetaData;
-            _temporaryData = temporaryData;
         }
 
-        public override void Prepare(IStatusMonitor statusMonitor)
+        public override void Prepare(UpdaterStatus status)
         {
-            base.Prepare(statusMonitor);
+            base.Prepare(status);
 
-            Checks.ArgumentNotNull(statusMonitor, "statusMonitor");
+            Checks.ArgumentNotNull(status, "statusMonitor");
 
             DebugLogger.Log("Preparing content installation.");
 
             _localData.PrepareForWriting();
-            _temporaryData.PrepareForWriting();
 
-            double copyFilesWeight = StatusWeightHelper.GetCopyContentFilesWeight(_versionContentSummary);
-            _copyFilesStatusReporter = statusMonitor.CreateGeneralStatusReporter(copyFilesWeight);
+            _copyFilesStatus = new OperationStatus
+            {
+                Weight = {Value = StatusWeightHelper.GetCopyContentFilesWeight(_versionContentSummary)}
+            };
+            status.RegisterOperation(_copyFilesStatus);
 
-            double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size);
-            _unarchivePackageStatusReporter = statusMonitor.CreateGeneralStatusReporter(unarchivePackageWeight);
+            _unarchivePackageStatus = new OperationStatus
+            {
+                Weight = {Value = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size)}
+            };
+            status.RegisterOperation(_unarchivePackageStatus);
         }
 
         public override void Execute(CancellationToken cancellationToken)
@@ -93,57 +94,52 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Installing content.");
             
-            var packageDirPath = _temporaryData.GetUniquePath();
-            DebugLogger.LogVariable(packageDirPath, "destinationDir");
+            TemporaryDirectory.ExecuteIn(_packagePath + ".temp_unpack_" + Path.GetRandomFileName(), (packageDir) => {
+                DebugLogger.LogVariable(packageDir.Path, "packageDirPath");
 
-            DebugLogger.Log("Creating package directory.");
-            DirectoryOperations.CreateDirectory(packageDirPath);
-            try
-            {
                 DebugLogger.Log("Unarchiving package.");
 
                 string usedSuffix;
-                IUnarchiver unarchiver = CreateUnrachiver(packageDirPath, out usedSuffix);
+                IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
-                _unarchivePackageStatusReporter.OnProgressChanged(0.0, "Unarchiving package...");
-                
+                _unarchivePackageStatus.IsActive.Value = true;
+                _unarchivePackageStatus.Description.Value = "Unarchiving package...";
+                _unarchivePackageStatus.Progress.Value = 0.0;
+
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
                 {
-                    var entryMinProgress = Mathf.Max(0, entry - 1) / (double) amount; // entry could be zero
+                    var entryMinProgress = (entry - 1) / (double) amount;
                     var entryMaxProgress = entry / (double) amount;
 
-                    var progress = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
+                    _unarchivePackageStatus.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
 
-                    _unarchivePackageStatusReporter.OnProgressChanged(progress, "Unarchiving package...");
+                    _unarchivePackageStatus.Description.Value = string.Format("Unarchiving package ({0}/{1})...", entry, amount);
                 };
 
                 unarchiver.Unarchive(cancellationToken);
 
-                _unarchivePackageStatusReporter.OnProgressChanged(1.0, string.Empty);
+                _unarchivePackageStatus.Progress.Value = 1.0;
+                _unarchivePackageStatus.IsActive.Value = false;
 
                 DebugLogger.Log("Copying files.");
 
-                _copyFilesStatusReporter.OnProgressChanged(0.0, "Installing package...");
-                
+                _copyFilesStatus.IsActive.Value = true;
+                _copyFilesStatus.Description.Value = "Installing...";
+                _copyFilesStatus.Progress.Value = 0.0;
+
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    InstallFile(_versionContentSummary.Files[i].Path, packageDirPath, usedSuffix);
+                    InstallFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
 
-                    _copyFilesStatusReporter.OnProgressChanged((i + 1)/(double)_versionContentSummary.Files.Length, "Installing package...");
+                    _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
+                    _copyFilesStatus.Description.Value = string.Format("Installing ({0}/{1})...", i + 1, _versionContentSummary.Files.Length);
                 }
 
-                _copyFilesStatusReporter.OnProgressChanged(1.0, string.Empty);
-            }
-            finally
-            {
-                DebugLogger.Log("Deleting package directory.");
-                if (Directory.Exists(packageDirPath))
-                {
-                    DirectoryOperations.Delete(packageDirPath, true);
-                }
-            }
+                _copyFilesStatus.Progress.Value = 1.0;
+                _copyFilesStatus.IsActive.Value = false;
+            });
         }
 
         private IUnarchiver CreateUnrachiver(string destinationDir, out string usedSuffix)

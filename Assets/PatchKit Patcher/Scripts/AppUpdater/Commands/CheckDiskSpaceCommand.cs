@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
 using PatchKit.Api.Models.Main;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Status;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -137,7 +137,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return requiredDiskSpace;
         }
 
-        public void Prepare(IStatusMonitor statusMonitor)
+        public void Prepare(UpdaterStatus status)
         {
             // do nothing
         }

@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -18,15 +18,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly AppUpdaterContext _context;
 
+        private readonly UpdaterStatus _status;
+
         private bool _updateHasBeenCalled;
 
-        public AppUpdaterDiffStrategy(AppUpdaterContext context)
+        public AppUpdaterDiffStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
 
             DebugLogger.LogConstructor();
             Checks.ArgumentNotNull(context, "context");
 
             _context = context;
+            _status = status;
         }
 
         public StrategyType GetStrategyType()
@@ -50,15 +53,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var commandFactory = new AppUpdaterCommandFactory();
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
 
-            geolocateCommand.Prepare(_context.StatusMonitor);
+            geolocateCommand.Prepare(_status);
             geolocateCommand.Execute(cancellationToken);
 
             var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForDiff(latestVersionId, _context);
-            checkDiskSpaceCommand.Prepare(_context.StatusMonitor);
+            checkDiskSpaceCommand.Prepare(_status);
             checkDiskSpaceCommand.Execute(cancellationToken);
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_context.StatusMonitor);
+            validateLicense.Prepare(_status);
             validateLicense.Execute(cancellationToken);
 
             var diffCommandsList = new List<DiffCommands>();
@@ -69,10 +72,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                 diffCommands.Download = commandFactory.CreateDownloadDiffPackageCommand(i, validateLicense.KeySecret,
                     geolocateCommand.CountryCode, _context);
-                diffCommands.Download.Prepare(_context.StatusMonitor);
+                diffCommands.Download.Prepare(_status);
 
                 diffCommands.Install = commandFactory.CreateInstallDiffCommand(i, _context);
-                diffCommands.Install.Prepare(_context.StatusMonitor);
+                diffCommands.Install.Prepare(_status);
 
                 diffCommandsList.Add(diffCommands);
             }

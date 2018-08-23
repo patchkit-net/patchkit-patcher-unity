@@ -7,7 +7,6 @@ using PatchKit.Api;
 using PatchKit.Unity.Patcher.AppUpdater;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Status;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.UI.Dialogs;
@@ -16,6 +15,7 @@ using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -24,7 +24,7 @@ namespace PatchKit.Unity.Patcher
     // - this component is destroyed only when application quits
     public class Patcher : MonoBehaviour
     {
-        private const string EditorAllowedSecret = "ac20fc855b75a7ea5f3e936dfd38ccd8";
+        public const string EditorAllowedSecret = "ac20fc855b75a7ea5f3e936dfd38ccd8";
 
         public enum UserDecision
         {
@@ -71,7 +71,7 @@ namespace PatchKit.Unity.Patcher
         private readonly ManualResetEvent _userDecisionSetEvent = new ManualResetEvent(false);
 
         private readonly IRequestTimeoutCalculator _requestTimeoutCalculator = new SimpleRequestTimeoutCalculator();
-        
+
         private bool _hasAutomaticallyInstalledApp;
 
         private bool _hasAutomaticallyCheckedForAppUpdate;
@@ -82,8 +82,6 @@ namespace PatchKit.Unity.Patcher
 
         private CancellationTokenSource _updateAppCancellationTokenSource;
 
-        public event Action<OverallStatus> UpdateAppStatusChanged;
-
         public ErrorDialog ErrorDialog;
 
         public string EditorAppSecret;
@@ -91,6 +89,13 @@ namespace PatchKit.Unity.Patcher
         public int EditorOverrideLatestVersionId;
 
         public PatcherConfiguration DefaultConfiguration;
+
+        private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
+
+        public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus
+        {
+            get { return _updaterStatus; }
+        }
 
         private readonly BoolReactiveProperty _canRepairApp = new BoolReactiveProperty(false);
 
@@ -133,7 +138,7 @@ namespace PatchKit.Unity.Patcher
         {
             get { return _data; }
         }
-        
+
         private readonly ReactiveProperty<string> _warning = new ReactiveProperty<string>();
 
         public IReadOnlyReactiveProperty<string> Warning
@@ -201,10 +206,13 @@ namespace PatchKit.Unity.Patcher
         private void CloseLockFile()
         {
             try
-            { 
+            {
                 if (_lockFileStream != null)
                 {
                     _lockFileStream.Close();
+
+                    DebugLogger.Log("Deleting the lock file.");
+                    File.Delete(_data.Value.LockFilePath);
                 }
             }
             catch
@@ -215,6 +223,8 @@ namespace PatchKit.Unity.Patcher
 
         private void Awake()
         {
+            UnityEngine.Assertions.Assert.raiseExceptions = true;
+
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 
@@ -222,7 +232,7 @@ namespace PatchKit.Unity.Patcher
             UnityDispatcher.Initialize();
             Application.runInBackground = true;
 
-            DebugLogger.LogFormat("patchkit-patcher-unity: {0}", PatcherInfo.GetVersion());
+            DebugLogger.LogFormat("patchkit-patcher-unity: {0}", Version.Value);
             DebugLogger.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
             DebugLogger.LogFormat("Runtime version: {0}", EnvironmentInfo.GetSystemVersion());
 
@@ -268,7 +278,7 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.Log("Cancelling application quit because patcher thread is alive.");
 
                 Application.CancelQuit();
-                
+
                 StartCoroutine(KillThread());
             }
         }
@@ -399,6 +409,8 @@ namespace PatchKit.Unity.Patcher
 
                 UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
+                UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent("patcher_started", _data.Value.AppSecret));
+
                 while (true)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -421,11 +433,11 @@ namespace PatchKit.Unity.Patcher
             catch (ThreadAbortException)
             {
                 DebugLogger.Log("Patcher thread finished: thread has been aborted.");
-            }            
+            }
             catch (MultipleInstancesException exception)
             {
                 DebugLogger.LogException(exception);
-                Quit();                
+                Quit();
             }
             catch (Exception exception)
             {
@@ -435,12 +447,6 @@ namespace PatchKit.Unity.Patcher
             finally
             {
                 _state.Value = PatcherState.None;
-
-                if (_app != null)
-                {
-                    _app.Dispose();
-                    _app = null;
-                }
             }
         }
 
@@ -554,33 +560,40 @@ namespace PatchKit.Unity.Patcher
 
                 _state.Value = PatcherState.WaitingForUserDecision;
 
-                bool isInstalled = _app.IsInstalled();
+                bool isInstalled = _app.IsFullyInstalled();
 
                 DebugLogger.LogVariable(isInstalled, "isInstalled");
 
-                _canRepairApp.Value = false; // not implemented
-                _canInstallApp.Value = !isInstalled;
-                _canCheckForAppUpdates.Value = isInstalled;
-                _canStartApp.Value = isInstalled;
+                bool canRepairApp = false; // not implemented
+                bool canInstallApp = !isInstalled;
+                bool canCheckForAppUpdates = isInstalled;
+                bool canStartApp = isInstalled;
 
-                if (_canInstallApp.Value && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
+                _canRepairApp.Value = false;
+                _canInstallApp.Value = false;
+                _canCheckForAppUpdates.Value = false;
+                _canStartApp.Value = false;
+
+                if (canInstallApp && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
                 {
                     DebugLogger.Log("Automatically deciding to install app.");
                     _hasAutomaticallyInstalledApp = true;
+                    _hasAutomaticallyCheckedForAppUpdate = true;
                     _userDecision = UserDecision.InstallAppAutomatically;
                     return;
                 }
 
-                if (_canCheckForAppUpdates.Value && _configuration.AutomaticallyCheckForAppUpdates &&
+                if (canCheckForAppUpdates && _configuration.AutomaticallyCheckForAppUpdates &&
                     !_hasAutomaticallyCheckedForAppUpdate)
                 {
                     DebugLogger.Log("Automatically deciding to check for app updates.");
+                    _hasAutomaticallyInstalledApp = true;
                     _hasAutomaticallyCheckedForAppUpdate = true;
                     _userDecision = UserDecision.CheckForAppUpdatesAutomatically;
                     return;
                 }
 
-                if (_canStartApp.Value && _configuration.AutomaticallyStartApp && !_hasAutomaticallyStartedApp)
+                if (canStartApp && _configuration.AutomaticallyStartApp && !_hasAutomaticallyStartedApp)
                 {
                     DebugLogger.Log("Automatically deciding to start app.");
                     _hasAutomaticallyStartedApp = true;
@@ -588,12 +601,23 @@ namespace PatchKit.Unity.Patcher
                     return;
                 }
 
+                _canRepairApp.Value = canRepairApp;
+                _canInstallApp.Value = canInstallApp;
+                _canCheckForAppUpdates.Value = canCheckForAppUpdates;
+                _canStartApp.Value = canStartApp;
+
                 _userDecisionSetEvent.Reset();
                 using (cancellationToken.Register(() => _userDecisionSetEvent.Set()))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     _userDecisionSetEvent.WaitOne();
                 }
+
+                _canRepairApp.Value = false;
+                _canInstallApp.Value = false;
+                _canCheckForAppUpdates.Value = false;
+                _canStartApp.Value = false;
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 DebugLogger.Log(string.Format("Waiting for user decision result: {0}.", _userDecision));
@@ -622,11 +646,11 @@ namespace PatchKit.Unity.Patcher
         private void ThreadExecuteUserDecision(CancellationToken cancellationToken)
         {
             bool displayWarningInsteadOfError = false;
-            
+
             try
             {
                 _warning.Value = string.Empty;
-                
+
                 DebugLogger.Log(string.Format("Executing user decision {0}...", _userDecision));
 
                 switch (_userDecision)
@@ -640,14 +664,14 @@ namespace PatchKit.Unity.Patcher
                         ThreadStartApp();
                         break;
                     case UserDecision.InstallAppAutomatically:
-                        displayWarningInsteadOfError = _app.IsInstalled();
+                        displayWarningInsteadOfError = _app.IsFullyInstalled();
                         ThreadUpdateApp(true, cancellationToken);
                         break;
                     case UserDecision.InstallApp:
                         ThreadUpdateApp(false, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdatesAutomatically:
-                        displayWarningInsteadOfError = _app.IsInstalled();
+                        displayWarningInsteadOfError = _app.IsFullyInstalled();
                         ThreadUpdateApp(true, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdates:
@@ -679,7 +703,7 @@ namespace PatchKit.Unity.Patcher
             catch (ApiConnectionException e)
             {
                 DebugLogger.LogException(e);
-                
+
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";
@@ -729,6 +753,8 @@ namespace PatchKit.Unity.Patcher
         {
             try
             {
+                _state.Value = PatcherState.DisplayingError;
+
                 DebugLogger.Log(string.Format("Displaying patcher error {0}...", error));
 
                 ErrorDialog.Display(error, cancellationToken);
@@ -769,11 +795,11 @@ namespace PatchKit.Unity.Patcher
 
         private void ThreadUpdateApp(bool automatically, CancellationToken cancellationToken)
         {
-            _state.Value = PatcherState.UpdatingApp;
+            _state.Value = PatcherState.Connecting;
 
             _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically);
             _remoteVersionId.Value = _app.GetLatestVersionId(!automatically);
-            if (_app.IsInstalled())
+            if (_app.IsFullyInstalled())
             {
                 _localVersionId.Value = _app.GetInstalledVersionId();
             }
@@ -783,15 +809,21 @@ namespace PatchKit.Unity.Patcher
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
                 var appUpdater = new AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration ) );
-                appUpdater.Context.StatusMonitor.OverallStatusChanged += OnUpdateAppStatusChanged;
 
                 try
                 {
-                    appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                    _updaterStatus.Value = appUpdater.Status;
+
+                    using (_updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
+                    {
+                        appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                    }
                 }
                 finally
                 {
-                    appUpdater.Context.StatusMonitor.OverallStatusChanged -= OnUpdateAppStatusChanged;
+                    _state.Value = PatcherState.None;
+
+                    _updaterStatus.Value = null;
                     _updateAppCancellationTokenSource = null;
                 }
             }
@@ -851,14 +883,6 @@ namespace PatchKit.Unity.Patcher
 
                 return false;
             }
-        }
-
-        protected virtual void OnUpdateAppStatusChanged(OverallStatus obj)
-        {
-            UnityDispatcher.Invoke(() =>
-            {
-                if (UpdateAppStatusChanged != null) UpdateAppStatusChanged(obj);
-            });
         }
     }
 }

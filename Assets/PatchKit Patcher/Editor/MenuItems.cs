@@ -20,12 +20,6 @@ public class MenuItems
         CleanTemporaryAppDirectories.Clean();
     }
 
-    [MenuItem(Root + "/Save Version Info", false, 101)]
-    public static void SaveVersionInfo()
-    {
-        PatcherVersionInfoCreator.SaveVersionInfo();
-    }
-
     [MenuItem(Root + "/Home Page...", false, 200)]
     public static void PatchKitHome()
     {

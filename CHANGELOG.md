@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.10.0]
+### Added
+- Support for PK_PATCHER_API_CACHE_URL environmental variable
+- Skipping patches for files that content remained unchanged in newer version (during diff installation)
+- Support for partial pack1 processing
+- Support for new lowest_version_diff property
+- Displaying the application display name
+- An inspector warning if the default editor app secret has been modified
+- Repairing invalid files before diff update
+- Including version information in Sentry reports
+- Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
+- Example scenes with double progress bars
+- A clickable PatchKit logo in non whitelabel patchers
+- Support for background image set in PatchKit Panel 
+- Support for PK_PATCHER_KEEP_FILES_ON_ERROR environment variable
+- Light integrity checking every time the Patcher is launched
+- Descriptive integrity check messages
+- Support for resuming torrent downloading
+- Animated progress bar during initialization and connecting
+- New manifest format support
+- Sending 'patcher_started' event to Statistics Reporting Service
+- A launch script on Linux platforms
+
+### Changed
+- Update API servers configuration
+- Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
+- The patcher will now delete the lockfile when quitting
+- Sending the key secrets to content and diff url requests
+- Split the RepairAndDiff strategy into separate strategies.
+- Pre update integrity checking uses the Repair strategy
+
+### Fixed
+- Availability of user action buttons (update, start & check for updates)
+- Handling of the ZLib exception
+- Invalid handling of patcher-data-location argument with spaces
+
 ## [3.9.2]
 ### Added
 - Logging the probable cause of the Zlib exception when unpacking
