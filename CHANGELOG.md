@@ -8,9 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for LZMA2 compression using XZ
 - Sending all events to Statistics Reporting Service
+- torrent-client executable for Linux 32-bit systems
 
 ### Fixed
 - Invalid display of progress value when unarchiving
+
+### Changed
+- torrent-client name to patcher-p2p-helper
+- Relevant torrent-client executables will now be copied with a custom script
 
 ## [3.10.0]
 ### Added
@@ -25,7 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
 - Example scenes with double progress bars
 - A clickable PatchKit logo in non whitelabel patchers
-- Support for background image set in PatchKit Panel 
+- Support for background image set in PatchKit Panel
 - Support for PK_PATCHER_KEEP_FILES_ON_ERROR environment variable
 - Light integrity checking every time the Patcher is launched
 - Descriptive integrity check messages

@@ -8,70 +8,54 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 {
     public class UnityTorrentClientProcessStartInfoProvider : ITorrentClientProcessStartInfoProvider
     {
-        private const string TorrentClientWinPath = "torrent-client/win/torrent-client.exe";
-        private const string TorrentClientOsx64Path = "torrent-client/osx64/torrent-client";
-        private const string TorrentClientLinux64Path = "torrent-client/linux64/torrent-client";
+        public const string TorrentClientDirectory = "Helpers/p2p/";
+        public const string TorrentClientFileName = "patcher-p2p-helper";
 
-        private string _streamingAssetsPath;
-
-        public UnityTorrentClientProcessStartInfoProvider()
+        private static string ResolveTorrentClientFileName()
         {
-            UnityDispatcher.Invoke(() =>
+            return ResolveTorrentClientFileName(Platform.GetPlatformType());
+        }
+
+        public static string ResolveTorrentClientFileName(PlatformType platform)
+        {
+            if (platform == PlatformType.Windows)
             {
-                _streamingAssetsPath = Application.streamingAssetsPath;
-            }).WaitOne();
+                return Path.Combine(TorrentClientDirectory, TorrentClientFileName + ".exe");
+            }
+
+            return Path.Combine(TorrentClientDirectory, TorrentClientFileName);
         }
 
         public ProcessStartInfo GetProcessStartInfo()
         {
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = ResolveTorrentClientFileName(),
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
             if (Platform.IsWindows())
             {
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = _streamingAssetsPath.PathCombine(TorrentClientWinPath),
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
                 return processStartInfo;
             }
 
             if (Platform.IsOSX())
             {
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = _streamingAssetsPath.PathCombine(TorrentClientOsx64Path),
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
                 // make sure that binary can be executed
                 Chmod.SetExecutableFlag(processStartInfo.FileName);
 
-                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/osx64");
+                processStartInfo.EnvironmentVariables["DYLD_LIBRARY_PATH"] = TorrentClientDirectory;
 
                 return processStartInfo;
             }
 
-            if (Platform.IsLinux() && IntPtr.Size == 8) // Linux 64 bit
+            if (Platform.IsLinux())
             {
-                var processStartInfo = new ProcessStartInfo
-                {
-                    FileName = _streamingAssetsPath.PathCombine(TorrentClientLinux64Path),
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
                 // make sure that binary can be executed
                 Chmod.SetExecutableFlag(processStartInfo.FileName);
-
-                processStartInfo.EnvironmentVariables["LD_LIBRARY_PATH"] = Path.Combine(_streamingAssetsPath, "torrent-client/linux64");
 
                 return processStartInfo;
             }

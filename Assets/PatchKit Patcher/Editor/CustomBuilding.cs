@@ -2,10 +2,11 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Linq;
 using System.Diagnostics;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity
 {
-    public class CustomBuildScripts 
+    public class CustomBuildScripts
     {
         [MenuItem("Tools/Build/Windows x86")]
         public static void BuildWindows86 ()
@@ -78,6 +79,29 @@ namespace PatchKit.Unity
             }
         }
 
+        public static PlatformType BuildTargetToPlatformType(BuildTarget target)
+        {
+            switch (target)
+            {
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64:
+                    return PlatformType.Windows;
+
+                case BuildTarget.StandaloneLinux:
+                case BuildTarget.StandaloneLinux64:
+                case BuildTarget.StandaloneLinuxUniversal:
+                    return PlatformType.Linux;
+
+                case BuildTarget.StandaloneOSXIntel:
+                case BuildTarget.StandaloneOSXIntel64:
+                case BuildTarget.StandaloneOSXUniversal:
+                    return PlatformType.OSX;
+
+                default:
+                    throw new System.ArgumentException("Unsupported build target " + target.ToString(), "target");
+            }
+        }
+
         private static void Build(BuildTarget target)
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -133,7 +157,7 @@ namespace PatchKit.Unity
                 }
             }
 
-            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions 
+            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions
                                     | BuildOptions.ShowBuiltPlayer;
 
             string path = EditorUtility.SaveFolderPanel("Choose where to build the Patcher", "", "");

@@ -1,6 +1,5 @@
 using System.IO;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
@@ -28,7 +27,7 @@ namespace PatchKit.Unity.Editor
 
             string launchScriptPath = LaunchScriptPath(buildPath);
 
-            File.Copy(LaunchScriptContentFile, launchScriptPath);
+            File.Copy(LaunchScriptContentFile, launchScriptPath, true);
         }
     }
 }
