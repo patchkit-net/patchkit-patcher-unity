@@ -98,7 +98,7 @@ namespace PatchKit.Unity
                     return PlatformType.OSX;
 
                 default:
-                    throw new System.ArgumentException("target");
+                    throw new System.ArgumentException("Unsupported build target " + target.ToString(), "target");
             }
         }
 
