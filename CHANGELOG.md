@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Invalid display of progress value when unarchiving
 
+## [3.10.1]
+### Fixed
+- Updated torrent-client to fix the issue with paths with spaces in them
+- Missing unpacking suffix when repairing files
+
 ## [3.10.0]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
@@ -25,7 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
 - Example scenes with double progress bars
 - A clickable PatchKit logo in non whitelabel patchers
-- Support for background image set in PatchKit Panel 
+- Support for background image set in PatchKit Panel
 - Support for PK_PATCHER_KEEP_FILES_ON_ERROR environment variable
 - Light integrity checking every time the Patcher is launched
 - Descriptive integrity check messages
