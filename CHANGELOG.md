@@ -4,13 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Fixed
-- Missing unpacking suffix when repairing files
-
 ## [3.10.1]
 ### Fixed
 - Updated torrent-client to fix the issue with paths with spaces in them
+- Missing unpacking suffix when repairing files
 
 ## [3.10.0]
 ### Added
