@@ -139,6 +139,22 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return _resource.HasMetaUrls();
         }
 
+        private bool CanUseTorrents()
+        {
+            if (!_useTorrents)
+            {
+                return false;
+            }
+
+            bool isHttpForced;
+            if (!EnvironmentInfo.TryReadBoolEnvironmentVariable(EnvironmentVariables.ForceHttp, out isHttpForced))
+            {
+                return true;
+            }
+
+            return !isHttpForced;
+        }
+
         public void Download(CancellationToken cancellationToken)
         {
             try
@@ -163,7 +179,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                     _logger.LogDebug("Resource meta are not available.");
                 }
 
-                if (_useTorrents)
+                if (CanUseTorrents())
                 {
                     _logger.LogDebug("Torrent downloading is enabled.");
 
