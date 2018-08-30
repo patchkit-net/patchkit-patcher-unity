@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Invalid display of progress value when unarchiving
+- Wrapping the GZipStream input to avoid errors
 
 ## [3.10.1]
 ### Fixed
