@@ -16,6 +16,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
     /// Downloads file through torrents by using <see cref="TorrentClient"/>.
     /// </summary>
     /// <seealso cref="System.IDisposable" />
+    [Obsolete("Torrent downloading is deprecated.")]
     public sealed class TorrentDownloader : ITorrentDownloader
     {
         private class RetryStrategy : IRequestRetryStrategy

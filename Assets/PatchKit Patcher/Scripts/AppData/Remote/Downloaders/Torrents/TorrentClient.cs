@@ -16,6 +16,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
     /// Provides an easy access for torrent client program.
     /// </summary>
     /// <seealso cref="System.IDisposable" />
+    [Obsolete("Torrent downloading is deprecated.")]
     public sealed class TorrentClient : IDisposable
     {
         private readonly ILogger _logger;
