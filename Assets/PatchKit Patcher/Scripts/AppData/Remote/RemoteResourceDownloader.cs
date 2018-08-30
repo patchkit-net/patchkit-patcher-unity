@@ -20,11 +20,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             [NotNull] ResourceUrl[] urls, ChunksData chunksData,
             long size);
 
-        public delegate ITorrentDownloader CreateNewTorrentDownloader([NotNull] string destinationFilePath,
-            [NotNull] string torrentFilePath,
-            long totalBytes);
-
-
         private readonly ILogger _logger;
 
         private readonly string _destinationFilePath;
@@ -34,7 +29,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private readonly CreateNewHttpDownloader _createNewHttpDownloader;
         private readonly CreateNewChunkedHttpDownloader _createNewChunkedHttpDownloader;
-        private readonly CreateNewTorrentDownloader _createNewTorrentDownloader;
 
         private bool _downloadHasBeenCalled;
 
@@ -42,15 +36,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public RemoteResourceDownloader(string destinationFilePath, string destinationMetaPath, RemoteResource resource)
             : this(destinationFilePath, destinationMetaPath, resource, CreateDefaultHttpDownloader,
-                CreateDefaultChunkedHttpDownloader, CreateDefaultTorrentDownloader)
+                CreateDefaultChunkedHttpDownloader)
         {
         }
 
         public RemoteResourceDownloader([NotNull] string destinationFilePath, [NotNull] string destinationMetaPath,
             RemoteResource resource,
             CreateNewHttpDownloader createNewHttpDownloader,
-            CreateNewChunkedHttpDownloader createNewChunkedHttpDownloader,
-            CreateNewTorrentDownloader createNewTorrentDownloader)
+            CreateNewChunkedHttpDownloader createNewChunkedHttpDownloader)
         {
             if (destinationFilePath == null) throw new ArgumentNullException("destinationFilePath");
             if (destinationMetaPath == null) throw new ArgumentNullException("destinationMetaPath");
@@ -61,7 +54,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _resource = resource;
             _createNewHttpDownloader = createNewHttpDownloader;
             _createNewChunkedHttpDownloader = createNewChunkedHttpDownloader;
-            _createNewTorrentDownloader = createNewTorrentDownloader;
         }
 
         private string TorrentFilePath
@@ -88,19 +80,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             torrentFileDownloader.Download(cancellationToken);
 
             _logger.LogDebug("Torrent file downloaded.");
-        }
-
-        private void DownloadWithTorrents(CancellationToken cancellationToken)
-        {
-            DownloadTorrentFile(cancellationToken);
-
-            _logger.LogDebug("Downloading resource with torrents...");
-
-            var downloader = _createNewTorrentDownloader(_destinationFilePath, TorrentFilePath, _resource.Size);
-            downloader.DownloadProgressChanged += OnDownloadProgressChanged;
-            downloader.Download(cancellationToken);
-
-            _logger.LogDebug("Resource has been downloaded with torrents.");
         }
 
         private void DownloadWithChunkedHttp(CancellationToken cancellationToken)
@@ -209,13 +188,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             long size)
         {
             return new ChunkedHttpDownloader(destinationFilePath, urls, chunksData, size);
-        }
-
-        private static ITorrentDownloader CreateDefaultTorrentDownloader([NotNull] string destinationFilePath,
-            [NotNull] string torrentFilePath,
-            long totalBytes)
-        {
-            return new TorrentDownloader(destinationFilePath, torrentFilePath, totalBytes);
         }
     }
 }
