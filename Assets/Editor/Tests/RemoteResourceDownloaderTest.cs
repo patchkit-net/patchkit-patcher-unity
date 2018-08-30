@@ -51,7 +51,7 @@ public class RemoteResourceDownloaderTest
                 new ResourceUrl
                 {
                     Url = "url-2",
-                    MetaUrl = null, 
+                    MetaUrl = null,
                     Country = "PL",
                     PartSize = 0,
                 }
@@ -90,7 +90,7 @@ public class RemoteResourceDownloaderTest
     }
 
     [Test]
-    public void UseTorrentDownloaderFirst()
+    public void TorrentDownloadIsDisabled()
     {
         RemoteResource resource = CreateTestRemoteResource();
 
@@ -98,41 +98,18 @@ public class RemoteResourceDownloaderTest
         var chunkedHttpDownloader = Substitute.For<IChunkedHttpDownloader>();
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
-        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, true,
+        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource,
             (path, urls) => httpDownloader,
             (path, urls, data, size) => chunkedHttpDownloader,
             (path, filePath, bytes) => torrentDownloader);
 
         downloader.Download(CancellationToken.Empty);
 
-        chunkedHttpDownloader.DidNotReceiveWithAnyArgs().Download(CancellationToken.Empty);
-        torrentDownloader.ReceivedWithAnyArgs().Download(CancellationToken.Empty);
+        torrentDownloader.DidNotReceiveWithAnyArgs().Download(CancellationToken.Empty);
     }
 
     [Test]
-    public void UseChunkedHttpDownloaderIfTorrentFails()
-    {
-        RemoteResource resource = CreateTestRemoteResource();
-
-        var httpDownloader = Substitute.For<IHttpDownloader>();
-        var chunkedHttpDownloader = Substitute.For<IChunkedHttpDownloader>();
-        var torrentDownloader = Substitute.For<ITorrentDownloader>();
-        torrentDownloader.When(t => t.Download(CancellationToken.Empty)).Do(
-            info => { throw new DownloadFailureException("Test."); });
-
-        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, true,
-            (path, urls) => httpDownloader,
-            (path, urls, data, size) => chunkedHttpDownloader,
-            (path, filePath, bytes) => torrentDownloader);
-
-        downloader.Download(CancellationToken.Empty);
-
-        chunkedHttpDownloader.ReceivedWithAnyArgs().Download(CancellationToken.Empty);
-        torrentDownloader.ReceivedWithAnyArgs().Download(CancellationToken.Empty);
-    }
-
-    [Test]
-    public void UseChunkedHttpDownloaderIfTorrentIsNotUsed()
+    public void UseChunkedHttpDownloader()
     {
         RemoteResource resource = CreateTestRemoteResource();
 
@@ -140,7 +117,7 @@ public class RemoteResourceDownloaderTest
         var chunkedHttpDownloader = Substitute.For<IChunkedHttpDownloader>();
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
-        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, false,
+        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource,
             (path, urls) => httpDownloader,
             (path, urls, data, size) => chunkedHttpDownloader,
             (path, filePath, bytes) => torrentDownloader);
@@ -162,7 +139,7 @@ public class RemoteResourceDownloaderTest
         var chunkedHttpDownloader = Substitute.For<IChunkedHttpDownloader>();
         var torrentDownloader = Substitute.For<ITorrentDownloader>();
 
-        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource, false,
+        var downloader = new RemoteResourceDownloader(_filePath, _metaFilePath, resource,
             (path, urls) => httpDownloader,
             (path, urls, data, size) => chunkedHttpDownloader,
             (path, filePath, bytes) => torrentDownloader);

@@ -32,7 +32,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private readonly RemoteResource _resource;
 
-        private readonly bool _useTorrents;
         private readonly CreateNewHttpDownloader _createNewHttpDownloader;
         private readonly CreateNewChunkedHttpDownloader _createNewChunkedHttpDownloader;
         private readonly CreateNewTorrentDownloader _createNewTorrentDownloader;
@@ -41,16 +40,14 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public RemoteResourceDownloader(string destinationFilePath, string destinationMetaPath, RemoteResource resource,
-            bool useTorrents) :
-            this(destinationFilePath, destinationMetaPath, resource, useTorrents, CreateDefaultHttpDownloader,
+        public RemoteResourceDownloader(string destinationFilePath, string destinationMetaPath, RemoteResource resource)
+            : this(destinationFilePath, destinationMetaPath, resource, CreateDefaultHttpDownloader,
                 CreateDefaultChunkedHttpDownloader, CreateDefaultTorrentDownloader)
         {
         }
 
         public RemoteResourceDownloader([NotNull] string destinationFilePath, [NotNull] string destinationMetaPath,
             RemoteResource resource,
-            bool useTorrents,
             CreateNewHttpDownloader createNewHttpDownloader,
             CreateNewChunkedHttpDownloader createNewChunkedHttpDownloader,
             CreateNewTorrentDownloader createNewTorrentDownloader)
@@ -62,7 +59,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _destinationFilePath = destinationFilePath;
             _destinationMetaPath = destinationMetaPath;
             _resource = resource;
-            _useTorrents = useTorrents;
             _createNewHttpDownloader = createNewHttpDownloader;
             _createNewChunkedHttpDownloader = createNewChunkedHttpDownloader;
             _createNewTorrentDownloader = createNewTorrentDownloader;
@@ -162,25 +158,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 else
                 {
                     _logger.LogDebug("Resource meta are not available.");
-                }
-
-                if (_useTorrents)
-                {
-                    _logger.LogDebug("Torrent downloading is enabled.");
-
-                    try
-                    {
-                        DownloadWithTorrents(cancellationToken);
-                        return;
-                    }
-                    catch (DownloadFailureException e)
-                    {
-                        _logger.LogWarning("Failed to download resource with torrents. Falling back to other downloaders...", e);
-                    }
-                }
-                else
-                {
-                    _logger.LogDebug("Torrent downloading is disabled.");
                 }
 
                 if (AreChunksAvailable())
