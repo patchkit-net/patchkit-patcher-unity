@@ -76,7 +76,7 @@ namespace PatchKit.Unity.Utilities
 
                 totalBytesRead += bytesRead;
             }
-            while (bytesRead > 0);
+            while (bytesRead > 0 && totalBytesRead < count);
 
             Array.ConstrainedCopy(tempBuffer, 0, buffer, offset, count);
 
