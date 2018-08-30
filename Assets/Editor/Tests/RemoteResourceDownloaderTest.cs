@@ -37,7 +37,6 @@ public class RemoteResourceDownloaderTest
             ChunksData = CreateTestChunksData(),
             Size = 1,
             HashCode = "hashcode",
-            TorrentUrls = new[] {"torrent-url"},
             ResourceUrls = new[]
             {
                 // TODO: Test when MetaUrl is set

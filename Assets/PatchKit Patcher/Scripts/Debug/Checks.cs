@@ -32,10 +32,6 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 validationFailed("Resource urls are null or empty.");
             }
-            else if (resource.TorrentUrls == null || resource.TorrentUrls.Length == 0)
-            {
-                validationFailed("Resource torrent urls are null or empty.");
-            }
         }
 
         protected static void MoreThanZero<T>(T value, ValidationFailedHandler validationFailed) where T : IComparable

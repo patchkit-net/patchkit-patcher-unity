@@ -55,13 +55,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             RemoteResource resource = new RemoteResource();
 
             var summary = _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId);
-            var torrentUrl = _mainApiConnection.GetAppVersionContentTorrentUrl(_appSecret, versionId, keySecret);
             var urls = _mainApiConnection.GetAppVersionContentUrls(_appSecret, versionId, countryCode, keySecret);
 
             resource.Size = summary.Size;
             resource.HashCode = summary.HashCode;
             resource.ChunksData = ConvertToChunksData(summary.Chunks);
-            resource.TorrentUrls = new[] {torrentUrl.Url};
             resource.ResourceUrls = urls;
 
             return resource;
@@ -78,13 +76,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             RemoteResource resource = new RemoteResource();
 
             var summary = _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
-            var torrentUrl = _mainApiConnection.GetAppVersionDiffTorrentUrl(_appSecret, versionId, keySecret);
             var urls = _mainApiConnection.GetAppVersionDiffUrls(_appSecret, versionId, countryCode, keySecret);
 
             resource.Size = summary.Size;
             resource.HashCode = summary.HashCode;
             resource.ChunksData = ConvertToChunksData(summary.Chunks);
-            resource.TorrentUrls = new[] { torrentUrl.Url };
             resource.ResourceUrls = urls;
             return resource;
         }

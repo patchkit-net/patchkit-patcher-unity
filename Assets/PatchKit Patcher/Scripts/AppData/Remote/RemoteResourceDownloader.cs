@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using ILogger = PatchKit.Logging.ILogger;
@@ -56,11 +55,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _createNewChunkedHttpDownloader = createNewChunkedHttpDownloader;
         }
 
-        private string TorrentFilePath
-        {
-            get { return _destinationFilePath + ".torrent"; }
-        }
-
         private void DownloadMeta(CancellationToken cancellationToken)
         {
             _logger.LogDebug("Downloading resource meta...");
@@ -69,17 +63,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             downloader.Download(cancellationToken);
 
             _logger.LogDebug("Resource meta downloaded.");
-        }
-
-        private void DownloadTorrentFile(CancellationToken cancellationToken)
-        {
-            _logger.LogDebug("Downloading torrent file...");
-            _logger.LogTrace("torrentFilePath = " + TorrentFilePath);
-
-            var torrentFileDownloader = _createNewHttpDownloader(TorrentFilePath, _resource.TorrentUrls);
-            torrentFileDownloader.Download(cancellationToken);
-
-            _logger.LogDebug("Torrent file downloaded.");
         }
 
         private void DownloadWithChunkedHttp(CancellationToken cancellationToken)
