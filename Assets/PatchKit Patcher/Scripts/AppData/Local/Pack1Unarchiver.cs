@@ -274,42 +274,45 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (Stream decompressionStream = createDecompressor(cryptoStream))
+                using (var wrapperStream = new GZipReadWrapperStream(sourceStream))
                 {
-                    try
+                    using (Stream decompressionStream = createDecompressor(wrapperStream))
                     {
-                        const int bufferSize = 128 * 1024;
-                        var buffer = new byte[bufferSize];
-                        int count;
-
-                        while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                        try
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
-                            targetStream.Write(buffer, 0, count);
+                            const int bufferSize = 128 * 1024;
+                            var buffer = new byte[bufferSize];
+                            int count;
 
-                            long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
-                            onProgress(bytesProcessed / (double) fileSize);
+                            while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                targetStream.Write(buffer, 0, count);
+
+                                long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
+                                onProgress(bytesProcessed / (double) fileSize);
+                            }
                         }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception e)
-                    {
-                        DebugLogger.LogException(e);
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception e)
+                        {
+                            DebugLogger.LogException(e);
 
-                        PatcherLogManager logManager = PatcherLogManager.Instance;
-                        PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
-                        RavenClient ravenClient = sentryRegistry.RavenClient;
+                            PatcherLogManager logManager = PatcherLogManager.Instance;
+                            PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
+                            RavenClient ravenClient = sentryRegistry.RavenClient;
 
-                        var sentryEvent = new SentryEvent(e);
-                        PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
-                        ravenClient.Capture(sentryEvent);
+                            var sentryEvent = new SentryEvent(e);
+                            PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
+                            ravenClient.Capture(sentryEvent);
 
-                        throw;
+                            throw;
+                        }
+
                     }
-                    
                 }
             }
         }
