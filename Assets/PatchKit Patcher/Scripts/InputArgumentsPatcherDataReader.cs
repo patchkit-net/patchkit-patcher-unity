@@ -82,6 +82,19 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.LogWarning("Lock file not provided.");
             }
 
+            if (HasArgument("--online"))
+            {
+                data.IsOnline = true;
+            }
+            else if (HasArgument("--ofline"))
+            {
+                data.IsOnline = false;
+            }
+            else
+            {
+                data.IsOnline = null;
+            }
+
             return data;
         }
 
