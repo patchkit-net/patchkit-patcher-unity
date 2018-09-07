@@ -274,7 +274,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (var wrapperStream = new GZipReadWrapperStream(sourceStream))
+                using (var wrapperStream = new GZipReadWrapperStream(cryptoStream))
                 {
                     using (Stream decompressionStream = createDecompressor(wrapperStream))
                     {
