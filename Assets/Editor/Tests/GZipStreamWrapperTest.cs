@@ -111,7 +111,7 @@ public class GZipStreamWrapperTest
     }
 
     [Test]
-    public void RawGZipStreamFailsOnMockedStream()
+    public void Raw_GZip_Stream_Fails_On_Mocked_Stream()
     {
         TestDelegate act = () => {
             using (var targetStream = new MemoryStream())
@@ -130,7 +130,7 @@ public class GZipStreamWrapperTest
     }
 
     [Test]
-    public void WrappedReadSuceedsonMockedStream()
+    public void Wrapped_Read_Succeeds_On_Mocked_Stream()
     {
         string decompressed;
         using (var targetStream = new MemoryStream())
