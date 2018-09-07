@@ -1,10 +1,5 @@
 #!/usr/bin/env sh
 
-EXEDIR="."
-PATCHER_EXE="Patcher"
-LOCKFILE=""
-NETWORK_STATUS="online"
-
 while [ "$1" != "" ]; do
     PARAM=`echo $1 | awk -F= '{print $1}'`
     VALUE=`echo $1 | awk -F= '{print $2}'`
@@ -31,6 +26,30 @@ while [ "$1" != "" ]; do
     shift
 done
 
+if [ -z $PATCHER_EXE ]
+then
+    echo "Missing --patcher-exe argument"
+    exit 1
+fi
+
+if [ -z $EXEDIR ]
+then
+    echo "Missing --exedir argument"
+    exit 1
+fi
+
+if [ -z $SECRET ]
+then
+    echo "Missing --secret argument"
+    exit 1
+fi
+
+if [ -z $INSTALLDIR ]
+then
+    echo "Missing --installdir argument"
+    exit 1
+fi
+
 LD_DIRS="`find "$EXEDIR" -name "x86_64" -printf "%p:"`"
 LD_DIRS="$LD_DIRS`find "$EXEDIR" -name "x86" -printf "%p:"`"
 
@@ -38,7 +57,7 @@ export LD_LIBRARY_PATH="$LD_DIRS"
 
 ARGS="--installdir $INSTALLDIR --secret $SECRET"
 
-if [ -n "$LOCKFILE" ]
+if [ ! -z "$LOCKFILE" ]
 then
     ARGS="$ARGS --lockfile $LOCKFILE"
 fi
