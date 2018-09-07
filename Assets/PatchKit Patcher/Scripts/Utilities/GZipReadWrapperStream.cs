@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Utilities
 
         public override void Flush()
         {
-            throw new System.NotImplementedException();
+            throw new System.NotSupportedException();
         }
 
         public GZipReadWrapperStream(Stream sourceStream)
@@ -90,12 +90,12 @@ namespace PatchKit.Unity.Utilities
 
         public override void SetLength(long value)
         {
-            throw new System.NotImplementedException();
+            throw new System.NotSupportedException();
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new System.NotImplementedException();
+            throw new System.NotSupportedException();
         }
     }
 }
