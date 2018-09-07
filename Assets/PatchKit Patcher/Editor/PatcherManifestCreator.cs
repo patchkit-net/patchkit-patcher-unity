@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using UnityEditor;
@@ -36,11 +36,6 @@ namespace PatchKit.Unity.Editor
 
             string manifestPath = Path.Combine(Path.GetDirectoryName(buildPath), "patcher.manifest");
             string manifestContent = JsonConvert.SerializeObject(manifest, Formatting.Indented);
-
-            if (File.Exists(manifestPath))
-            {
-                File.Delete(manifestPath);
-            }
 
             File.WriteAllText(manifestPath, manifestContent);
         }
