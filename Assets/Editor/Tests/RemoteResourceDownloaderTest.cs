@@ -5,7 +5,6 @@ using NUnit.Framework;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents;
 using PatchKit.Unity.Patcher.Cancellation;
 
 public class RemoteResourceDownloaderTest
