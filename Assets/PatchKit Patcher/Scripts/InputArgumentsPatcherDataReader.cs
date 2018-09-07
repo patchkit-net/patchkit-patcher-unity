@@ -86,7 +86,7 @@ namespace PatchKit.Unity.Patcher
             {
                 data.IsOnline = true;
             }
-            else if (HasArgument("--ofline"))
+            else if (HasArgument("--offline"))
             {
                 data.IsOnline = false;
             }
