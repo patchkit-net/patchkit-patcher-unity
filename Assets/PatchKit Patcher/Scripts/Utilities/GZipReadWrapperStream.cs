@@ -68,17 +68,13 @@ namespace PatchKit.Unity.Utilities
             int totalBytesRead = 0;
             int bytesRead;
 
-            byte[] tempBuffer = new byte[count];
-
             do
             {
-                bytesRead = _source.Read(tempBuffer, totalBytesRead, count - totalBytesRead);
+                bytesRead = _source.Read(buffer, totalBytesRead, count - totalBytesRead);
 
                 totalBytesRead += bytesRead;
             }
             while (bytesRead > 0 && totalBytesRead < count);
-
-            Array.ConstrainedCopy(tempBuffer, 0, buffer, offset, count);
 
             return totalBytesRead;
         }
