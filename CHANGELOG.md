@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for LZMA2 compression using XZ
 - Sending all events to Statistics Reporting Service
+- Support for main_executable and main_executable_args fields in AppVersion
 
 ### Fixed
 - Invalid display of progress value when unarchiving
