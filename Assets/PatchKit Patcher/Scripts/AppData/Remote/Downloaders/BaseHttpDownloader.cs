@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using JetBrains.Annotations;
 using PatchKit.Logging;
 using PatchKit.Network;
@@ -129,11 +130,39 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private void ReadResponseStream(Stream responseStream, CancellationToken cancellationToken)
         {
+            Func<byte[], int, int> tryReadData = (outBuffer, bufferSize) => {
+                const int threadAbortTimeout = 3 * 1000;
+                byte[] localBuffer = new byte[bufferSize];
+                int localBufferRead = -1;
+
+                var readDataThread = new Thread(() => {
+                    localBufferRead = responseStream.Read(localBuffer, 0, BufferSize);
+                });
+
+                readDataThread.Start();
+                if (!readDataThread.Join(_timeout))
+                {
+                    _logger.LogWarning("Read data thread timed out, trying to interrupt...");
+                    readDataThread.Interrupt();
+
+                    if (!readDataThread.Join(threadAbortTimeout))
+                    {
+                        _logger.LogWarning("Read data thread failed to terminate, trying to abort...");
+                        readDataThread.Abort();
+                    }
+
+                    _logger.LogDebug("Throwing timeout exception");
+                    throw new TimeoutException();
+                }
+
+                Array.ConstrainedCopy(localBuffer, 0, outBuffer, 0, localBufferRead);
+                return localBufferRead;
+            };
+
             int bufferRead;
-            while ((bufferRead = responseStream.Read(_buffer, 0, BufferSize)) > 0)
+            while ((bufferRead = tryReadData(_buffer, BufferSize)) > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
                 OnDataAvailable(_buffer, bufferRead);
             }
         }
