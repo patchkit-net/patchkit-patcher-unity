@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for LZMA2 compression using XZ
 - Sending all events to Statistics Reporting Service
+- Added processing of --online or --offline command line argument
+
+### Changed
+- Linux launch script
 
 ### Fixed
 - Invalid display of progress value when unarchiving
