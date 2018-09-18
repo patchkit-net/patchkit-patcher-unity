@@ -8,9 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for LZMA2 compression using XZ
 - Sending all events to Statistics Reporting Service
+- Added processing of --online or --offline command line argument
+
+### Changed
+- Linux launch script
 
 ### Fixed
 - Invalid display of progress value when unarchiving
+- Wrapping the GZipStream input to avoid errors
 
 ### Removed
 - Torrent downloading
@@ -41,6 +46,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Animated progress bar during initialization and connecting
 - New manifest format support
 - Sending 'patcher_started' event to Statistics Reporting Service
+- Custom building options under `Tools/Build`
+- Handling failures when accessing the file system
 - Handling torrent-client crashes
 - Attaching "system-info" to Sentry events as tag
 - Support for PK_OFFICIAL define
@@ -59,6 +66,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Availability of user action buttons (update, start & check for updates)
 - Handling of the ZLib exception
 - Invalid handling of patcher-data-location argument with spaces
+
+### Removed
+- StandaloneOSXUniversal architecture from building options
 
 ## [3.9.2]
 ### Added

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -70,7 +71,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 if (File.Exists(filePath))
                 {
-                    FileOperations.Delete(filePath);
+                    FileOperations.Delete(filePath, cancellationToken);
                 }
 
                 _localMetaData.UnregisterEntry(fileName);
@@ -98,7 +99,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     {
                         if (DirectoryOperations.IsDirectoryEmpty(parentDirPath))
                         {
-                            DirectoryOperations.Delete(parentDirPath, false);
+                            DirectoryOperations.Delete(parentDirPath, cancellationToken, false);
                         }
                         else
                         {
