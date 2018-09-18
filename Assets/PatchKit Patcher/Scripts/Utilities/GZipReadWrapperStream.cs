@@ -70,7 +70,7 @@ namespace PatchKit.Unity.Utilities
 
             do
             {
-                bytesRead = _source.Read(buffer, totalBytesRead, count - totalBytesRead);
+                bytesRead = _source.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
 
                 totalBytesRead += bytesRead;
             }
