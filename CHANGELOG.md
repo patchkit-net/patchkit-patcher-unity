@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated torrent-client to fix the issue with paths with spaces in them
 - Missing unpacking suffix when repairing files
 
+### Changed
+- Patcher will timeout if the downloading stopped sooner than after 5 minutes
+
 ## [3.10.0]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
