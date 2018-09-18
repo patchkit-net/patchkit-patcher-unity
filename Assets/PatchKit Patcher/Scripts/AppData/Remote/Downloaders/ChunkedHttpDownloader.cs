@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
@@ -68,12 +69,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _size = size;
         }
 
-        private ChunkedFileStream OpenFileStream()
+        private ChunkedFileStream OpenFileStream(CancellationToken cancellationToken)
         {
             var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
             if (!string.IsNullOrEmpty(parentDirectory))
             {
-                Directory.CreateDirectory(parentDirectory);
+                DirectoryOperations.CreateDirectory(parentDirectory, cancellationToken);
             }
 
             var chunksRange = CalculateContainingChunksRange(_range);
@@ -118,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                using (var fileStream = OpenFileStream())
+                using (var fileStream = OpenFileStream(cancellationToken))
                 {
                     bool retry;
 
@@ -281,7 +282,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
 
             int lastPart = totalPartCount;
-            
+
             if (bounds.End != -1)
             {
                 lastPart = (int) (bounds.End / partSize);

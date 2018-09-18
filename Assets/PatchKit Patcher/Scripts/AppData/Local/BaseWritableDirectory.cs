@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
@@ -53,7 +55,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 DebugLogger.Log("Creating directory.");
 
-                DirectoryOperations.CreateDirectory(_path);
+                DirectoryOperations.CreateDirectory(_path, CancellationToken.Empty);
 
                 _hasWriteAccess = true;
             }
