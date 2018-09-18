@@ -4,6 +4,7 @@ using System.IO;
 using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
@@ -34,14 +35,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private string _packagePath;
         private string _packagePassword;
 
+        private const string _unpackingSuffix = "_";
+
         private readonly ILogger _logger;
 
         private readonly Dictionary<Pack1Meta.FileEntry, EntryStatus> _entryStatus
             = new Dictionary<Pack1Meta.FileEntry, EntryStatus>();
 
         public RepairFilesCommand(
-            RemoteResource resource, 
-            Pack1Meta meta, 
+            RemoteResource resource,
+            Pack1Meta meta,
             Pack1Meta.FileEntry[] fileEntries,
             string destinationPackagePath,
             string packagePassword,
@@ -58,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _logger = PatcherLogManager.DefaultLogger;
         }
-        
+
         public override void Execute(CancellationToken cancellationToken)
         {
             base.Execute(cancellationToken);
@@ -74,7 +77,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     if (!Directory.Exists(unarchivePath))
                     {
-                        DirectoryOperations.CreateDirectory(unarchivePath);
+                        DirectoryOperations.CreateDirectory(unarchivePath, cancellationToken);
                     }
 
                     var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls, _resource.ChunksData, _resource.Size);
@@ -112,7 +115,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     repairStatus.Progress.Value = 0.0;
 
                     _logger.LogDebug("Unarchiving the package.");
-                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, "", effectiveRange);
+                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, _unpackingSuffix, effectiveRange);
                     unarchiver.UnarchiveProgressChanged += (name, isFile, unarchiveEntry, amount,  entryProgress) =>
                     {
                         repairStatus.Progress.Value = entryProgress;
@@ -120,7 +123,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
 
-                    EmplaceFile(Path.Combine(unarchivePath, entry.Name), Path.Combine(_localData.Path, entry.Name));
+                    EmplaceFile(Path.Combine(unarchivePath, entry.Name), Path.Combine(_localData.Path, entry.Name), cancellationToken);
 
                     repairStatus.IsActive.Value = false;
                 });
@@ -155,7 +158,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _localData.PrepareForWriting();
         }
 
-        private void EmplaceFile(string source, string target)
+        private void EmplaceFile(string source, string target, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Installing file {0} into {1}", source, target));
 
@@ -164,14 +167,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new Exception(string.Format("Source file {0} doesn't exist.", source));
             }
 
-            DirectoryOperations.CreateParentDirectory(target);
+            DirectoryOperations.CreateParentDirectory(target, cancellationToken);
 
             if (File.Exists(target))
             {
-                FileOperations.Delete(target);
+                FileOperations.Delete(target, cancellationToken);
             }
 
-            FileOperations.Move(source, target);
+            FileOperations.Move(source, target, cancellationToken);
         }
     }
 }

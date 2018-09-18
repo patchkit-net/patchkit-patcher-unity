@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Support for LZMA2 compression using XZ
+- Sending all events to Statistics Reporting Service
+- Added processing of --online or --offline command line argument
+
+### Changed
+- Linux launch script
+
+### Fixed
+- Invalid display of progress value when unarchiving
+- Wrapping the GZipStream input to avoid errors
+
+## [3.10.1]
+### Fixed
+- Updated torrent-client to fix the issue with paths with spaces in them
+- Missing unpacking suffix when repairing files
+
 ## [3.10.0]
 ### Added
 - Support for PK_PATCHER_API_CACHE_URL environmental variable
@@ -17,7 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for second progress bar (can show minor operation like downloading, unarchiving etc.)
 - Example scenes with double progress bars
 - A clickable PatchKit logo in non whitelabel patchers
-- Support for background image set in PatchKit Panel 
+- Support for background image set in PatchKit Panel
 - Support for PK_PATCHER_KEEP_FILES_ON_ERROR environment variable
 - Light integrity checking every time the Patcher is launched
 - Descriptive integrity check messages
@@ -26,15 +44,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New manifest format support
 - Sending 'patcher_started' event to Statistics Reporting Service
 - Custom building options under `Tools/Build`
+- Handling failures when accessing the file system
+- Handling torrent-client crashes
+- Attaching "system-info" to Sentry events as tag
+- Support for PK_OFFICIAL define
+- Sending 'patcher_started' event to Statistics Reporting Service
+- A launch script on Linux platforms
 
 ### Changed
 - Update API servers configuration
 - Rename PK_PATCHER_MAIN_URL environmental variable to PK_PATCHER_API_URL
 - The patcher will now delete the lockfile when quitting
 - Sending the key secrets to content and diff url requests
+- Split the RepairAndDiff strategy into separate strategies.
+- Pre update integrity checking uses the Repair strategy
 
 ### Fixed
+- Availability of user action buttons (update, start & check for updates)
 - Handling of the ZLib exception
+- Invalid handling of patcher-data-location argument with spaces
 
 ### Removed
 - StandaloneOSXUniversal architecture from building options

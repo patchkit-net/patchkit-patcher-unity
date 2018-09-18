@@ -44,6 +44,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             try
             {
+                PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationStarted);
+
                 _logger.LogDebug("Validating license...");
 
                 base.Execute(cancellationToken);
@@ -82,6 +84,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         KeySecret = _remoteMetaData.GetKeySecret(key, cachedKeySecret);
 
                         _logger.LogDebug("License has been validated!");
+                        PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationSucceeded);
 
                         _logger.LogTrace("KeySecret = " + KeySecret);
 
@@ -112,6 +115,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             catch (Exception e)
             {
                 _logger.LogError("Validating license has failed.", e);
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationFailed);
                 throw;
             }
         }

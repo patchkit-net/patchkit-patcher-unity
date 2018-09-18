@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using UnityEditor;
@@ -8,13 +8,13 @@ namespace PatchKit.Unity.Editor
 {
     public static class PatcherManifestCreator
     {
-        private const int ManifestVersion = 2;
+        private const int ManifestVersion = 3;
 
         [PostProcessBuild, UsedImplicitly]
         private static void PostProcessBuild(BuildTarget buildTarget, string buildPath)
         {
             Manifest manifest = new Manifest();
-            
+
             if (buildTarget == BuildTarget.StandaloneWindows || buildTarget == BuildTarget.StandaloneWindows64)
             {
                 manifest = WindowsManifest(buildPath);
@@ -40,17 +40,37 @@ namespace PatchKit.Unity.Editor
             File.WriteAllText(manifestPath, manifestContent);
         }
 
-        private static Manifest WindowsManifest(string buildPath)
+        private static Manifest.Argument CreateManifestAgument(params string[] args)
         {
-            return CommonManifest(buildPath);
+            return new Manifest.Argument { Value = args };
         }
 
         private static Manifest LinuxManifest(string buildPath)
         {
-            return CommonManifest(buildPath);
+            string patcherExe = Path.GetFileName(buildPath);
+            string launchScript = UnixLaunchScriptCreator.LaunchScriptName;
+
+            string launchScriptPath = "{exedir}/" + launchScript;
+
+            return new Manifest {
+                ExeFileName = "sh",
+                ExeArguments = "\"" + launchScriptPath + "\" \"{exedir}\" \"" + patcherExe + "\" \"{secret}\" \"{installdir}\"",
+
+                Version = ManifestVersion,
+                Target = "sh",
+                Arguments = new Manifest.Argument[] {
+                    CreateManifestAgument(launchScriptPath),
+                    CreateManifestAgument("--exedir={exedir}"),
+                    CreateManifestAgument("--secret={secret}"),
+                    CreateManifestAgument("--installdir={installdir}"),
+                    CreateManifestAgument("--network-status={network-status}"),
+                    CreateManifestAgument("--patcher-exe=" + patcherExe),
+                    CreateManifestAgument("--lockfile={lockfile}"),
+                }
+            };
         }
 
-        private static Manifest CommonManifest(string buildPath)
+        private static Manifest WindowsManifest(string buildPath)
         {
             string targetFile = Path.GetFileName(buildPath);
             return new Manifest {
@@ -60,15 +80,10 @@ namespace PatchKit.Unity.Editor
                 Version = ManifestVersion,
                 Target = "{exedir}/" + targetFile,
                 Arguments = new Manifest.Argument[] {
-                    new Manifest.Argument { Value = new string[] {
-                        "--installdir", "{installdir}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--lockfile", "{lockfile}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--secret", "{secret}"
-                    }},
+                    CreateManifestAgument("--installdir", "{installdir}"),
+                    CreateManifestAgument("--lockfile", "{lockfile}"),
+                    CreateManifestAgument("--secret", "{secret}"),
+                    CreateManifestAgument("--{network-status}"),
                 }
             };
         }
@@ -83,21 +98,12 @@ namespace PatchKit.Unity.Editor
                 Version = ManifestVersion,
                 Target = "open",
                 Arguments = new Manifest.Argument[] {
-                    new Manifest.Argument { Value = new string[] {
-                        "{exedir}/" + targetFile
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--args"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--installdir", "{installdir}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--lockfile", "{lockfile}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--secret", "{secret}"
-                    }},
+                    CreateManifestAgument("{exedir}/" + targetFile),
+                    CreateManifestAgument("--args"),
+                    CreateManifestAgument("--installdir", "{installdir}"),
+                    CreateManifestAgument("--lockfile", "{lockfile}"),
+                    CreateManifestAgument("--secret", "{secret}"),
+                    CreateManifestAgument("--{network-status}"),
                 }
             };
         }
