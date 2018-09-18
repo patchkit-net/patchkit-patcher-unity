@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Invalid display of progress value when unarchiving
 - Wrapping the GZipStream input to avoid errors
 
+### Removed
+- Torrent downloading
+
 ## [3.10.1]
 ### Fixed
 - Updated torrent-client to fix the issue with paths with spaces in them

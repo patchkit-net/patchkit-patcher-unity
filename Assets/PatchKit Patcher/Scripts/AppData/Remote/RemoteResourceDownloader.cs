@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using ILogger = PatchKit.Logging.ILogger;
@@ -20,11 +19,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             [NotNull] ResourceUrl[] urls, ChunksData chunksData,
             long size);
 
-        public delegate ITorrentDownloader CreateNewTorrentDownloader([NotNull] string destinationFilePath,
-            [NotNull] string torrentFilePath,
-            long totalBytes);
-
-
         private readonly ILogger _logger;
 
         private readonly string _destinationFilePath;
@@ -32,28 +26,23 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private readonly RemoteResource _resource;
 
-        private readonly bool _useTorrents;
         private readonly CreateNewHttpDownloader _createNewHttpDownloader;
         private readonly CreateNewChunkedHttpDownloader _createNewChunkedHttpDownloader;
-        private readonly CreateNewTorrentDownloader _createNewTorrentDownloader;
 
         private bool _downloadHasBeenCalled;
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
 
-        public RemoteResourceDownloader(string destinationFilePath, string destinationMetaPath, RemoteResource resource,
-            bool useTorrents) :
-            this(destinationFilePath, destinationMetaPath, resource, useTorrents, CreateDefaultHttpDownloader,
-                CreateDefaultChunkedHttpDownloader, CreateDefaultTorrentDownloader)
+        public RemoteResourceDownloader(string destinationFilePath, string destinationMetaPath, RemoteResource resource)
+            : this(destinationFilePath, destinationMetaPath, resource, CreateDefaultHttpDownloader,
+                CreateDefaultChunkedHttpDownloader)
         {
         }
 
         public RemoteResourceDownloader([NotNull] string destinationFilePath, [NotNull] string destinationMetaPath,
             RemoteResource resource,
-            bool useTorrents,
             CreateNewHttpDownloader createNewHttpDownloader,
-            CreateNewChunkedHttpDownloader createNewChunkedHttpDownloader,
-            CreateNewTorrentDownloader createNewTorrentDownloader)
+            CreateNewChunkedHttpDownloader createNewChunkedHttpDownloader)
         {
             if (destinationFilePath == null) throw new ArgumentNullException("destinationFilePath");
             if (destinationMetaPath == null) throw new ArgumentNullException("destinationMetaPath");
@@ -62,15 +51,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _destinationFilePath = destinationFilePath;
             _destinationMetaPath = destinationMetaPath;
             _resource = resource;
-            _useTorrents = useTorrents;
             _createNewHttpDownloader = createNewHttpDownloader;
             _createNewChunkedHttpDownloader = createNewChunkedHttpDownloader;
-            _createNewTorrentDownloader = createNewTorrentDownloader;
-        }
-
-        private string TorrentFilePath
-        {
-            get { return _destinationFilePath + ".torrent"; }
         }
 
         private void DownloadMeta(CancellationToken cancellationToken)
@@ -81,30 +63,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             downloader.Download(cancellationToken);
 
             _logger.LogDebug("Resource meta downloaded.");
-        }
-
-        private void DownloadTorrentFile(CancellationToken cancellationToken)
-        {
-            _logger.LogDebug("Downloading torrent file...");
-            _logger.LogTrace("torrentFilePath = " + TorrentFilePath);
-
-            var torrentFileDownloader = _createNewHttpDownloader(TorrentFilePath, _resource.TorrentUrls);
-            torrentFileDownloader.Download(cancellationToken);
-
-            _logger.LogDebug("Torrent file downloaded.");
-        }
-
-        private void DownloadWithTorrents(CancellationToken cancellationToken)
-        {
-            DownloadTorrentFile(cancellationToken);
-
-            _logger.LogDebug("Downloading resource with torrents...");
-
-            var downloader = _createNewTorrentDownloader(_destinationFilePath, TorrentFilePath, _resource.Size);
-            downloader.DownloadProgressChanged += OnDownloadProgressChanged;
-            downloader.Download(cancellationToken);
-
-            _logger.LogDebug("Resource has been downloaded with torrents.");
         }
 
         private void DownloadWithChunkedHttp(CancellationToken cancellationToken)
@@ -164,25 +122,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                     _logger.LogDebug("Resource meta are not available.");
                 }
 
-                if (_useTorrents)
-                {
-                    _logger.LogDebug("Torrent downloading is enabled.");
-
-                    try
-                    {
-                        DownloadWithTorrents(cancellationToken);
-                        return;
-                    }
-                    catch (DownloadFailureException e)
-                    {
-                        _logger.LogWarning("Failed to download resource with torrents. Falling back to other downloaders...", e);
-                    }
-                }
-                else
-                {
-                    _logger.LogDebug("Torrent downloading is disabled.");
-                }
-
                 if (AreChunksAvailable())
                 {
                     _logger.LogDebug("Chunks are available.");
@@ -232,13 +171,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             long size)
         {
             return new ChunkedHttpDownloader(destinationFilePath, urls, chunksData, size);
-        }
-
-        private static ITorrentDownloader CreateDefaultTorrentDownloader([NotNull] string destinationFilePath,
-            [NotNull] string torrentFilePath,
-            long totalBytes)
-        {
-            return new TorrentDownloader(destinationFilePath, torrentFilePath, totalBytes);
         }
     }
 }
