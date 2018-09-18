@@ -26,13 +26,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Torrent downloading
 - StandaloneOSXUniversal architecture from building options
 
+## [3.10.2]
+### Changed
+- Patcher will timeout if the downloading stopped sooner than after 5 minutes
+
 ## [3.10.1]
 ### Fixed
 - Updated torrent-client to fix the issue with paths with spaces in them
 - Missing unpacking suffix when repairing files
-
-### Changed
-- Patcher will timeout if the downloading stopped sooner than after 5 minutes
 
 ## [3.10.0]
 ### Added
