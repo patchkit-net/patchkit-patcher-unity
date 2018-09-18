@@ -8,6 +8,7 @@ using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents.Protocol;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
@@ -100,7 +101,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders.Torrents
 
                 if (!Directory.Exists(DestinationDirectoryPath))
                 {
-                    DirectoryOperations.CreateDirectory(DestinationDirectoryPath);
+                    DirectoryOperations.CreateDirectory(DestinationDirectoryPath, cancellationToken);
                 }
 
                 _logger.LogTrace("download dir  = " + DestinationDirectoryPath);
