@@ -80,6 +80,9 @@ namespace PatchKit.Unity.Patcher
 
         private bool _hasAutomaticallyStartedApp;
 
+        private bool _wasUpdateSuccessfulOrNotNecessary = false;
+        private bool _hasGameBeenStarted = false;
+
         private FileStream _lockFileStream;
 
         private CancellationTokenSource _updateAppCancellationTokenSource;
@@ -191,6 +194,11 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Quitting application.");
             _canStartThread = false;
+
+            if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
+            {
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededClosed);
+            }
 
 #if UNITY_EDITOR
             if (Application.isEditor)
@@ -360,6 +368,8 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Cancelling patcher thread...");
 
+            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherCanceled);
+
             _threadCancellationTokenSource.Cancel();
         }
 
@@ -411,7 +421,7 @@ namespace PatchKit.Unity.Patcher
 
                 UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
-                UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent("patcher_started", _data.Value.AppSecret));
+                PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
 
                 while (true)
                 {
@@ -566,12 +576,17 @@ namespace PatchKit.Unity.Patcher
 
                 DebugLogger.LogVariable(isInstalled, "isInstalled");
 
-                _canRepairApp.Value = false; // not implemented
-                _canInstallApp.Value = !isInstalled;
-                _canCheckForAppUpdates.Value = isInstalled;
-                _canStartApp.Value = isInstalled;
+                bool canRepairApp = false; // not implemented
+                bool canInstallApp = !isInstalled;
+                bool canCheckForAppUpdates = isInstalled;
+                bool canStartApp = isInstalled;
 
-                if (_canInstallApp.Value && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
+                _canRepairApp.Value = false;
+                _canInstallApp.Value = false;
+                _canCheckForAppUpdates.Value = false;
+                _canStartApp.Value = false;
+
+                if (canInstallApp && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
                 {
                     DebugLogger.Log("Automatically deciding to install app.");
                     _hasAutomaticallyInstalledApp = true;
@@ -580,7 +595,7 @@ namespace PatchKit.Unity.Patcher
                     return;
                 }
 
-                if (_canCheckForAppUpdates.Value && _configuration.AutomaticallyCheckForAppUpdates &&
+                if (canCheckForAppUpdates && _configuration.AutomaticallyCheckForAppUpdates &&
                     !_hasAutomaticallyCheckedForAppUpdate)
                 {
                     DebugLogger.Log("Automatically deciding to check for app updates.");
@@ -590,7 +605,7 @@ namespace PatchKit.Unity.Patcher
                     return;
                 }
 
-                if (_canStartApp.Value && _configuration.AutomaticallyStartApp && !_hasAutomaticallyStartedApp)
+                if (canStartApp && _configuration.AutomaticallyStartApp && !_hasAutomaticallyStartedApp)
                 {
                     DebugLogger.Log("Automatically deciding to start app.");
                     _hasAutomaticallyStartedApp = true;
@@ -598,12 +613,23 @@ namespace PatchKit.Unity.Patcher
                     return;
                 }
 
+                _canRepairApp.Value = canRepairApp;
+                _canInstallApp.Value = canInstallApp;
+                _canCheckForAppUpdates.Value = canCheckForAppUpdates;
+                _canStartApp.Value = canStartApp;
+
                 _userDecisionSetEvent.Reset();
                 using (cancellationToken.Register(() => _userDecisionSetEvent.Set()))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     _userDecisionSetEvent.WaitOne();
                 }
+
+                _canRepairApp.Value = false;
+                _canInstallApp.Value = false;
+                _canCheckForAppUpdates.Value = false;
+                _canStartApp.Value = false;
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 DebugLogger.Log(string.Format("Waiting for user decision result: {0}.", _userDecision));
@@ -677,6 +703,8 @@ namespace PatchKit.Unity.Patcher
                     _userDecision));
                 DebugLogger.LogException(e);
 
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
+
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
                     UnityDispatcher.Invoke(Quit);
@@ -690,6 +718,8 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.LogException(e);
 
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
+                
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";
@@ -702,6 +732,7 @@ namespace PatchKit.Unity.Patcher
             catch (NotEnoughtDiskSpaceException e)
             {
                 DebugLogger.LogException(e);
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
                 ThreadDisplayError(PatcherError.NotEnoughDiskSpace, cancellationToken);
             }
             catch (ThreadInterruptedException)
@@ -724,6 +755,8 @@ namespace PatchKit.Unity.Patcher
                     "Error while executing user decision {0}: an exception has occured.", _userDecision));
                 DebugLogger.LogException(exception);
 
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
+
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";
@@ -739,6 +772,8 @@ namespace PatchKit.Unity.Patcher
         {
             try
             {
+                _state.Value = PatcherState.DisplayingError;
+
                 DebugLogger.Log(string.Format("Displaying patcher error {0}...", error));
 
                 ErrorDialog.Display(error, cancellationToken);
@@ -774,12 +809,15 @@ namespace PatchKit.Unity.Patcher
 
             appStarter.Start();
 
+            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededGameStarted);
+            _hasGameBeenStarted = true;
+
             UnityDispatcher.Invoke(Quit);
         }
 
         private void ThreadUpdateApp(bool automatically, CancellationToken cancellationToken)
         {
-            _state.Value = PatcherState.UpdatingApp;
+            _state.Value = PatcherState.Connecting;
 
             _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically);
             _remoteVersionId.Value = _app.GetLatestVersionId(!automatically);
@@ -797,10 +835,17 @@ namespace PatchKit.Unity.Patcher
                 try
                 {
                     _updaterStatus.Value = appUpdater.Status;
-                    appUpdater.Update(_updateAppCancellationTokenSource.Token);
+
+                    using (_updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
+                    {
+                        appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                        _wasUpdateSuccessfulOrNotNecessary = true;
+                    }
                 }
                 finally
                 {
+                    _state.Value = PatcherState.None;
+
                     _updaterStatus.Value = null;
                     _updateAppCancellationTokenSource = null;
                 }
