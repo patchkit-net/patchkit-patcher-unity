@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Patcher will timeout if the downloading stopped sooner than after 5 minutes
 
+### Fixed
+- An edge case which caused the download to never terminate
+
 ## [3.10.1]
 ### Fixed
 - Updated torrent-client to fix the issue with paths with spaces in them
