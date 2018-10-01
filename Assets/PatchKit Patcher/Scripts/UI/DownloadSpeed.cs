@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Utilities;
 using UniRx;
@@ -23,14 +24,20 @@ namespace PatchKit.Unity.Patcher.UI
 
             var text = downloadStatus.SelectSwitchOrDefault(status =>
             {
+                TimeSpan bufferPeriod = TimeSpan.FromSeconds(2);
+                                
+                var averageBufferedBps = status.BytesPerSecond
+                    .Buffer(bufferPeriod)
+                    .Select(values => values.Count > 0 ? values.Average() : 0.0);
+                
                 var remainingTime =
-                    status.Bytes.CombineLatest<long, long, double, double?>(status.TotalBytes, status.BytesPerSecond,
+                    status.Bytes.CombineLatest<long, long, double, double?>(status.TotalBytes, averageBufferedBps,
                         GetRemainingTime);
 
                 var formattedRemainingTime = remainingTime.Select<double?, string>(GetFormattedRemainingTime);
 
                 var formattedDownloadSpeed =
-                    status.BytesPerSecond.CombineLatest<double, string, string>(downloadSpeedUnit,
+                    averageBufferedBps.CombineLatest<double, string, string>(downloadSpeedUnit,
                         GetFormattedDownloadSpeed);
 
                 return formattedDownloadSpeed.CombineLatest<string, string, string>(formattedRemainingTime,
