@@ -98,7 +98,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         public AppVersion GetAppVersionInfo(int versionId)
         {
-            if (versionId < 0)
+            if (versionId <= 0)
             {
                 throw new ArgumentException("Version id is invalid.", "versionId");
             }

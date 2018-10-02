@@ -31,7 +31,16 @@ namespace PatchKit.Unity.Patcher
         {
             if (!string.IsNullOrEmpty(appVersion.MainExecutable))
             {
-                return Path.Combine(_app.LocalDirectory.Path, appVersion.MainExecutable);
+                string executablePath = Path.Combine(_app.LocalDirectory.Path, appVersion.MainExecutable);
+
+                if (File.Exists(executablePath))
+                {
+                    return executablePath;
+                }
+
+                // Reports to Sentry
+                DebugLogger.LogException(
+                    new FileNotFoundException(string.Format("Couldn't resolve executable in {0}", executablePath)));
             }
 
             PlatformType platformType = Platform.GetPlatformType();
