@@ -392,10 +392,12 @@ namespace PatchKit.Unity.Patcher
                     try
                     {
                         LauncherUtilities.ExecuteLauncher();
+                        return;
                     }
                     catch (ApplicationException)
                     {
                         ThreadDisplayError(PatcherError.NonLauncherExecution, cancellationToken);
+                        return;
                     }
                     finally
                     {

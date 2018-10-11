@@ -40,7 +40,7 @@ public class Background : MonoBehaviour
 
     public string CachedBannerPath
     {
-        get 
+        get
         {
             return _cache.GetValue(CachedBannerPathKey);
         }
@@ -104,13 +104,13 @@ public class Background : MonoBehaviour
 
         var appInfo = patcher.AppInfo
             .SkipWhile(info => info.Id == default(int))
-            .Select(info => new Data{ 
+            .Select(info => new Data{
                 BannerData = new PatcherBannerData{
                     ImageUrl = info.PatcherBannerImage,
                     Dimensions = info.PatcherBannerImageDimensions,
                     ModificationDate = info.PatcherBannerImageUpdatedAt
                 },
-                BannerFilePath = Path.Combine(data.AppDataPath, BannerImageFilename) 
+                BannerFilePath = Path.Combine(data.AppDataPath, BannerImageFilename)
             })
             .ObserveOnMainThread()
             .Subscribe(OnBannerDataUpdate);
@@ -121,7 +121,11 @@ public class Background : MonoBehaviour
         _logger.LogDebug("On patcher data update.");
         var bannerData = data.BannerData;
 
-        if (IsNewBannerAvailable(data))
+        if (IsLocalBannerMissing(data))
+        {
+            AquireRemoteBanner(data);
+        }
+        else if (IsNewBannerAvailable(data))
         {
             AquireRemoteBanner(data);
         }
@@ -151,30 +155,33 @@ public class Background : MonoBehaviour
         MainAnimator.SetTrigger(AnimationSwitchTrigger);
     }
 
+    private bool IsLocalBannerMissing(Data data)
+    {
+        return !string.IsNullOrEmpty(CachedBannerModificationDate) && !File.Exists(CachedBannerPath);
+    }
+
     private bool IsNewBannerAvailable(Data data)
     {
-        return !string.IsNullOrEmpty(data.BannerData.ImageUrl) 
+        return !string.IsNullOrEmpty(data.BannerData.ImageUrl)
             && !IsCachedBannerSameAsRemote(data.BannerData);
     }
 
     private bool HasBannerBeenRemoved(Data data)
     {
-        return string.IsNullOrEmpty(data.BannerData.ImageUrl) 
+        return string.IsNullOrEmpty(data.BannerData.ImageUrl)
             && !string.IsNullOrEmpty(data.BannerData.ModificationDate)
             && IsCachedBannerAvailable();
     }
 
     private bool IsCachedBannerAvailable()
     {
-        return !string.IsNullOrEmpty(CachedBannerPath) 
+        return !string.IsNullOrEmpty(CachedBannerPath)
              && File.Exists(CachedBannerPath);
     }
 
     private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
     {
-        var cachedModificationDate = CachedBannerModificationDate;
-
-        return bannerData.ModificationDate == cachedModificationDate;
+        return bannerData.ModificationDate == CachedBannerModificationDate;
     }
 
     private void ClearCachedBanner()
@@ -247,7 +254,7 @@ public class Background : MonoBehaviour
         {
             _logger.LogDebug(string.Format("Loading the banner image from {0}", filepath));
             var fileBytes = File.ReadAllBytes(filepath);
-            
+
             if (!texture.LoadImage(fileBytes))
             {
                 _logger.LogError("Failed to load the banner image.");

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Fixed
 - An edge case which caused the download to never terminate
+- Patcher wouldn't quit upon starting the Launcher
+- Patcher wouldn't re-download a manually removed banner file
 
 ## [3.10.1]
 ### Fixed
