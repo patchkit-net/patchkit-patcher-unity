@@ -122,7 +122,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
 
-                    EmplaceFile(Path.Combine(unarchivePath, entry.Name), Path.Combine(_localData.Path, entry.Name));
+                    EmplaceFile(Path.Combine(unarchivePath, entry.Name + _unpackingSuffix), Path.Combine(_localData.Path, entry.Name));
 
                     repairStatus.IsActive.Value = false;
                 });
