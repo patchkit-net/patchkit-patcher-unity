@@ -34,14 +34,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private string _packagePath;
         private string _packagePassword;
 
+        private const string _unpackingSuffix = "_";
+
         private readonly ILogger _logger;
 
         private readonly Dictionary<Pack1Meta.FileEntry, EntryStatus> _entryStatus
             = new Dictionary<Pack1Meta.FileEntry, EntryStatus>();
 
         public RepairFilesCommand(
-            RemoteResource resource, 
-            Pack1Meta meta, 
+            RemoteResource resource,
+            Pack1Meta meta,
             Pack1Meta.FileEntry[] fileEntries,
             string destinationPackagePath,
             string packagePassword,
@@ -58,7 +60,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _logger = PatcherLogManager.DefaultLogger;
         }
-        
+
         public override void Execute(CancellationToken cancellationToken)
         {
             base.Execute(cancellationToken);
@@ -112,7 +114,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     repairStatus.Progress.Value = 0.0;
 
                     _logger.LogDebug("Unarchiving the package.");
-                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, "", effectiveRange);
+                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, _unpackingSuffix, effectiveRange);
                     unarchiver.UnarchiveProgressChanged += (name, isFile, unarchiveEntry, amount,  entryProgress) =>
                     {
                         repairStatus.Progress.Value = entryProgress;
