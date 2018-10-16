@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         private readonly ILogger _logger;
 
-        private const int BufferSize = 1024;
+        private const int BufferSize = 5 * 1024 * 1024;
 
         private readonly string _url;
         private readonly int _timeout;
