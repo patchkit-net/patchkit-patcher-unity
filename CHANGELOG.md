@@ -36,6 +36,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Patcher will timeout if the downloading stopped sooner than after 5 minutes
 
+## [3.10.1p2]
+### Fixed
+- Slow download performance due to small buffer size
+
 ## [3.10.1p1]
 ### Fixed
 - Missing unpacking suffix when repairing files (3.10.1 failed to fix this issue)
