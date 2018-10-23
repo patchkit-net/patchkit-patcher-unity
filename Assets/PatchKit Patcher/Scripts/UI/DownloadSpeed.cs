@@ -24,20 +24,16 @@ namespace PatchKit.Unity.Patcher.UI
 
             var text = downloadStatus.SelectSwitchOrDefault(status =>
             {
-                TimeSpan bufferPeriod = TimeSpan.FromSeconds(2);
-                                
-                var averageBufferedBps = status.BytesPerSecond
-                    .Buffer(bufferPeriod)
-                    .Select(values => values.Count > 0 ? values.Average() : 0.0);
-                
+                var bytesPerSecond = status.BytesPerSecond;
+
                 var remainingTime =
-                    status.Bytes.CombineLatest<long, long, double, double?>(status.TotalBytes, averageBufferedBps,
+                    status.Bytes.CombineLatest<long, long, double, double?>(status.TotalBytes, bytesPerSecond,
                         GetRemainingTime);
 
                 var formattedRemainingTime = remainingTime.Select<double?, string>(GetFormattedRemainingTime);
 
                 var formattedDownloadSpeed =
-                    averageBufferedBps.CombineLatest<double, string, string>(downloadSpeedUnit,
+                    bytesPerSecond.CombineLatest<double, string, string>(downloadSpeedUnit,
                         GetFormattedDownloadSpeed);
 
                 return formattedDownloadSpeed.CombineLatest<string, string, string>(formattedRemainingTime,

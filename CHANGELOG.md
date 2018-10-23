@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Handling failures when accessing the file system
 - Attaching "system-info" to Sentry events as tag
 - Support for PK_OFFICIAL define
+- Displaying "Stalled..." instead of "Downloading package..." if the download speed reaches 0 B/s
 
 ### Changed
 - Linux launch script

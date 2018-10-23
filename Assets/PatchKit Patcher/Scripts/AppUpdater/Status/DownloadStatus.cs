@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UniRx;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Status
@@ -11,12 +12,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         public ReactiveProperty<bool> IsActive { get; private set; }
         public ReactiveProperty<string> Description { get; private set; }
 
-        private readonly DownloadSpeedCalculator _downloadSpeedCalculator =
-            new DownloadSpeedCalculator();
-
-        private readonly ReactiveProperty<double> _bytesPerSecond =
-            new ReactiveProperty<double>();
-
+        private readonly ReactiveProperty<double> _bytesPerSecond;
         public DownloadStatus()
         {
             Bytes = new ReactiveProperty<long>();
@@ -27,16 +23,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             IsActive = new ReactiveProperty<bool>();
             Description = new ReactiveProperty<string>();
 
-            IsActive.Subscribe(_ =>
-            {
-                _downloadSpeedCalculator.Restart(DateTime.Now);
-            });
-
-            Bytes.Subscribe(b =>
-            {
-                _downloadSpeedCalculator.AddSample(b, DateTime.Now);
-                _bytesPerSecond.Value = _downloadSpeedCalculator.BytesPerSecond;
-            });
+            var bufferSpan = TimeSpan.FromSeconds(1);
+            _bytesPerSecond = Bytes
+                .Buffer(bufferSpan)
+                .Select(byteCounts => byteCounts.Count > 0 ? byteCounts.Average() : 0)
+                .ToReactiveProperty();
         }
 
         IReadOnlyReactiveProperty<long> IReadOnlyDownloadStatus.Bytes

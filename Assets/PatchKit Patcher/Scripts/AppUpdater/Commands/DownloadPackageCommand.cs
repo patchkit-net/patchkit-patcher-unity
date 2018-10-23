@@ -4,6 +4,7 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using UniRx;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -60,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             status.RegisterOperation(_status);
         }
 
-        public override void Execute(CancellationToken cancellationToken)
+        public override void Execute(Cancellation.CancellationToken cancellationToken)
         {
             base.Execute(cancellationToken);
 
@@ -73,7 +74,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             downloader.DownloadProgressChanged += bytes => { _status.Bytes.Value = bytes; };
 
-            downloader.Download(cancellationToken);
+            using (_status.BytesPerSecond.Subscribe(bps =>
+                _status.Description.Value = bps > 0 ? "Downloading package..." : "Stalled..."))
+            {
+                downloader.Download(cancellationToken);
+            }
 
             _status.IsActive.Value = false;
         }
