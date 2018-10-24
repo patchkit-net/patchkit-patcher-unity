@@ -50,31 +50,29 @@ namespace PatchKit.Unity.Patcher.UI
 
         private static string GetFormattedDownloadSpeed(double bytesPerSecond, string downloadSpeedUnit)
         {
-            double kbPerSecond = bytesPerSecond / 1024.0;
-
             switch (downloadSpeedUnit)
             {
                 case "kilobytes":
-                    return FormatDownloadSpeedKilobytes(kbPerSecond);
+                    return FormatDownloadSpeedKilobytes(bytesPerSecond);
                 case "megabytes":
-                    return FormatDownloadSpeedMegabytes(kbPerSecond);
+                    return FormatDownloadSpeedMegabytes(bytesPerSecond);
                 default: // "human_readable" and any other
                 {
-                    return kbPerSecond > 1024.0
-                        ? FormatDownloadSpeedMegabytes(kbPerSecond)
-                        : FormatDownloadSpeedKilobytes(kbPerSecond);
+                    return bytesPerSecond > Units.MB
+                        ? FormatDownloadSpeedMegabytes(bytesPerSecond)
+                        : FormatDownloadSpeedKilobytes(bytesPerSecond);
                 }
             }
         }
 
-        private static string FormatDownloadSpeedMegabytes(double kbPerSecond)
+        private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(kbPerSecond / 1024.0) + " MB/sec.";
+            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + " MB/sec.";
         }
 
-        private static string FormatDownloadSpeedKilobytes(double kbPerSecond)
+        private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(kbPerSecond) + " KB/sec.";
+            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + " KB/sec.";
         }
 
         private static string FormatDownloadSpeed(double s)

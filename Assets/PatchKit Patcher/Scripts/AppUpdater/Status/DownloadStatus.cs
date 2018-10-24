@@ -12,7 +12,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         public ReactiveProperty<bool> IsActive { get; private set; }
         public ReactiveProperty<string> Description { get; private set; }
 
-        private readonly ReactiveProperty<double> _bytesPerSecond;
+        public IReadOnlyReactiveProperty<double> Progress { get; private set; }
+
+        public IReadOnlyReactiveProperty<double> BytesPerSecond { get; private set; }
+
+        private readonly IObservable<double> _bytesDeltas;
+
         public DownloadStatus()
         {
             Bytes = new ReactiveProperty<long>();
@@ -23,11 +28,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             IsActive = new ReactiveProperty<bool>();
             Description = new ReactiveProperty<string>();
 
-            var bufferSpan = TimeSpan.FromSeconds(1);
-            _bytesPerSecond = Bytes
-                .Buffer(bufferSpan)
-                .Select(byteCounts => byteCounts.Count > 0 ? byteCounts.Average() : 0)
-                .ToReactiveProperty();
+            _bytesDeltas = Bytes
+                .Zip(Bytes.Skip(1), (lhs, rhs) => rhs - lhs)
+                .Select(x => (double) x);
+
+            BytesPerSecond = _bytesDeltas
+                .Buffer(TimeSpan.FromSeconds(1))
+                .Select(byteCounts => byteCounts.Count > 0 ? byteCounts.Sum() : 0)
+                .ToReadOnlyReactiveProperty();
         }
 
         IReadOnlyReactiveProperty<long> IReadOnlyDownloadStatus.Bytes
@@ -39,13 +47,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         {
             get { return TotalBytes; }
         }
-
-        public IReadOnlyReactiveProperty<double> BytesPerSecond
-        {
-            get { return _bytesPerSecond; }
-        }
-
-        public IReadOnlyReactiveProperty<double> Progress { get; private set; }
 
         IReadOnlyReactiveProperty<double> IReadOnlyOperationStatus.Weight
         {
