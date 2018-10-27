@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using PatchKit.Logging;
+using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -75,6 +76,29 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var meta = Pack1Meta.ParseFromFile(metaDestination);
 
             FileIntegrity[] filesIntegrity = checkVersionIntegrityCommand.Results.Files;
+
+            var contentSummary = _context.App.RemoteMetaData.GetContentSummary(installedVersionId);
+
+            foreach (var invalidVersionIdFile in filesIntegrity.Where(x =>
+                x.Status == FileIntegrityStatus.InvalidVersion))
+            {
+                var fileName = invalidVersionIdFile.FileName;
+                var file = contentSummary.Files.First(x => x.Path == fileName);
+
+                var localPath = _context.App.LocalDirectory.Path.PathCombine(file.Path);
+
+                string actualFileHash = HashCalculator.ComputeFileHash(localPath);
+                if (actualFileHash != file.Hash)
+                {
+                    FileOperations.Delete(localPath);
+                    invalidVersionIdFile.Status = FileIntegrityStatus.MissingData;
+                }
+                else
+                {
+                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId);
+                    invalidVersionIdFile.Status = FileIntegrityStatus.Ok;
+                }
+            }
 
             Pack1Meta.FileEntry[] brokenFiles = filesIntegrity
                 // Filter only files with invalid size, hash or missing entirely
