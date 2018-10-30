@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Handling failures when accessing the file system
 - Attaching "system-info" to Sentry events as tag
 - Support for PK_OFFICIAL define
+- capabilities field in the manifest
 
 ### Changed
 - Linux launch script
