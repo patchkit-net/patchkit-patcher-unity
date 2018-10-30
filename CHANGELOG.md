@@ -5,12 +5,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Fix issues with incorrect patcher window sizing
+
+## [3.10.2]
+### Fixed
+- An edge case which caused the download to never terminate
+- Patcher wouldn't quit upon starting the Launcher
+- Patcher wouldn't re-download a manually removed banner file
+
 ### Changed
 - Patcher will timeout if the downloading stopped sooner than after 5 minutes
 
+## [3.10.1p2]
 ### Fixed
-- An edge case which caused the download to never terminate
-- Fix issues with incorrect patcher window sizing
+- Slow download performance due to small buffer size
+
+## [3.10.1p1]
+### Fixed
+- Missing unpacking suffix when repairing files (3.10.1 failed to fix this issue)
 
 ## [3.10.1]
 ### Fixed
