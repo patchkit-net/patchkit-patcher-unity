@@ -33,10 +33,9 @@ namespace PatchKit.Unity.Patcher.UI
         {
             _isIdle = data.State == PatcherState.Connecting;
 
-            if (data.State == PatcherState.None)
+            if (data.State == PatcherState.None || data.Progress < 0)
             {
-                Text.text = "";
-                SetBar(0, 0);
+                // do nothing
                 return;
             }
 
@@ -73,11 +72,11 @@ namespace PatchKit.Unity.Patcher.UI
                 .AddTo(this);
         }
 
-
         private bool _isIdle = false;
         private const float IdleBarWidth = 0.2f;
         private const float IdleBarSpeed = 1.2f;
         private float _idleProgress = -IdleBarWidth;
+
         private void Update()
         {
             if (_isIdle)

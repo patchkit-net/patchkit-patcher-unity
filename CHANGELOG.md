@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Linux launch script
 - Download speed will now be displayed based on the average of download speeds in the last 2 seconds
+- Patcher will no longer clear the progress bar after updating
 
 ### Fixed
 - Invalid display of progress value when unarchiving
