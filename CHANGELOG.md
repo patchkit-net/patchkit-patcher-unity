@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - An edge case which caused the download to never terminate
+- Fix issues with incorrect patcher window sizing
 
 ## [3.10.1]
 ### Fixed
