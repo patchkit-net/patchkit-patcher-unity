@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.10.1p2]
 ### Fixed
+- Fix repairing files with invalid version id
+
+## [3.10.1p2]
+### Fixed
 - Slow download performance due to small buffer size
 
 ## [3.10.1p1]
