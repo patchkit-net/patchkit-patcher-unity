@@ -2,10 +2,12 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Linq;
 using System.Diagnostics;
+using System.IO;
+using System;
 
 namespace PatchKit.Unity
 {
-    public class CustomBuildScripts 
+    public class CustomBuildScripts
     {
         [MenuItem("Tools/Build/Windows x86")]
         public static void BuildWindows86 ()
@@ -78,6 +80,20 @@ namespace PatchKit.Unity
             }
         }
 
+        public static string PatcherDataDirectory(BuildTarget target, string executablePath)
+        {
+            if (target == BuildTarget.StandaloneOSXIntel)
+            {
+                // TODO implement OSX logic
+                throw new NotImplementedException("Not implemented for OSX");
+            }
+
+            string buildDir = Path.GetDirectoryName(executablePath);
+            string patcherName = Path.GetFileNameWithoutExtension (executablePath);
+
+            return Path.Combine(buildDir, patcherName + "_Data");
+        }
+
         private static void Build(BuildTarget target)
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -133,7 +149,7 @@ namespace PatchKit.Unity
                 }
             }
 
-            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions 
+            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions
                                     | BuildOptions.ShowBuiltPlayer;
 
             string path = EditorUtility.SaveFolderPanel("Choose where to build the Patcher", "", "");
