@@ -13,7 +13,7 @@
 
         public readonly string Message;
 
-        public FileIntegrityStatus Status { get; private set; }
+        public FileIntegrityStatus Status { get; set; }
 
         public static FileIntegrity WithMessage<T>(T expectedValue, T actualValue, FileIntegrityStatus status, string filePath)
         {
