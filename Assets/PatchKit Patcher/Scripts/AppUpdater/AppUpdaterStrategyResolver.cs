@@ -70,7 +70,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             {
                 _logger.LogDebug("Resolving best strategy for updating...");
 
-                if (context.App.IsFullyInstalled() || context.App.IsInstallationBroken())
+                bool isInstallationBroken = context.App.IsInstallationBroken();
+
+                if (context.App.IsFullyInstalled() || isInstallationBroken)
                 {
                     int installedVersionId = context.App.GetInstalledVersionId();
                     _logger.LogTrace("installedVersionId = " + installedVersionId);
@@ -81,6 +83,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     if (installedVersionId == latestVersionId)
                     {
                         _logger.LogDebug("Installed version is the same as the latest version. Using empty strategy.");
+
+                        if (isInstallationBroken)
+                        {
+                            return StrategyType.Repair;
+                        }
 
                         return StrategyType.Empty;
                     }

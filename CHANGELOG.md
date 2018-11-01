@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Patcher will timeout if the downloading stopped sooner than after 5 minutes
 
+## [3.10.1p3]
+### Fixed
+- Fix repairing files with invalid version id
+
 ## [3.10.1p2]
 ### Fixed
 - Slow download performance due to small buffer size
