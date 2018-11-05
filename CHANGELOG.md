@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Torrent downloading
 - StandaloneOSXUniversal architecture from building options
 
+## [3.10.3]
+### Fixed
+- Fix issue with locating screensize file
+
 ## [3.10.2]
 ### Fixed
 - An edge case which caused the download to never terminate

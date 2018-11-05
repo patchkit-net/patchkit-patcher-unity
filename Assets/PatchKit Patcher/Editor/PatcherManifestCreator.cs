@@ -13,25 +13,24 @@ namespace PatchKit.Unity.Editor
         [PostProcessBuild, UsedImplicitly]
         private static void PostProcessBuild(BuildTarget buildTarget, string buildPath)
         {
-            Manifest manifest = new Manifest();
-
-            if (buildTarget == BuildTarget.StandaloneWindows || buildTarget == BuildTarget.StandaloneWindows64)
+            Manifest manifest;
+            
+            switch (buildTarget)
             {
-                manifest = WindowsManifest(buildPath);
-            }
-
-            if (buildTarget == BuildTarget.StandaloneOSXUniversal ||
-                buildTarget == BuildTarget.StandaloneOSXIntel ||
-                buildTarget == BuildTarget.StandaloneOSXIntel64)
-            {
-                manifest = OsxManifest(buildPath);
-            }
-
-            if (buildTarget == BuildTarget.StandaloneLinux ||
-                buildTarget == BuildTarget.StandaloneLinux64 ||
-                buildTarget == BuildTarget.StandaloneLinuxUniversal)
-            {
-                manifest = LinuxManifest(buildPath);
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64:
+                    manifest = WindowsManifest(buildPath);
+                    break;
+                case BuildTarget.StandaloneOSXIntel64:
+                    manifest = OsxManifest(buildPath);
+                    break;
+                case BuildTarget.StandaloneLinux:
+                case BuildTarget.StandaloneLinux64:
+                case BuildTarget.StandaloneLinuxUniversal:
+                    manifest = LinuxManifest(buildPath);
+                    break;
+                default:
+                    throw new NotSupportedException();
             }
 
             string manifestPath = Path.Combine(Path.GetDirectoryName(buildPath), "patcher.manifest");
