@@ -144,15 +144,16 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void EnforceCorrectScreenSize()
         {
-            _logger.LogDebug("Reading correct screen size from " + ScreenSizeFilename);
+            string screenSizeFilePath = Path.Combine(Application.dataPath, ScreenSizeFilename);
+            _logger.LogDebug("Reading correct screen size from " + screenSizeFilePath);
 
-            if (!File.Exists(ScreenSizeFilename))
+            if (!File.Exists(screenSizeFilePath))
             {
-                _logger.LogWarning(ScreenSizeFilename + " file does not exist.");
+                _logger.LogWarning(screenSizeFilePath + " file does not exist.");
                 return;
             }
 
-            var screenResolutionText = File.ReadAllText(ScreenSizeFilename).Split(' ');
+            var screenResolutionText = File.ReadAllText(screenSizeFilePath).Split(' ');
 
             try
             {

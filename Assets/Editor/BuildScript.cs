@@ -27,16 +27,6 @@ namespace PatchKit.Unity.Editor
             Build(BuildTarget.StandaloneWindows64, true);
         }
 
-        public static void BuildOSX32Release()
-        {
-            Build(BuildTarget.StandaloneOSXIntel, false);
-        }
-
-        public static void BuildOSX32Development()
-        {
-            Build(BuildTarget.StandaloneOSXIntel, true);
-        }
-
         public static void BuildOSX64Release()
         {
             Build(BuildTarget.StandaloneOSXIntel64, false);

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.10.3]
+### Fixed
+- Fix issue with locating screensize file
+
 ## [3.10.2]
 ### Fixed
 - An edge case which caused the download to never terminate

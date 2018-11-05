@@ -2,10 +2,12 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using System.Linq;
 using System.Diagnostics;
+using System.IO;
+using System;
 
 namespace PatchKit.Unity
 {
-    public class CustomBuildScripts 
+    public class CustomBuildScripts
     {
         [MenuItem("Tools/Build/Windows x86")]
         public static void BuildWindows86 ()
@@ -37,22 +39,10 @@ namespace PatchKit.Unity
             Build(BuildTarget.StandaloneLinuxUniversal);
         }
 
-        [MenuItem("Tools/Build/OSX")]
-        public static void BuildOsx ()
-        {
-            Build(BuildTarget.StandaloneOSXIntel);
-        }
-
         [MenuItem("Tools/Build/OSX x64")]
         public static void BuildOsx64 ()
         {
             Build(BuildTarget.StandaloneOSXIntel64);
-        }
-
-        [MenuItem("Tools/Build/OSX Universal")]
-        public static void BuildOsxUniversal ()
-        {
-            Build(BuildTarget.StandaloneOSXUniversal);
         }
 
         private static string PatcherExecutableName(BuildTarget target)
@@ -62,19 +52,34 @@ namespace PatchKit.Unity
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64:
                     return "Patcher.exe";
-
                 case BuildTarget.StandaloneLinux:
                 case BuildTarget.StandaloneLinux64:
                 case BuildTarget.StandaloneLinuxUniversal:
                     return "Patcher";
-
-                case BuildTarget.StandaloneOSXIntel:
                 case BuildTarget.StandaloneOSXIntel64:
-                case BuildTarget.StandaloneOSXUniversal:
                     return "Patcher.app";
-
                 default:
-                    return "";
+                    throw new NotSupportedException();
+            }
+        }
+
+        public static string PatcherDataDirectory(BuildTarget target, string executablePath)
+        {
+            switch (target)
+            {
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64:
+                case BuildTarget.StandaloneLinux:
+                case BuildTarget.StandaloneLinux64:
+                case BuildTarget.StandaloneLinuxUniversal:
+                    string buildDir = Path.GetDirectoryName(executablePath);
+                    string patcherName = Path.GetFileNameWithoutExtension (executablePath);
+
+                    return Path.Combine(buildDir, patcherName + "_Data");
+                case BuildTarget.StandaloneOSXIntel64:
+                    return Path.Combine(executablePath, "Contents");
+                default:
+                    throw new NotSupportedException();
             }
         }
 
@@ -133,7 +138,7 @@ namespace PatchKit.Unity
                 }
             }
 
-            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions 
+            BuildOptions buildOptions = BuildOptions.ForceEnableAssertions
                                     | BuildOptions.ShowBuiltPlayer;
 
             string path = EditorUtility.SaveFolderPanel("Choose where to build the Patcher", "", "");
