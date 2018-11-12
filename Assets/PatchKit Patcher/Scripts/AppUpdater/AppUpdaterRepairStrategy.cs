@@ -6,6 +6,7 @@ using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
@@ -54,8 +55,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             geolocateCommand.Execute(cancellationToken);
 
             var resource = _context.App.RemoteData.GetContentPackageResource(
-                installedVersionId, 
-                validateLicense.KeySecret, 
+                installedVersionId,
+                validateLicense.KeySecret,
                 geolocateCommand.CountryCode);
 
             if (!resource.HasMetaUrls())
@@ -67,7 +68,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var downloader = new HttpDownloader(metaDestination, resource.GetMetaUrls());
             downloader.Download(cancellationToken);
 
-            ICheckVersionIntegrityCommand checkVersionIntegrityCommand 
+            ICheckVersionIntegrityCommand checkVersionIntegrityCommand
                 = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context);
 
             checkVersionIntegrityCommand.Prepare(_status);
@@ -90,7 +91,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 string actualFileHash = HashCalculator.ComputeFileHash(localPath);
                 if (actualFileHash != file.Hash)
                 {
-                    FileOperations.Delete(localPath);
+                    FileOperations.Delete(localPath, cancellationToken);
                     _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId);
                     invalidVersionIdFile.Status = FileIntegrityStatus.MissingData;
                 }
@@ -103,7 +104,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             Pack1Meta.FileEntry[] brokenFiles = filesIntegrity
                 // Filter only files with invalid size, hash or missing entirely
-                .Where(f => f.Status == FileIntegrityStatus.InvalidHash 
+                .Where(f => f.Status == FileIntegrityStatus.InvalidHash
                          || f.Status == FileIntegrityStatus.InvalidSize
                          || f.Status == FileIntegrityStatus.MissingData)
                 // Map to file entires from meta
@@ -118,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 return;
             }
             _logger.LogDebug(string.Format("Broken files count: {0}", brokenFiles.Length));
-            
+
             IRepairFilesCommand repairCommand = commandFactory.CreateRepairFilesCommand(
                 installedVersionId,
                 _context,
