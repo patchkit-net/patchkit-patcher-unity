@@ -1,4 +1,7 @@
-﻿using PatchKit.Unity.Utilities;
+﻿using System;
+using System.Collections.Generic;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,10 +17,13 @@ namespace PatchKit.Unity.Patcher.UI
         private struct UpdateData
         {
             public double Progress;
+
             public PatcherState State;
+
+            public bool IsAppInstalled;
         }
 
-        private void SetBar(float start, float end)
+        private void SetProgressBar(float start, float end)
         {
             var anchorMax = Image.rectTransform.anchorMax;
             var anchorMin = Image.rectTransform.anchorMin;
@@ -29,46 +35,97 @@ namespace PatchKit.Unity.Patcher.UI
             Image.rectTransform.anchorMin = anchorMin;
         }
 
+        private void SetProgressBarLinear(float progress)
+        {
+            SetProgressBar(0, progress);
+        }
+
+        private void SetProgressBarText(string text)
+        {
+            Text.text = text;
+        }
+
         private void SetProgress(UpdateData data)
         {
-            _isIdle = data.State == PatcherState.Connecting;
+        }
 
-            if (data.State == PatcherState.None || data.Progress < 0)
+        private void SetIdle()
+        {
+            SetProgressBarText("Connecting...");
+            _isIdle = true;
+        }
+
+        private string FormatProgressForDisplay(double progress)
+        {
+            return string.Format("{0:0.0}", progress * 100.0) + "%";
+        }
+
+        private void OnUpdate(UpdateData data)
+        {
+            _isIdle = false;
+
+            switch (data.State)
             {
-                // do nothing
-                return;
+                case PatcherState.LoadingPatcherData:
+                case PatcherState.LoadingPatcherConfiguration:
+                case PatcherState.Connecting:
+                    SetIdle();
+                    return;
+
+                case PatcherState.UpdatingApp:
+                    if (data.Progress <= 0)
+                    {
+                        SetIdle();
+                        return;
+                    }
+
+                    SetProgressBarText(FormatProgressForDisplay(data.Progress));
+                    SetProgressBarLinear((float) data.Progress);
+                    break;
+
+                case PatcherState.WaitingForUserDecision:
+                    if (data.IsAppInstalled)
+                    {
+                        SetProgressBarText(FormatProgressForDisplay(1.0));
+                        SetProgressBarLinear(1);
+                    }
+                    else
+                    {
+                        SetProgressBarText(FormatProgressForDisplay(0.0));
+                        SetProgressBarLinear(0);
+                    }
+                    break;
+
+                case PatcherState.DisplayingError:
+                    SetProgressBarText("Error...");
+                    SetProgressBarLinear(0);
+                    break;
+
+                case PatcherState.StartingApp:
+                    SetProgressBarText(FormatProgressForDisplay(1.0));
+                    SetProgressBarLinear(1);
+                    break;
+
+                case PatcherState.None:
+                default:
+                    _isIdle = false;
+                    break;
             }
-
-            if (data.State == PatcherState.DisplayingError)
-            {
-                Text.text = "Error!";
-                SetBar(0, 0);
-                return;
-            }
-
-            if (data.State == PatcherState.Connecting)
-            {
-                Text.text = "Connecting...";
-                return;
-            }
-
-            double progress = data.Progress;
-
-            Text.text = progress >= 0.0 ? progress.ToString("0.0%") : "";
-            float visualProgress = progress >= 0.0 ? (float) progress : 0.0f;
-
-            SetBar(0, visualProgress);
         }
 
         private void Start()
         {
-            var progress = Patcher.Instance.UpdaterStatus
-                .SelectSwitchOrDefault(s => s.Progress, -1.0);
+            var progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
 
             Patcher.Instance.State
-                .CombineLatest(progress, (state, d) => new UpdateData { Progress = d, State = state })
+                .CombineLatest(progress, Patcher.Instance.IsAppInstalled,
+                    (state, progressValue, isAppInstalled) => new UpdateData {
+                        Progress = progressValue,
+                        State = state,
+                        IsAppInstalled = isAppInstalled
+                        })
                 .ObserveOnMainThread()
-                .Subscribe(SetProgress)
+                .Subscribe(OnUpdate)
                 .AddTo(this);
         }
 
@@ -81,7 +138,7 @@ namespace PatchKit.Unity.Patcher.UI
         {
             if (_isIdle)
             {
-                SetBar(_idleProgress, _idleProgress + IdleBarWidth);
+                SetProgressBar(_idleProgress, _idleProgress + IdleBarWidth);
 
                 _idleProgress += Time.deltaTime * IdleBarSpeed;
 
