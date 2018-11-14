@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             public DateTime AddTime;
         }
 
-        private static readonly TimeSpan SampleLifeTime = TimeSpan.FromSeconds(10.0);
+        private static readonly TimeSpan SampleLifeTime = TimeSpan.FromSeconds(5.0);
 
         private static readonly TimeSpan MinimumDelayBetweenSamples = TimeSpan.FromSeconds(1.0);
 
@@ -37,9 +37,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             _samples.Clear();
         }
 
-        public void AddSample(long bytes, DateTime time)
+        public void AddSample(long? bytes, DateTime time)
         {
-            if (_lastBytes > bytes)
+            if (bytes.HasValue && _lastBytes > bytes)
             {
                 Restart(time);
             }
@@ -53,15 +53,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
 
             CleanOldSamples(time);
 
-            _samples.Add(new Sample
+            if (bytes.HasValue)
             {
-                Bytes = bytes - _lastBytes,
-                Duration = duration,
-                AddTime = time
-            });
+                _samples.Add(new Sample
+                {
+                    Bytes = bytes.Value - _lastBytes,
+                    Duration = duration,
+                    AddTime = time
+                });
 
-            _lastBytes = bytes;
+                _lastBytes = bytes.Value;
+            }
+
             _lastTime = time;
+        }
+
+        public double Calculate(long? bytes, DateTime time)
+        {
+            AddSample(bytes, DateTime.Now);
+
+            return BytesPerSecond;
         }
 
         public double BytesPerSecond

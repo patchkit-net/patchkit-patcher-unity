@@ -16,7 +16,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
 
         public IReadOnlyReactiveProperty<double> BytesPerSecond { get; private set; }
 
-        private readonly IObservable<double> _bytesDeltas;
+        private readonly DownloadSpeedCalculator _downloadSpeedCalculator =
+            new DownloadSpeedCalculator();
+
+        private struct ByteSample
+        {
+            public long? Bytes;
+            public DateTime Timestamp;
+        }
 
         public DownloadStatus()
         {
@@ -28,13 +35,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             IsActive = new ReactiveProperty<bool>();
             Description = new ReactiveProperty<string>();
 
-            _bytesDeltas = Bytes
-                .Zip(Bytes.Skip(1), (lhs, rhs) => rhs - lhs)
-                .Select(x => (double) x);
+            IsActive.Subscribe(_ =>
+            {
+                _downloadSpeedCalculator.Restart(DateTime.Now);
+            });
 
-            BytesPerSecond = _bytesDeltas
-                .Buffer(TimeSpan.FromSeconds(1))
-                .Select(byteCounts => byteCounts.Count > 0 ? byteCounts.Sum() : 0)
+            var timedBytes = Bytes.Select(b => new ByteSample{
+                Bytes = b,
+                Timestamp = DateTime.Now
+            });
+
+            var interval = Observable
+                .Interval(TimeSpan.FromSeconds(1))
+                .Select(_ => new ByteSample{
+                    Timestamp = DateTime.Now
+                });
+
+            var updateStream = timedBytes.Merge(interval);
+
+            BytesPerSecond = updateStream
+                .Select(b => _downloadSpeedCalculator.Calculate(b.Bytes, b.Timestamp))
                 .ToReadOnlyReactiveProperty();
         }
 
