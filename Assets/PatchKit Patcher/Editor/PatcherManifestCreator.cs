@@ -10,8 +10,7 @@ namespace PatchKit.Unity.Editor
     {
         private const int ManifestVersion = 4;
 
-        [MenuItem("Tools/PatchKit Patcher/Manifest/Windows")]
-        private static void Test(Manifest manifest)
+        private static void SaveTestManifest(Manifest manifest)
         {
             string targetLocation = EditorUtility.SaveFilePanel("Choose test manifest location", "", "patcher.manifest", "test");
 
@@ -19,21 +18,21 @@ namespace PatchKit.Unity.Editor
         }
 
         [MenuItem("Tools/PatchKit Patcher/Manifest/Windows")]
-        private static void TestWindows()
+        private static void CreateTestManifestWindows()
         {
-            Test(WindowsManifest("BUILD_PATH"));
+            SaveTestManifest(WindowsManifest("BUILD_PATH"));
         }
 
         [MenuItem("Tools/PatchKit Patcher/Manifest/Linux")]
-        private static void TestLinux()
+        private static void CreateTestManifestLinux()
         {
-            Test(LinuxManifest("BUILD_PATH"));
+            SaveTestManifest(LinuxManifest("BUILD_PATH"));
         }
 
         [MenuItem("Tools/PatchKit Patcher/Manifest/Osx")]
-        private static void TestOsx()
+        private static void CreateTestManifestOsx()
         {
-            Test(OsxManifest("BUILD_PATH"));
+            SaveTestManifest(OsxManifest("BUILD_PATH"));
         }
 
         [PostProcessBuild, UsedImplicitly]
