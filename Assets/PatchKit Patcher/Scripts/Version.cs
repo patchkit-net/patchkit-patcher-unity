@@ -4,7 +4,7 @@ namespace PatchKit.Unity.Patcher
     {
         public const int Major = 3;
         public const int Minor = 10;
-        public const int Release = 2;
+        public const int Release = 3;
 
         public static string Value
         {
