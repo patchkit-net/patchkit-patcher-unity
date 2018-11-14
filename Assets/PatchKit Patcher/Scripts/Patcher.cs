@@ -116,6 +116,13 @@ namespace PatchKit.Unity.Patcher
             get { return _canStartApp; }
         }
 
+        private readonly BoolReactiveProperty _isAppInstalled = new BoolReactiveProperty(false);
+
+        public IReadOnlyReactiveProperty<bool> IsAppInstalled
+        {
+            get { return _isAppInstalled; }
+        }
+
         private readonly BoolReactiveProperty _canInstallApp = new BoolReactiveProperty(false);
 
         public IReadOnlyReactiveProperty<bool> CanInstallApp
@@ -583,6 +590,8 @@ namespace PatchKit.Unity.Patcher
                 bool canCheckForAppUpdates = isInstalled;
                 bool canStartApp = isInstalled;
 
+                _isAppInstalled.Value = isInstalled;
+
                 _canRepairApp.Value = false;
                 _canInstallApp.Value = false;
                 _canCheckForAppUpdates.Value = false;
@@ -721,7 +730,7 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.LogException(e);
 
                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
-                
+
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";

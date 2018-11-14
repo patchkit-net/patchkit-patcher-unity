@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -14,7 +15,7 @@ namespace PatchKit.Unity.Editor
         private static void PostProcessBuild(BuildTarget buildTarget, string buildPath)
         {
             Manifest manifest;
-            
+
             switch (buildTarget)
             {
                 case BuildTarget.StandaloneWindows:
