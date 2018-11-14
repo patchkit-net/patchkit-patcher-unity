@@ -39,8 +39,15 @@ namespace PatchKit.Unity.Patcher
                 }
 
                 // Reports to Sentry
-                DebugLogger.LogException(
-                    new FileNotFoundException(string.Format("Couldn't resolve executable in {0}", executablePath)));
+                try
+                {
+                    throw new FileNotFoundException(string.Format("Couldn't resolve executable in {0}", executablePath));
+                }
+                catch (Exception e)
+                {
+                    DebugLogger.LogException(e);
+                }
+
             }
 
             PlatformType platformType = Platform.GetPlatformType();
