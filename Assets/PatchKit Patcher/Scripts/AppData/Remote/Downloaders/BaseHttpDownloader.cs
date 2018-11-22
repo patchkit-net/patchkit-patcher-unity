@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using JetBrains.Annotations;
@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         private readonly ILogger _logger;
 
-        private const int BufferSize = 1024;
+        private const int BufferSize = 5 * 1024 * 1024;
 
         private readonly string _url;
         private readonly int _timeout;
@@ -79,7 +79,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 {
                     Address = new Uri(_url),
                     Range = _bytesRange,
-                    Timeout = _timeout
+                    Timeout = _timeout,
+                    ReadWriteTimeout = _timeout,
                 };
 
                 using (var response = _httpClient.Get(request))

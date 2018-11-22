@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Ionic.Zlib;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
@@ -152,7 +153,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     break;
                 case Pack1Meta.DirectoryFileType:
                     progress(0.0);
-                    UnpackDirectory(file);
+                    UnpackDirectory(file, cancellationToken);
                     progress(1.0);
                     break;
                 case Pack1Meta.SymlinkFileType:
@@ -167,12 +168,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         }
 
-        private void UnpackDirectory(Pack1Meta.FileEntry file)
+        private void UnpackDirectory(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
         {
             string destPath = Path.Combine(_destinationDirPath, file.Name);
 
             DebugLogger.Log("Creating directory " + destPath);
-            Directory.CreateDirectory(destPath);
+            DirectoryOperations.CreateDirectory(destPath, cancellationToken);
             DebugLogger.Log("Directory " + destPath + " created successfully!");
         }
 
@@ -274,42 +275,45 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (Stream decompressionStream = createDecompressor(cryptoStream))
+                using (var wrapperStream = new GZipReadWrapperStream(cryptoStream))
                 {
-                    try
+                    using (Stream decompressionStream = createDecompressor(wrapperStream))
                     {
-                        const int bufferSize = 128 * 1024;
-                        var buffer = new byte[bufferSize];
-                        int count;
-
-                        while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                        try
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
-                            targetStream.Write(buffer, 0, count);
+                            const int bufferSize = 128 * 1024;
+                            var buffer = new byte[bufferSize];
+                            int count;
 
-                            long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
-                            onProgress(bytesProcessed / (double) fileSize);
+                            while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                targetStream.Write(buffer, 0, count);
+
+                                long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
+                                onProgress(bytesProcessed / (double) fileSize);
+                            }
                         }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception e)
-                    {
-                        DebugLogger.LogException(e);
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception e)
+                        {
+                            DebugLogger.LogException(e);
 
-                        PatcherLogManager logManager = PatcherLogManager.Instance;
-                        PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
-                        RavenClient ravenClient = sentryRegistry.RavenClient;
+                            PatcherLogManager logManager = PatcherLogManager.Instance;
+                            PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
+                            RavenClient ravenClient = sentryRegistry.RavenClient;
 
-                        var sentryEvent = new SentryEvent(e);
-                        PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
-                        ravenClient.Capture(sentryEvent);
+                            var sentryEvent = new SentryEvent(e);
+                            PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
+                            ravenClient.Capture(sentryEvent);
 
-                        throw;
+                            throw;
+                        }
+
                     }
-                    
                 }
             }
         }

@@ -6,6 +6,8 @@ using System.Linq;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using PatchKit.Logging;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
@@ -177,7 +179,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             string dirPath = Path.GetDirectoryName(_filePath);
             if (dirPath != null)
             {
-                Directory.CreateDirectory(dirPath);
+                DirectoryOperations.CreateDirectory(dirPath, CancellationToken.Empty);
             }
         }
 
@@ -205,7 +207,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     _logger.LogDebug("Deprecated data file exists. Moving it to a new location...");
                     CreateDataDir();
-                    File.Move(_deprecatedFilePath, _filePath);
+                    FileOperations.Move(_deprecatedFilePath, _filePath, CancellationToken.Empty);
                     _logger.LogDebug("Deprecated data file moved.");
 
                     if (TryLoadDataFromFile())

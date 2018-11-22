@@ -1,4 +1,5 @@
-﻿using System.IO;
+using System;
+using System.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using UnityEditor;
@@ -8,36 +9,40 @@ namespace PatchKit.Unity.Editor
 {
     public static class PatcherManifestCreator
     {
-        private const int ManifestVersion = 2;
+        private const int ManifestVersion = 3;
 
         [PostProcessBuild, UsedImplicitly]
         private static void PostProcessBuild(BuildTarget buildTarget, string buildPath)
         {
-            Manifest manifest = new Manifest();
-            
-            if (buildTarget == BuildTarget.StandaloneWindows || buildTarget == BuildTarget.StandaloneWindows64)
-            {
-                manifest = WindowsManifest(buildPath);
-            }
+            Manifest manifest;
 
-            if (buildTarget == BuildTarget.StandaloneOSXUniversal ||
-                buildTarget == BuildTarget.StandaloneOSXIntel ||
-                buildTarget == BuildTarget.StandaloneOSXIntel64)
+            switch (buildTarget)
             {
-                manifest = OsxManifest(buildPath);
-            }
-
-            if (buildTarget == BuildTarget.StandaloneLinux ||
-                buildTarget == BuildTarget.StandaloneLinux64 ||
-                buildTarget == BuildTarget.StandaloneLinuxUniversal)
-            {
-                manifest = LinuxManifest(buildPath);
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64:
+                    manifest = WindowsManifest(buildPath);
+                    break;
+                case BuildTarget.StandaloneOSXIntel64:
+                    manifest = OsxManifest(buildPath);
+                    break;
+                case BuildTarget.StandaloneLinux:
+                case BuildTarget.StandaloneLinux64:
+                case BuildTarget.StandaloneLinuxUniversal:
+                    manifest = LinuxManifest(buildPath);
+                    break;
+                default:
+                    throw new NotSupportedException();
             }
 
             string manifestPath = Path.Combine(Path.GetDirectoryName(buildPath), "patcher.manifest");
             string manifestContent = JsonConvert.SerializeObject(manifest, Formatting.Indented);
 
             File.WriteAllText(manifestPath, manifestContent);
+        }
+
+        private static Manifest.Argument CreateManifestAgument(params string[] args)
+        {
+            return new Manifest.Argument { Value = args };
         }
 
         private static Manifest LinuxManifest(string buildPath)
@@ -54,18 +59,13 @@ namespace PatchKit.Unity.Editor
                 Version = ManifestVersion,
                 Target = "sh",
                 Arguments = new Manifest.Argument[] {
-                    new Manifest.Argument { Value = new string[] {
-                        launchScriptPath
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "{exedir}",
-                        patcherExe,
-                        "{secret}",
-                        "{installdir}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "{lockfile}"
-                    }}
+                    CreateManifestAgument(launchScriptPath),
+                    CreateManifestAgument("--exedir={exedir}"),
+                    CreateManifestAgument("--secret={secret}"),
+                    CreateManifestAgument("--installdir={installdir}"),
+                    CreateManifestAgument("--network-status={network-status}"),
+                    CreateManifestAgument("--patcher-exe=" + patcherExe),
+                    CreateManifestAgument("--lockfile={lockfile}"),
                 }
             };
         }
@@ -80,15 +80,10 @@ namespace PatchKit.Unity.Editor
                 Version = ManifestVersion,
                 Target = "{exedir}/" + targetFile,
                 Arguments = new Manifest.Argument[] {
-                    new Manifest.Argument { Value = new string[] {
-                        "--installdir", "{installdir}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--lockfile", "{lockfile}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--secret", "{secret}"
-                    }},
+                    CreateManifestAgument("--installdir", "{installdir}"),
+                    CreateManifestAgument("--lockfile", "{lockfile}"),
+                    CreateManifestAgument("--secret", "{secret}"),
+                    CreateManifestAgument("--{network-status}"),
                 }
             };
         }
@@ -103,21 +98,12 @@ namespace PatchKit.Unity.Editor
                 Version = ManifestVersion,
                 Target = "open",
                 Arguments = new Manifest.Argument[] {
-                    new Manifest.Argument { Value = new string[] {
-                        "{exedir}/" + targetFile
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--args"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--installdir", "{installdir}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--lockfile", "{lockfile}"
-                    }},
-                    new Manifest.Argument { Value = new string[] {
-                        "--secret", "{secret}"
-                    }},
+                    CreateManifestAgument("{exedir}/" + targetFile),
+                    CreateManifestAgument("--args"),
+                    CreateManifestAgument("--installdir", "{installdir}"),
+                    CreateManifestAgument("--lockfile", "{lockfile}"),
+                    CreateManifestAgument("--secret", "{secret}"),
+                    CreateManifestAgument("--{network-status}"),
                 }
             };
         }

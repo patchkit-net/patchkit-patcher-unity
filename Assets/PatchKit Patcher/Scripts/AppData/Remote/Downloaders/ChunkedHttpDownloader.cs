@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
@@ -68,12 +69,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _size = size;
         }
 
-        private ChunkedFileStream OpenFileStream()
+        private ChunkedFileStream OpenFileStream(CancellationToken cancellationToken)
         {
             var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
             if (!string.IsNullOrEmpty(parentDirectory))
             {
-                Directory.CreateDirectory(parentDirectory);
+                DirectoryOperations.CreateDirectory(parentDirectory, cancellationToken);
             }
 
             var chunksRange = CalculateContainingChunksRange(_range);
@@ -118,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                using (var fileStream = OpenFileStream())
+                using (var fileStream = OpenFileStream(cancellationToken))
                 {
                     bool retry;
 
@@ -257,11 +258,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public static IEnumerable<DownloadJob> BuildDownloadJobQueue(ResourceUrl resourceUrl, long currentOffset, BytesRange range, long dataSize, ChunksData chunksData)
         {
-            long lastByte = dataSize - 1;
+            // The effective range is the original range contained within multiples of chunk size
             BytesRange effectiveRange = range.Chunkify(chunksData);
-            BytesRange dataBounds = BytesRangeUtils.Make(currentOffset);
-
+            var dataBounds = new BytesRange(currentOffset, -1);
+            
             BytesRange bounds = effectiveRange.ContainIn(dataBounds);
+
+            // An uncommon edge case might occur, in which bounds.Start is equal to dataSize,
+            // this would cause the download to continue forever, with every request crashing due to invalid range header
+            if (bounds.Start >= dataSize)
+            {
+                yield break;
+            }
 
             if (resourceUrl.PartSize == 0)
             {
@@ -281,7 +289,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
 
             int lastPart = totalPartCount;
-            
+
             if (bounds.End != -1)
             {
                 lastPart = (int) (bounds.End / partSize);
@@ -290,6 +298,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     lastPart += 1;
                 }
             }
+            
+            long lastByte = dataSize - 1;
 
             for (int i = firstPart; i < lastPart; i++)
             {
