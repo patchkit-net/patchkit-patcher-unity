@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
@@ -26,12 +27,46 @@ namespace PatchKit.Unity.Patcher
             AppFinder = new AppFinder();
         }
 
+        private string ResolveExecutablePath(AppVersion appVersion)
+        {
+            if (!string.IsNullOrEmpty(appVersion.MainExecutable))
+            {
+                string executablePath = Path.Combine(_app.LocalDirectory.Path, appVersion.MainExecutable);
+
+                if (File.Exists(executablePath))
+                {
+                    return executablePath;
+                }
+
+                // Reports to Sentry
+                try
+                {
+                    throw new FileNotFoundException(string.Format("Couldn't resolve executable in {0}", executablePath));
+                }
+                catch (Exception e)
+                {
+                    DebugLogger.LogException(e);
+                }
+
+            }
+
+            PlatformType platformType = Platform.GetPlatformType();
+            return AppFinder.FindExecutable(_app.LocalDirectory.Path, platformType);
+        }
+
         public void Start()
+        {
+            var appVersion = _app.RemoteMetaData.GetAppVersionInfo(_app.GetInstalledVersionId());
+            StartAppVersion(appVersion);
+        }
+
+        private void StartAppVersion(AppVersion appVersion)
         {
             DebugLogger.Log("Starting application.");
 
             PlatformType platformType = Platform.GetPlatformType();
-            string appFilePath = AppFinder.FindExecutable(_app.LocalDirectory.Path, platformType);
+            string appFilePath = ResolveExecutablePath(appVersion);
+
             if (appFilePath == null)
             {
                 throw new InvalidOperationException("Couldn't find executable.");
@@ -53,6 +88,12 @@ namespace PatchKit.Unity.Patcher
             }
 
             var processStartInfo = GetProcessStartInfo(appFilePath, platformType);
+
+            if (!string.IsNullOrEmpty(appVersion.MainExecutableArgs))
+            {
+                processStartInfo.Arguments += " " + appVersion.MainExecutableArgs;
+            }
+
             StartAppProcess(processStartInfo);
         }
 
@@ -67,7 +108,7 @@ namespace PatchKit.Unity.Patcher
             switch (platform)
             {
                 case PlatformType.Unknown:
-                    throw new ArgumentException("Unknown");;
+                    throw new ArgumentException("Unknown");
                 case PlatformType.Windows:
                     return new ProcessStartInfo
                     {

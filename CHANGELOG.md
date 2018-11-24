@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for LZMA2 compression using XZ
 - Sending all events to Statistics Reporting Service
+- Support for main_executable and main_executable_args fields in AppVersion
 - Added processing of --online or --offline command line argument
 - Sending 'patcher_started' event to Statistics Reporting Service
 - Custom building options under `Tools/Build`
@@ -15,10 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Attaching "system-info" to Sentry events as tag
 - Support for PK_OFFICIAL define
 - Displaying "Stalled..." instead of "Downloading package..." if the download speed reaches 0 B/s
+- capabilities field in the manifest
 
 ### Changed
 - Linux launch script
 - Download speed will now be displayed based on the average of download speeds in the last 2 seconds
+- Patcher will no longer clear the progress bar after updating
 
 ### Fixed
 - Invalid display of progress value when unarchiving
@@ -28,14 +31,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Torrent downloading
 - StandaloneOSXUniversal architecture from building options
 
+## [3.10.3]
+### Fixed
+- Fix issue with locating screensize file
+
 ## [3.10.2]
 ### Fixed
 - An edge case which caused the download to never terminate
 - Patcher wouldn't quit upon starting the Launcher
 - Patcher wouldn't re-download a manually removed banner file
+- Fix issues with incorrect patcher window sizing
 
 ### Changed
 - Patcher will timeout if the downloading stopped sooner than after 5 minutes
+
+## [3.10.1p3]
+### Fixed
+- Fix repairing files with invalid version id
 
 ## [3.10.1p2]
 ### Fixed

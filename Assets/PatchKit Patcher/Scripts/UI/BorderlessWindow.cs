@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using PatchKit.Logging;
+using PatchKit.Unity.Patcher.Debug;
+using UnityEngine;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
 using System;
@@ -10,6 +13,10 @@ namespace PatchKit.Unity.Patcher.UI
 {
     public class BorderlessWindow : MonoBehaviour
     {
+        public const string ScreenSizeFilename = "screensize";
+
+        private PatchKit.Logging.ILogger _logger;
+
         public Rect DraggableArea;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
@@ -109,7 +116,11 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Awake()
         {
+            _logger = PatcherLogManager.DefaultLogger;
+
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+            EnforceCorrectScreenSize();
+
             _windowRect.position = new Vector2(Screen.currentResolution.width/2.0f - Screen.width/2.0f,
                 Screen.currentResolution.height/2.0f - Screen.height/2.0f);
             _windowRect.size = new Vector2(Screen.width, Screen.height);
@@ -129,6 +140,32 @@ namespace PatchKit.Unity.Patcher.UI
                 return true;
             }, IntPtr.Zero);
 #endif
+        }
+
+        private void EnforceCorrectScreenSize()
+        {
+            string screenSizeFilePath = Path.Combine(Application.dataPath, ScreenSizeFilename);
+            _logger.LogDebug("Reading correct screen size from " + screenSizeFilePath);
+
+            if (!File.Exists(screenSizeFilePath))
+            {
+                _logger.LogWarning(screenSizeFilePath + " file does not exist.");
+                return;
+            }
+
+            var screenResolutionText = File.ReadAllText(screenSizeFilePath).Split(' ');
+
+            try
+            {
+                int width = int.Parse(screenResolutionText[0]);
+                int height = int.Parse(screenResolutionText[1]);
+
+                Screen.SetResolution(width, height, false);
+            }
+            catch (System.Exception e)
+            {
+                _logger.LogError("Failed to correct screen sizing due to an exception.", e);
+            }
         }
 
         private void Update()

@@ -95,5 +95,17 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             return keySecret;
         }
+
+        public AppVersion GetAppVersionInfo(int versionId)
+        {
+            if (versionId <= 0)
+            {
+                throw new ArgumentException("Version id is invalid.", "versionId");
+            }
+
+            DebugLogger.Log(string.Format("Getting app version info for version with id {0}", versionId));
+
+            return _mainApiConnection.GetAppVersion(_appSecret, versionId);
+        }
     }
 }

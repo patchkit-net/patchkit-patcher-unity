@@ -23,6 +23,9 @@ namespace PatchKit.Unity.Editor
         public string Target;
 
         [JsonProperty(PropertyName = "target_arguments")]
-        public Argument[] Arguments; 
+        public Argument[] Arguments;
+
+        [JsonProperty(PropertyName = "capabilities")]
+        public string[] Capabilities;
     }
 }
