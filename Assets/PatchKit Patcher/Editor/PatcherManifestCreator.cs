@@ -17,19 +17,19 @@ namespace PatchKit.Unity.Editor
             File.WriteAllText(targetLocation, JsonConvert.SerializeObject(manifest, Formatting.Indented));
         }
 
-        [MenuItem("Tools/PatchKit Patcher/Manifest/Windows")]
+        [MenuItem("Tools/PatchKit Patcher Internal/Manifest/Windows")]
         private static void CreateTestManifestWindows()
         {
             SaveTestManifest(WindowsManifest("BUILD_PATH"));
         }
 
-        [MenuItem("Tools/PatchKit Patcher/Manifest/Linux")]
+        [MenuItem("Tools/PatchKit Patcher Internal/Manifest/Linux")]
         private static void CreateTestManifestLinux()
         {
             SaveTestManifest(LinuxManifest("BUILD_PATH"));
         }
 
-        [MenuItem("Tools/PatchKit Patcher/Manifest/Osx")]
+        [MenuItem("Tools/PatchKit Patcher Internal/Manifest/Osx")]
         private static void CreateTestManifestOsx()
         {
             SaveTestManifest(OsxManifest("BUILD_PATH"));
