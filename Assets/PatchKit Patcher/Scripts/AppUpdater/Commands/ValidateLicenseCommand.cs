@@ -20,7 +20,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         [NotNull] private readonly ILocalMetaData _localMetaData;
         [NotNull] private readonly ICache _cache;
         [NotNull] private readonly ILogger _logger;
-        [NotNull] private readonly IIssueReporter _issueReporter;
 
         public ValidateLicenseCommand([NotNull] ILicenseDialog licenseDialog, [NotNull] IRemoteMetaData remoteMetaData,
             [NotNull] ILocalMetaData localMetaData, [NotNull] ICache cache, [NotNull] ILogger logger, [NotNull] IIssueReporter issueReporter)
@@ -37,7 +36,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _localMetaData = localMetaData;
             _cache = cache;
             _logger = logger;
-            _issueReporter = issueReporter;
         }
 
         public override void Execute(CancellationToken cancellationToken)

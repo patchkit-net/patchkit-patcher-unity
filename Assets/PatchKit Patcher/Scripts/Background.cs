@@ -86,11 +86,12 @@ public class Background : MonoBehaviour
         Assert.IsNotNull(NewImage);
         Assert.IsNotNull(OldImage);
 
-        var patcherData = patcher.Data
+        patcher.Data
             .SkipWhile(data => string.IsNullOrEmpty(data.AppSecret))
             .First()
             .ObserveOnMainThread()
             .Subscribe(Initialize);
+        //TODO: Dispose subscription
     }
 
     private void Initialize(PatcherData data)
@@ -105,10 +106,12 @@ public class Background : MonoBehaviour
 
         var patcher = Patcher.Instance;
 
-        var appInfo = patcher.AppInfo
+        patcher.AppInfo
             .SkipWhile(info => info.Id == default(int))
-            .Select(info => new Data{
-                BannerData = new PatcherBannerData{
+            .Select(info => new Data
+            {
+                BannerData = new PatcherBannerData
+                {
                     ImageUrl = info.PatcherBannerImage,
                     Dimensions = info.PatcherBannerImageDimensions,
                     ModificationDate = info.PatcherBannerImageUpdatedAt
@@ -117,6 +120,7 @@ public class Background : MonoBehaviour
             })
             .ObserveOnMainThread()
             .Subscribe(OnBannerDataUpdate);
+        //TODO: Dispose subscription
     }
 
     private void OnBannerDataUpdate(Data data)

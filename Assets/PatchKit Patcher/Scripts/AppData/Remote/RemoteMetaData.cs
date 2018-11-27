@@ -59,7 +59,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             DebugLogger.Log("Getting latest version id.");
             DebugLogger.Log("retryRequests = " + retryRequests);
             var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
+#pragma warning disable 612
             return m.GetAppLatestAppVersionId(_appSecret).Id;
+#pragma warning restore 612
         }
 
         public Api.Models.Main.App GetAppInfo(bool retryRequests = true)
