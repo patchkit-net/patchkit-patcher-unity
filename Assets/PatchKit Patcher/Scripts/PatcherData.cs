@@ -12,5 +12,7 @@ namespace PatchKit.Unity.Patcher
         public string LockFilePath;
 
         public int OverrideLatestVersionId;
+
+        public bool? IsOnline;
     }
 }

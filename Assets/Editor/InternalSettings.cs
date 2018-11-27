@@ -20,7 +20,7 @@ public class InternalSettings : EditorWindow
         set { EditorPrefs.SetString(PasswordKey, value); }
     }
 
-    public static void Show()
+    public static void ShowSettings()
     {
         EditorWindow window = GetWindow<InternalSettings>();
         window.Show();

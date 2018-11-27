@@ -5,6 +5,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using PatchKit.Logging;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
@@ -40,12 +41,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _urls = urls;
         }
 
-        private FileStream OpenFileStream()
+        private FileStream OpenFileStream(CancellationToken cancellationToken)
         {
             var parentDirectory = Path.GetDirectoryName(_destinationFilePath);
             if (!string.IsNullOrEmpty(parentDirectory))
             {
-                Directory.CreateDirectory(parentDirectory);
+                DirectoryOperations.CreateDirectory(parentDirectory, cancellationToken);
             }
 
             return new FileStream(_destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -64,7 +65,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                using (var fileStream = OpenFileStream())
+                using (var fileStream = OpenFileStream(cancellationToken))
                 {
                     bool retry;
 

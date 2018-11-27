@@ -29,8 +29,6 @@ namespace PatchKit.Unity.Patcher
 
         public readonly IRemoteMetaData RemoteMetaData;
 
-        private readonly string _appDataPath;
-
         private readonly int _overrideLatestVersionId;
 
         public enum InstallStatus
@@ -87,7 +85,6 @@ namespace PatchKit.Unity.Patcher
                 throw new ArgumentNullException("remoteMetaData");
             }
 
-            _appDataPath = appDataPath;
             LocalDirectory = localDirectory;
             LocalMetaData = localMetaData;
             DownloadDirectory = downloadDirectory;

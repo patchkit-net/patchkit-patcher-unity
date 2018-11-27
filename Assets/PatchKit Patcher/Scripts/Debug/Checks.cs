@@ -4,7 +4,8 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    [Obsolete("Do custom checks and manual exception throwing instead.")]
+    //TODO: Surround it with scripting define that wouldn't display warnings in Unity console
+    //[Obsolete("Do custom checks and manual exception throwing instead.")]
     public class Checks
     {
         protected delegate void ValidationFailedHandler(string message);
@@ -31,10 +32,6 @@ namespace PatchKit.Unity.Patcher.Debug
             else if (resource.GetUrls().Length == 0)
             {
                 validationFailed("Resource urls are null or empty.");
-            }
-            else if (resource.TorrentUrls == null || resource.TorrentUrls.Length == 0)
-            {
-                validationFailed("Resource torrent urls are null or empty.");
             }
         }
 

@@ -21,9 +21,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             appDownloadDirectory.PrepareForWriting();
 
-            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "any" &&
-                               context.Configuration.UseTorrents;
-            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
+            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath);
         }
 
         public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret,
@@ -37,9 +35,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             appDownloadDirectory.PrepareForWriting();
 
-            bool useTorrents = context.App.RemoteMetaData.GetAppInfo().PublishMethod == "any" &&
-                               context.Configuration.UseTorrents;
-            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath, useTorrents);
+            return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath);
         }
 
         public IRepairFilesCommand CreateRepairFilesCommand(int versionId, AppUpdaterContext context, RemoteResource resource, Pack1Meta.FileEntry[] brokenFiles, Pack1Meta meta)
@@ -101,8 +97,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public IValidateLicenseCommand CreateValidateLicenseCommand(AppUpdaterContext context)
         {
             Assert.IsNotNull(Patcher.Instance.Data);
-            
-            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, context.App.LocalMetaData, 
+
+            return new ValidateLicenseCommand(context.LicenseDialog, context.App.RemoteMetaData, context.App.LocalMetaData,
                 new UnityCache(Patcher.Instance.Data.Value.AppSecret), PatcherLogManager.DefaultLogger, PatcherLogManager.Instance);
         }
 

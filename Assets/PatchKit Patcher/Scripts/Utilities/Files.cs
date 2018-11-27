@@ -1,5 +1,8 @@
 ﻿using System;
 using System.IO;
+using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 
 namespace PatchKit.Unity.Utilities
@@ -11,7 +14,7 @@ namespace PatchKit.Unity.Utilities
             var dirName = Path.GetDirectoryName(path);
             if (dirName != null)
             {
-                Directory.CreateDirectory(dirName);
+                DirectoryOperations.CreateDirectory(dirName, CancellationToken.Empty);
             }
         }
 

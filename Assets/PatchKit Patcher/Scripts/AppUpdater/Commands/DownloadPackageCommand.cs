@@ -1,7 +1,10 @@
-﻿using PatchKit.Unity.Patcher.AppData.Remote;
+﻿using System;
+using System.IO;
+using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using UniRx;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -12,33 +15,41 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly RemoteResource _resource;
         private readonly string _destinationPackagePath;
         private readonly string _destinationMetaPath;
-        private readonly bool _useTorrents;
 
         private DownloadStatus _status;
 
         public DownloadPackageCommand(RemoteResource resource, string destinationPackagePath,
-            string destinationMetaPath, bool useTorrents)
+            string destinationMetaPath)
         {
             Checks.ArgumentValidRemoteResource(resource, "resource");
-            Checks.ArgumentNotNullOrEmpty(destinationPackagePath, "destinationPackagePath");
-            Checks.ParentDirectoryExists(destinationPackagePath);
+
+            if (string.IsNullOrEmpty(destinationPackagePath))
+            {
+                throw new ArgumentException(destinationPackagePath, "destinationPackagePath");
+            }
+
+            if (!Directory.Exists(Path.GetDirectoryName(destinationPackagePath)))
+            {
+                throw new ArgumentException("Parent directory doesn't exist.", "destinationPackagePath");
+            }
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(resource, "resource");
             DebugLogger.LogVariable(destinationPackagePath, "destinationPackagePath");
-            DebugLogger.LogVariable(useTorrents, "useTorrents");
 
             _resource = resource;
             _destinationPackagePath = destinationPackagePath;
             _destinationMetaPath = destinationMetaPath;
-            _useTorrents = useTorrents;
         }
 
         public override void Prepare(UpdaterStatus status)
         {
             base.Prepare(status);
 
-            Checks.ArgumentNotNull(status, "statusMonitor");
+            if (status == null)
+            {
+                throw new ArgumentNullException("status");
+            }
 
             DebugLogger.Log("Preparing package download.");
 
@@ -50,7 +61,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             status.RegisterOperation(_status);
         }
 
-        public override void Execute(CancellationToken cancellationToken)
+        public override void Execute(Cancellation.CancellationToken cancellationToken)
         {
             base.Execute(cancellationToken);
 
@@ -59,12 +70,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status.IsActive.Value = true;
             _status.TotalBytes.Value = _resource.Size;
 
-            var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource,
-                _useTorrents);
+            var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource);
 
             downloader.DownloadProgressChanged += bytes => { _status.Bytes.Value = bytes; };
 
-            downloader.Download(cancellationToken);
+            using (_status.BytesPerSecond.Subscribe(bps =>
+                _status.Description.Value = bps > 0.01 ? "Downloading package..." : "Stalled..."))
+            {
+                downloader.Download(cancellationToken);
+            }
 
             _status.IsActive.Value = false;
         }
