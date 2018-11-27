@@ -24,7 +24,7 @@ public class InternalMenuItems
     [MenuItem("Tools/PatchKit Patcher Internal/Settings", false, 100)]
     public static void Settings()
     {
-        InternalSettings.Show();
+        InternalSettings.ShowSettings();
     }
 }
 
