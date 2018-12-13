@@ -87,12 +87,7 @@ namespace PatchKit.Unity.Patcher
                 }
             }
 
-            var processStartInfo = GetProcessStartInfo(appFilePath, platformType);
-
-            if (!string.IsNullOrEmpty(appVersion.MainExecutableArgs))
-            {
-                processStartInfo.Arguments += " " + appVersion.MainExecutableArgs;
-            }
+            var processStartInfo = GetProcessStartInfo(appFilePath, appVersion.MainExecutableArgs, platformType);
 
             StartAppProcess(processStartInfo);
         }
@@ -102,8 +97,13 @@ namespace PatchKit.Unity.Patcher
             return platformType == PlatformType.OSX || platformType == PlatformType.Linux;
         }
 
-        private ProcessStartInfo GetProcessStartInfo(string executablePath, PlatformType platform)
+        private ProcessStartInfo GetProcessStartInfo(string executablePath, string mainExecutableArgs, PlatformType platform)
         {
+            if (mainExecutableArgs == null)
+            {
+                mainExecutableArgs = string.Empty;
+            }
+
             string workingDir = Path.GetDirectoryName(executablePath) ?? string.Empty;
             switch (platform)
             {
@@ -113,20 +113,26 @@ namespace PatchKit.Unity.Patcher
                     return new ProcessStartInfo
                     {
                         FileName = executablePath,
-                        Arguments = string.Format("+patcher-data-location \"{0}\"", _app.LocalMetaData.GetFilePath()),
+                        Arguments = string.Format("+patcher-data-location \"{0}\" " + mainExecutableArgs, _app.LocalMetaData.GetFilePath()),
                         WorkingDirectory = workingDir
                     };
                 case PlatformType.OSX:
+                    if (!string.IsNullOrEmpty(mainExecutableArgs))
+                    {
+                        mainExecutableArgs = " --args " + mainExecutableArgs;
+                    }
+
                     return new ProcessStartInfo
                     {
                         FileName = "open",
-                        Arguments = string.Format("\"{0}\"", executablePath),
+                        Arguments = string.Format("\"{0}\"{1}", executablePath, mainExecutableArgs),
                         WorkingDirectory = workingDir
                     };
                 case PlatformType.Linux:
                     return new ProcessStartInfo
                     {
                         FileName = executablePath,
+                        Arguments = mainExecutableArgs,
                         WorkingDirectory = workingDir
                     };
                 default:
