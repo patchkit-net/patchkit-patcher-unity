@@ -229,12 +229,15 @@ namespace PatchKit.Unity.Patcher
                     _lockFileStream.Close();
 
                     DebugLogger.Log("Deleting the lock file.");
-                    FileOperations.Delete(_data.Value.LockFilePath, CancellationToken.Empty);
+                    if (File.Exists(_data.Value.LockFilePath))
+                    {
+                        FileOperations.Delete(_data.Value.LockFilePath, CancellationToken.Empty);
+                    }
                 }
             }
-            catch
+            catch(Exception e)
             {
-                DebugLogger.LogWarning("Lock file closing error");
+                DebugLogger.LogWarning("Lock file closing error - " + e);
             }
         }
 
