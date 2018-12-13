@@ -29,11 +29,17 @@ namespace PatchKit.Unity.Patcher
 
         private string ResolveExecutablePath(AppVersion appVersion)
         {
+            PlatformType platformType = Platform.GetPlatformType();
+
             if (!string.IsNullOrEmpty(appVersion.MainExecutable))
             {
                 string executablePath = Path.Combine(_app.LocalDirectory.Path, appVersion.MainExecutable);
 
-                if (File.Exists(executablePath))
+                bool isOSXApp = platformType == PlatformType.OSX &&
+                                executablePath.EndsWith(".app") &&
+                                Directory.Exists(executablePath);
+                
+                if (File.Exists(executablePath) || isOSXApp)
                 {
                     return executablePath;
                 }
@@ -50,7 +56,6 @@ namespace PatchKit.Unity.Patcher
 
             }
 
-            PlatformType platformType = Platform.GetPlatformType();
             return AppFinder.FindExecutable(_app.LocalDirectory.Path, platformType);
         }
 
