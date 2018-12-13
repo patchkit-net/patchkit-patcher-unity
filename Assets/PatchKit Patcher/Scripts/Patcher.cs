@@ -62,7 +62,7 @@ namespace PatchKit.Unity.Patcher
 
         private Thread _thread;
 
-        private bool _isThreadBeingKilled;
+        private bool _isForceQuitting;
 
         private App _app;
 
@@ -200,12 +200,6 @@ namespace PatchKit.Unity.Patcher
         public void Quit()
         {
             DebugLogger.Log("Quitting application.");
-            _canStartThread = false;
-
-            if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
-            {
-                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededClosed);
-            }
 
 #if UNITY_EDITOR
             if (Application.isEditor)
@@ -215,7 +209,6 @@ namespace PatchKit.Unity.Patcher
             else
 #endif
             {
-                CloseLockFile();
                 Application.Quit();
             }
         }
@@ -293,35 +286,44 @@ namespace PatchKit.Unity.Patcher
 
         private void OnApplicationQuit()
         {
-            if (_thread != null && _thread.IsAlive)
-            {
-                DebugLogger.Log("Cancelling application quit because patcher thread is alive.");
-
-                Application.CancelQuit();
-
-                StartCoroutine(KillThread());
-            }
+            Application.CancelQuit();
+            StartCoroutine(ForceQuit());
         }
 
-        private IEnumerator KillThread()
+        private IEnumerator ForceQuit()
         {
-            if (_isThreadBeingKilled)
+            if (_isForceQuitting)
             {
                 yield break;
             }
 
-            _isThreadBeingKilled = true;
+            _isForceQuitting = true;
 
-            DebugLogger.Log("Killing patcher thread...");
+            try
+            {
+                _canStartThread = false;
 
-            yield return StartCoroutine(KillThreadInner());
+                CloseLockFile();
 
-            DebugLogger.Log("Patcher thread has been killed.");
+                yield return StartCoroutine(KillThread());
 
-            _isThreadBeingKilled = false;
+                if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
+                {
+                    yield return StartCoroutine(PatcherStatistics.SendEvent(PatcherStatistics.Event.PatcherSucceededClosed));
+                }
+
+                if (!Application.isEditor)
+                {
+                    Process.GetCurrentProcess().Kill();
+                }
+            }
+            finally
+            {
+                _isForceQuitting = false;
+            }
         }
 
-        private IEnumerator KillThreadInner()
+        private IEnumerator KillThread()
         {
             if (_thread == null)
             {
@@ -364,6 +366,8 @@ namespace PatchKit.Unity.Patcher
                     yield return null;
                 }
             }
+
+            _thread = null;
         }
 
         private void StartThread()
