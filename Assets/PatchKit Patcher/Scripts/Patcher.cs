@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Linq;
@@ -374,8 +374,6 @@ namespace PatchKit.Unity.Patcher
         private void CancelThread()
         {
             DebugLogger.Log("Cancelling patcher thread...");
-
-            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherCanceled);
 
             _threadCancellationTokenSource.Cancel();
         }
@@ -852,6 +850,12 @@ namespace PatchKit.Unity.Patcher
                         appUpdater.Update(_updateAppCancellationTokenSource.Token);
                         _wasUpdateSuccessfulOrNotNecessary = true;
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherCanceled);
+
+                    throw;
                 }
                 finally
                 {
