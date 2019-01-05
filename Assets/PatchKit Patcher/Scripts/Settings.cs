@@ -1,9 +1,8 @@
 ﻿using System;
 using JetBrains.Annotations;
 using PatchKit.Api;
-using PatchKit.Apps.Updating.AppData.Remote;
 using PatchKit.Apps.Updating.Debug;
-using PatchKit.Core.Collections.Immutable;
+using PatchKit.Core.CSharp;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity

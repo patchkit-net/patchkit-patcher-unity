@@ -7,15 +7,10 @@ using System.Threading;
 using PatchKit.Api;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppData.Local;
-using PatchKit.Apps.Updating.AppData.Remote;
-using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
 using PatchKit.Apps.Updating.AppUpdater;
-using PatchKit.Apps.Updating.AppUpdater.Commands;
 using PatchKit.Apps.Updating.AppUpdater.Status;
 using PatchKit.Apps.Updating.Debug;
-using PatchKit.Apps.Updating.Licensing;
 using PatchKit.Apps.Updating.Utilities;
-using PatchKit.Core.Collections.Immutable;
 using PatchKit.Network;
 using PatchKit.Patching.Unity.UI.Dialogs;
 using UniRx;
@@ -205,9 +200,6 @@ namespace PatchKit.Patching.Unity
 
             UnityEngine.Assertions.Assert.raiseExceptions = true;
 
-            Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
-            Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
-
             _instance = this;
             UnityDispatcher.Initialize();
             Application.runInBackground = true;
@@ -216,6 +208,8 @@ namespace PatchKit.Patching.Unity
             _debugLogger.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
             _debugLogger.LogFormat("Runtime version: {0}", EnvironmentInfo.GetSystemVersion());
 
+            UnityEngine.Debug.Log("ASDAS");
+            
             CheckEditorAppSecretSecure();
 
             if (_canStartThread)
@@ -288,17 +282,6 @@ namespace PatchKit.Patching.Unity
             {
                 _debugLogger.LogWarning("LockFile is missing");
             }
-        }
-        
-        private AppLicense GetAppLicense(CancellationToken cancellationToken)
-        {
-            var validateLicenseCommand =
-                new UnityLicenseValidator(_app.AppDataPath, UI.Dialogs.LicenseDialog.Instance);
-
-            validateLicenseCommand.Validate(_app.AppSecret, cancellationToken);
-
-            // ReSharper disable once PossibleInvalidOperationException
-            return validateLicenseCommand.AppLicense.Value;
         }
     }
 }

@@ -1,11 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Threading;
+﻿using System.IO;
 using PatchKit.Api.Models;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppData.Local;
-using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
-using PatchKit.Apps.Updating.Debug;
 using PatchKit.Logging;
 using UniRx;
 using UnityEngine;
@@ -79,11 +75,6 @@ namespace PatchKit.Patching.Unity
 
             var patcher = Patcher.Instance;
 
-            Assert.IsNotNull(patcher);
-            Assert.IsNotNull(MainAnimator);
-            Assert.IsNotNull(NewImage);
-            Assert.IsNotNull(OldImage);
-    
             patcher.Data
                 .SkipWhile(data => string.IsNullOrEmpty(data.AppSecret))
                 .First()
@@ -193,7 +184,7 @@ namespace PatchKit.Patching.Unity
 
         private void AquireRemoteBanner(Data data)
         {
-            _logger.LogDebug($"Aquiring the remote banner image from {data.BannerData.ImageUrl}");
+            /*_logger.LogDebug($"Aquiring the remote banner image from {data.BannerData.ImageUrl}");
             var coroutine = UnityThreading.StartThreadCoroutine(() => {
                 var source = new CancellationTokenSource();
 
@@ -227,6 +218,7 @@ namespace PatchKit.Patching.Unity
             });
 
             StartCoroutine(coroutine);
+            */
         }
 
         private void LoadBannerImage(string filepath, Image target)

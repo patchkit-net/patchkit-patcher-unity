@@ -2,14 +2,13 @@
 using JetBrains.Annotations;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.Debug;
-using PatchKit.IssueReporting;
 using PatchKit.Logging;
 using UniRx;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity.Debug
 {
-    public class LogManager : MonoBehaviour, IIssueReporter
+    public class LogManager : MonoBehaviour
     {
         private static LogManager _instance;
         
@@ -48,8 +47,8 @@ namespace PatchKit.Patching.Unity.Debug
         private void Awake()
         {
             _debugLogger = new DebugLogger(typeof(LogManager));
-            var messagesStream = DependencyResolver.Resolve<IMessagesStream>();
-            messagesStream.Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
+            //var messagesStream = DependencyResolver.Resolve<IMessagesStream>();
+            //messagesStream.Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
 
             _isEditor = Application.isEditor;
             _stream = new LogStream();
@@ -99,16 +98,6 @@ namespace PatchKit.Patching.Unity.Debug
             _debugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
             _storage.AbortSending();
             Application.CancelQuit();
-        }
-
-        public void Report(Issue issue)
-        {
-            if (_isEditor && IgnoreEditorErrors)
-            {
-                return;
-            }
-            
-            _sentryRegistry.RegisterWithException(issue, _storage.Guid.ToString());
         }
     }
 }

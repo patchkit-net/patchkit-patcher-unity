@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using PatchKit.Api;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppUpdater;
-using PatchKit.Apps.Updating.AppUpdater.Commands;
-using PatchKit.Apps.Updating.Licensing;
 using PatchKit.Apps.Updating.Utilities;
+using PatchKit.Core.IO.FileSystem;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity
@@ -140,7 +138,8 @@ namespace PatchKit.Patching.Unity
 
                 ThreadLoadPatcherConfiguration();
 
-                UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId)).WaitOne();
+                UnityDispatcher.Invoke(() => _app = new App(new Path(_data.Value.AppDataPath), _data.Value.AppSecret,
+                    _data.Value.OverrideLatestVersionId)).WaitOne();
 
                 while (true)
                 {
@@ -215,7 +214,8 @@ namespace PatchKit.Patching.Unity
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log("Loading patcher data interrupted: thread has been interrupted. Rethrowing exception.");
+                _debugLogger.Log(
+                    "Loading patcher data interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
@@ -225,7 +225,8 @@ namespace PatchKit.Patching.Unity
             }
             catch (Exception)
             {
-                _debugLogger.LogError("Error while loading patcher data: an exception has occured. Rethrowing exception.");
+                _debugLogger.LogError(
+                    "Error while loading patcher data: an exception has occured. Rethrowing exception.");
                 throw;
             }
         }
@@ -245,17 +246,20 @@ namespace PatchKit.Patching.Unity
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log("Loading patcher configuration interrupted: thread has been interrupted. Rethrowing exception.");
+                _debugLogger.Log(
+                    "Loading patcher configuration interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log("Loading patcher configuration aborted: thread has been aborted. Rethrowing exception.");
+                _debugLogger.Log(
+                    "Loading patcher configuration aborted: thread has been aborted. Rethrowing exception.");
                 throw;
             }
             catch (Exception)
             {
-                _debugLogger.LogError("Error while loading patcher configuration: an exception has occured. Rethrowing exception.");
+                _debugLogger.LogError(
+                    "Error while loading patcher configuration: an exception has occured. Rethrowing exception.");
                 throw;
             }
         }
@@ -318,6 +322,7 @@ namespace PatchKit.Patching.Unity
                     cancellationToken.ThrowIfCancellationRequested();
                     _userDecisionSetEvent.WaitOne();
                 }
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 _debugLogger.Log($"Waiting for user decision result: {_userDecision}.");
@@ -328,7 +333,8 @@ namespace PatchKit.Patching.Unity
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log("Waiting for user decision interrupted: thread has been interrupted. Rethrowing exception.");
+                _debugLogger.Log(
+                    "Waiting for user decision interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
@@ -338,7 +344,8 @@ namespace PatchKit.Patching.Unity
             }
             catch (Exception)
             {
-                _debugLogger.LogWarning("Error while waiting for user decision: an exception has occured. Rethrowing exception.");
+                _debugLogger.LogWarning(
+                    "Error while waiting for user decision: an exception has occured. Rethrowing exception.");
                 throw;
             }
         }
@@ -377,7 +384,6 @@ namespace PatchKit.Patching.Unity
                         break;
                     case UserDecision.CheckIntegrityAutomatically:
                     case UserDecision.CheckIntegrity:
-                        ThreadCheckVersionIntegrity(cancellationToken);
                         break;
                 }
 
@@ -413,11 +419,6 @@ namespace PatchKit.Patching.Unity
                 {
                     ThreadDisplayError(PatcherError.NoInternetConnection, cancellationToken);
                 }
-            }
-            catch (NotEnoughtDiskSpaceException e)
-            {
-                _debugLogger.LogException(e);
-                ThreadDisplayError(PatcherError.NotEnoughDiskSpace, cancellationToken);
             }
             catch (ThreadInterruptedException)
             {
@@ -493,70 +494,6 @@ namespace PatchKit.Patching.Unity
             UnityDispatcher.Invoke(Quit);
         }
 
-        private void ThreadCheckVersionIntegrity(CancellationToken cancellationToken)
-        {
-            AppLicense appLicense;
-            if (_appInfo.Value.UseKeys)
-            {
-                appLicense = GetAppLicense(cancellationToken);
-            }
-            else
-            {
-                appLicense = new AppLicense
-                {
-                    Secret = null
-                };
-            }
-
-            var appIntegrityChecker = new AppIntegrityChecker(new Context(_app, _configuration.AppUpdaterConfiguration, appLicense));
-
-
-            try
-            {
-                _updaterStatus.Value = appIntegrityChecker.UpdaterStatus;
-                FileIntegrity[] integrityResults = appIntegrityChecker.CheckIntegrity(
-                    _app.GetInstalledVersionId(), cancellationToken);
-
-                if (integrityResults.Any(integrity => integrity.Status != FileIntegrityStatus.Ok))
-                {
-                    _debugLogger.Log("Version is not integral, deciding to repair.");
-                    ThreadRepairApp(cancellationToken);
-                }
-            }
-            finally
-            {
-                _updaterStatus.Value = null;
-            }
-        }
-
-        private void ThreadRepairApp(CancellationToken cancellationToken)
-        {
-            AppLicense appLicense;
-            if (_appInfo.Value.UseKeys)
-            {
-                appLicense = GetAppLicense(cancellationToken);
-            }
-            else
-            {
-                appLicense = new AppLicense
-                {
-                    Secret = null
-                };
-            }
-
-            var appRepairer = new AppRepairer(new Context( _app, _configuration.AppUpdaterConfiguration, appLicense));
-
-            try
-            {
-                _updaterStatus.Value = appRepairer.UpdaterStatus;
-                appRepairer.Repair(cancellationToken);
-            }
-            finally
-            {
-                _updaterStatus.Value = null;
-            }
-        }
-
         private void ThreadUpdateApp(bool automatically, CancellationToken cancellationToken)
         {
             _state.Value = PatcherState.UpdatingApp;
@@ -568,24 +505,11 @@ namespace PatchKit.Patching.Unity
                 _localVersionId.Value = _app.GetInstalledVersionId();
             }
 
-            AppLicense appLicense;
-            if (_appInfo.Value.UseKeys)
-            {
-                appLicense = GetAppLicense(cancellationToken);
-            }
-            else
-            {
-                appLicense = new AppLicense
-                {
-                    Secret = null
-                };
-            }
-
             _updateAppCancellationTokenSource = new CancellationTokenSource();
 
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
-                var appUpdater = new AppUpdater(new Context( _app, _configuration.AppUpdaterConfiguration, appLicense ) );
+                var appUpdater = new AppUpdater(new Context(_app, _configuration.AppUpdaterConfiguration));
 
                 try
                 {
@@ -640,17 +564,20 @@ namespace PatchKit.Patching.Unity
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log("Restarting patcher with request for permissions interrupted: thread has been interrupted. Rethrowing exception.");
+                _debugLogger.Log(
+                    "Restarting patcher with request for permissions interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log("Restarting patcher with request for permissions aborted: thread has been aborted. Rethrowing exception.");
+                _debugLogger.Log(
+                    "Restarting patcher with request for permissions aborted: thread has been aborted. Rethrowing exception.");
                 throw;
             }
             catch (Exception exception)
             {
-                _debugLogger.LogWarning("Error while restarting patcher with request for permissions: an exception has occured.");
+                _debugLogger.LogWarning(
+                    "Error while restarting patcher with request for permissions: an exception has occured.");
                 _debugLogger.LogException(exception);
 
                 return false;

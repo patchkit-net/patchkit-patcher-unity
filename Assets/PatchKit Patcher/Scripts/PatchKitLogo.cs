@@ -27,14 +27,10 @@ namespace PatchKit.Patching.Unity
             _button = GetComponent<Button>();
             _image = GetComponent<Image>();
 
-            Assert.IsNotNull(CursorTexture);
-
             _button.enabled = false;
             _image.enabled = false;
 
             _button.onClick.AddListener(GoToPatchKit);
-
-            Assert.IsNotNull(patcher);
 
             patcher.AppInfo
                 .ObserveOnMainThread()

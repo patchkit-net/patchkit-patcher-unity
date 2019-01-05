@@ -3,7 +3,6 @@ using System.Collections;
 using System.IO;
 using System.Net;
 using System.Text;
-using Ionic.Zlib;
 using Newtonsoft.Json;
 using PatchKit.Apps.Updating.Debug;
 using UnityEngine;
@@ -89,9 +88,10 @@ namespace PatchKit.Patching.Unity.Debug
             var requestPutUrlJson = JsonConvert.DeserializeObject<PutLinkResponse>(responseText);
             var putUrl = requestPutUrlJson.Url;
 
-
-            UnityWebRequest putRequest = UnityWebRequest.Put(putUrl, GetCompressedLogFileData(logFilePath));
-            yield return putRequest.SendWebRequest();
+            yield break;
+            /*
+            //UnityWebRequest putRequest = UnityWebRequest.Put(putUrl, GetCompressedLogFileData(logFilePath));
+            //yield return putRequest.SendWebRequest();
 
 #if UNITY_5_6_OR_NEWER
             if (putRequest.isNetworkError)
@@ -121,9 +121,10 @@ namespace PatchKit.Patching.Unity.Debug
             _debugLogger.Log("Next log can be now send.");
 
             IsLogBeingSent = false;
+            */ 
         }
 
-        private byte[] GetCompressedLogFileData(string logFilePath)
+        /*private byte[] GetCompressedLogFileData(string logFilePath)
         {
             using (var compressedLogFileDataStream = new MemoryStream())
             {
@@ -144,7 +145,7 @@ namespace PatchKit.Patching.Unity.Debug
 
                 return compressedLogFileDataStream.ToArray();
             }
-        }
+        }*/
 
         private struct PutLinkRequest
         {

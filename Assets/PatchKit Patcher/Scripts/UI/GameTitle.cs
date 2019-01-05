@@ -13,9 +13,6 @@ namespace PatchKit.Patching.Unity.UI
         {
             var patcher = Patcher.Instance;
 
-            Assert.IsNotNull(patcher);
-            Assert.IsNotNull(Text);
-
             patcher.AppInfo
                 .ObserveOnMainThread()
                 .Select(app => app.DisplayName)

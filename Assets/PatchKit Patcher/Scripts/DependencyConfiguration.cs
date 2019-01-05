@@ -1,10 +1,10 @@
 using Autofac;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppData.Local;
-using PatchKit.Apps.Updating.AppData.Remote.Downloaders;
 using PatchKit.Apps.Updating.Utilities;
-using PatchKit.Core.IO;
+using PatchKit.Core.CSharp;
 using PatchKit.Logging;
+using PatchKit.Patching.Unity.Debug;
 using UnityEngine;
 using ILogger = PatchKit.Logging.ILogger;
 
@@ -16,29 +16,64 @@ namespace PatchKit.Patching.Unity
         {
             UnityEngine.Debug.Log("Dependency injection configuration.");
 
-            DependencyResolver.ContainerBuilder.RegisterModule(new Core.Properties.AssemblyModule(true));
-            DependencyResolver.ContainerBuilder.RegisterModule(new Logging.Properties.AssemblyModule());
-            DependencyResolver.ContainerBuilder.RegisterModule(new Network.Properties.AssemblyModule(1024));
-            DependencyResolver.ContainerBuilder.RegisterModule(new Api.Properties.AssemblyModule());
-            DependencyResolver.ContainerBuilder.RegisterModule(new Apps.Properties.AssemblyModule());
-            DependencyResolver.ContainerBuilder.RegisterModule(new Apps.Updating.Properties.AssemblyModule());
+            Configure();
+        }
 
-            DependencyResolver.ContainerBuilder.RegisterType<DefaultLogger>()
-                .SingleInstance()
-                .As<ILogger>()
-                .As<IMessagesStream>();
+        private static object _logLock = new object();
+
+        private static void Log(LogMessage logMessage)
+        {
+            lock (_logLock)
+            {
+                switch (logMessage.Type)
+                {
+                    case LogMessageType.Trace:
+                        UnityEngine.Debug.Log(logMessage.Message);
+                        break;
+                    case LogMessageType.Info:
+                        UnityEngine.Debug.Log(logMessage.Message);
+                        break;
+                    case LogMessageType.Warning:
+                        UnityEngine.Debug.LogWarning(logMessage.Message);
+                        break;
+                    case LogMessageType.Error:
+                        UnityEngine.Debug.LogError(logMessage.Message);
+                        break;
+                }
+
+                if (logMessage.Exception != null)
+                {
+                    UnityEngine.Debug.LogException(logMessage.Exception);
+                }
+            }
+        }
+
+        public static void Configure()
+        {
+            var coreModule = new PatchKit.Core.Properties.AssemblyModule(Log);
+            var networkModule = new PatchKit.Network.Properties.AssemblyModule(coreModule);
+            var apiModule = new PatchKit.Api.Properties.AssemblyModule(coreModule, networkModule);
+            var appsModule = new PatchKit.Apps.Properties.AssemblyModule(coreModule);
+            var appsUpdatingModule =
+                new PatchKit.Apps.Updating.Properties.AssemblyModule(coreModule, networkModule, appsModule);
+
+            DependencyResolver.ContainerBuilder.RegisterModule(new PatchKit.Logging.Properties.AssemblyModule());
+            DependencyResolver.ContainerBuilder.RegisterType<DefaultLogger>().As<ILogger>().As<IMessagesStream>()
+                .SingleInstance();
+            DependencyResolver.ContainerBuilder.RegisterModule(coreModule);
+            DependencyResolver.ContainerBuilder.RegisterModule(networkModule);
+            DependencyResolver.ContainerBuilder.RegisterModule(apiModule);
+            DependencyResolver.ContainerBuilder.RegisterModule(appsModule);
+            DependencyResolver.ContainerBuilder.RegisterModule(appsUpdatingModule);
 
             DependencyResolver.ContainerBuilder.RegisterType<PlatformResolver>().As<IPlatformResolver>();
-            DependencyResolver.ContainerBuilder.RegisterType<TorrentClientFactory>().As<ITorrentClientFactory>();
-            DependencyResolver.ContainerBuilder.RegisterType<UnityTorrentClientProcessStartInfoProvider>()
-                .As<ITorrentClientProcessStartInfoProvider>();
             DependencyResolver.ContainerBuilder.RegisterType<UnityCache>().As<ICache>();
 
-            //DependencyResolver.RegisterType<IHttpClient, UnityHttpClient>();
-
-            DependencyResolver.ContainerBuilder.RegisterType<UnityDiskSpaceChecker>().As<IDiskSpaceChecker>();
-
             DependencyResolver.Build();
+
+            DependencyResolver.Resolve<IMessagesStream>()
+                .Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
+
         }
     }
 }
