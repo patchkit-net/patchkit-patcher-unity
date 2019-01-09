@@ -2,12 +2,11 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using PatchKit.Apps.Updating.AppData.Local;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity
 {
-    class UnityCache : ICache
+    class UnityCache
     {
         private string EncodeSecret(string secret)
         {

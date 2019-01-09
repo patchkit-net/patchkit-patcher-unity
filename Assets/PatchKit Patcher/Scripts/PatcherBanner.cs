@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using PatchKit.Api.Models;
 using PatchKit.Apps.Updating;
-using PatchKit.Apps.Updating.AppData.Local;
 using PatchKit.Logging;
 using UniRx;
 using UnityEngine;
@@ -25,7 +24,7 @@ namespace PatchKit.Patching.Unity
             public string BannerFilePath;
         }
 
-        private ICache _cache;
+        private UnityCache _cache;
 
         private const string CachedBannerPathKey = "cached-banner-path-key";
         private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
@@ -84,7 +83,7 @@ namespace PatchKit.Patching.Unity
 
         private void Initialize(PatcherData data)
         {
-            _cache = DependencyResolver.Resolve<ICache>();
+            _cache = new UnityCache();
     
             if (IsCachedBannerAvailable())
             {

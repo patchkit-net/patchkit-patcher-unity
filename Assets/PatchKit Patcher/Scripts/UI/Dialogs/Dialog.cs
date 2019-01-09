@@ -1,5 +1,6 @@
 using System.Threading;
 using PatchKit.Apps.Updating.Debug;
+using PatchKit.Core.CSharp;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity.UI.Dialogs

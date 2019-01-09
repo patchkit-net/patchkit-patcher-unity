@@ -1,6 +1,5 @@
 using Autofac;
 using PatchKit.Apps.Updating;
-using PatchKit.Apps.Updating.AppData.Local;
 using PatchKit.Apps.Updating.Utilities;
 using PatchKit.Core.CSharp;
 using PatchKit.Logging;
@@ -67,7 +66,6 @@ namespace PatchKit.Patching.Unity
             DependencyResolver.ContainerBuilder.RegisterModule(appsUpdatingModule);
 
             DependencyResolver.ContainerBuilder.RegisterType<PlatformResolver>().As<IPlatformResolver>();
-            DependencyResolver.ContainerBuilder.RegisterType<UnityCache>().As<ICache>();
 
             DependencyResolver.Build();
 

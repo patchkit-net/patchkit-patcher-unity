@@ -6,8 +6,6 @@ using System.Linq;
 using System.Threading;
 using PatchKit.Api;
 using PatchKit.Apps.Updating;
-using PatchKit.Apps.Updating.AppData.Local;
-using PatchKit.Apps.Updating.AppUpdater;
 using PatchKit.Apps.Updating.AppUpdater.Status;
 using PatchKit.Apps.Updating.Debug;
 using PatchKit.Apps.Updating.Utilities;
