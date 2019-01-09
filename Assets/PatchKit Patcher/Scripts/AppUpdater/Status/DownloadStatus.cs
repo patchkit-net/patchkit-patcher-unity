@@ -48,6 +48,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             var interval = Observable
                 .Interval(TimeSpan.FromSeconds(1))
                 .Select(_ => new ByteSample{
+                    Bytes = Bytes.Value,
                     Timestamp = DateTime.Now
                 });
 
