@@ -37,8 +37,6 @@ namespace PatchKit.Patching.Unity
             CheckIntegrityAutomatically,
         }
 
-        private DebugLogger _debugLogger;
-
         private static Patcher _instance;
 
         public static Patcher Instance
@@ -140,7 +138,7 @@ namespace PatchKit.Patching.Unity
 
         public void SetUserDecision(UserDecision userDecision)
         {
-            _debugLogger.Log($"User deicision set to {userDecision}.");
+            UnityEngine.Debug.Log($"User deicision set to {userDecision}.");
 
             _userDecision = userDecision;
             _userDecisionSetEvent.Set();
@@ -150,7 +148,7 @@ namespace PatchKit.Patching.Unity
         {
             if (_updateAppCancellationTokenSource != null)
             {
-                _debugLogger.Log("Cancelling update app execution.");
+                UnityEngine.Debug.Log("Cancelling update app execution.");
 
                 _updateAppCancellationTokenSource.Cancel();
             }
@@ -158,7 +156,7 @@ namespace PatchKit.Patching.Unity
 
         public void Quit()
         {
-            _debugLogger.Log("Quitting application.");
+            UnityEngine.Debug.Log("Quitting application.");
             _canStartThread = false;
 
 #if UNITY_EDITOR
@@ -182,29 +180,27 @@ namespace PatchKit.Patching.Unity
                 {
                     _lockFileStream.Close();
                     
-                    _debugLogger.Log("Deleting the lock file.");
+                    UnityEngine.Debug.Log("Deleting the lock file.");
                     File.Delete(_data.Value.LockFilePath);
                 }
             }
             catch
             {
-                _debugLogger.LogWarning("Lock file closing error");
+                UnityEngine.Debug.LogWarning("Lock file closing error");
             }
         }
 
         private void Awake()
         {
-            _debugLogger = new DebugLogger(typeof(Patcher));
-
             UnityEngine.Assertions.Assert.raiseExceptions = true;
 
             _instance = this;
             UnityDispatcher.Initialize();
             Application.runInBackground = true;
 
-            _debugLogger.LogFormat("patchkit-patcher-unity: {0}", Version.Value);
-            _debugLogger.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
-            _debugLogger.LogFormat("Runtime version: {0}", EnvironmentInfo.GetSystemVersion());
+            UnityEngine.Debug.LogFormat("patchkit-patcher-unity: {0}", Version.Value);
+            UnityEngine.Debug.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
+            UnityEngine.Debug.LogFormat("Runtime version: {0}", EnvironmentInfo.GetSystemVersion());
 
             UnityEngine.Debug.Log("ASDAS");
             
@@ -232,7 +228,7 @@ namespace PatchKit.Patching.Unity
                 return;
             }
             
-            _debugLogger.LogError("Security issue: EditorAppSecret is set to not allowed value. " +
+            UnityEngine.Debug.LogError("Security issue: EditorAppSecret is set to not allowed value. " +
                                   "Please change it inside Unity editor to " + EditorAllowedSecret +
                                   " and build the project again.");
             Quit();
@@ -242,7 +238,7 @@ namespace PatchKit.Patching.Unity
         {
             if (_thread == null || !_thread.IsAlive)
             {
-                _debugLogger.Log("Quitting application because patcher thread is not alive.");
+                UnityEngine.Debug.Log("Quitting application because patcher thread is not alive.");
                 Quit();
             }
         }
@@ -251,7 +247,7 @@ namespace PatchKit.Patching.Unity
         {
             if (_thread != null && _thread.IsAlive)
             {
-                _debugLogger.Log("Cancelling application quit because patcher thread is alive.");
+                UnityEngine.Debug.Log("Cancelling application quit because patcher thread is alive.");
 
                 Application.CancelQuit();
                 
@@ -262,14 +258,14 @@ namespace PatchKit.Patching.Unity
         private void EnsureSingleInstance()
         {
             string lockFilePath = Data.Value.LockFilePath;
-            _debugLogger.LogFormat("Opening lock file: {0}", lockFilePath);
+            UnityEngine.Debug.LogFormat("Opening lock file: {0}", lockFilePath);
 
             if (!string.IsNullOrEmpty(lockFilePath))
             {
                 try
                 {
                     _lockFileStream = File.Open(lockFilePath, FileMode.Append);
-                    _debugLogger.Log("Lock file open success");
+                    UnityEngine.Debug.Log("Lock file open success");
                 }
                 catch
                 {
@@ -278,7 +274,7 @@ namespace PatchKit.Patching.Unity
             }
             else
             {
-                _debugLogger.LogWarning("LockFile is missing");
+                UnityEngine.Debug.LogWarning("LockFile is missing");
             }
         }
     }

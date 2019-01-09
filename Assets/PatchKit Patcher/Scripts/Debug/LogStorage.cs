@@ -18,8 +18,6 @@ namespace PatchKit.Patching.Unity.Debug
     {
         private const string PutUrlRequestUrl = "https://se5ia30ji3.execute-api.us-west-2.amazonaws.com/production/v1/request-put-url";
 
-        private DebugLogger _debugLogger;
-
         public Guid Guid { get; private set; }
 
         public bool IsLogBeingSent { get; private set; }
@@ -47,10 +45,6 @@ namespace PatchKit.Patching.Unity.Debug
 
             IsLogBeingSent = true;
 
-            _debugLogger.Log("Sending log...");
-
-            _debugLogger.Log("Requesting PUT URL...");
-
             var putLinkRequest = new PutLinkRequest()
             {
                 AppId = "patcher-unity",
@@ -76,14 +70,12 @@ namespace PatchKit.Patching.Unity.Debug
             if (putUrlRequest.isError)
 #endif
             {
-                _debugLogger.LogError("Error while requesting PUT URL: " + putUrlRequest.error);
                 IsLogBeingSent = false;
                 yield break;
             }
 
 
             var responseText = putUrlRequest.downloadHandler.text;
-            _debugLogger.Log("Got response: " + responseText);
 
             var requestPutUrlJson = JsonConvert.DeserializeObject<PutLinkResponse>(responseText);
             var putUrl = requestPutUrlJson.Url;

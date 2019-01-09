@@ -23,11 +23,11 @@ namespace PatchKit.Patching.Unity
 
             _isThreadBeingKilled = true;
 
-            _debugLogger.Log("Killing patcher thread...");
+            UnityEngine.Debug.Log("Killing patcher thread...");
 
             yield return StartCoroutine(KillThreadInner());
 
-            _debugLogger.Log("Patcher thread has been killed.");
+            UnityEngine.Debug.Log("Patcher thread has been killed.");
 
             _isThreadBeingKilled = false;
         }
@@ -79,7 +79,7 @@ namespace PatchKit.Patching.Unity
 
         private void StartThread()
         {
-            _debugLogger.Log("Starting patcher thread...");
+            UnityEngine.Debug.Log("Starting patcher thread...");
 
             _thread = new Thread(() => ThreadExecution(_threadCancellationTokenSource.Token));
             _thread.Start();
@@ -87,21 +87,21 @@ namespace PatchKit.Patching.Unity
 
         private void CancelThread()
         {
-            _debugLogger.Log("Cancelling patcher thread...");
+            UnityEngine.Debug.Log("Cancelling patcher thread...");
 
             _threadCancellationTokenSource.Cancel();
         }
 
         private void InterruptThread()
         {
-            _debugLogger.Log("Interrupting patcher thread...");
+            UnityEngine.Debug.Log("Interrupting patcher thread...");
 
             _thread.Interrupt();
         }
 
         private void AbortThread()
         {
-            _debugLogger.Log("Aborting patcher thread...");
+            UnityEngine.Debug.Log("Aborting patcher thread...");
 
             _thread.Abort();
         }
@@ -112,7 +112,7 @@ namespace PatchKit.Patching.Unity
             {
                 _state.Value = PatcherState.None;
 
-                _debugLogger.Log("Patcher thread started.");
+                UnityEngine.Debug.Log("Patcher thread started.");
 
                 try
                 {
@@ -154,25 +154,25 @@ namespace PatchKit.Patching.Unity
             }
             catch (OperationCanceledException)
             {
-                _debugLogger.Log("Patcher thread finished: thread has been cancelled.");
+                UnityEngine.Debug.Log("Patcher thread finished: thread has been cancelled.");
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log("Patcher thread finished: thread has been interrupted.");
+                UnityEngine.Debug.Log("Patcher thread finished: thread has been interrupted.");
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log("Patcher thread finished: thread has been aborted.");
+                UnityEngine.Debug.Log("Patcher thread finished: thread has been aborted.");
             }
             catch (MultipleInstancesException exception)
             {
-                _debugLogger.LogException(exception);
+                UnityEngine.Debug.Log(exception);
                 Quit();
             }
             catch (Exception exception)
             {
-                _debugLogger.LogError("Patcher thread failed: an exception has occured.");
-                _debugLogger.LogException(exception);
+                UnityEngine.Debug.LogError("Patcher thread failed: an exception has occured.");
+                UnityEngine.Debug.LogException(exception);
             }
             finally
             {
@@ -184,13 +184,13 @@ namespace PatchKit.Patching.Unity
         {
             try
             {
-                _debugLogger.Log("Loading patcher data...");
+                UnityEngine.Debug.Log("Loading patcher data...");
                 _state.Value = PatcherState.LoadingPatcherData;
 
 #if UNITY_EDITOR
                 UnityDispatcher.Invoke(() =>
                 {
-                    _debugLogger.Log("Using Unity Editor patcher data.");
+                    UnityEngine.Debug.Log("Using Unity Editor patcher data.");
                     _data.Value = new PatcherData
                     {
                         AppSecret = EditorAppSecret,
@@ -205,27 +205,27 @@ namespace PatchKit.Patching.Unity
                 var inputArgumentsPatcherDataReader = new InputArgumentsPatcherDataReader();
                 _data.Value = inputArgumentsPatcherDataReader.Read();
 #endif
-                _debugLogger.LogVariable(_data.Value.AppSecret, "Data.AppSecret");
-                _debugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");
-                _debugLogger.LogVariable(_data.Value.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
-                _debugLogger.LogVariable(_data.Value.LockFilePath, "Data.LockFilePath");
+                UnityEngine.Debug.Log("Data.AppSecret = " + _data.Value.AppSecret);
+                UnityEngine.Debug.Log("Data.AppDataPath = " + _data.Value.AppDataPath);
+                UnityEngine.Debug.Log("Data.OverrideLatestVersionId = " + _data.Value.OverrideLatestVersionId);
+                UnityEngine.Debug.Log("Data.LockFilePath = " + _data.Value.LockFilePath);
 
-                _debugLogger.Log("Patcher data loaded.");
+                UnityEngine.Debug.Log("Patcher data loaded.");
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     "Loading patcher data interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log("Loading patcher data aborted: thread has been aborted. Rethrowing exception.");
+                UnityEngine.Debug.Log("Loading patcher data aborted: thread has been aborted. Rethrowing exception.");
                 throw;
             }
             catch (Exception)
             {
-                _debugLogger.LogError(
+                UnityEngine.Debug.LogError(
                     "Error while loading patcher data: an exception has occured. Rethrowing exception.");
                 throw;
             }
@@ -235,30 +235,30 @@ namespace PatchKit.Patching.Unity
         {
             try
             {
-                _debugLogger.Log("Loading patcher configuration...");
+                UnityEngine.Debug.Log("Loading patcher configuration...");
 
                 _state.Value = PatcherState.LoadingPatcherConfiguration;
 
                 // TODO: Use PatcherConfigurationReader
                 _configuration = DefaultConfiguration;
 
-                _debugLogger.Log("Patcher configuration loaded.");
+                UnityEngine.Debug.Log("Patcher configuration loaded.");
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     "Loading patcher configuration interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     "Loading patcher configuration aborted: thread has been aborted. Rethrowing exception.");
                 throw;
             }
             catch (Exception)
             {
-                _debugLogger.LogError(
+                UnityEngine.Debug.LogError(
                     "Error while loading patcher configuration: an exception has occured. Rethrowing exception.");
                 throw;
             }
@@ -268,13 +268,13 @@ namespace PatchKit.Patching.Unity
         {
             try
             {
-                _debugLogger.Log("Waiting for user decision...");
+                UnityEngine.Debug.Log("Waiting for user decision...");
 
                 _state.Value = PatcherState.WaitingForUserDecision;
 
                 bool isInstalled = _app.IsInstalled();
 
-                _debugLogger.LogVariable(isInstalled, nameof(isInstalled));
+                UnityEngine.Debug.Log(nameof(isInstalled) + " = " + isInstalled);
 
                 _canRepairApp.Value = isInstalled;
                 _canInstallApp.Value = !isInstalled;
@@ -283,7 +283,7 @@ namespace PatchKit.Patching.Unity
 
                 if (_canInstallApp.Value && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
                 {
-                    _debugLogger.Log("Automatically deciding to install app.");
+                    UnityEngine.Debug.Log("Automatically deciding to install app.");
                     _hasAutomaticallyInstalledApp = true;
                     _hasAutomaticallyCheckedForAppUpdate = true;
                     _userDecision = UserDecision.InstallAppAutomatically;
@@ -292,7 +292,7 @@ namespace PatchKit.Patching.Unity
 
                 if (!_hasAutomaticallyCheckVersionIntegrity && _configuration.AutomaticallyCheckForVersionIntegrity)
                 {
-                    _debugLogger.Log("Automatically deciding to check version integrity.");
+                    UnityEngine.Debug.Log("Automatically deciding to check version integrity.");
                     _hasAutomaticallyCheckVersionIntegrity = true;
                     _userDecision = UserDecision.CheckIntegrityAutomatically;
                     return;
@@ -301,7 +301,7 @@ namespace PatchKit.Patching.Unity
                 if (_canCheckForAppUpdates.Value && _configuration.AutomaticallyCheckForAppUpdates &&
                     !_hasAutomaticallyCheckedForAppUpdate)
                 {
-                    _debugLogger.Log("Automatically deciding to check for app updates.");
+                    UnityEngine.Debug.Log("Automatically deciding to check for app updates.");
                     _hasAutomaticallyInstalledApp = true;
                     _hasAutomaticallyCheckedForAppUpdate = true;
                     _userDecision = UserDecision.CheckForAppUpdatesAutomatically;
@@ -310,7 +310,7 @@ namespace PatchKit.Patching.Unity
 
                 if (_canStartApp.Value && _configuration.AutomaticallyStartApp && !_hasAutomaticallyStartedApp)
                 {
-                    _debugLogger.Log("Automatically deciding to start app.");
+                    UnityEngine.Debug.Log("Automatically deciding to start app.");
                     _hasAutomaticallyStartedApp = true;
                     _userDecision = UserDecision.StartAppAutomatically;
                     return;
@@ -325,26 +325,26 @@ namespace PatchKit.Patching.Unity
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _debugLogger.Log($"Waiting for user decision result: {_userDecision}.");
+                UnityEngine.Debug.Log($"Waiting for user decision result: {_userDecision}.");
             }
             catch (OperationCanceledException)
             {
-                _debugLogger.Log("Waiting for user decision cancelled.");
+                UnityEngine.Debug.Log("Waiting for user decision cancelled.");
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     "Waiting for user decision interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log("Waiting for user decision aborted: thread has been aborted. Rethrowing exception.");
+                UnityEngine.Debug.Log("Waiting for user decision aborted: thread has been aborted. Rethrowing exception.");
                 throw;
             }
             catch (Exception)
             {
-                _debugLogger.LogWarning(
+                UnityEngine.Debug.LogWarning(
                     "Error while waiting for user decision: an exception has occured. Rethrowing exception.");
                 throw;
             }
@@ -358,7 +358,7 @@ namespace PatchKit.Patching.Unity
             {
                 _warning.Value = string.Empty;
 
-                _debugLogger.Log($"Executing user decision {_userDecision}...");
+                UnityEngine.Debug.Log($"Executing user decision {_userDecision}...");
 
                 switch (_userDecision)
                 {
@@ -387,16 +387,16 @@ namespace PatchKit.Patching.Unity
                         break;
                 }
 
-                _debugLogger.Log($"User decision {_userDecision} execution done.");
+                UnityEngine.Debug.Log($"User decision {_userDecision} execution done.");
             }
             catch (OperationCanceledException)
             {
-                _debugLogger.Log($"User decision {_userDecision} execution cancelled.");
+                UnityEngine.Debug.Log($"User decision {_userDecision} execution cancelled.");
             }
             catch (UnauthorizedAccessException e)
             {
-                _debugLogger.Log($"User decision {_userDecision} execution issue: permissions failure.");
-                _debugLogger.LogException(e);
+                UnityEngine.Debug.Log($"User decision {_userDecision} execution issue: permissions failure.");
+                UnityEngine.Debug.LogException(e);
 
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
@@ -409,7 +409,7 @@ namespace PatchKit.Patching.Unity
             }
             catch (ApiConnectionException e)
             {
-                _debugLogger.LogException(e);
+                UnityEngine.Debug.LogException(e);
 
                 if (displayWarningInsteadOfError)
                 {
@@ -422,21 +422,21 @@ namespace PatchKit.Patching.Unity
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     $"User decision {_userDecision} execution interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     $"User decision {_userDecision} execution aborted: thread has been aborted. Rethrowing exception.");
                 throw;
             }
             catch (Exception exception)
             {
-                _debugLogger.LogWarning(
+                UnityEngine.Debug.LogWarning(
                     $"Error while executing user decision {_userDecision}: an exception has occured.");
-                _debugLogger.LogException(exception);
+                UnityEngine.Debug.LogException(exception);
 
                 if (displayWarningInsteadOfError)
                 {
@@ -453,31 +453,31 @@ namespace PatchKit.Patching.Unity
         {
             try
             {
-                _debugLogger.Log($"Displaying patcher error {error}...");
+                UnityEngine.Debug.Log($"Displaying patcher error {error}...");
 
                 ErrorDialog.Display(error, cancellationToken);
 
-                _debugLogger.Log($"Patcher error {error} displayed.");
+                UnityEngine.Debug.Log($"Patcher error {error} displayed.");
             }
             catch (OperationCanceledException)
             {
-                _debugLogger.Log($"Displaying patcher error {_userDecision} cancelled.");
+                UnityEngine.Debug.Log($"Displaying patcher error {_userDecision} cancelled.");
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     $"Displaying patcher error {error} interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     $"Displaying patcher error {error} aborted: thread has been aborted. Rethrowing exception.");
                 throw;
             }
             catch (Exception)
             {
-                _debugLogger.LogWarning(
+                UnityEngine.Debug.LogWarning(
                     $"Error while displaying patcher error {error}: an exception has occured. Rethrowing exception.");
                 throw;
             }
@@ -526,7 +526,7 @@ namespace PatchKit.Patching.Unity
 
         private bool ThreadTryRestartWithRequestForPermissions()
         {
-            _debugLogger.Log("Restarting patcher with request for permissions.");
+            UnityEngine.Debug.Log("Restarting patcher with request for permissions.");
 
             try
             {
@@ -552,33 +552,33 @@ namespace PatchKit.Patching.Unity
 
                     Process.Start(info);
 
-                    _debugLogger.Log("Patcher restarted with request for permissions.");
+                    UnityEngine.Debug.Log("Patcher restarted with request for permissions.");
 
                     return true;
                 }
 
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     $"Restarting patcher with request for permissions not possible: unsupported platform {applicationPlatform}.");
 
                 return false;
             }
             catch (ThreadInterruptedException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     "Restarting patcher with request for permissions interrupted: thread has been interrupted. Rethrowing exception.");
                 throw;
             }
             catch (ThreadAbortException)
             {
-                _debugLogger.Log(
+                UnityEngine.Debug.Log(
                     "Restarting patcher with request for permissions aborted: thread has been aborted. Rethrowing exception.");
                 throw;
             }
             catch (Exception exception)
             {
-                _debugLogger.LogWarning(
+                UnityEngine.Debug.LogWarning(
                     "Error while restarting patcher with request for permissions: an exception has occured.");
-                _debugLogger.LogException(exception);
+                UnityEngine.Debug.LogException(exception);
 
                 return false;
             }

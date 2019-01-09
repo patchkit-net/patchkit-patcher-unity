@@ -28,8 +28,6 @@ namespace PatchKit.Patching.Unity.Debug
             }
         }
 
-        private DebugLogger _debugLogger;
-
         private LogStream _stream;
 
         private TemporaryLogFile _tempFile;
@@ -46,7 +44,6 @@ namespace PatchKit.Patching.Unity.Debug
 
         private void Awake()
         {
-            _debugLogger = new DebugLogger(typeof(LogManager));
             //var messagesStream = DependencyResolver.Resolve<IMessagesStream>();
             //messagesStream.Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
 
@@ -95,7 +92,6 @@ namespace PatchKit.Patching.Unity.Debug
                 return;
             }
 
-            _debugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
             _storage.AbortSending();
             Application.CancelQuit();
         }

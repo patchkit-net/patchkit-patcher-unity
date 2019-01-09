@@ -15,12 +15,10 @@ namespace PatchKit.Patching.Unity.Debug
 
         public LogRegisterTriggers()
         {
-            DebugLogger.ExceptionOccured += OnExceptionOccured;
         }
 
         public void Dispose()
         {
-            DebugLogger.ExceptionOccured -= OnExceptionOccured;
         }
         
         private void OnExceptionOccured(System.Exception exception)
