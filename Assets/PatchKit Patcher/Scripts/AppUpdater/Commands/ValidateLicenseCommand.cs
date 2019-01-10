@@ -96,7 +96,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                             "Key validation failed due to server or API error. Checking if error can be recognized and displayed to user...",
                             apiResponseException);
 
-                        if (!TryToHandleApiErrors(apiResponseException.StatusCode, ref messageType, isUsingCachedKey))
+                        if (TryToHandleApiErrors(apiResponseException.StatusCode, ref messageType, isUsingCachedKey))
+                        {
+                            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationFailed);
+                        }
+                        else
                         {
                             throw;
                         }
@@ -113,7 +117,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             catch (Exception e)
             {
                 _logger.LogError("Validating license has failed.", e);
-                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationFailed);
                 throw;
             }
         }

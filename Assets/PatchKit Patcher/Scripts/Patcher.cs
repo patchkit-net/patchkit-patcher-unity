@@ -719,8 +719,6 @@ namespace PatchKit.Unity.Patcher
                     _userDecision));
                 DebugLogger.LogException(e);
 
-                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
-
                 if (ThreadTryRestartWithRequestForPermissions())
                 {
                     UnityDispatcher.Invoke(Quit);
@@ -734,8 +732,6 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.LogException(e);
 
-                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
-
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";
@@ -748,7 +744,6 @@ namespace PatchKit.Unity.Patcher
             catch (NotEnoughtDiskSpaceException e)
             {
                 DebugLogger.LogException(e);
-                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
                 ThreadDisplayError(PatcherError.NotEnoughDiskSpace, cancellationToken);
             }
             catch (ThreadInterruptedException)
@@ -771,8 +766,6 @@ namespace PatchKit.Unity.Patcher
                     "Error while executing user decision {0}: an exception has occured.", _userDecision));
                 DebugLogger.LogException(exception);
 
-                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
-
                 if (displayWarningInsteadOfError)
                 {
                     _warning.Value = "Unable to check for updates. Please check your internet connection.";
@@ -786,6 +779,8 @@ namespace PatchKit.Unity.Patcher
 
         private void ThreadDisplayError(PatcherError error, CancellationToken cancellationToken)
         {
+            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
+            
             try
             {
                 _state.Value = PatcherState.DisplayingError;
