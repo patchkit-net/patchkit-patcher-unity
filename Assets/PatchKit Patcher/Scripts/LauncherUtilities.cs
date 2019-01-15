@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using PatchKit.Core.Utilities;
 using PatchKit.Logging;
 
 namespace PatchKit.Apps.Updating.Utilities

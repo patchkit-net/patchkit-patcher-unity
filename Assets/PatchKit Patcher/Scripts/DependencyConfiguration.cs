@@ -1,7 +1,7 @@
 using Autofac;
 using PatchKit.Apps.Updating;
-using PatchKit.Apps.Updating.Utilities;
 using PatchKit.Core.CSharp;
+using PatchKit.Core.Utilities;
 using PatchKit.Logging;
 using PatchKit.Patching.Unity.Debug;
 using UnityEngine;
@@ -71,7 +71,6 @@ namespace PatchKit.Patching.Unity
 
             DependencyResolver.Resolve<IMessagesStream>()
                 .Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
-
         }
     }
 }

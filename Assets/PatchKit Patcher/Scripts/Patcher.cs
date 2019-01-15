@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using PatchKit.Api;
+using PatchKit.Apps;
 using PatchKit.Apps.Updating;
 using PatchKit.Apps.Updating.AppUpdater.Status;
 using PatchKit.Apps.Updating.Debug;
@@ -62,6 +63,8 @@ namespace PatchKit.Patching.Unity
         private bool _isThreadBeingKilled;
 
         private App _app;
+
+        private RemoteApp _remoteApp;
 
         private PatcherConfiguration _configuration;
 

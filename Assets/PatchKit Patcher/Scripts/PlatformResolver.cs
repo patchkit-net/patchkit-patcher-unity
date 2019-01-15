@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using PatchKit.Apps.Updating.Utilities;
+using PatchKit.Core.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity
