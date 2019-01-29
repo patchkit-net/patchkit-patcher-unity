@@ -6,11 +6,10 @@ using System.Threading;
 using PatchKit.Api;
 using PatchKit.Apps;
 using PatchKit.Apps.Updating;
-using PatchKit.Apps.Updating.AppUpdater;
 using PatchKit.Apps.Updating.AppUpdater.Status;
 using PatchKit.Apps.Updating.Utilities;
 using PatchKit.Core;
-using PatchKit.Core.IO.FileSystem;
+using PatchKit.Core.IO;
 using UnityEngine;
 
 namespace PatchKit.Patching.Unity
@@ -279,7 +278,7 @@ namespace PatchKit.Patching.Unity
 
                 _state.Value = PatcherState.WaitingForUserDecision;
 
-                bool isInstalled = DependencyResolver.Resolve<IsAppInstalledDelegate>()(_app);
+                bool isInstalled = DependencyResolver.Resolve<IsAppInstalledDelegate>()(_app, null);
 
                 UnityEngine.Debug.Log(nameof(isInstalled) + " = " + isInstalled);
 
@@ -377,14 +376,14 @@ namespace PatchKit.Patching.Unity
                         ThreadStartApp();
                         break;
                     case UserDecision.InstallAppAutomatically:
-                        displayWarningInsteadOfError = DependencyResolver.Resolve<IsAppInstalledDelegate>()(_app);
+                        displayWarningInsteadOfError = DependencyResolver.Resolve<IsAppInstalledDelegate>()(_app, null);
                         ThreadUpdateApp(true, cancellationToken);
                         break;
                     case UserDecision.InstallApp:
                         ThreadUpdateApp(false, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdatesAutomatically:
-                        displayWarningInsteadOfError = DependencyResolver.Resolve<IsAppInstalledDelegate>()(_app);
+                        displayWarningInsteadOfError = DependencyResolver.Resolve<IsAppInstalledDelegate>()(_app, null);
                         ThreadUpdateApp(true, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdates:
@@ -495,7 +494,7 @@ namespace PatchKit.Patching.Unity
         {
             _state.Value = PatcherState.StartingApp;
 
-            DependencyResolver.Resolve<StartAppDelegate>()(_app);
+            DependencyResolver.Resolve<StartAppDelegate>()(_app, null);
 
             UnityDispatcher.Invoke(Quit);
         }
@@ -508,42 +507,55 @@ namespace PatchKit.Patching.Unity
                 .GetApplicationInfo(_remoteApp.Secret, null, cancellationToken);
             _remoteVersionId.Value = DependencyResolver.Resolve<IApiConnection>()
                 .GetAppLatestAppVersionId(_remoteApp.Secret, null, cancellationToken).Id;
-            if (DependencyResolver.Resolve<IsAppInstalledDelegate>()(_app))
+            if (DependencyResolver.Resolve<IsAppInstalledDelegate>()(_app, null))
             {
-                _localVersionId.Value = DependencyResolver.Resolve<GetAppInstalledVersionIdDelegate>()(_app);
+                _localVersionId.Value = DependencyResolver.Resolve<GetAppInstalledVersionIdDelegate>()(_app, null);
             }
 
-            _updateAppCancellationTokenSource = new CancellationTokenSource();
+            var updaterStatus = new UpdaterStatus();
 
-            using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
+            bool updateFailed;
+            
+            do
             {
-                var updaterStatus = new UpdaterStatus();
+                updateFailed = false;
 
-                try
+                _updateAppCancellationTokenSource = new CancellationTokenSource();
+
+                using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
                 {
-                    _updaterStatus.Value = updaterStatus;
+                    try
+                    {
+                        _updaterStatus.Value = updaterStatus;
 
-                    var op = new DownloadStatus();
-                    op.Weight.Value = 1.0;
-                    op.IsActive.Value = true;
-                    op.Description.Value = "Installing...";
+                        var op = new DownloadStatus();
+                        op.Weight.Value = 1.0;
+                        op.IsActive.Value = true;
+                        op.Description.Value = "Installing...";
 
-                    updaterStatus.RegisterOperation(op);
+                        updaterStatus.RegisterOperation(op);
 
-                    DependencyResolver.Resolve<UpdateDelegate>()(_app, _remoteApp,
-                        new VersionId(_remoteVersionId.Value.Value),
-                        p =>
-                        {
-                            op.TotalBytes.Value = p.TotalBytes;
-                            op.Bytes.Value = p.InstalledBytes;
-                        }, _updateAppCancellationTokenSource.Token);
+                        DependencyResolver.Resolve<UpdateDelegate>()(_app, _remoteApp,
+                            new VersionId(_remoteVersionId.Value.Value),
+                            p =>
+                            {
+                                op.TotalBytes.Value = p.TotalBytes;
+                                op.Bytes.Value = p.InstalledBytes;
+                            }, _updateAppCancellationTokenSource.Token,
+                            null,
+                            e =>
+                            {
+                                UnityEngine.Debug.LogException(e);
+                                updateFailed = true;
+                            });
+                    }
+                    finally
+                    {
+                        _updaterStatus.Value = null;
+                        _updateAppCancellationTokenSource = null;
+                    }
                 }
-                finally
-                {
-                    _updaterStatus.Value = null;
-                    _updateAppCancellationTokenSource = null;
-                }
-            }
+            } while (updateFailed);
         }
 
         private bool ThreadTryRestartWithRequestForPermissions()

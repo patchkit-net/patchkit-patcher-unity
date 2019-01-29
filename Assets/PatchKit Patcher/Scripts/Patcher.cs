@@ -257,7 +257,12 @@ namespace PatchKit.Patching.Unity
                 StartCoroutine(KillThread());
             }
         }
-        
+
+        private void OnDestroy()
+        {
+            _thread.Abort();
+        }
+
         private void EnsureSingleInstance()
         {
             string lockFilePath = Data.Value.LockFilePath;

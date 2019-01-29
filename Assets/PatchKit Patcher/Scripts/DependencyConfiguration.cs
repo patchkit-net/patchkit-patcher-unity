@@ -49,7 +49,7 @@ namespace PatchKit.Patching.Unity
 
         public static void Configure()
         {
-            var coreModule = new PatchKit.Core.Properties.AssemblyModule(Log);
+            var coreModule = new PatchKit.Core.Properties.AssemblyModule(_ => { });
             var networkModule = new PatchKit.Network.Properties.AssemblyModule(coreModule);
             var apiModule = new PatchKit.Api.Properties.AssemblyModule(coreModule, networkModule);
             var appsModule = new PatchKit.Apps.Properties.AssemblyModule(coreModule);
@@ -69,8 +69,8 @@ namespace PatchKit.Patching.Unity
 
             DependencyResolver.Build();
 
-            DependencyResolver.Resolve<IMessagesStream>()
-                .Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
+            //DependencyResolver.Resolve<IMessagesStream>()
+             //   .Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
         }
     }
 }
