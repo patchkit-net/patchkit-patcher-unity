@@ -4,9 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-### Fixed
-- Window size issue on Linux
 
 ## [3.11.0]
 ### Added
@@ -32,6 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Wrapping the GZipStream input to avoid errors
 - Fixed all warnings that appear when launching on 5.3.4f1
 - Freeze or crash after closing the patcher
+- Window size issue on Linux
 
 ### Removed
 - Torrent downloading
