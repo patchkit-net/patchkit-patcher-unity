@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed all warnings that appear when launching on 5.3.4f1
 - Freeze or crash after closing the patcher
 - Window size issue on Linux
+- Stalling issue due to high request timeout and delays
 
 ### Removed
 - Torrent downloading
