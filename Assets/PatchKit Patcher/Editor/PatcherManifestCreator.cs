@@ -74,7 +74,9 @@ namespace PatchKit.Unity.Editor
         {
             return new []{
                 "pack1_compression_lzma2",
-                "security_fix_944"
+                "security_fix_944",
+                "preselected_executable",
+                "execution_arguments"
             };
         }
 
