@@ -40,7 +40,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private int _chunkIndex;
 
         private int _startChunk;
-        private int _endChunk;
 
         private FileStream _fileStream;
 
@@ -84,7 +83,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _logger.LogTrace("chunksData.ChunkSize = " + chunksData.ChunkSize);
 
             _startChunk = startChunk;
-            _endChunk = endChunk;
 
             bool noEndChunk = endChunk == -1;
             bool isLastChunkIncomplete = endChunk * chunksData.ChunkSize > fileSize;

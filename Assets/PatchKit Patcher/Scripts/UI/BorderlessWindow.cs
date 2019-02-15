@@ -118,9 +118,9 @@ namespace PatchKit.Unity.Patcher.UI
         {
             _logger = PatcherLogManager.DefaultLogger;
 
-#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
             EnforceCorrectScreenSize();
 
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
             _windowRect.position = new Vector2(Screen.currentResolution.width/2.0f - Screen.width/2.0f,
                 Screen.currentResolution.height/2.0f - Screen.height/2.0f);
             _windowRect.size = new Vector2(Screen.width, Screen.height);
@@ -159,6 +159,10 @@ namespace PatchKit.Unity.Patcher.UI
             {
                 int width = int.Parse(screenResolutionText[0]);
                 int height = int.Parse(screenResolutionText[1]);
+
+                PlayerPrefs.SetInt("Screenmanager Resolution Width", width);
+                PlayerPrefs.SetInt("Screenmanager Resolution Height", height);
+                PlayerPrefs.SetInt("Screenmanager Is Fullscreen mode", 0);
 
                 Screen.SetResolution(width, height, false);
             }

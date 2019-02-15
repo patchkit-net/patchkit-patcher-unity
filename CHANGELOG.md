@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [3.11.0]
+### Added
+- Support for LZMA2 compression using XZ
+- Sending all events to Statistics Reporting Service
+- Support for main_executable and main_executable_args fields in AppVersion
+- Added processing of --online or --offline command line argument
+- Sending 'patcher_started' event to Statistics Reporting Service
+- Custom building options under `Tools/Build`
+- Handling failures when accessing the file system
+- Attaching "system-info" to Sentry events as tag
+- Support for PK_OFFICIAL define
+- Displaying "Stalled..." instead of "Downloading package..." if the download speed reaches 0 B/s
+- capabilities field in the manifest
+
+### Changed
+- Linux launch script
+- Download speed will now be displayed based on the average of download speeds in the last 2 seconds
+- Patcher will no longer clear the progress bar after updating
+
+### Fixed
+- Invalid display of progress value when unarchiving
+- Wrapping the GZipStream input to avoid errors
+- Fixed all warnings that appear when launching on 5.3.4f1
+- Freeze or crash after closing the patcher
+- Window size issue on Linux
+- Stalling issue due to high request timeout and delays
+
+### Removed
+- Torrent downloading
+- StandaloneOSXUniversal architecture from building options
+
 ## [3.10.3]
 ### Fixed
 - Fix issue with locating screensize file

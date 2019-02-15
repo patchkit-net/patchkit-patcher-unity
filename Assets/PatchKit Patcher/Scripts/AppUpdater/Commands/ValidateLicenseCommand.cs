@@ -20,7 +20,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         [NotNull] private readonly ILocalMetaData _localMetaData;
         [NotNull] private readonly ICache _cache;
         [NotNull] private readonly ILogger _logger;
-        [NotNull] private readonly IIssueReporter _issueReporter;
 
         public ValidateLicenseCommand([NotNull] ILicenseDialog licenseDialog, [NotNull] IRemoteMetaData remoteMetaData,
             [NotNull] ILocalMetaData localMetaData, [NotNull] ICache cache, [NotNull] ILogger logger, [NotNull] IIssueReporter issueReporter)
@@ -37,13 +36,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _localMetaData = localMetaData;
             _cache = cache;
             _logger = logger;
-            _issueReporter = issueReporter;
         }
 
         public override void Execute(CancellationToken cancellationToken)
         {
             try
             {
+                PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationStarted);
+
                 _logger.LogDebug("Validating license...");
 
                 base.Execute(cancellationToken);
@@ -82,6 +82,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         KeySecret = _remoteMetaData.GetKeySecret(key, cachedKeySecret);
 
                         _logger.LogDebug("License has been validated!");
+                        PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationSucceeded);
 
                         _logger.LogTrace("KeySecret = " + KeySecret);
 
@@ -95,7 +96,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                             "Key validation failed due to server or API error. Checking if error can be recognized and displayed to user...",
                             apiResponseException);
 
-                        if (!TryToHandleApiErrors(apiResponseException.StatusCode, ref messageType, isUsingCachedKey))
+                        if (TryToHandleApiErrors(apiResponseException.StatusCode, ref messageType, isUsingCachedKey))
+                        {
+                            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationFailed);
+                        }
+                        else
                         {
                             throw;
                         }

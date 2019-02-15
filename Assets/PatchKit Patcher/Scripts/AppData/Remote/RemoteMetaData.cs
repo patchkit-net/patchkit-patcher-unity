@@ -59,7 +59,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             DebugLogger.Log("Getting latest version id.");
             DebugLogger.Log("retryRequests = " + retryRequests);
             var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
+#pragma warning disable 612
             return m.GetAppLatestAppVersionId(_appSecret).Id;
+#pragma warning restore 612
         }
 
         public Api.Models.Main.App GetAppInfo(bool retryRequests = true)
@@ -94,6 +96,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             var keySecret = _keysApiConnection.GetKeyInfo(key, _appSecret, cachedKeySecret).KeySecret;
 
             return keySecret;
+        }
+
+        public AppVersion GetAppVersionInfo(int versionId)
+        {
+            if (versionId <= 0)
+            {
+                throw new ArgumentException("Version id is invalid.", "versionId");
+            }
+
+            DebugLogger.Log(string.Format("Getting app version info for version with id {0}", versionId));
+
+            return _mainApiConnection.GetAppVersion(_appSecret, versionId);
         }
     }
 }

@@ -6,6 +6,7 @@ using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -13,7 +14,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         private readonly ILogger _logger;
 
-        private const int BufferSize = 5 * 1024 * 1024;
+        private static readonly int BufferSize = 5 * (int) Units.MB;
 
         private readonly string _url;
         private readonly int _timeout;

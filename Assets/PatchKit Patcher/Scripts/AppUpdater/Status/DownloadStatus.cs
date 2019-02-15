@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UniRx;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Status
@@ -11,11 +12,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         public ReactiveProperty<bool> IsActive { get; private set; }
         public ReactiveProperty<string> Description { get; private set; }
 
+        public IReadOnlyReactiveProperty<double> Progress { get; private set; }
+
+        public IReadOnlyReactiveProperty<double> BytesPerSecond { get; private set; }
+
         private readonly DownloadSpeedCalculator _downloadSpeedCalculator =
             new DownloadSpeedCalculator();
 
-        private readonly ReactiveProperty<double> _bytesPerSecond =
-            new ReactiveProperty<double>();
+        private struct ByteSample
+        {
+            public long? Bytes;
+            public DateTime Timestamp;
+        }
 
         public DownloadStatus()
         {
@@ -32,11 +40,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
                 _downloadSpeedCalculator.Restart(DateTime.Now);
             });
 
-            Bytes.Subscribe(b =>
-            {
-                _downloadSpeedCalculator.AddSample(b, DateTime.Now);
-                _bytesPerSecond.Value = _downloadSpeedCalculator.BytesPerSecond;
+            var timedBytes = Bytes.Select(b => new ByteSample{
+                Bytes = b,
+                Timestamp = DateTime.Now
             });
+
+            var interval = Observable
+                .Interval(TimeSpan.FromSeconds(1))
+                .Select(_ => new ByteSample{
+                    Bytes = Bytes.Value,
+                    Timestamp = DateTime.Now
+                });
+
+            var updateStream = timedBytes.Merge(interval);
+
+            BytesPerSecond = updateStream
+                .Select(b => _downloadSpeedCalculator.Calculate(b.Bytes, b.Timestamp))
+                .ToReadOnlyReactiveProperty();
         }
 
         IReadOnlyReactiveProperty<long> IReadOnlyDownloadStatus.Bytes
@@ -48,13 +68,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         {
             get { return TotalBytes; }
         }
-
-        public IReadOnlyReactiveProperty<double> BytesPerSecond
-        {
-            get { return _bytesPerSecond; }
-        }
-
-        public IReadOnlyReactiveProperty<double> Progress { get; private set; }
 
         IReadOnlyReactiveProperty<double> IReadOnlyOperationStatus.Weight
         {

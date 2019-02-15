@@ -9,12 +9,31 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     public class LimitedStream : Stream
     {
         private readonly Stream _orig;
+        private readonly long _bytesLimit;
+
         private long _bytesLeft;
+
+        public long BytesLeft
+        {
+            get
+            {
+                return _bytesLeft;
+            }
+        }
+
+        public long Limit
+        {
+            get
+            {
+                return _bytesLimit;
+            }
+        }
 
         public LimitedStream(Stream orig, long bytesLimit)
         {
             _orig = orig;
-            _bytesLeft = bytesLimit;
+            _bytesLimit = bytesLimit;
+            _bytesLeft = _bytesLimit;
         }
 
         public override void Flush()

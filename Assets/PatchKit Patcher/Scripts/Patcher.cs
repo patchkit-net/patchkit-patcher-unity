@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Linq;
@@ -15,6 +15,8 @@ using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 
 namespace PatchKit.Unity.Patcher
@@ -60,7 +62,7 @@ namespace PatchKit.Unity.Patcher
 
         private Thread _thread;
 
-        private bool _isThreadBeingKilled;
+        private bool _isForceQuitting;
 
         private App _app;
 
@@ -77,6 +79,9 @@ namespace PatchKit.Unity.Patcher
         private bool _hasAutomaticallyCheckedForAppUpdate;
 
         private bool _hasAutomaticallyStartedApp;
+
+        private bool _wasUpdateSuccessfulOrNotNecessary = false;
+        private bool _hasGameBeenStarted = false;
 
         private FileStream _lockFileStream;
 
@@ -109,6 +114,13 @@ namespace PatchKit.Unity.Patcher
         public IReadOnlyReactiveProperty<bool> CanStartApp
         {
             get { return _canStartApp; }
+        }
+
+        private readonly BoolReactiveProperty _isAppInstalled = new BoolReactiveProperty(false);
+
+        public IReadOnlyReactiveProperty<bool> IsAppInstalled
+        {
+            get { return _isAppInstalled; }
         }
 
         private readonly BoolReactiveProperty _canInstallApp = new BoolReactiveProperty(false);
@@ -188,7 +200,6 @@ namespace PatchKit.Unity.Patcher
         public void Quit()
         {
             DebugLogger.Log("Quitting application.");
-            _canStartThread = false;
 
 #if UNITY_EDITOR
             if (Application.isEditor)
@@ -198,7 +209,6 @@ namespace PatchKit.Unity.Patcher
             else
 #endif
             {
-                CloseLockFile();
                 Application.Quit();
             }
         }
@@ -212,12 +222,15 @@ namespace PatchKit.Unity.Patcher
                     _lockFileStream.Close();
 
                     DebugLogger.Log("Deleting the lock file.");
-                    File.Delete(_data.Value.LockFilePath);
+                    if (File.Exists(_data.Value.LockFilePath))
+                    {
+                        FileOperations.Delete(_data.Value.LockFilePath, CancellationToken.Empty);
+                    }
                 }
             }
-            catch
+            catch(Exception e)
             {
-                DebugLogger.LogWarning("Lock file closing error");
+                DebugLogger.LogWarning("Lock file closing error - " + e);
             }
         }
 
@@ -273,35 +286,44 @@ namespace PatchKit.Unity.Patcher
 
         private void OnApplicationQuit()
         {
-            if (_thread != null && _thread.IsAlive)
-            {
-                DebugLogger.Log("Cancelling application quit because patcher thread is alive.");
-
-                Application.CancelQuit();
-
-                StartCoroutine(KillThread());
-            }
+            Application.CancelQuit();
+            StartCoroutine(ForceQuit());
         }
 
-        private IEnumerator KillThread()
+        private IEnumerator ForceQuit()
         {
-            if (_isThreadBeingKilled)
+            if (_isForceQuitting)
             {
                 yield break;
             }
 
-            _isThreadBeingKilled = true;
+            _isForceQuitting = true;
 
-            DebugLogger.Log("Killing patcher thread...");
+            try
+            {
+                _canStartThread = false;
 
-            yield return StartCoroutine(KillThreadInner());
+                CloseLockFile();
 
-            DebugLogger.Log("Patcher thread has been killed.");
+                yield return StartCoroutine(KillThread());
 
-            _isThreadBeingKilled = false;
+                if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
+                {
+                    yield return StartCoroutine(PatcherStatistics.SendEvent(PatcherStatistics.Event.PatcherSucceededClosed));
+                }
+
+                if (!Application.isEditor)
+                {
+                    Process.GetCurrentProcess().Kill();
+                }
+            }
+            finally
+            {
+                _isForceQuitting = false;
+            }
         }
 
-        private IEnumerator KillThreadInner()
+        private IEnumerator KillThread()
         {
             if (_thread == null)
             {
@@ -344,6 +366,8 @@ namespace PatchKit.Unity.Patcher
                     yield return null;
                 }
             }
+
+            _thread = null;
         }
 
         private void StartThread()
@@ -411,7 +435,7 @@ namespace PatchKit.Unity.Patcher
 
                 UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
-                UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent("patcher_started", _data.Value.AppSecret));
+                PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
 
                 while (true)
                 {
@@ -570,6 +594,8 @@ namespace PatchKit.Unity.Patcher
                 bool canInstallApp = !isInstalled;
                 bool canCheckForAppUpdates = isInstalled;
                 bool canStartApp = isInstalled;
+
+                _isAppInstalled.Value = isInstalled;
 
                 _canRepairApp.Value = false;
                 _canInstallApp.Value = false;
@@ -753,6 +779,8 @@ namespace PatchKit.Unity.Patcher
 
         private void ThreadDisplayError(PatcherError error, CancellationToken cancellationToken)
         {
+            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
+            
             try
             {
                 _state.Value = PatcherState.DisplayingError;
@@ -792,6 +820,9 @@ namespace PatchKit.Unity.Patcher
 
             appStarter.Start();
 
+            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededGameStarted);
+            _hasGameBeenStarted = true;
+
             UnityDispatcher.Invoke(Quit);
         }
 
@@ -819,7 +850,14 @@ namespace PatchKit.Unity.Patcher
                     using (_updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
                     {
                         appUpdater.Update(_updateAppCancellationTokenSource.Token);
+                        _wasUpdateSuccessfulOrNotNecessary = true;
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherCanceled);
+
+                    throw;
                 }
                 finally
                 {

@@ -14,6 +14,11 @@ namespace PatchKit.Unity.Patcher.Debug
             return Environment.OSVersion.ToString();
         }
 
+        public static string GetSystemInformation()
+        {
+            return UnityEngine.SystemInfo.operatingSystem;
+        }
+
         public static bool TryReadEnvironmentVariable(string argumentName, out string value)
         {
             value = Environment.GetEnvironmentVariable(argumentName);

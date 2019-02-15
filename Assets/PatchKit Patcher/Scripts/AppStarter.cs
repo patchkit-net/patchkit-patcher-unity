@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
@@ -26,12 +27,51 @@ namespace PatchKit.Unity.Patcher
             AppFinder = new AppFinder();
         }
 
+        private string ResolveExecutablePath(AppVersion appVersion)
+        {
+            PlatformType platformType = Platform.GetPlatformType();
+
+            if (!string.IsNullOrEmpty(appVersion.MainExecutable))
+            {
+                string executablePath = Path.Combine(_app.LocalDirectory.Path, appVersion.MainExecutable);
+
+                bool isOSXApp = platformType == PlatformType.OSX &&
+                                executablePath.EndsWith(".app") &&
+                                Directory.Exists(executablePath);
+                
+                if (File.Exists(executablePath) || isOSXApp)
+                {
+                    return executablePath;
+                }
+
+                // Reports to Sentry
+                try
+                {
+                    throw new FileNotFoundException(string.Format("Couldn't resolve executable in {0}", executablePath));
+                }
+                catch (Exception e)
+                {
+                    DebugLogger.LogException(e);
+                }
+
+            }
+
+            return AppFinder.FindExecutable(_app.LocalDirectory.Path, platformType);
+        }
+
         public void Start()
+        {
+            var appVersion = _app.RemoteMetaData.GetAppVersionInfo(_app.GetInstalledVersionId());
+            StartAppVersion(appVersion);
+        }
+
+        private void StartAppVersion(AppVersion appVersion)
         {
             DebugLogger.Log("Starting application.");
 
             PlatformType platformType = Platform.GetPlatformType();
-            string appFilePath = AppFinder.FindExecutable(_app.LocalDirectory.Path, platformType);
+            string appFilePath = ResolveExecutablePath(appVersion);
+
             if (appFilePath == null)
             {
                 throw new InvalidOperationException("Couldn't find executable.");
@@ -52,7 +92,8 @@ namespace PatchKit.Unity.Patcher
                 }
             }
 
-            var processStartInfo = GetProcessStartInfo(appFilePath, platformType);
+            var processStartInfo = GetProcessStartInfo(appFilePath, appVersion.MainExecutableArgs, platformType);
+
             StartAppProcess(processStartInfo);
         }
 
@@ -61,31 +102,42 @@ namespace PatchKit.Unity.Patcher
             return platformType == PlatformType.OSX || platformType == PlatformType.Linux;
         }
 
-        private ProcessStartInfo GetProcessStartInfo(string executablePath, PlatformType platform)
+        private ProcessStartInfo GetProcessStartInfo(string executablePath, string mainExecutableArgs, PlatformType platform)
         {
+            if (mainExecutableArgs == null)
+            {
+                mainExecutableArgs = string.Empty;
+            }
+
             string workingDir = Path.GetDirectoryName(executablePath) ?? string.Empty;
             switch (platform)
             {
                 case PlatformType.Unknown:
-                    throw new ArgumentException("Unknown");;
+                    throw new ArgumentException("Unknown");
                 case PlatformType.Windows:
                     return new ProcessStartInfo
                     {
                         FileName = executablePath,
-                        Arguments = string.Format("+patcher-data-location \"{0}\"", _app.LocalMetaData.GetFilePath()),
+                        Arguments = string.Format("+patcher-data-location \"{0}\" " + mainExecutableArgs, _app.LocalMetaData.GetFilePath()),
                         WorkingDirectory = workingDir
                     };
                 case PlatformType.OSX:
+                    if (!string.IsNullOrEmpty(mainExecutableArgs))
+                    {
+                        mainExecutableArgs = " --args " + mainExecutableArgs;
+                    }
+
                     return new ProcessStartInfo
                     {
                         FileName = "open",
-                        Arguments = string.Format("\"{0}\"", executablePath),
+                        Arguments = string.Format("\"{0}\"{1}", executablePath, mainExecutableArgs),
                         WorkingDirectory = workingDir
                     };
                 case PlatformType.Linux:
                     return new ProcessStartInfo
                     {
                         FileName = executablePath,
+                        Arguments = mainExecutableArgs,
                         WorkingDirectory = workingDir
                     };
                 default:

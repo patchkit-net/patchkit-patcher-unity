@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Editor
         public static void SaveScreenSize(BuildTarget buildTarget, string buildPath)
         {
             string content = string.Format("{0} {1}", PlayerSettings.defaultScreenWidth, PlayerSettings.defaultScreenHeight);
-            string filename = Path.Combine(CustomBuildScripts.PatcherDataDirectory(buildTarget, buildPath), BorderlessWindow.ScreenSizeFilename);
+            string filename = Path.Combine(CustomBuilding.PatcherDataDirectory(buildTarget, buildPath), BorderlessWindow.ScreenSizeFilename);
 
             File.WriteAllText(filename, content);
         }

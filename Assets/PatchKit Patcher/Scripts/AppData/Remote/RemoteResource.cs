@@ -6,7 +6,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 {
     public struct RemoteResource
     {
-        public string[] TorrentUrls;
 
         public ResourceUrl[] ResourceUrls;
 
@@ -19,7 +18,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         public override string ToString()
         {
             return "urls: {" + string.Join(", ", GetUrls()) + "}\n" +
-                   "torrent urls: {" + string.Join(", ", TorrentUrls) + "}\n" +
                    "size: " + Size + "\n" +
                    "hashcode: " + HashCode;
         }
@@ -34,7 +32,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         public string[] GetMetaUrls()
         {
             var urls = new List<string>();
-            
+
             foreach (ResourceUrl resourceUrl in ResourceUrls)
             {
                 if (!string.IsNullOrEmpty(resourceUrl.MetaUrl))
@@ -50,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         public string[] GetUrls()
         {
             var urls = new List<string>();
-                        
+
             foreach (ResourceUrl resourceUrl in ResourceUrls)
             {
                 if (!string.IsNullOrEmpty(resourceUrl.Url))
