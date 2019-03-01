@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Support for newer versions of Unity
+- Support for newer versions of Unity (#1191)
 
 ## [3.11.0]
 ### Added
