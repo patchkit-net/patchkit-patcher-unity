@@ -1,3 +1,4 @@
+#if UNITY_2018
 using System.IO;
 using System.Linq;
 using System.Collections;
@@ -231,3 +232,4 @@ public class ChunkedHttpDownloaderTest
         Assert.That(job.Range.End, Is.EqualTo(-1).Or.EqualTo(127));
     }
 }
+#endif

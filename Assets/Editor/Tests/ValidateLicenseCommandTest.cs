@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_2018
+using System;
 using System.Collections.Generic;
 using NSubstitute;
 using NUnit.Framework;
@@ -184,3 +185,4 @@ class ValidateLicenseCommandTest
                                                                                        type != LicenseDialogMessageType.ServiceUnavailable));
     }
 }
+#endif

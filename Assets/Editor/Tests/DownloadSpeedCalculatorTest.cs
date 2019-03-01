@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_2018
+using System;
 using NUnit.Framework;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 
@@ -16,3 +17,4 @@ class DownloadSpeedCalculatorTest
         Assert.AreEqual(1000.0, downloadSpeedCalculator.BytesPerSecond, 0.1, "Download speed is not correct.");
     }
 }
+#endif

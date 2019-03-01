@@ -1,3 +1,4 @@
+#if UNITY_2018
 using NUnit.Framework;
 using PatchKit.Unity.Patcher.Data;
 
@@ -51,3 +52,4 @@ public class MagicBytesTest
         Assert.IsTrue(MagicBytes.IsLinuxExecutable(_linuxApp));
     }
 }
+#endif

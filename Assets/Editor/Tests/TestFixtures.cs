@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_2018
+using UnityEngine;
 
 class TestFixtures
 {
@@ -17,3 +18,4 @@ class TestFixtures
         return System.IO.Path.Combine(BasePath, dirName);
     }
 }
+#endif

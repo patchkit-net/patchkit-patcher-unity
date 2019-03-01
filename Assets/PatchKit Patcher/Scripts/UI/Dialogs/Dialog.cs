@@ -22,7 +22,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             _dialogDisplayed.Set();
         }
 
-        protected void Display(CancellationToken cancellationToken)
+        protected void Display(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             Assert.IsFalse(_unityThread == Thread.CurrentThread, 
                 "Display dialog can be only used on separate thread.");

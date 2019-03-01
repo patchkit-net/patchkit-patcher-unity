@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using System;
+using UnityEditor.Build.Reporting;
 
 namespace PatchKit.Unity
 {
@@ -42,7 +43,7 @@ namespace PatchKit.Unity
         [MenuItem("Tools/Build/OSX x64")]
         public static void BuildOsx64 ()
         {
-            Build(BuildTarget.StandaloneOSXIntel64);
+            Build(BuildTargetOsx.Get());
         }
 
         private static string PatcherExecutableName(BuildTarget target)
@@ -56,7 +57,11 @@ namespace PatchKit.Unity
                 case BuildTarget.StandaloneLinux64:
                 case BuildTarget.StandaloneLinuxUniversal:
                     return "Patcher";
+#if UNITY_2017_3_OR_NEWER
+                case BuildTarget.StandaloneOSX:
+#else
                 case BuildTarget.StandaloneOSXIntel64:
+#endif
                     return "Patcher.app";
                 default:
                     throw new NotSupportedException();
@@ -76,7 +81,11 @@ namespace PatchKit.Unity
                     string patcherName = Path.GetFileNameWithoutExtension (executablePath);
 
                     return Path.Combine(buildDir, patcherName + "_Data");
+#if UNITY_2017_3_OR_NEWER
+                case BuildTarget.StandaloneOSX:
+#else
                 case BuildTarget.StandaloneOSXIntel64:
+#endif
                     return Path.Combine(executablePath, "Contents");
                 default:
                     throw new NotSupportedException();
@@ -148,8 +157,16 @@ namespace PatchKit.Unity
                 return;
             }
 
-            string error = BuildPipeline.BuildPlayer(scenePaths, path + "/" + PatcherExecutableName(target), target, buildOptions);
+            #if UNITY_2018_1_OR_NEWER
+            var buildResult = BuildPipeline.BuildPlayer(scenePaths, path + "/" + PatcherExecutableName(target), target, buildOptions);
 
+            string error = buildResult.summary.result == BuildResult.Succeeded ? null : "Error";
+            
+            #else
+            string error = BuildPipeline.BuildPlayer(scenePaths, path + "/" + PatcherExecutableName(target), target, buildOptions);
+            #endif
+            
+            
             if (!string.IsNullOrEmpty(error))
             {
                 EditorUtility.DisplayDialog("Error", error, "Ok");

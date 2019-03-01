@@ -47,7 +47,11 @@ namespace PatchKit.Unity.Editor
                 case BuildTarget.StandaloneWindows64:
                     manifest = WindowsManifest(buildPath);
                     break;
+#if UNITY_2017_3_OR_NEWER
+                case BuildTarget.StandaloneOSX:
+#else
                 case BuildTarget.StandaloneOSXIntel64:
+#endif
                     manifest = OsxManifest(buildPath);
                     break;
                 case BuildTarget.StandaloneLinux:

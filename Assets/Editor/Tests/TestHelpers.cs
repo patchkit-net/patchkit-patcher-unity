@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if UNITY_2018
+using System.IO;
 
 public class TestHelpers
 {
@@ -17,3 +18,4 @@ public class TestHelpers
         }
     }
 }
+#endif
