@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for newer versions of Unity (#1191)
 
+### Fixed
+- Displaying "Stalled" state at the begininng of the download
+
 ## [3.11.0]
 ### Added
 - Support for LZMA2 compression using XZ
