@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for newer versions of Unity (#1191)
 
 ### Fixed
-- Displaying "Stalled" state at the begininng of the download
+- Displaying "Stalled" state at the begininng of the download (#1179)
 
 ## [3.11.0]
 ### Added
