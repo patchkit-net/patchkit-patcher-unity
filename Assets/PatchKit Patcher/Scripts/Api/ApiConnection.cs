@@ -94,7 +94,11 @@ namespace PatchKit.Api
             out IApiResponse response)
         {
             Logger.LogDebug(
-                $"Trying to get response from server ({serverType}): '{server.Host}:{server.RealPort}' (uses HTTPS: {server.UseHttps})...");
+                string.Format("Trying to get response from server ({0}): '{1}:{2}' (uses HTTPS: {3})...", 
+                        serverType, 
+                        server.Host, 
+                        server.RealPort, 
+                        server.UseHttps));
 
             response = null;
 
@@ -129,12 +133,12 @@ namespace PatchKit.Api
                     Timeout = RequestTimeoutCalculator.Timeout
                 };
 
-                Logger.LogTrace($"timeout = {httpRequest.Timeout}ms");
+                Logger.LogTrace("timeout = " + httpRequest.Timeout + "ms");
 
                 var httpResponse = HttpClient.Get(httpRequest);
 
                 Logger.LogDebug("Received response. Checking whether it is valid...");
-                Logger.LogTrace($"Response status code: {httpResponse.StatusCode}");
+                Logger.LogTrace("Response status code: " + httpResponse.StatusCode);
 
                 if (IsResponseValid(httpResponse, serverType))
                 {
@@ -151,7 +155,7 @@ namespace PatchKit.Api
                 }
 
                 throw new ApiServerConnectionException(
-                    $"Server \'{server.Host}\' returned code {(int) httpResponse.StatusCode}");
+                    "Server \'" + server.Host + "\' returned code " + (int) httpResponse.StatusCode);
             }
             catch (WebException webException)
             {
@@ -220,7 +224,7 @@ namespace PatchKit.Api
         {
             try
             {
-                Logger.LogDebug($"Getting response for path: '{path}' and query: '{query}'...");
+                Logger.LogDebug("Getting response for path: '" + path + "' and query: '" + query + "'...");
 
                 var request = new Request
                 {
@@ -268,7 +272,7 @@ namespace PatchKit.Api
                         }
 
                         Logger.LogDebug(
-                            $"Retry is possible. Waiting {RequestRetryStrategy.DelayBeforeNextTry}ms before next attempt...");
+                            "Retry is possible. Waiting " + RequestRetryStrategy.DelayBeforeNextTry + "ms before next attempt...");
 
                         Thread.Sleep(RequestRetryStrategy.DelayBeforeNextTry);
 
@@ -281,7 +285,7 @@ namespace PatchKit.Api
                 } while (retry);
 
                 Logger.LogDebug("Successfully got response.");
-                Logger.LogTrace($"Response body: {apiResponse.Body}");
+                Logger.LogTrace("Response body: " + apiResponse.Body);
 
                 RequestTimeoutCalculator.OnRequestSuccess();
                 RequestRetryStrategy.OnRequestSuccess();

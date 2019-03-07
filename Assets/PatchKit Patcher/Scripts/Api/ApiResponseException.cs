@@ -14,7 +14,7 @@ namespace PatchKit.Api
         public int StatusCode { get; }
 
         /// <inheritdoc />
-        public ApiResponseException(int statusCode) : base($"API server returned invalid status code {statusCode}")
+        public ApiResponseException(int statusCode) : base("API server returned invalid status code " + statusCode)
         {
             StatusCode = statusCode;
         }

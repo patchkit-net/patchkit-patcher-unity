@@ -51,7 +51,7 @@ namespace PatchKit.Api
             int i = 1;
             foreach (var t in exceptions)
             {
-                result += $"{i}. {t}\n";
+                result += i + ". " + t + "\n";
                 i++;
             }
 
