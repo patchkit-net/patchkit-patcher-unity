@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Displaying "Stalled" state at the begininng of the download (#1179)
-- Not using repair strategy when content of currently installed version is not available (#1190)
+- Using repair strategy when content of currently installed version is not available (#1190)
 
 ## [3.11.0]
 ### Added
