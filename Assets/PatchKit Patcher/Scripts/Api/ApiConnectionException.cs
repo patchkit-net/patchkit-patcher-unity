@@ -20,12 +20,12 @@ namespace PatchKit.Api
         /// <summary>
         /// Exceptions that occured during attempts to connect to main server.
         /// </summary>
-        public IEnumerable<Exception> MainServerExceptions { get; }
+        public readonly IEnumerable<Exception> MainServerExceptions;
 
         /// <summary>
         /// Exceptions that occured during attempts to connect to cache servers.
         /// </summary>
-        public IEnumerable<Exception> CacheServersExceptions { get; }
+        public readonly IEnumerable<Exception> CacheServersExceptions;
 
         /// <inheritdoc />
         public override string Message
