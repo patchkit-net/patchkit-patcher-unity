@@ -74,8 +74,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             downloader.DownloadProgressChanged += bytes => { _status.Bytes.Value = bytes; };
 
+            var downloadStartTime = DateTime.Now;
+
+            var stalledTimeout = TimeSpan.FromSeconds(10);
+            
             using (_status.BytesPerSecond.Subscribe(bps =>
-                _status.Description.Value = bps > 0.01 ? "Downloading package..." : "Stalled..."))
+                _status.Description.Value = bps > 0.01 || DateTime.Now - downloadStartTime < stalledTimeout ? "Downloading package..." : "Stalled..."))
             {
                 downloader.Download(cancellationToken);
             }
