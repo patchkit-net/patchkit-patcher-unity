@@ -29,12 +29,12 @@ namespace PatchKit.Unity.Editor
 
         public static void BuildOSX64Release()
         {
-            Build(BuildTarget.StandaloneOSXIntel64, false);
+            Build(BuildTargetOsx.Get(), false);
         }
 
         public static void BuildOSX64Development()
         {
-            Build(BuildTarget.StandaloneOSXIntel64, true);
+            Build(BuildTargetOsx.Get(), true);
         }
 
         public static void BuildLinux32Release()

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if UNITY_2018
+using System.IO;
 using NUnit.Framework;
 using PatchKit.Unity.Patcher.AppData.Local;
 
@@ -52,3 +53,4 @@ public class LocalMetaDataTest
         Assert.AreEqual(2, localMetaData2.GetEntryVersionId("b"));
     }
 }
+#endif

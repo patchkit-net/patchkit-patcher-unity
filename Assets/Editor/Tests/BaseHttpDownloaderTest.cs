@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if UNITY_2018
+using System.IO;
 using System.Net;
 using NUnit.Framework;
 using NSubstitute;
@@ -148,3 +149,4 @@ public class BaseHttpDownloaderTest
         Assert.Catch<ConnectionFailureException>(() => baseHttpDownloader.Download(CancellationToken.Empty));
     }
 }
+#endif

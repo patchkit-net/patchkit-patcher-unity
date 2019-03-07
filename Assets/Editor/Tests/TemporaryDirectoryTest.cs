@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if UNITY_2018
+using System.IO;
 using NUnit.Framework;
 using PatchKit.Unity.Patcher.AppData.Local;
 
@@ -89,3 +90,4 @@ class TemporaryDirectoryTest
         });
     }
 }
+#endif

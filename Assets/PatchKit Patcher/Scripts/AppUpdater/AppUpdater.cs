@@ -41,7 +41,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             Context = context;
         }
 
-        private void PreUpdate(CancellationToken cancellationToken)
+        private void PreUpdate(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             DebugLogger.Log("Pre update integrity check");
 
@@ -112,7 +112,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 .Sum(f => f.Size);
         }
 
-        public void Update(CancellationToken cancellationToken)
+        public void Update(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
 
@@ -153,7 +153,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
         }
 
-        private bool TryHandleFallback(CancellationToken cancellationToken)
+        private bool TryHandleFallback(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             var fallbackType = _strategyResolver.GetFallbackStrategy(_strategy.GetStrategyType());
 

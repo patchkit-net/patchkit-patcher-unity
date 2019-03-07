@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if UNITY_2018
+using System.IO;
 using NSubstitute;
 using NUnit.Framework;
 using PatchKit.Unity.Patcher;
@@ -45,3 +46,4 @@ public class AppFinderTest
         Assert.AreEqual(dest, executable);
     }
 }
+#endif
