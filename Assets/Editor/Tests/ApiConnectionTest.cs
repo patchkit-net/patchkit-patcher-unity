@@ -330,7 +330,7 @@ namespace PatchKit.Api
 
         private static void AddThrowToClient(IHttpClient client, string url, Exception exception)
         {
-            client.Get(Arg.Is<HttpGetRequest>(r => r.Address.ToString() == url)).Returns(_ => throw exception);
+            client.Get(Arg.Is<HttpGetRequest>(r => r.Address.ToString() == url)).Returns(_ => { throw exception; });
         }
 
         private static IHttpResponse CreateErrorResponse(HttpStatusCode statusCode)
