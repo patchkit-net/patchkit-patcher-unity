@@ -158,6 +158,18 @@ namespace PatchKit.Unity.Patcher
             return RemoteMetaData.GetLatestVersionId(retryRequests);
         }
 
+        public int GetLowestVersionWithDiffId()
+        {
+            var appInfo = RemoteMetaData.GetAppInfo();
+            return appInfo.LowestVersionWithDiff;
+        }
+
+        public int GetLowestVersionWithContentId()
+        {
+            var appInfo = RemoteMetaData.GetAppInfo();
+            return appInfo.LowestVersionWithContent;
+        }
+
         private static ILocalDirectory CreateDefaultLocalDirectory(string appDataPath)
         {
             return new LocalDirectory(appDataPath);

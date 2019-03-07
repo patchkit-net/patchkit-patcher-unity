@@ -5,15 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-### Changed
-- New status messages for repairing process (more user-friendly) (#1177)
-
-## [Unreleased]
 ### Added
 - Support for newer versions of Unity (#1191)
 
+### Changed
+- New status messages for repairing process (more user-friendly) (#1177)
+
 ### Fixed
 - Displaying "Stalled" state at the begininng of the download (#1179)
+- Not using repair strategy when content of currently installed version is not available (#1190)
 
 ## [3.11.0]
 ### Added

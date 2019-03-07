@@ -1,6 +1,7 @@
 /.vs/
 /Library/
 /Temp/
+/Logs/
 /obj/
 /*.sln
 /*.suo
@@ -12,3 +13,5 @@
 *.DotSettings*
 *.CSharp.ruleset
 _ReSharper*
+/*.sublime-project
+/*.sublime-workspace

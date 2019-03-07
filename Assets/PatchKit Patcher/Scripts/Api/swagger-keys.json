@@ -1,0 +1,516 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "2.1",
+        "title": "PatchKit License Server API",
+        "contact": {
+            "name": "API Support",
+            "url": "http://patchkit.net/contact",
+            "email": "contact@patchkit.net"
+        }
+    },
+    "host": "keys.patchkit.net",
+    "basePath": "/v2",
+    "paths": {
+        "/keys": {
+            "post": {
+                "summary": "Creates keys",
+                "description": "Creates a new set of keys. Each key will get an unique key string.",
+                "tags": [
+                    "Keys",
+                    "Administration"
+                ],
+                "consumes": [
+                    "www/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "app_secret",
+                        "in": "formData",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "count",
+                        "description": "Decides about how many keys should be created.",
+                        "in": "formData",
+                        "type": "integer",
+                        "required": true
+                    },
+                    {
+                        "name": "collection_id",
+                        "in": "formData",
+                        "type": "integer",
+                        "required": true
+                    },
+                    {
+                        "name": "token",
+                        "description": "Authentication token",
+                        "type": "string",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Job Started",
+                        "schema": {
+                            "$ref": "#/definitions/Job"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unknown error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/jobs/{guid}": {
+            "get": {
+                "summary": "Gets job info",
+                "tags": [
+                    "Keys",
+                    "Administration"
+                ],
+                "parameters": [
+                    {
+                        "name": "guid",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Job"
+                        }
+                    },
+                    "404": {
+                        "description": "Job not found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{collection_id}/keys": {
+            "get": {
+                "summary": "Gets collection keys",
+                "description": "Gets keys based on collection id, size and offset.",
+                "tags": [
+                    "Collections",
+                    "Administration"
+                ],
+                "parameters": [
+                    {
+                        "name": "collection_id",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "token",
+                        "description": "Authentication token",
+                        "type": "string",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "name": "size",
+                        "type": "integer",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "name": "offset",
+                        "type": "integer",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_metadata": {
+                                    "type": "object",
+                                    "properties": {
+                                        "total_count": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "keys": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/LicenseKey"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Collection does not exist.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{collection_id}/block": {
+            "post": {
+                "summary": "Blocks the collection",
+                "tags": [
+                    "Collections",
+                    "Administration"
+                ],
+                "parameters": [
+                    {
+                        "name": "collection_id",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "token",
+                        "description": "Authentication token",
+                        "type": "string",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Collection does not exist.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{collection_id}/unblock": {
+            "post": {
+                "summary": "Blocks the collection",
+                "tags": [
+                    "Collections",
+                    "Administration"
+                ],
+                "parameters": [
+                    {
+                        "name": "collection_id",
+                        "type": "integer",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "token",
+                        "description": "Authentication token",
+                        "type": "string",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Collection does not exist.",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/keys/{key}": {
+            "get": {
+                "summary": "Gets key info",
+                "description": "Gets key info. Required providing an app secret. Will find only key that matches given app_secret. This request registers itself as key usage until valid key_secret is providen with this request.",
+                "tags": [
+                    "Keys"
+                ],
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "app_secret",
+                        "in": "query",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "key_secret",
+                        "description": "If provided and valid, will only do a blocked check.",
+                        "in": "query",
+                        "type": "string",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/LicenseKey"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Key not known",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "410": {
+                        "description": "Key has been blocked",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unknown error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/keys/{key}/block": {
+            "post": {
+                "summary": "Blocks key",
+                "tags": [
+                    "Keys",
+                    "Administration"
+                ],
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "token",
+                        "description": "Authentication token",
+                        "type": "string",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/LicenseKey"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Key not known",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/keys/{key}/unblock": {
+            "post": {
+                "summary": "Unblocks key",
+                "tags": [
+                    "Keys",
+                    "Administration"
+                ],
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "token",
+                        "description": "Authentication token",
+                        "type": "string",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/LicenseKey"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Key not known",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{app_secret}": {
+            "delete": {
+                "summary": "Deletes associated keys",
+                "description": "Deletes all associated keys with given app.",
+                "tags": [
+                    "Keys",
+                    "Administration"
+                ],
+                "parameters": [
+                    {
+                        "name": "app_secret",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "token",
+                        "description": "Authentication token",
+                        "type": "string",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Secret not known",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "default": {
+                        "description": "Unknown error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "description": "Human-readable error message"
+                }
+            }
+        },
+        "LicenseKey": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "app_secret": {
+                    "type": "string"
+                },
+                "key_secret": {
+                    "type": "string"
+                },
+                "collection_id": {
+                    "type": "integer"
+                },
+                "registrations": {
+                    "type": "integer",
+                    "description": "Number of key registrations. This is a request wihout a app_secret."
+                },
+                "blocked": {
+                    "type": "boolean",
+                    "description": "If set to true, this key is blocked for further use."
+                }
+            },
+            "example": {
+                "key": "J93N-3JND-K2MB-DK24-SK3B",
+                "app_secret": "39b290146bea6ce975c37cfc23",
+                "key_secret": "39b290146bea6ce975c37cfc23"
+            }
+        },
+        "Job": {
+            "type": "object",
+            "properties": {
+                "guid": {
+                    "type": "string"
+                },
+                "pending": {
+                    "type": "boolean"
+                },
+                "finished": {
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}

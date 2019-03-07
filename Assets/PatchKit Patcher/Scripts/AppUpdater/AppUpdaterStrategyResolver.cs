@@ -86,6 +86,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                         if (isInstallationBroken)
                         {
+                            // Repair is always possible because we are fixing latest version
                             return StrategyType.Repair;
                         }
 
@@ -130,8 +131,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                                 if (!IsVersionIntegral(contentSize, context))
                                 {
-                                    _logger.LogDebug("Installed version is broken. Using repair&diff strategy.");
-                                    return StrategyType.RepairAndDiff;
+                                    if (IsRepairPossible(context))
+                                    {
+                                        _logger.LogDebug("Installed version is broken. Using repair&diff strategy.");
+                                        return StrategyType.RepairAndDiff;
+                                    }
+                                    else
+                                    {
+                                        _logger.LogDebug("Installed version is broken and repair is not possible. Using content strategy.");
+                                        return StrategyType.Content;
+                                    }   
                                 }
 
                                 _logger.LogDebug("Installed verison is ready for diff updating.");
@@ -165,9 +174,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
         }
 
+        private bool IsRepairPossible(AppUpdaterContext context)
+        {
+            if (!context.App.IsFullyInstalled() && !context.App.IsInstallationBroken())
+            {
+                return false;
+            }
+
+            int installedVersionId = context.App.GetInstalledVersionId();
+            int lowestVersionWithContent = context.App.GetLowestVersionWithContentId();
+
+            return installedVersionId >= lowestVersionWithContent;
+        }
+
         private bool DoesVersionSupportDiffUpdates(AppUpdaterContext context, int versionId)
         {
-            int lowestVersionWithDiffId = GetLowestVersionWithDiffId(context);
+            int lowestVersionWithDiffId = context.App.GetLowestVersionWithDiffId();
             _logger.LogTrace("lowestVersionWithDiffId = " + lowestVersionWithDiffId);
 
             return versionId + 1 < lowestVersionWithDiffId;
@@ -212,12 +234,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
 
             return isValid;
-        }
-
-        private static int GetLowestVersionWithDiffId(AppUpdaterContext context)
-        {
-            var appInfo = context.App.RemoteMetaData.GetAppInfo();
-            return appInfo.LowestVersionWithDiff;
         }
 
         private static long GetLatestVersionContentSize(AppUpdaterContext context)

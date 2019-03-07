@@ -49,6 +49,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             int installedVersionId = Context.App.GetInstalledVersionId();
             int latestVersionId = Context.App.GetLatestVersionId();
+            int lowestVersionWithContentId = Context.App.GetLowestVersionWithContentId();
+
+            if (lowestVersionWithContentId > installedVersionId)
+            {
+                DebugLogger.Log(
+                    "Repair is impossible because lowest version with content id is " 
+                    + lowestVersionWithContentId + 
+                    " and currently installed version id is "
+                    + installedVersionId +
+                    ". Uninstalling to prepare for content strategy.");
+
+                IUninstallCommand uninstall = commandFactory.CreateUninstallCommand(Context);
+                uninstall.Prepare(_status);
+                uninstall.Execute(cancellationToken);
+                return;
+            }
 
             AppContentSummary installedVersionContentSummary 
                 = Context.App.RemoteMetaData.GetContentSummary(installedVersionId);
