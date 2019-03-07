@@ -4,7 +4,9 @@ using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using System;
+#if UNITY_2018_1_OR_NEWER
 using UnityEditor.Build.Reporting;
+#endif
 
 namespace PatchKit.Unity
 {
