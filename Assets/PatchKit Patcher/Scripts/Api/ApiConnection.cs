@@ -113,7 +113,7 @@ namespace PatchKit.Api
                     exceptionsList = request.CacheServersExceptions;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(serverType), serverType, null);
+                    throw new ArgumentOutOfRangeException("serverType", serverType, null);
             }
 
             try
@@ -180,7 +180,7 @@ namespace PatchKit.Api
                 case ServerType.CacheServer:
                     return httpResponse.StatusCode == HttpStatusCode.OK;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(serverType), serverType, null);
+                    throw new ArgumentOutOfRangeException("serverType", serverType, null);
             }
         }
 
@@ -194,7 +194,7 @@ namespace PatchKit.Api
                 case ServerType.CacheServer:
                     return false; // ignore any api cache error
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(serverType), serverType, null);
+                    throw new ArgumentOutOfRangeException("serverType", serverType, null);
             }
         }
 
