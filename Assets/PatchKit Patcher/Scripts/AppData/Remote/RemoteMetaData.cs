@@ -98,7 +98,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return keySecret;
         }
 
-        public AppVersion GetAppVersionInfo(int versionId)
+        public AppVersion GetAppVersionInfo(
+            int versionId, 
+            bool retryRequests = true)
         {
             if (versionId <= 0)
             {
@@ -107,7 +109,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             DebugLogger.Log(string.Format("Getting app version info for version with id {0}", versionId));
 
-            return _mainApiConnection.GetAppVersion(_appSecret, versionId);
+            var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
+
+            return m.GetAppVersion(_appSecret, versionId);
         }
     }
 }
