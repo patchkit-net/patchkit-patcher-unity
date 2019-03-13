@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
-while [ "$1" != "" ]; do
-    PARAM=`echo $1 | awk -F= '{print $1}'`
-    VALUE=`echo $1 | awk -F= '{print $2}'`
+while [ "$1" != "" ] && [ "$2" != "" ]; do
+    PARAM=$1
+    VALUE=$2
     case $PARAM in
         --exedir)
             EXEDIR=$VALUE
@@ -23,6 +23,7 @@ while [ "$1" != "" ]; do
             NETWORK_STATUS=$VALUE
             ;;
     esac
+    shift
     shift
 done
 
