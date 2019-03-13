@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Displaying "Stalled" state at the begininng of the download (#1179)
 - Using repair strategy when content of currently installed version is not available (#1190)
 - Starting game when patcher is in offline mode (#1201)
+- A launch script on Linux platforms
 
 ## [3.11.0]
 ### Added
