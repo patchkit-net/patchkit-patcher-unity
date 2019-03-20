@@ -100,12 +100,12 @@ namespace PatchKit.Unity.Editor
                 Capabilities = Capabilities(),
                 Arguments = new Manifest.Argument[] {
                     CreateManifestAgument(launchScriptPath),
-                    CreateManifestAgument("--exedir", "\"{exedir}\""),
-                    CreateManifestAgument("--secret", "\"{secret}\""),
-                    CreateManifestAgument("--installdir", "\"{installdir}\""),
+                    CreateManifestAgument("--exedir", "{exedir}"),
+                    CreateManifestAgument("--secret", "{secret}"),
+                    CreateManifestAgument("--installdir", "{installdir}"),
                     CreateManifestAgument("--network-status", "{network-status}"),
-                    CreateManifestAgument("--patcher-exe", "\"" + patcherExe + "\""),
-                    CreateManifestAgument("--lockfile", "\"{lockfile}\""),
+                    CreateManifestAgument("--patcher-exe", patcherExe),
+                    CreateManifestAgument("--lockfile", "{lockfile}"),
                 }
             };
         }
