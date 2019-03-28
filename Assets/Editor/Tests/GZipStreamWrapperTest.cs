@@ -1,3 +1,4 @@
+#if UNITY_2018
 using System;
 using System.IO;
 using System.Text;
@@ -152,3 +153,4 @@ public class GZipStreamWrapperTest
         Assert.That(decompressed == RawData);
     }
 }
+#endif

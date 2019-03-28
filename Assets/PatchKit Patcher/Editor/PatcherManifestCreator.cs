@@ -47,7 +47,11 @@ namespace PatchKit.Unity.Editor
                 case BuildTarget.StandaloneWindows64:
                     manifest = WindowsManifest(buildPath);
                     break;
+#if UNITY_2017_3_OR_NEWER
+                case BuildTarget.StandaloneOSX:
+#else
                 case BuildTarget.StandaloneOSXIntel64:
+#endif
                     manifest = OsxManifest(buildPath);
                     break;
                 case BuildTarget.StandaloneLinux:
@@ -89,19 +93,19 @@ namespace PatchKit.Unity.Editor
 
             return new Manifest {
                 ExeFileName = "sh",
-                ExeArguments = "\"" + launchScriptPath + "\" \"--exedir={exedir}\" --patcher-exe=\"" + patcherExe + "\" \"--secret={secret}\" \"--installdir={installdir}\"",
+                ExeArguments = "\"" + launchScriptPath + "\" --exedir \"{exedir}\" --patcher-exe \"" + patcherExe + "\" --secret \"{secret}\" --installdir \"{installdir}\"",
 
                 Version = ManifestVersion,
                 Target = "sh",
                 Capabilities = Capabilities(),
                 Arguments = new Manifest.Argument[] {
                     CreateManifestAgument(launchScriptPath),
-                    CreateManifestAgument("--exedir={exedir}"),
-                    CreateManifestAgument("--secret={secret}"),
-                    CreateManifestAgument("--installdir={installdir}"),
-                    CreateManifestAgument("--network-status={network-status}"),
-                    CreateManifestAgument("--patcher-exe=" + patcherExe),
-                    CreateManifestAgument("--lockfile={lockfile}"),
+                    CreateManifestAgument("--exedir", "{exedir}"),
+                    CreateManifestAgument("--secret", "{secret}"),
+                    CreateManifestAgument("--installdir", "{installdir}"),
+                    CreateManifestAgument("--network-status", "{network-status}"),
+                    CreateManifestAgument("--patcher-exe", patcherExe),
+                    CreateManifestAgument("--lockfile", "{lockfile}"),
                 }
             };
         }

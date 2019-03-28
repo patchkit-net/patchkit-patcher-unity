@@ -58,7 +58,7 @@ namespace PatchKit.Unity.Patcher
 
         private bool _canStartThread = true;
 
-        private readonly CancellationTokenSource _threadCancellationTokenSource = new CancellationTokenSource();
+        private readonly PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _threadCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
 
         private Thread _thread;
 
@@ -85,7 +85,7 @@ namespace PatchKit.Unity.Patcher
 
         private FileStream _lockFileStream;
 
-        private CancellationTokenSource _updateAppCancellationTokenSource;
+        private PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _updateAppCancellationTokenSource;
 
         public ErrorDialog ErrorDialog;
 
@@ -837,7 +837,7 @@ namespace PatchKit.Unity.Patcher
                 _localVersionId.Value = _app.GetInstalledVersionId();
             }
 
-            _updateAppCancellationTokenSource = new CancellationTokenSource();
+            _updateAppCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
 
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {

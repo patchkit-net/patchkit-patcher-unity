@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if UNITY_2018
+using System.IO;
 using NSubstitute;
 using NUnit.Framework;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -35,3 +36,4 @@ class InstallContentCommandTest
         //var command = new InstallContentCommand(1, )
     }
 }
+#endif

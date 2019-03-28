@@ -70,7 +70,7 @@ namespace PatchKit.Unity.Utilities
         /// </summary>
         /// <param name="duration">Miliseconds, time to sleep</param>
         /// <param name="cancellationToken">token to check cancellation exception</param>
-        public static void CancelableSleep(int duration, CancellationToken cancellationToken)
+        public static void CancelableSleep(int duration, PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             // FIX: Bug #692
             int singleSleep = 100;

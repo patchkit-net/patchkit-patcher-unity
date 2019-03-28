@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
             }
         }
 
-        public static void TryExecute(Action action, IRequestRetryStrategy retryStrategy, CancellationToken cancellationToken)
+        public static void TryExecute(Action action, IRequestRetryStrategy retryStrategy, PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             do
             {
@@ -80,7 +80,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
             } while (retryStrategy.ShouldRetry);
         }
 
-        public static void TryExecute(Action action, CancellationToken cancellationToken)
+        public static void TryExecute(Action action, PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             TryExecute(action, new RetryStrategy(), cancellationToken);
         }

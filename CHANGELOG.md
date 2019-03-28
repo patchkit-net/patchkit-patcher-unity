@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.12.0]
+### Added
+- Support for newer versions of Unity (#1191)
+
+### Changed
+- New status messages for repairing process (more user-friendly) (#1177)
+
+### Fixed
+- Displaying "Stalled" state at the begininng of the download (#1179)
+- Using repair strategy when content of currently installed version is not available (#1190)
+- Starting game when patcher is in offline mode (#1201)
+- A launch script on Linux platforms (#1199)
 
 ## [3.11.0]
 ### Added

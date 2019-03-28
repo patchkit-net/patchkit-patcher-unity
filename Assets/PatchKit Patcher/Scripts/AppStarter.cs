@@ -27,13 +27,16 @@ namespace PatchKit.Unity.Patcher
             AppFinder = new AppFinder();
         }
 
-        private string ResolveExecutablePath(AppVersion appVersion)
+        private string ResolveExecutablePath(AppVersion? appVersion)
         {
             PlatformType platformType = Platform.GetPlatformType();
 
-            if (!string.IsNullOrEmpty(appVersion.MainExecutable))
+            if (appVersion.HasValue && 
+                !string.IsNullOrEmpty(appVersion.Value.MainExecutable))
             {
-                string executablePath = Path.Combine(_app.LocalDirectory.Path, appVersion.MainExecutable);
+                string executablePath = Path.Combine(
+                    _app.LocalDirectory.Path, 
+                    appVersion.Value.MainExecutable);
 
                 bool isOSXApp = platformType == PlatformType.OSX &&
                                 executablePath.EndsWith(".app") &&
@@ -61,16 +64,36 @@ namespace PatchKit.Unity.Patcher
 
         public void Start()
         {
-            var appVersion = _app.RemoteMetaData.GetAppVersionInfo(_app.GetInstalledVersionId());
+            AppVersion? appVersion = null;
+
+            try
+            {
+                appVersion = _app.RemoteMetaData.GetAppVersionInfo(
+                    _app.GetInstalledVersionId(),
+                    false);
+            }
+            catch (Exception e)
+            {
+                DebugLogger.LogException(e);
+                DebugLogger.LogWarning(
+                    "Failed to retrieve app version info. Will try to detect exectuable manually.");
+            }
+        
             StartAppVersion(appVersion);
         }
 
-        private void StartAppVersion(AppVersion appVersion)
+        private void StartAppVersion(AppVersion? appVersion)
         {
             DebugLogger.Log("Starting application.");
 
             PlatformType platformType = Platform.GetPlatformType();
             string appFilePath = ResolveExecutablePath(appVersion);
+            string appArgs = null;
+
+            if (appVersion != null)
+            {
+                appArgs = appVersion.Value.MainExecutableArgs;
+            }
 
             if (appFilePath == null)
             {
@@ -92,7 +115,7 @@ namespace PatchKit.Unity.Patcher
                 }
             }
 
-            var processStartInfo = GetProcessStartInfo(appFilePath, appVersion.MainExecutableArgs, platformType);
+            var processStartInfo = GetProcessStartInfo(appFilePath, appArgs, platformType);
 
             StartAppProcess(processStartInfo);
         }

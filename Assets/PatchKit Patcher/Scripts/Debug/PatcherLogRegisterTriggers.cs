@@ -8,7 +8,7 @@ namespace PatchKit.Unity.Patcher.Debug
         private readonly Subject<Exception> _exceptionTrigger
             = new Subject<Exception>();
         
-        public IObservable<Exception> ExceptionTrigger
+        public UniRx.IObservable<Exception> ExceptionTrigger
         {
             get { return _exceptionTrigger; }
         }

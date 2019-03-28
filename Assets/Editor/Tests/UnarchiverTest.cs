@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_2018
+using System;
 using System.IO;
 using NUnit.Framework;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -143,3 +144,4 @@ class UnarchiverTest
         Assert.That(lastEntry.Value, Is.EqualTo(lastAmount.Value));
     }
 }
+#endif

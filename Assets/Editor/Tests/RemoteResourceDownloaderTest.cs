@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_2018
+using System;
 using System.IO;
 using NSubstitute;
 using NUnit.Framework;
@@ -124,3 +125,4 @@ public class RemoteResourceDownloaderTest
         chunkedHttpDownloader.DidNotReceiveWithAnyArgs().Download(CancellationToken.Empty);
     }
 }
+#endif

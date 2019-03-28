@@ -41,7 +41,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             Context = context;
         }
 
-        private void PreUpdate(CancellationToken cancellationToken)
+        private void PreUpdate(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             DebugLogger.Log("Pre update integrity check");
 
@@ -49,6 +49,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             int installedVersionId = Context.App.GetInstalledVersionId();
             int latestVersionId = Context.App.GetLatestVersionId();
+            int lowestVersionWithContentId = Context.App.GetLowestVersionWithContentId();
+
+            if (lowestVersionWithContentId > installedVersionId)
+            {
+                DebugLogger.Log(
+                    "Repair is impossible because lowest version with content id is " 
+                    + lowestVersionWithContentId + 
+                    " and currently installed version id is "
+                    + installedVersionId +
+                    ". Uninstalling to prepare for content strategy.");
+
+                IUninstallCommand uninstall = commandFactory.CreateUninstallCommand(Context);
+                uninstall.Prepare(_status);
+                uninstall.Execute(cancellationToken);
+                return;
+            }
 
             AppContentSummary installedVersionContentSummary 
                 = Context.App.RemoteMetaData.GetContentSummary(installedVersionId);
@@ -112,7 +128,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 .Sum(f => f.Size);
         }
 
-        public void Update(CancellationToken cancellationToken)
+        public void Update(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Update");
 
@@ -153,7 +169,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
         }
 
-        private bool TryHandleFallback(CancellationToken cancellationToken)
+        private bool TryHandleFallback(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             var fallbackType = _strategyResolver.GetFallbackStrategy(_strategy.GetStrategyType());
 

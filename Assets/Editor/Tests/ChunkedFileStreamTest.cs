@@ -1,3 +1,4 @@
+#if UNITY_2018
 using System;
 using System.IO;
 using NUnit.Framework;
@@ -184,3 +185,4 @@ public class ChunkedFileStreamTest {
         }
     }
 }
+#endif

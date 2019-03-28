@@ -97,7 +97,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     downloadStatus.IsActive.Value = true;
                     downloadStatus.TotalBytes.Value = totalData;
-                    downloadStatus.Description.Value = "Downloading broken file...";
+                    downloadStatus.Description.Value = "Downloading fixes...";
                     downloadStatus.Bytes.Value = 0;
 
                     downloader.DownloadProgressChanged += downloadedBytes =>
@@ -111,7 +111,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     downloadStatus.IsActive.Value = false;
 
                     repairStatus.IsActive.Value = true;
-                    repairStatus.Description.Value = "Reparing broken file...";
+                    repairStatus.Description.Value = "Applying fixes...";
                     repairStatus.Progress.Value = 0.0;
 
                     _logger.LogDebug("Unarchiving the package.");

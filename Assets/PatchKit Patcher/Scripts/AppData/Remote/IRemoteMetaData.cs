@@ -30,7 +30,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         /// Returns the AppVersion model for the specified version id.
         /// </summary>
         /// <param name="versionId">The version identifier.</param>
-        AppVersion GetAppVersionInfo(int versionId);
+        AppVersion GetAppVersionInfo(int versionId, bool retryRequests = true);
 
         /// <summary>
         /// Returns key secret for certain key.

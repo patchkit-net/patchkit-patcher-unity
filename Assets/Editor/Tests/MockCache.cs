@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_2018
+using System.Collections.Generic;
 using PatchKit.Unity.Patcher.AppData.Local;
 
 class MockCache : ICache
@@ -19,3 +20,4 @@ class MockCache : ICache
         return defaultValue;
     }
 }
+#endif

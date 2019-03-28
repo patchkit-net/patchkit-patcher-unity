@@ -13,7 +13,7 @@ namespace PatchKit.Unity
             BuildTarget.StandaloneLinux64,
             BuildTarget.StandaloneWindows,
             BuildTarget.StandaloneWindows64,
-            BuildTarget.StandaloneOSXIntel64,
+            BuildTargetOsx.Get()
         };
 
         [PostProcessBuild, UsedImplicitly]

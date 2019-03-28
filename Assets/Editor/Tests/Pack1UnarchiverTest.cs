@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿#if UNITY_2018
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using NUnit.Framework;
@@ -62,3 +63,4 @@ public class Pack1UnarchiverTest
         }
     }
 }
+#endif
