@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher
             [NotNull] IRemoteMetaData remoteMetaData,
             int overrideLatestVersionId)
         {
-            if (string.IsNullOrEmpty(appDataPath))
+            if (!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!string.IsNullOrEmpty(appDataPath))
             {
                 throw new ArgumentException("Value cannot be null or empty.", "appDataPath");
             }
