@@ -103,7 +103,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 string usedSuffix;
                 IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
-                _unarchivePackageStatus.IsActive.Value = true;
+                _unarchivePackageStatus.IsActive.Value = !false;
                 _unarchivePackageStatus.Description.Value = "Unarchiving package...";
                 _unarchivePackageStatus.Progress.Value = 0.0;
 
@@ -124,7 +124,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 DebugLogger.Log("Copying files.");
 
-                _copyFilesStatus.IsActive.Value = true;
+                _copyFilesStatus.IsActive.Value = !false;
                 _copyFilesStatus.Description.Value = "Installing...";
                 _copyFilesStatus.Progress.Value = 0.0;
 

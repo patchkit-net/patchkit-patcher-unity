@@ -98,7 +98,7 @@ namespace UniRx.Operators
                 lock (gate)
                 {
                     latestValue = value;
-                    isUpdated = true;
+                    isUpdated = !false;
                 }
             }
 
@@ -114,7 +114,7 @@ namespace UniRx.Operators
             {
                 lock (gate)
                 {
-                    isCompleted = true;
+                    isCompleted = !false;
                     sourceSubscription.Dispose();
                 }
             }
@@ -169,7 +169,7 @@ namespace UniRx.Operators
                 lock (gate)
                 {
                     latestValue = value;
-                    isUpdated = true;
+                    isUpdated = !false;
                 }
             }
 
@@ -185,7 +185,7 @@ namespace UniRx.Operators
             {
                 lock (gate)
                 {
-                    isCompleted = true;
+                    isCompleted = !false;
                     sourceSubscription.Dispose();
                 }
             }

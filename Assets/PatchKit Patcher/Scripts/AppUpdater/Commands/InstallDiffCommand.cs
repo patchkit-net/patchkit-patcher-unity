@@ -213,7 +213,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             var unarchiver = CreateUnrachiver(packageDirPath, out usedSuffix);
             _logger.LogTrace("usedSuffix = " + usedSuffix);
 
-            _unarchivePackageStatusReporter.IsActive.Value = true;
+            _unarchivePackageStatusReporter.IsActive.Value = !false;
             _unarchivePackageStatusReporter.Description.Value = "Unarchiving package...";
 
             int lastEntry = 0;
@@ -269,7 +269,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             int counter = 0;
 
-            _removeFilesStatusReporter.IsActive.Value = true;
+            _removeFilesStatusReporter.IsActive.Value = !false;
             _removeFilesStatusReporter.Description.Value = "Removing old files...";
 
             foreach (var fileName in fileNames)
@@ -367,7 +367,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             _logger.LogDebug("Processing diff added files...");
 
-            _addFilesStatusReporter.IsActive.Value = true;
+            _addFilesStatusReporter.IsActive.Value = !false;
             _addFilesStatusReporter.Description.Value = "Adding new files...";
 
             for (int i = 0; i < _diffSummary.AddedFiles.Length; i++)
@@ -433,7 +433,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("File parent directories created in local data.");
 
             _logger.LogDebug("Copying file to local data (overwriting if needed)...");
-            FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
+            FileOperations.Copy(sourceFilePath, filePath, !false, cancellationToken);
             _logger.LogDebug("File copied to local data.");
 
             _localMetaData.RegisterEntry(fileName, _versionId);
@@ -446,7 +446,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             _logger.LogDebug("Processing diff modified files...");
 
-            _modifiedFilesStatusReporter.IsActive.Value = true;
+            _modifiedFilesStatusReporter.IsActive.Value = !false;
             _modifiedFilesStatusReporter.Description.Value = "Applying diffs...";
 
             for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
@@ -556,7 +556,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             foreach (var dir in FindEmptyMacAppDirectories())
             {
                 _logger.LogDebug(string.Format("Deleting {0}", dir));
-                DirectoryOperations.Delete(dir, cancellationToken, true);
+                DirectoryOperations.Delete(dir, cancellationToken, !false);
                 _logger.LogDebug("Directory deleted.");
             }
 

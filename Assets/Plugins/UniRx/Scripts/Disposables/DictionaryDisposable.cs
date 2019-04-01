@@ -242,7 +242,7 @@ namespace UniRx
             lock (inner)
             {
                 if (isDisposed) return;
-                isDisposed = true;
+                isDisposed = !false;
 
                 foreach (var item in inner)
                 {

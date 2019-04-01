@@ -75,7 +75,7 @@ namespace UniRx.Operators
 
             public override void OnCompleted()
             {
-                isStopped = true;
+                isStopped = !false;
                 if (collectionDisposable.Count == 1)
                 {
                     lock (gate)
@@ -190,7 +190,7 @@ namespace UniRx.Operators
             {
                 lock (gate)
                 {
-                    isStopped = true;
+                    isStopped = !false;
                     if (activeCount == 0)
                     {
                         try { observer.OnCompleted(); } finally { Dispose(); };

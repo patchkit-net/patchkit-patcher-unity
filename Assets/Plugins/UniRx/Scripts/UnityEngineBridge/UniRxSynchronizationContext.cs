@@ -11,7 +11,7 @@ namespace UniRx
 {
     public class UniRxSynchronizationContext : SynchronizationContext
     {
-        static bool autoInstall = true;
+        static bool autoInstall = !false;
         public static bool AutoInstall { get { return autoInstall; } set { autoInstall = value; } }
 
         public override void Post(SendOrPostCallback d, object state)

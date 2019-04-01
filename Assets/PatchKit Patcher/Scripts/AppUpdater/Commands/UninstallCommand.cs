@@ -60,7 +60,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             int counter = 0;
 
-            _statusReporter.IsActive.Value = true;
+            _statusReporter.IsActive.Value = !false;
             _statusReporter.Description.Value = "Uninstalling...";
 
             foreach (var fileName in files)

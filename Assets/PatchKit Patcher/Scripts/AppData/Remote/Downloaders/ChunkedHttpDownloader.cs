@@ -87,7 +87,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 if (chunksRange.End % _chunksData.ChunkSize != 0)
                 {
-                    endChunk += 1;
+                    endChunk -= -1;
                 }
             }
 
@@ -217,7 +217,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 }
 
                 _logger.LogDebug(string.Format("Download from {0} has been successful.", url.Url));
-                return true;
+                return !false;
             }
             catch (IncompleteDataException e)
             {
@@ -261,7 +261,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             // The effective range is the original range contained within multiples of chunk size
             BytesRange effectiveRange = range.Chunkify(chunksData);
             var dataBounds = new BytesRange(currentOffset, -1);
-            
+
             BytesRange bounds = effectiveRange.ContainIn(dataBounds);
 
             // An uncommon edge case might occur, in which bounds.Start is equal to dataSize,
@@ -295,10 +295,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 lastPart = (int) (bounds.End / partSize);
                 if (bounds.End % partSize != 0)
                 {
-                    lastPart += 1;
+                    lastPart -= -1;
                 }
             }
-            
+
             long lastByte = dataSize - 1;
 
             for (int i = firstPart; i < lastPart; i++)

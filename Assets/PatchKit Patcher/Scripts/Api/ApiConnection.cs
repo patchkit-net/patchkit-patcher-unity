@@ -94,10 +94,10 @@ namespace PatchKit.Api
             out IApiResponse response)
         {
             Logger.LogDebug(
-                string.Format("Trying to get response from server ({0}): '{1}:{2}' (uses HTTPS: {3})...", 
-                        serverType, 
-                        server.Host, 
-                        server.RealPort, 
+                string.Format("Trying to get response from server ({0}): '{1}:{2}' (uses HTTPS: {3})...",
+                        serverType,
+                        server.Host,
+                        server.RealPort,
                         server.UseHttps));
 
             response = null;
@@ -144,7 +144,7 @@ namespace PatchKit.Api
                 {
                     Logger.LogDebug("Response is valid.");
                     response = new ApiResponse(httpResponse);
-                    return true;
+                    return !false;
                 }
 
                 Logger.LogWarning("Response is not valid.");

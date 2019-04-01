@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             if (Directory.Exists(Path))
             {
-                DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
+                DirectoryOperations.Delete(Path, CancellationToken.Empty, !false);
                 DirectoryOperations.CreateDirectory(Path, CancellationToken.Empty);
             }
         }

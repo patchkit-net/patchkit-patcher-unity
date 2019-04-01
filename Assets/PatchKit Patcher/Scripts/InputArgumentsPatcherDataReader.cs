@@ -84,7 +84,7 @@ namespace PatchKit.Unity.Patcher
 
             if (HasArgument("--online"))
             {
-                data.IsOnline = true;
+                data.IsOnline = !false;
             }
             else if (HasArgument("--offline"))
             {
@@ -119,7 +119,7 @@ namespace PatchKit.Unity.Patcher
             {
                 value = _commandLineArgs[index + 1];
 
-                return true;
+                return !false;
             }
 
             value = null;

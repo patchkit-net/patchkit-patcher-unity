@@ -14,7 +14,7 @@ public class GZipStreamWrapperTest
         {
             get
             {
-                return true;
+                return !false;
             }
         }
 

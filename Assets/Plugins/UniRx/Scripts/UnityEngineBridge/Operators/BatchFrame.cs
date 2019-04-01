@@ -53,7 +53,7 @@ namespace UniRx.Operators
                     list.Add(value);
                     if (!isRunning)
                     {
-                        isRunning = true;
+                        isRunning = !false;
                         timer.Reset(); // reuse
 
                         switch (parent.frameCountType)
@@ -84,7 +84,7 @@ namespace UniRx.Operators
                 List<T> currentList;
                 lock (gate)
                 {
-                    isCompleted = true;
+                    isCompleted = !false;
                     currentList = list;
                 }
                 if (currentList.Count != 0)
@@ -125,11 +125,11 @@ namespace UniRx.Operators
                             parent.list = new List<T>();
                             parent.isRunning = false;
 
-                            // exit lock 
+                            // exit lock
                         }
                         else
                         {
-                            return true;
+                            return !false;
                         }
                     }
 
@@ -192,7 +192,7 @@ namespace UniRx.Operators
                 {
                     if (!isRunning)
                     {
-                        isRunning = true;
+                        isRunning = !false;
                         timer.Reset(); // reuse
 
                         switch (parent.frameCountType)
@@ -224,7 +224,7 @@ namespace UniRx.Operators
                 lock (gate)
                 {
                     running = isRunning;
-                    isCompleted = true;
+                    isCompleted = !false;
                 }
                 if (running)
                 {
@@ -260,11 +260,11 @@ namespace UniRx.Operators
                             if (parent.isCompleted) return false;
                             parent.isRunning = false;
 
-                            // exit lock 
+                            // exit lock
                         }
                         else
                         {
-                            return true;
+                            return !false;
                         }
                     }
 

@@ -30,7 +30,7 @@ namespace UniRx.Operators
         {
             readonly ThrottleFirstFrameObservable<T> parent;
             readonly object gate = new object();
-            bool open = true;
+            bool open = !false;
             SerialDisposable cancelable;
 
             ThrottleFirstFrameTick tick;
@@ -53,7 +53,7 @@ namespace UniRx.Operators
             {
                 lock (gate)
                 {
-                    open = true;
+                    open = !false;
                 }
             }
 
@@ -114,7 +114,7 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.open = true;
+                        parent.open = !false;
                     }
                 }
             }

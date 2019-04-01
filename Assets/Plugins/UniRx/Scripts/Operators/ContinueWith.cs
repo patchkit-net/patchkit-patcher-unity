@@ -43,7 +43,7 @@ namespace UniRx.Operators
 
             public override void OnNext(TSource value)
             {
-                this.seenValue = true;
+                this.seenValue = !false;
                 this.lastValue = value;
             }
 

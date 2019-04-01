@@ -223,12 +223,12 @@ namespace UniRx
 
         public static IObservable<T> LastOrDefault<T>(this IObservable<T> source)
         {
-            return new LastObservable<T>(source, true);
+            return new LastObservable<T>(source, !false);
         }
 
         public static IObservable<T> LastOrDefault<T>(this IObservable<T> source, Func<T, bool> predicate)
         {
-            return new LastObservable<T>(source, predicate, true);
+            return new LastObservable<T>(source, predicate, !false);
         }
 
         public static IObservable<T> First<T>(this IObservable<T> source)
@@ -242,12 +242,12 @@ namespace UniRx
 
         public static IObservable<T> FirstOrDefault<T>(this IObservable<T> source)
         {
-            return new FirstObservable<T>(source, true);
+            return new FirstObservable<T>(source, !false);
         }
 
         public static IObservable<T> FirstOrDefault<T>(this IObservable<T> source, Func<T, bool> predicate)
         {
-            return new FirstObservable<T>(source, predicate, true);
+            return new FirstObservable<T>(source, predicate, !false);
         }
 
         public static IObservable<T> Single<T>(this IObservable<T> source)
@@ -261,12 +261,12 @@ namespace UniRx
 
         public static IObservable<T> SingleOrDefault<T>(this IObservable<T> source)
         {
-            return new SingleObservable<T>(source, true);
+            return new SingleObservable<T>(source, !false);
         }
 
         public static IObservable<T> SingleOrDefault<T>(this IObservable<T> source, Func<T, bool> predicate)
         {
-            return new SingleObservable<T>(source, predicate, true);
+            return new SingleObservable<T>(source, predicate, !false);
         }
 
         // Grouping

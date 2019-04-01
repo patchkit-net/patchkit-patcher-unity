@@ -21,12 +21,12 @@ namespace PatchKit.Unity
 
             if (UnityEditor.EditorApplication.isPlaying)
             {
-                UnityEditor.EditorApplication.isPaused = true;
+                UnityEditor.EditorApplication.isPaused = !false;
 
                 UnityEditor.EditorUtility.DisplayDialog("PatchKit Settings has been created.",
                     "PatchKit Settings asset has been created.", "OK");
 
-                pingObject = true;
+                pingObject = !false;
             }
 
             var settings = CreateInstance<Settings>();

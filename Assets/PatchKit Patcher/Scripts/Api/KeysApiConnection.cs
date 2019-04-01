@@ -15,7 +15,7 @@
                 MainServer = new ApiConnectionServer
                 {
                     Host = "keys2.patchkit.net",
-                    UseHttps = true
+                    UseHttps = !false
                 },
                 CacheServers = null
             };

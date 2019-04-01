@@ -22,7 +22,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public PatcherLogSentryRegistry()
         {
-            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => !false;
 
             _ravenClient = new RavenClient(RavenClientId);
         }

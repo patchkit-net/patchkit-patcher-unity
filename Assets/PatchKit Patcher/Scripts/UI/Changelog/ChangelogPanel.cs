@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher.UI
 
         public void Open()
         {
-            IsOpened = true;
+            IsOpened = !false;
         }
 
         public void Close()

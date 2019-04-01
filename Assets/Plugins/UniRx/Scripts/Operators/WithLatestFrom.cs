@@ -128,7 +128,7 @@ namespace UniRx.Operators
                 public void OnNext(TRight value)
                 {
                     parent.latestValue = value;
-                    parent.hasLatest = true;
+                    parent.hasLatest = !false;
                 }
 
                 public void OnError(Exception error)

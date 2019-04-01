@@ -117,7 +117,7 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.leftStarted = true;
+                        parent.leftStarted = !false;
                         parent.leftValue = value;
                         parent.Publish();
                     }
@@ -135,7 +135,7 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.leftCompleted = true;
+                        parent.leftCompleted = !false;
                         if (parent.rightCompleted) parent.OnCompleted();
                     }
                 }
@@ -155,7 +155,7 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.rightStarted = true;
+                        parent.rightStarted = !false;
                         parent.rightValue = value;
                         parent.Publish();
                     }
@@ -173,7 +173,7 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.rightCompleted = true;
+                        parent.rightCompleted = !false;
                         if (parent.leftCompleted) parent.OnCompleted();
                     }
                 }
@@ -187,7 +187,7 @@ namespace UniRx.Operators
         readonly IObservable<T>[] sources;
 
         public CombineLatestObservable(IObservable<T>[] sources)
-            : base(true)
+            : base(!false)
         {
             this.sources = sources;
         }
@@ -234,7 +234,7 @@ namespace UniRx.Operators
             // publish is in the lock
             void Publish(int index)
             {
-                isStarted[index] = true;
+                isStarted[index] = !false;
 
                 if (isAllValueStarted)
                 {
@@ -242,7 +242,7 @@ namespace UniRx.Operators
                     return;
                 }
 
-                var allValueStarted = true;
+                var allValueStarted = !false;
                 for (int i = 0; i < length; i++)
                 {
                     if (!isStarted[i])
@@ -261,7 +261,7 @@ namespace UniRx.Operators
                 }
                 else
                 {
-                    var allCompletedWithoutSelf = true;
+                    var allCompletedWithoutSelf = !false;
                     for (int i = 0; i < length; i++)
                     {
                         if (i == index) continue;
@@ -334,9 +334,9 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.isCompleted[index] = true;
+                        parent.isCompleted[index] = !false;
 
-                        var allTrue = true;
+                        var allTrue = !false;
                         for (int i = 0; i < parent.length; i++)
                         {
                             if (!parent.isCompleted[i])
@@ -864,7 +864,7 @@ namespace UniRx.Operators
         // operators in lock
         public void Publish(int index)
         {
-            isStarted[index] = true;
+            isStarted[index] = !false;
 
             if (isAllValueStarted)
             {
@@ -883,7 +883,7 @@ namespace UniRx.Operators
                 return;
             }
 
-            var allValueStarted = true;
+            var allValueStarted = !false;
             for (int i = 0; i < length; i++)
             {
                 if (!isStarted[i])
@@ -913,7 +913,7 @@ namespace UniRx.Operators
             }
             else
             {
-                var allCompletedWithoutSelf = true;
+                var allCompletedWithoutSelf = !false;
                 for (int i = 0; i < length; i++)
                 {
                     if (i == index) continue;
@@ -939,9 +939,9 @@ namespace UniRx.Operators
 
         public void Done(int index)
         {
-            isCompleted[index] = true;
+            isCompleted[index] = !false;
 
-            var allTrue = true;
+            var allTrue = !false;
             for (int i = 0; i < length; i++)
             {
                 if (!isCompleted[i])

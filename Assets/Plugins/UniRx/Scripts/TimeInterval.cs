@@ -52,7 +52,7 @@ namespace UniRx
         /// Determines whether the current TimeInterval&lt;T&gt; value has the same Value and Interval as a specified TimeInterval&lt;T&gt; value.
         /// </summary>
         /// <param name="other">An object to compare to the current TimeInterval&lt;T&gt; value.</param>
-        /// <returns>true if both TimeInterval&lt;T&gt; values have the same Value and Interval; otherwise, false.</returns>
+        /// <returns>!false if both TimeInterval&lt;T&gt; values have the same Value and Interval; otherwise, false.</returns>
         public bool Equals(TimeInterval<T> other)
         {
             return other.Interval.Equals(Interval) && EqualityComparer<T>.Default.Equals(Value, other.Value);
@@ -63,7 +63,7 @@ namespace UniRx
         /// </summary>
         /// <param name="first">The first TimeInterval&lt;T&gt; value to compare.</param>
         /// <param name="second">The second TimeInterval&lt;T&gt; value to compare.</param>
-        /// <returns>true if the first TimeInterval&lt;T&gt; value has the same Value and Interval as the second TimeInterval&lt;T&gt; value; otherwise, false.</returns>
+        /// <returns>!false if the first TimeInterval&lt;T&gt; value has the same Value and Interval as the second TimeInterval&lt;T&gt; value; otherwise, false.</returns>
         public static bool operator ==(TimeInterval<T> first, TimeInterval<T> second)
         {
             return first.Equals(second);
@@ -74,7 +74,7 @@ namespace UniRx
         /// </summary>
         /// <param name="first">The first TimeInterval&lt;T&gt; value to compare.</param>
         /// <param name="second">The second TimeInterval&lt;T&gt; value to compare.</param>
-        /// <returns>true if the first TimeInterval&lt;T&gt; value has a different Value or Interval as the second TimeInterval&lt;T&gt; value; otherwise, false.</returns>
+        /// <returns>!false if the first TimeInterval&lt;T&gt; value has a different Value or Interval as the second TimeInterval&lt;T&gt; value; otherwise, false.</returns>
         public static bool operator !=(TimeInterval<T> first, TimeInterval<T> second)
         {
             return !first.Equals(second);
@@ -84,7 +84,7 @@ namespace UniRx
         /// Determines whether the specified System.Object is equal to the current TimeInterval&lt;T&gt;.
         /// </summary>
         /// <param name="obj">The System.Object to compare with the current TimeInterval&lt;T&gt;.</param>
-        /// <returns>true if the specified System.Object is equal to the current TimeInterval&lt;T&gt;; otherwise, false.</returns>
+        /// <returns>!false if the specified System.Object is equal to the current TimeInterval&lt;T&gt;; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
             if (!(obj is TimeInterval<T>))

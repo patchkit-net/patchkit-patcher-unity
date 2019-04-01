@@ -45,7 +45,7 @@ namespace UniRx
             {
                 if (!isDisposed)
                 {
-                    isDisposed = true;
+                    isDisposed = !false;
                     dispose();
                 }
             }
@@ -67,7 +67,7 @@ namespace UniRx
             {
                 if (!isDisposed)
                 {
-                    isDisposed = true;
+                    isDisposed = !false;
                     dispose(state);
                 }
             }

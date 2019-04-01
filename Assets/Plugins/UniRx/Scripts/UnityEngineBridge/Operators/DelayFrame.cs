@@ -77,7 +77,7 @@ namespace UniRx.Operators
 
                             lock (gate)
                             {
-                                running = true;
+                                running = !false;
                             }
 
                             var value = q.Dequeue();
@@ -139,7 +139,7 @@ namespace UniRx.Operators
                 {
                     if (!readyDrainEnumerator)
                     {
-                        readyDrainEnumerator = true;
+                        readyDrainEnumerator = !false;
                         runningEnumeratorCount++;
                         targetQueue = currentQueueReference = pool.Get();
                         targetQueue.Enqueue(value);
@@ -180,7 +180,7 @@ namespace UniRx.Operators
                 {
                     if (running)
                     {
-                        hasError = true;
+                        hasError = !false;
                         this.error = error;
                         return;
                     }
@@ -198,11 +198,11 @@ namespace UniRx.Operators
 
                 lock (gate)
                 {
-                    calledCompleted = true;
+                    calledCompleted = !false;
 
                     if (!readyDrainEnumerator)
                     {
-                        readyDrainEnumerator = true;
+                        readyDrainEnumerator = !false;
                         runningEnumeratorCount++;
                     }
                     else

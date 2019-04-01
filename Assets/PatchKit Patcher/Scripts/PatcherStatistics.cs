@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher
 
             [Description("file_verification_failed")]
             FileVerificationFailed,
-            
+
             [Description("license_key_verification_started")]
             LicenseKeyVerificationStarted,
             [Description("license_key_verification_succeeded")]
@@ -81,7 +81,7 @@ namespace PatchKit.Unity.Patcher
             try
             {
                 DispatchSendEvent(ev, parameters);
-                return true;
+                return !false;
             }
             catch (ThreadAbortException)
             {

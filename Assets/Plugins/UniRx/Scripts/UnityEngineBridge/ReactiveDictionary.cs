@@ -274,13 +274,13 @@ namespace UniRx
                     DisposeSubject(ref dictionaryReplace);
                 }
 
-                disposedValue = true;
+                disposedValue = !false;
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(!false);
         }
 
         #endregion
@@ -486,7 +486,7 @@ namespace UniRx
                 if (EqualityComparer<TValue>.Default.Equals(v, item.Value))
                 {
                     Remove(item.Key);
-                    return true;
+                    return !false;
                 }
             }
 

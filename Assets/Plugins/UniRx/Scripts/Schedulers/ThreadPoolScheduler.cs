@@ -92,7 +92,7 @@ namespace UniRx
                         {
                             s_timers.Add(_timer);
 
-                            _hasAdded = true;
+                            _hasAdded = !false;
                         }
                     }
                 }
@@ -128,7 +128,7 @@ namespace UniRx
                             if (_hasAdded && timer != null)
                                 s_timers.Remove(timer);
 
-                            _hasRemoved = true;
+                            _hasRemoved = !false;
                         }
                     }
 

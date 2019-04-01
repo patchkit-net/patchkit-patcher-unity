@@ -67,7 +67,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Downloading package.");
 
-            _status.IsActive.Value = true;
+            _status.IsActive.Value = !false;
             _status.TotalBytes.Value = _resource.Size;
 
             var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource);
@@ -77,7 +77,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             var downloadStartTime = DateTime.Now;
 
             var stalledTimeout = TimeSpan.FromSeconds(10);
-            
+
             using (_status.BytesPerSecond.Subscribe(bps =>
                 _status.Description.Value = bps > 0.01 || DateTime.Now - downloadStartTime < stalledTimeout ? "Downloading package..." : "Stalled..."))
             {

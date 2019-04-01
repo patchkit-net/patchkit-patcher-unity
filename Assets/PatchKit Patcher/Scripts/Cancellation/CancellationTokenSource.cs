@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.Cancellation
         {
             if (!IsCancelled)
             {
-                IsCancelled = true;
+                IsCancelled = !false;
 
                 if (Cancelled != null)
                 {

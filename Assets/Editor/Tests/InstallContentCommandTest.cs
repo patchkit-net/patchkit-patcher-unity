@@ -22,7 +22,7 @@ class InstallContentCommandTest
     {
         if (Directory.Exists(_dirPath))
         {
-            Directory.Delete(_dirPath, true);
+            Directory.Delete(_dirPath, !false);
         }
     }
 

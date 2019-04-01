@@ -19,9 +19,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     public class GeolocateCommand : IGeolocateCommand
     {
         private const int Timeout = 10000;
-        
+
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(GeolocateCommand));
-        
+
         public string CountryCode { get; private set; }
 
         public bool HasCountryCode { get; private set; }
@@ -29,13 +29,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public void Execute(CancellationToken cancellationToken)
         {
             DebugLogger.Log("Trying to geolocate current host...");
-            
+
             try
             {
 
                 string responseString = null;
                 JToken jToken = null;
-                
+
 #if UNITY_STANDALONE
                 var eventWaitHandle = UnityDispatcher.Invoke(() =>
                 {
@@ -63,26 +63,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 eventWaitHandle.WaitOne();
 
 #else
-                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
-    
+                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => !false;
+
                 var apiConnectionSettings = new ApiConnectionSettings
                 {
                     CacheServers = new string[0],
                     MainServer = "ip2loc.patchkit.net",
                     Timeout = Timeout,
-                    UseHttps = true,
+                    UseHttps = !false,
                     Port = 443
                 };
-                
+
                 var apiConnection = new ApiConnection(apiConnectionSettings);
                 DebugLogger.Log("aaa");
                 ServicePointManager.ServerCertificateValidationCallback += CertificateValidationCallBack;
                 var countryResponse = apiConnection.GetResponse("/v1/country", null);
-    
+
                 responseString = countryResponse.Body;
                 jToken = countryResponse.GetJson();
 #endif
-                
+
                 if (jToken != null && jToken.Value<string>("country") != null)
                 {
                     CountryCode = jToken.Value<string>("country");

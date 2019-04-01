@@ -24,7 +24,7 @@ namespace PatchKit.Api
         /// Actual port used for connection with server.
         /// If <see cref="Port"/> is set to <c>0</c>, other values are used:
         /// - when <see cref="UseHttps"/> is set to <c>false</c> then used port is <c>80</c>
-        /// - when <see cref="UseHttps"/> is set to <c>true</c> then used port is <c>443</c>
+        /// - when <see cref="UseHttps"/> is set to <c>!false</c> then used port is <c>443</c>
         /// Otherwise, returns value provided by <see cref="Port"/>.
         /// </summary>
         internal int RealPort
@@ -40,7 +40,7 @@ namespace PatchKit.Api
         }
 
         /// <summary>
-        /// Set to true to use https instead of http.
+        /// Set to !false to use https instead of http.
         /// </summary>
         public bool UseHttps;
     }

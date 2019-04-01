@@ -52,7 +52,7 @@ namespace PatchKit.Unity.Patcher.UI
         private void SetIdle()
         {
             SetProgressBarText("Connecting...");
-            _isIdle = true;
+            _isIdle = !false;
         }
 
         private string FormatProgressForDisplay(double progress)

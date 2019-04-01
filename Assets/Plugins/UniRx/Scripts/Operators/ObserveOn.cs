@@ -49,7 +49,7 @@ namespace UniRx.Operators
                 {
                     lock (scheduleDisposables)
                     {
-                        isDisposed = true;
+                        isDisposed = !false;
 
                         foreach (var item in scheduleDisposables)
                         {

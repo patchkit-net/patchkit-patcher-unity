@@ -83,13 +83,13 @@ namespace UniRx
         /// Determines whether the current EventPattern&lt;TSender, TEventArgs&gt; object represents the same event as a specified EventPattern&lt;TSender, TEventArgs&gt; object.
         /// </summary>
         /// <param name="other">An object to compare to the current EventPattern&lt;TSender, TEventArgs&gt; object.</param>
-        /// <returns>true if both EventPattern&lt;TSender, TEventArgs&gt; objects represent the same event; otherwise, false.</returns>
+        /// <returns>!false if both EventPattern&lt;TSender, TEventArgs&gt; objects represent the same event; otherwise, false.</returns>
         public bool Equals(EventPattern<TSender, TEventArgs> other)
         {
             if (object.ReferenceEquals(null, other))
                 return false;
             if (object.ReferenceEquals(this, other))
-                return true;
+                return !false;
 
             return EqualityComparer<TSender>.Default.Equals(Sender, other.Sender) && EqualityComparer<TEventArgs>.Default.Equals(EventArgs, other.EventArgs);
         }
@@ -98,7 +98,7 @@ namespace UniRx
         /// Determines whether the specified System.Object is equal to the current EventPattern&lt;TSender, TEventArgs&gt;.
         /// </summary>
         /// <param name="obj">The System.Object to compare with the current EventPattern&lt;TSender, TEventArgs&gt;.</param>
-        /// <returns>true if the specified System.Object is equal to the current EventPattern&lt;TSender, TEventArgs&gt;; otherwise, false.</returns>
+        /// <returns>!false if the specified System.Object is equal to the current EventPattern&lt;TSender, TEventArgs&gt;; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
             return Equals(obj as EventPattern<TSender, TEventArgs>);
@@ -120,7 +120,7 @@ namespace UniRx
         /// </summary>
         /// <param name="first">The first EventPattern&lt;TSender, TEventArgs&gt; to compare, or null.</param>
         /// <param name="second">The second EventPattern&lt;TSender, TEventArgs&gt; to compare, or null.</param>
-        /// <returns>true if both EventPattern&lt;TSender, TEventArgs&gt; objects represent the same event; otherwise, false.</returns>
+        /// <returns>!false if both EventPattern&lt;TSender, TEventArgs&gt; objects represent the same event; otherwise, false.</returns>
         public static bool operator ==(EventPattern<TSender, TEventArgs> first, EventPattern<TSender, TEventArgs> second)
         {
             return object.Equals(first, second);
@@ -131,7 +131,7 @@ namespace UniRx
         /// </summary>
         /// <param name="first">The first EventPattern&lt;TSender, TEventArgs&gt; to compare, or null.</param>
         /// <param name="second">The second EventPattern&lt;TSender, TEventArgs&gt; to compare, or null.</param>
-        /// <returns>true if both EventPattern&lt;TSender, TEventArgs&gt; objects don't represent the same event; otherwise, false.</returns>
+        /// <returns>!false if both EventPattern&lt;TSender, TEventArgs&gt; objects don't represent the same event; otherwise, false.</returns>
         public static bool operator !=(EventPattern<TSender, TEventArgs> first, EventPattern<TSender, TEventArgs> second)
         {
             return !object.Equals(first, second);

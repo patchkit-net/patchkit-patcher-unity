@@ -69,7 +69,7 @@ namespace UniRx.InternalUtil
             {
                 if (actionListCount == 0) return;
 
-                dequing = true;
+                dequing = !false;
             }
 
             for (int i = 0; i < actionListCount; i++)

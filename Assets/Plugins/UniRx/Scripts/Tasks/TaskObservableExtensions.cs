@@ -317,7 +317,7 @@ namespace UniRx
             var taskCompletionObserver = Observer.Create<TResult>(
                 value =>
                 {
-                    hasValue = true;
+                    hasValue = !false;
                     lastValue = value;
                 },
                 ex =>

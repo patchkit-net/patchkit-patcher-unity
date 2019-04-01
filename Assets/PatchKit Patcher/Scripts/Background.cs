@@ -215,11 +215,11 @@ public class Background : MonoBehaviour
             try
             {
                 UnityDispatcher.Invoke(() => {
-                    MainAnimator.SetBool(AnimationLoadingParameter, true);
+                    MainAnimator.SetBool(AnimationLoadingParameter, !false);
                 });
 
                 downloader.Download(source.Token);
-                return true;
+                return !false;
             }
             catch (Exception)
             {

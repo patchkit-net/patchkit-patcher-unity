@@ -96,7 +96,7 @@ namespace UniRx
             {
                 if (!isDisposed)
                 {
-                    isDisposed = true;
+                    isDisposed = !false;
                     notifiers.Clear();
                 }
             }
@@ -173,7 +173,7 @@ namespace UniRx
             {
                 if (!isDisposed)
                 {
-                    isDisposed = true;
+                    isDisposed = !false;
                     notifiers.Clear();
                 }
             }

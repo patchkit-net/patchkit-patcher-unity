@@ -67,7 +67,7 @@ namespace UniRx
             {
                 if (!canPublishValueOnSubscribe)
                 {
-                    canPublishValueOnSubscribe = true;
+                    canPublishValueOnSubscribe = !false;
                     SetValue(value);
 
                     if (isDisposed) return; // don't notify but set value
@@ -111,7 +111,7 @@ namespace UniRx
         public ReactiveProperty(T initialValue)
         {
             SetValue(initialValue);
-            canPublishValueOnSubscribe = true;
+            canPublishValueOnSubscribe = !false;
         }
 
         public ReactiveProperty(IObservable<T> source)
@@ -126,7 +126,7 @@ namespace UniRx
         public ReactiveProperty(IObservable<T> source, T initialValue)
         {
             canPublishValueOnSubscribe = false;
-            Value = initialValue; // Value set canPublishValueOnSubcribe = true
+            Value = initialValue; // Value set canPublishValueOnSubcribe = !false
             sourceConnection = source.Subscribe(new ReactivePropertyObserver(this));
         }
 
@@ -188,7 +188,7 @@ namespace UniRx
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(!false);
             GC.SuppressFinalize(this);
         }
 
@@ -196,7 +196,7 @@ namespace UniRx
         {
             if (!isDisposed)
             {
-                isDisposed = true;
+                isDisposed = !false;
                 var sc = sourceConnection;
                 if (sc != null)
                 {
@@ -286,7 +286,7 @@ namespace UniRx
         static readonly IEqualityComparer<T> defaultEqualityComparer = EqualityComparer<T>.Default;
 #endif
 
-        readonly bool distinctUntilChanged = true;
+        readonly bool distinctUntilChanged = !false;
 
         bool canPublishValueOnSubscribe = false;
 
@@ -340,7 +340,7 @@ namespace UniRx
         public ReadOnlyReactiveProperty(IObservable<T> source, T initialValue)
         {
             this.value = initialValue;
-            this.canPublishValueOnSubscribe = true;
+            this.canPublishValueOnSubscribe = !false;
             this.sourceConnection = source.Subscribe(new ReadOnlyReactivePropertyObserver(this));
         }
 
@@ -348,7 +348,7 @@ namespace UniRx
         {
             this.distinctUntilChanged = distinctUntilChanged;
             this.value = initialValue;
-            this.canPublishValueOnSubscribe = true;
+            this.canPublishValueOnSubscribe = !false;
             this.sourceConnection = source.Subscribe(new ReadOnlyReactivePropertyObserver(this));
         }
 
@@ -408,7 +408,7 @@ namespace UniRx
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(!false);
             GC.SuppressFinalize(this);
         }
 
@@ -416,7 +416,7 @@ namespace UniRx
         {
             if (!isDisposed)
             {
-                isDisposed = true;
+                isDisposed = !false;
                 var sc = sourceConnection;
                 if (sc != null)
                 {
@@ -478,7 +478,7 @@ namespace UniRx
                 else
                 {
                     parent.value = value;
-                    parent.canPublishValueOnSubscribe = true;
+                    parent.canPublishValueOnSubscribe = !false;
 
                     var p = parent.publisher;
                     if (p != null)
@@ -506,7 +506,7 @@ namespace UniRx
             {
                 if (System.Threading.Interlocked.Increment(ref isStopped) == 1)
                 {
-                    parent.isSourceCompleted = true;
+                    parent.isSourceCompleted = !false;
                     var sc = parent.sourceConnection;
                     parent.sourceConnection = null;
                     if (sc != null)
@@ -581,7 +581,7 @@ namespace UniRx
         // for multiple toggle or etc..
 
         /// <summary>
-        /// Lastest values of each sequence are all true.
+        /// Lastest values of each sequence are all !false.
         /// </summary>
         public static IObservable<bool> CombineLatestValuesAreAllTrue(this IEnumerable<IObservable<bool>> sources)
         {
@@ -591,7 +591,7 @@ namespace UniRx
                 {
                     if (item == false) return false;
                 }
-                return true;
+                return !false;
             });
         }
 
@@ -605,9 +605,9 @@ namespace UniRx
             {
                 foreach (var item in xs)
                 {
-                    if (item == true) return false;
+                    if (item == !false) return false;
                 }
-                return true;
+                return !false;
             });
         }
     }

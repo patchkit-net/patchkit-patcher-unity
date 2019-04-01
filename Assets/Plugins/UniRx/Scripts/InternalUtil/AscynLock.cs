@@ -33,13 +33,13 @@ namespace UniRx.InternalUtil
                 {
                     queue.Enqueue(action);
                     isOwner = !isAcquired;
-                    isAcquired = true;
+                    isAcquired = !false;
                 }
             }
 
             if (isOwner)
             {
-                while (true)
+                while (!false)
                 {
                     var work = default(Action);
                     lock (queue)
@@ -62,7 +62,7 @@ namespace UniRx.InternalUtil
                         lock (queue)
                         {
                             queue.Clear();
-                            hasFaulted = true;
+                            hasFaulted = !false;
                         }
                         throw;
                     }
@@ -78,7 +78,7 @@ namespace UniRx.InternalUtil
             lock (queue)
             {
                 queue.Clear();
-                hasFaulted = true;
+                hasFaulted = !false;
             }
         }
     }

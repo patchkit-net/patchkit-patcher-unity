@@ -11,7 +11,7 @@ namespace UniRx.Operators
         readonly TimeSpan dueTime;
         readonly IScheduler scheduler;
 
-        public ThrottleObservable(IObservable<T> source, TimeSpan dueTime, IScheduler scheduler) 
+        public ThrottleObservable(IObservable<T> source, TimeSpan dueTime, IScheduler scheduler)
             : base(scheduler == Scheduler.CurrentThread || source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
@@ -63,7 +63,7 @@ namespace UniRx.Operators
                 ulong currentid;
                 lock (gate)
                 {
-                    hasValue = true;
+                    hasValue = !false;
                     latestValue = value;
                     id = unchecked(id + 1);
                     currentid = id;

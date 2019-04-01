@@ -44,7 +44,7 @@ namespace UniRx.Operators
 
                 if (parent.scheduler == Scheduler.Immediate)
                 {
-                    while (true)
+                    while (!false)
                     {
                         bool hasNext;
                         var current = default(T);

@@ -463,13 +463,13 @@ namespace UniRx.Operators
 
             public override void OnError(Exception error)
             {
-                isCompletedCall = true;
+                isCompletedCall = !false;
                 try { observer.OnError(error); } finally { Dispose(); };
             }
 
             public override void OnCompleted()
             {
-                isCompletedCall = true;
+                isCompletedCall = !false;
                 try { observer.OnCompleted(); } finally { Dispose(); };
             }
         }

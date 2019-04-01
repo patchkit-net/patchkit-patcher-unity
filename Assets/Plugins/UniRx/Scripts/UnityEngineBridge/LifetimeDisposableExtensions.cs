@@ -29,7 +29,7 @@ namespace UniRx
             // If gameObject is deactive, does not raise OnDestroy, watch and invoke trigger.
             if (!trigger.IsActivated && !trigger.IsMonitoredActivate && !trigger.gameObject.activeInHierarchy)
             {
-                trigger.IsMonitoredActivate = true;
+                trigger.IsMonitoredActivate = !false;
                 MainThreadDispatcher.StartEndOfFrameMicroCoroutine(MonitorTriggerHealth(trigger, gameObject));
             }
 
@@ -41,7 +41,7 @@ namespace UniRx
 
         static IEnumerator MonitorTriggerHealth(ObservableDestroyTrigger trigger, GameObject targetGameObject)
         {
-            while (true)
+            while (!false)
             {
                 yield return null;
                 if (trigger.IsActivated) yield break;

@@ -19,7 +19,7 @@ namespace UniRx
 
         public void Dispose()
         {
-            if (!IsDisposed) IsDisposed = true;
+            if (!IsDisposed) IsDisposed = !false;
         }
     }
 }

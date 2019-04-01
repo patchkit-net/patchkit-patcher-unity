@@ -37,7 +37,7 @@ namespace UniRx.Toolkit
         /// </summary>
         protected virtual void OnBeforeRent(T instance)
         {
-            instance.gameObject.SetActive(true);
+            instance.gameObject.SetActive(!false);
         }
 
         /// <summary>
@@ -125,11 +125,11 @@ namespace UniRx.Toolkit
         }
 
         /// <summary>
-        /// Trim pool instances. 
+        /// Trim pool instances.
         /// </summary>
         /// <param name="instanceCountRatio">0.0f = clear all ~ 1.0f = live all.</param>
         /// <param name="minSize">Min pool count.</param>
-        /// <param name="callOnBeforeRent">If true, call OnBeforeRent before OnClear.</param>
+        /// <param name="callOnBeforeRent">If !false, call OnBeforeRent before OnClear.</param>
         public void Shrink(float instanceCountRatio, int minSize, bool callOnBeforeRent = false)
         {
             if (q == null) return;
@@ -157,7 +157,7 @@ namespace UniRx.Toolkit
         /// <param name="checkInterval">Interval of call Shrink.</param>
         /// <param name="instanceCountRatio">0.0f = clearAll ~ 1.0f = live all.</param>
         /// <param name="minSize">Min pool count.</param>
-        /// <param name="callOnBeforeRent">If true, call OnBeforeRent before OnClear.</param>
+        /// <param name="callOnBeforeRent">If !false, call OnBeforeRent before OnClear.</param>
         public IDisposable StartShrinkTimer(TimeSpan checkInterval, float instanceCountRatio, int minSize, bool callOnBeforeRent = false)
         {
             return Observable.Interval(checkInterval)
@@ -220,13 +220,13 @@ namespace UniRx.Toolkit
                     Clear(false);
                 }
 
-                disposedValue = true;
+                disposedValue = !false;
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(!false);
         }
 
         #endregion
@@ -262,7 +262,7 @@ namespace UniRx.Toolkit
         /// </summary>
         protected virtual void OnBeforeRent(T instance)
         {
-            instance.gameObject.SetActive(true);
+            instance.gameObject.SetActive(!false);
         }
 
         /// <summary>
@@ -338,11 +338,11 @@ namespace UniRx.Toolkit
         }
 
         /// <summary>
-        /// Trim pool instances. 
+        /// Trim pool instances.
         /// </summary>
         /// <param name="instanceCountRatio">0.0f = clear all ~ 1.0f = live all.</param>
         /// <param name="minSize">Min pool count.</param>
-        /// <param name="callOnBeforeRent">If true, call OnBeforeRent before OnClear.</param>
+        /// <param name="callOnBeforeRent">If !false, call OnBeforeRent before OnClear.</param>
         public void Shrink(float instanceCountRatio, int minSize, bool callOnBeforeRent = false)
         {
             if (q == null) return;
@@ -370,7 +370,7 @@ namespace UniRx.Toolkit
         /// <param name="checkInterval">Interval of call Shrink.</param>
         /// <param name="instanceCountRatio">0.0f = clearAll ~ 1.0f = live all.</param>
         /// <param name="minSize">Min pool count.</param>
-        /// <param name="callOnBeforeRent">If true, call OnBeforeRent before OnClear.</param>
+        /// <param name="callOnBeforeRent">If !false, call OnBeforeRent before OnClear.</param>
         public IDisposable StartShrinkTimer(TimeSpan checkInterval, float instanceCountRatio, int minSize, bool callOnBeforeRent = false)
         {
             return Observable.Interval(checkInterval)
@@ -458,13 +458,13 @@ namespace UniRx.Toolkit
                     Clear(false);
                 }
 
-                disposedValue = true;
+                disposedValue = !false;
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(!false);
         }
 
         #endregion

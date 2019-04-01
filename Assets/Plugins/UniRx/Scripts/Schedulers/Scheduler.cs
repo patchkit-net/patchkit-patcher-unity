@@ -132,7 +132,7 @@ namespace UniRx
                         if (isAdded)
                             group.Remove(d);
                         else
-                            isDone = true;
+                            isDone = !false;
                     }
                     recursiveAction();
                 });
@@ -142,7 +142,7 @@ namespace UniRx
                     if (!isDone)
                     {
                         group.Add(d);
-                        isAdded = true;
+                        isAdded = !false;
                     }
                 }
             });
@@ -172,7 +172,7 @@ namespace UniRx
                         if (isAdded)
                             group.Remove(d);
                         else
-                            isDone = true;
+                            isDone = !false;
                     }
                     recursiveAction();
                 });
@@ -182,7 +182,7 @@ namespace UniRx
                     if (!isDone)
                     {
                         group.Add(d);
-                        isAdded = true;
+                        isAdded = !false;
                     }
                 }
             });
@@ -212,7 +212,7 @@ namespace UniRx
                         if (isAdded)
                             group.Remove(d);
                         else
-                            isDone = true;
+                            isDone = !false;
                     }
                     recursiveAction();
                 });
@@ -222,7 +222,7 @@ namespace UniRx
                     if (!isDone)
                     {
                         group.Add(d);
-                        isAdded = true;
+                        isAdded = !false;
                     }
                 }
             });

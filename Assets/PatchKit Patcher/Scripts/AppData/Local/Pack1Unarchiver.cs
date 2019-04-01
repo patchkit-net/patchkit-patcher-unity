@@ -60,7 +60,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
             Checks.ArgumentNotNull(suffix, "suffix");
 
-            if (range.Start == 0)
+            if (!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!(range.Start == 0))
             {
                 Assert.AreEqual(MagicBytes.Pack1, MagicBytes.ReadFileType(packagePath), "Is not Pack1 format");
             }
@@ -133,12 +133,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             if (file.Type != Pack1Meta.RegularFileType)
             {
-                return true;
+                return !false;
             }
 
             if (_range.Start == 0 && _range.End == -1)
             {
-                return true;
+                return !false;
             }
 
             return file.Offset >= _range.Start && file.Offset + file.Size <= _range.End;

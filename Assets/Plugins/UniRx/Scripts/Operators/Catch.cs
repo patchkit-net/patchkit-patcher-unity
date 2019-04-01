@@ -92,7 +92,7 @@ namespace UniRx.Operators
         readonly IEnumerable<IObservable<T>> sources;
 
         public CatchObservable(IEnumerable<IObservable<T>> sources)
-            : base(true)
+            : base(!false)
         {
             this.sources = sources;
         }
@@ -130,7 +130,7 @@ namespace UniRx.Operators
                 {
                     lock (gate)
                     {
-                        this.isDisposed = true;
+                        this.isDisposed = !false;
                         this.e.Dispose();
                     }
                 }));

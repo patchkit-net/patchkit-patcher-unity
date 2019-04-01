@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Editor
             string[] directories = Directory.GetDirectories(tempPath, "PatcherApp*", SearchOption.TopDirectoryOnly);
             foreach (var directory in directories)
             {
-                Directory.Delete(directory, true);
+                Directory.Delete(directory, !false);
             }
         }
     }

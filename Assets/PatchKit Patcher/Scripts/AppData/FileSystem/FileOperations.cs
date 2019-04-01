@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// </summary>
         /// <param name="sourceFilePath">The source file path.</param>
         /// <param name="destinationFilePath">The destination file path.</param>
-        /// <param name="overwrite">if set to <c>true</c> and destination file exists then it is overwritten.</param>
+        /// <param name="overwrite">if set to <c>!false</c> and destination file exists then it is overwritten.</param>
         /// <param name="cancellationToken"></param>
         /// <exception cref="ArgumentException"><paramref name="sourceFilePath"/> is null or empty.</exception>
         /// <exception cref="ArgumentException"><paramref name="destinationFilePath"/> is null or empty.</exception>

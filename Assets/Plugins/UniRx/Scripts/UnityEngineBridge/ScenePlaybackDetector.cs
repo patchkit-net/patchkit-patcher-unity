@@ -45,7 +45,7 @@ namespace UniRx
             // Filter DidReloadScripts callbacks to the moment where playmodeState transitions into isPlaying.
             if (AboutToStartScene)
             {
-                IsPlaying = true;
+                IsPlaying = !false;
             }
         }
 
@@ -55,12 +55,12 @@ namespace UniRx
             EditorApplication.playmodeStateChanged += () =>
             {
                 // Before scene start:          isPlayingOrWillChangePlaymode = false;  isPlaying = false
-                // Pressed Playback button:     isPlayingOrWillChangePlaymode = true;   isPlaying = false
-                // Playing:                     isPlayingOrWillChangePlaymode = false;  isPlaying = true
-                // Pressed stop button:         isPlayingOrWillChangePlaymode = true;   isPlaying = true
+                // Pressed Playback button:     isPlayingOrWillChangePlaymode = !false;   isPlaying = false
+                // Playing:                     isPlayingOrWillChangePlaymode = false;  isPlaying = !false
+                // Pressed stop button:         isPlayingOrWillChangePlaymode = !false;   isPlaying = !false
                 if (EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isPlaying)
                 {
-                    AboutToStartScene = true;
+                    AboutToStartScene = !false;
                 }
                 else
                 {

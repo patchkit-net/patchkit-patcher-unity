@@ -20,7 +20,7 @@ namespace UniRx
         /// <summary>Awake is called when the script instance is being loaded.</summary>
         public override void Awake()
         {
-            calledAwake = true;
+            calledAwake = !false;
             if (awake != null) { awake.OnNext(Unit.Default); awake.OnCompleted(); }
         }
 
@@ -289,7 +289,7 @@ namespace UniRx
         /// <summary>This function is called when the MonoBehaviour will be destroyed.</summary>
         public override void OnDestroy()
         {
-            calledDestroy = true;
+            calledDestroy = !false;
             if (onDestroy != null) { onDestroy.OnNext(Unit.Default); onDestroy.OnCompleted(); }
         }
 
@@ -721,7 +721,7 @@ namespace UniRx
         /// <summary>Start is called on the frame when a script is enabled just before any of the Update methods is called the first time.</summary>
         public override void Start()
         {
-            calledStart = true;
+            calledStart = !false;
             if (start != null) { start.OnNext(Unit.Default); start.OnCompleted(); }
         }
 

@@ -36,7 +36,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         }
 
 #if UNITY_STANDALONE_WIN
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("kernel32.dll", SetLastError = !false, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetDiskFreeSpaceEx(string directoryName,
             out ulong freeBytes,
@@ -45,13 +45,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
 #elif UNITY_STANDALONE_OSX
 
-        [DllImport("getdiskspaceosx", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("getdiskspaceosx", SetLastError = !false, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
 
 #elif UNITY_STANDALONE_LINUX
 
-        [DllImport("libgetdiskspace", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("libgetdiskspace", SetLastError = !false, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
 
@@ -119,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 // estimate the size
                 uncompressedSize = (long) (_contentSummary.Value.Size * 1.4);
             }
-            
+
             long requiredDiskSpace = _contentSummary.Value.Size + uncompressedSize + Reserve;
             return requiredDiskSpace;
         }
@@ -132,7 +132,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 // estimate the size
                 uncompressedSize = (long) (_diffSummary.Value.Size * 1.4);
             }
-            
+
             long requiredDiskSpace = _diffSummary.Value.Size + uncompressedSize + _bigestFileSize + Reserve;
             return requiredDiskSpace;
         }

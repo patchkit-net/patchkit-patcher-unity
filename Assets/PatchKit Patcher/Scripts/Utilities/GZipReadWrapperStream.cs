@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Utilities
         {
             get
             {
-                return true;
+                return !false;
             }
         }
 

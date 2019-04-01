@@ -23,7 +23,7 @@ namespace UniRx.Operators
         {
             readonly PairwiseObservable<T, TR> parent;
             T prev = default(T);
-            bool isFirst = true;
+            bool isFirst = !false;
 
             public Pairwise(PairwiseObservable<T, TR> parent, IObserver<TR> observer, IDisposable cancel)
                 : base(observer, cancel)
@@ -85,7 +85,7 @@ namespace UniRx.Operators
         class Pairwise : OperatorObserverBase<T, Pair<T>>
         {
             T prev = default(T);
-            bool isFirst = true;
+            bool isFirst = !false;
 
             public Pairwise(IObserver<Pair<T>> observer, IDisposable cancel)
                 : base(observer, cancel)

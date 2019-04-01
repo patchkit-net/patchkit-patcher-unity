@@ -310,15 +310,15 @@ namespace UniRx
                     DisposeSubject(ref collectionReplace);
                 }
 
-                disposedValue = true;
+                disposedValue = !false;
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(!false);
         }
-        
+
         #endregion
     }
 

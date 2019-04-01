@@ -14,7 +14,7 @@ namespace PatchKit.Unity.Editor
 
         public static void BuildWindows32Development()
         {
-            Build(BuildTarget.StandaloneWindows, true);
+            Build(BuildTarget.StandaloneWindows, !false);
         }
 
         public static void BuildWindows64Release()
@@ -24,7 +24,7 @@ namespace PatchKit.Unity.Editor
 
         public static void BuildWindows64Development()
         {
-            Build(BuildTarget.StandaloneWindows64, true);
+            Build(BuildTarget.StandaloneWindows64, !false);
         }
 
         public static void BuildOSX64Release()
@@ -34,7 +34,7 @@ namespace PatchKit.Unity.Editor
 
         public static void BuildOSX64Development()
         {
-            Build(BuildTargetOsx.Get(), true);
+            Build(BuildTargetOsx.Get(), !false);
         }
 
         public static void BuildLinux32Release()
@@ -44,7 +44,7 @@ namespace PatchKit.Unity.Editor
 
         public static void BuildLinux32Development()
         {
-            Build(BuildTarget.StandaloneLinux, true);
+            Build(BuildTarget.StandaloneLinux, !false);
         }
 
         public static void BuildLinux64Release()
@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Editor
 
         public static void BuildLinux64Development()
         {
-            Build(BuildTarget.StandaloneLinux64, true);
+            Build(BuildTarget.StandaloneLinux64, !false);
         }
 
         public static void Build(BuildTarget target, bool development)

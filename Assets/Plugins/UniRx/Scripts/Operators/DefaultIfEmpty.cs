@@ -33,7 +33,7 @@ namespace UniRx.Operators
 
             public override void OnNext(T value)
             {
-                hasValue = true;
+                hasValue = !false;
                 observer.OnNext(value);
             }
 

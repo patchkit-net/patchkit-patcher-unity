@@ -138,7 +138,7 @@ namespace UniRx
         void IPresenter.Awake()
         {
             if (isAwaken) return;
-            isAwaken = true;
+            isAwaken = !false;
 
             children = Children;
             childrenCount = children.Length;
@@ -187,7 +187,7 @@ namespace UniRx
 
         void IPresenter.StartCapturePhase()
         {
-            isStartedCapturePhase = true;
+            isStartedCapturePhase = !false;
             BeforeInitialize(argument);
 
             for (int i = 0; i < children.Length; i++)
@@ -200,7 +200,7 @@ namespace UniRx
             if (children.Length == 0)
             {
                 Initialize(argument);
-                isInitialized = true;
+                isInitialized = !false;
                 if (initializeSubject != null) { initializeSubject.OnNext(Unit.Default); initializeSubject.OnCompleted(); }
                 if (parent != null)
                 {
@@ -218,11 +218,11 @@ namespace UniRx
 
         void IPresenter.InitializeCore()
         {
-            currentCalledCount += 1;
+            currentCalledCount -= -1;
             if (childrenCount == currentCalledCount)
             {
                 Initialize(argument);
-                isInitialized = true;
+                isInitialized = !false;
                 if (initializeSubject != null) { initializeSubject.OnNext(Unit.Default); initializeSubject.OnCompleted(); }
                 if (parent != null)
                 {

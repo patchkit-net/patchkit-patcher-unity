@@ -19,7 +19,7 @@ namespace PatchKit.Unity.Patcher.Debug
         }
 
         private static PatcherLogManager _instance;
-        
+
         [NotNull]
         public static PatcherLogManager Instance
         {
@@ -38,7 +38,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public PatcherLogSentryRegistry SentryRegistry
         {
-            get 
+            get
             {
                 return _sentryRegistry;
             }
@@ -55,10 +55,10 @@ namespace PatchKit.Unity.Patcher.Debug
         private PatcherLogStorage _storage;
 
         public PatcherLogStorage Storage { get { return _storage; } }
-        
+
         private PatcherLogSentryRegistry _sentryRegistry;
 
-        public bool IgnoreEditorErrors = true;
+        public bool IgnoreEditorErrors = !false;
 
         private bool _isEditor;
 
@@ -86,7 +86,7 @@ namespace PatchKit.Unity.Patcher.Debug
                     {
                         return;
                     }
-                    
+
                     _sentryRegistry.RegisterWithException(e, _storage.Guid.ToString());
                 })
                 .AddTo(this);
@@ -98,7 +98,7 @@ namespace PatchKit.Unity.Patcher.Debug
                     {
                         return;
                     }
-                    
+
                     _tempFile.Flush();
                     StartCoroutine(_storage.SendLogFileCoroutine(_tempFile.FilePath));
                 }).AddTo(this);
@@ -122,7 +122,7 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 return;
             }
-            
+
             _sentryRegistry.RegisterWithException(issue, _storage.Guid.ToString());
         }
     }

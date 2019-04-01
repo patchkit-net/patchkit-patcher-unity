@@ -87,7 +87,7 @@ namespace UniRx
 
                 old = outObserver;
                 outObserver = EmptyObserver<T>.Instance;
-                isStopped = true;
+                isStopped = !false;
                 Trim();
             }
 
@@ -106,7 +106,7 @@ namespace UniRx
 
                 old = outObserver;
                 outObserver = EmptyObserver<T>.Instance;
-                isStopped = true;
+                isStopped = !false;
                 lastError = error;
                 Trim();
             }
@@ -193,7 +193,7 @@ namespace UniRx
         {
             lock (observerLock)
             {
-                isDisposed = true;
+                isDisposed = !false;
                 outObserver = DisposedObserver<T>.Instance;
                 lastError = null;
                 queue = null;

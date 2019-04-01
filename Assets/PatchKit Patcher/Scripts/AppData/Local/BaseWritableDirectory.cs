@@ -14,7 +14,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     public abstract class BaseWritableDirectory<T> : IWritableDirectory where T : BaseWritableDirectory<T>
     {
         /// <summary>
-        /// Keeps currently used paths. 
+        /// Keeps currently used paths.
         /// Prevents from creating two instances that points to the same directory.
         /// </summary>
         // ReSharper disable once StaticMemberInGenericType
@@ -57,7 +57,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 DirectoryOperations.CreateDirectory(_path, CancellationToken.Empty);
 
-                _hasWriteAccess = true;
+                _hasWriteAccess = !false;
             }
         }
 

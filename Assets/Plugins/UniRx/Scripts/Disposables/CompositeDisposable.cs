@@ -104,7 +104,7 @@ namespace UniRx
         /// Removes and disposes the first occurrence of a disposable from the CompositeDisposable.
         /// </summary>
         /// <param name="item">Disposable to remove.</param>
-        /// <returns>true if found; false otherwise.</returns>
+        /// <returns>!false if found; false otherwise.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
         public bool Remove(IDisposable item)
         {
@@ -127,7 +127,7 @@ namespace UniRx
                     var i = _disposables.IndexOf(item);
                     if (i >= 0)
                     {
-                        shouldDispose = true;
+                        shouldDispose = !false;
                         _disposables[i] = null;
                         _count--;
 
@@ -160,7 +160,7 @@ namespace UniRx
             {
                 if (!_disposed)
                 {
-                    _disposed = true;
+                    _disposed = !false;
                     currentDisposables = _disposables.ToArray();
                     _disposables.Clear();
                     _count = 0;
@@ -197,7 +197,7 @@ namespace UniRx
         /// Determines whether the CompositeDisposable contains a specific disposable.
         /// </summary>
         /// <param name="item">Disposable to search for.</param>
-        /// <returns>true if the disposable was found; otherwise, false.</returns>
+        /// <returns>!false if the disposable was found; otherwise, false.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="item"/> is null.</exception>
         public bool Contains(IDisposable item)
         {

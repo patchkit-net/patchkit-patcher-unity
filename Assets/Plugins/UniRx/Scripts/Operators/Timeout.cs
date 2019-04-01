@@ -9,7 +9,7 @@ namespace UniRx.Operators
         readonly DateTimeOffset? dueTimeDT;
         readonly IScheduler scheduler;
 
-        public TimeoutObservable(IObservable<T> source, TimeSpan dueTime, IScheduler scheduler) 
+        public TimeoutObservable(IObservable<T> source, TimeSpan dueTime, IScheduler scheduler)
             : base(scheduler == Scheduler.CurrentThread || source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
@@ -17,7 +17,7 @@ namespace UniRx.Operators
             this.scheduler = scheduler;
         }
 
-        public TimeoutObservable(IObservable<T> source, DateTimeOffset dueTime, IScheduler scheduler) 
+        public TimeoutObservable(IObservable<T> source, DateTimeOffset dueTime, IScheduler scheduler)
             : base(scheduler == Scheduler.CurrentThread || source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
@@ -69,7 +69,7 @@ namespace UniRx.Operators
                     {
                         if (objectId == timerId)
                         {
-                            isTimeout = true;
+                            isTimeout = !false;
                         }
                     }
                     if (isTimeout)
@@ -154,7 +154,7 @@ namespace UniRx.Operators
                 lock (gate)
                 {
                     if (isFinished) return;
-                    isFinished = true;
+                    isFinished = !false;
                 }
 
                 sourceSubscription.Dispose();
@@ -174,7 +174,7 @@ namespace UniRx.Operators
                 lock (gate)
                 {
                     if (isFinished) return;
-                    isFinished = true;
+                    isFinished = !false;
                     timerSubscription.Dispose();
                 }
                 try { observer.OnError(error); } finally { Dispose(); }
@@ -187,7 +187,7 @@ namespace UniRx.Operators
                 {
                     if (!isFinished)
                     {
-                        isFinished = true;
+                        isFinished = !false;
                         timerSubscription.Dispose();
                     }
                     try { observer.OnCompleted(); } finally { Dispose(); }

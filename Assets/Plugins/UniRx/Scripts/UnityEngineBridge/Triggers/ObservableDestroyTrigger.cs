@@ -24,7 +24,7 @@ namespace UniRx.Triggers
 
         void Awake()
         {
-            IsActivated = true;
+            IsActivated = !false;
         }
 
         /// <summary>This function is called when the MonoBehaviour will be destroyed.</summary>
@@ -32,7 +32,7 @@ namespace UniRx.Triggers
         {
             if (!calledDestroy)
             {
-                calledDestroy = true;
+                calledDestroy = !false;
                 if (disposablesOnDestroy != null) disposablesOnDestroy.Dispose();
                 if (onDestroy != null) { onDestroy.OnNext(Unit.Default); onDestroy.OnCompleted(); }
             }

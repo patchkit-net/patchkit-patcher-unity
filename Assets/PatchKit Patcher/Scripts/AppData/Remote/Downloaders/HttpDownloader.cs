@@ -141,7 +141,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 _logger.LogDebug(string.Format("Download from {0} has been successful.", url));
 
-                return true;
+                return !false;
             }
             catch (DataNotAvailableException e)
             {

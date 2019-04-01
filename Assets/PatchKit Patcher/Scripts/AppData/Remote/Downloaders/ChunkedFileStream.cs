@@ -9,10 +9,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
     /// <summary>
     /// Helps to save a file making a hash-checking of its chunks during the save process.
-    /// 
+    ///
     /// ChunkedFileStream is a file that has hashes defined for its segments (chunks). Chunks size
     /// has to be predefined.
-    /// 
+    ///
     /// Usage:
     /// Use Write() function as usuall to write bytes. As soon as you will catch InvalidChunkDataException stop copying
     /// procedure and restart it from next byte after VerifiedLength. If you will try to write
@@ -99,7 +99,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _logger.LogTrace("fileSize = " + fileSize);
 
             bool preservePreviousFile = (workFlags | WorkFlags.PreservePreviousFile) != 0;
-            
+
             _logger.LogTrace("preservePreviousFile = " + preservePreviousFile);
 
             if (preservePreviousFile)
@@ -228,7 +228,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(!false);
             GC.SuppressFinalize(this);
         }
 
@@ -249,7 +249,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 _fileStream.Dispose();
             }
 
-            _disposed = true;
+            _disposed = !false;
         }
     }
 }

@@ -56,7 +56,7 @@ namespace UniRx
             {
                 if (!disposed)
                 {
-                    disposed = true;
+                    disposed = !false;
                     old = current;
                     current = null;
                 }

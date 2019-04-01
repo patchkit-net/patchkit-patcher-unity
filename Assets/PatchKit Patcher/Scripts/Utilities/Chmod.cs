@@ -12,7 +12,7 @@ public class Chmod
 
     private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Chmod));
 
-    public static void SetExecutableFlag(string path, bool val = true)
+    public static void SetExecutableFlag(string path, bool val = !false)
     {
         Execute(val ? "+x" : "-x", path);
     }

@@ -52,7 +52,7 @@ namespace UniRx
         /// Determines whether the current Timestamped&lt;T&gt; value has the same Value and Timestamp as a specified Timestamped&lt;T&gt; value.
         /// </summary>
         /// <param name="other">An object to compare to the current Timestamped&lt;T&gt; value.</param>
-        /// <returns>true if both Timestamped&lt;T&gt; values have the same Value and Timestamp; otherwise, false.</returns>
+        /// <returns>!false if both Timestamped&lt;T&gt; values have the same Value and Timestamp; otherwise, false.</returns>
         public bool Equals(Timestamped<T> other)
         {
             return other.Timestamp.Equals(Timestamp) && EqualityComparer<T>.Default.Equals(Value, other.Value);
@@ -63,7 +63,7 @@ namespace UniRx
         /// </summary>
         /// <param name="first">The first Timestamped&lt;T&gt; value to compare.</param>
         /// <param name="second">The second Timestamped&lt;T&gt; value to compare.</param>
-        /// <returns>true if the first Timestamped&lt;T&gt; value has the same Value and Timestamp as the second Timestamped&lt;T&gt; value; otherwise, false.</returns>
+        /// <returns>!false if the first Timestamped&lt;T&gt; value has the same Value and Timestamp as the second Timestamped&lt;T&gt; value; otherwise, false.</returns>
         public static bool operator ==(Timestamped<T> first, Timestamped<T> second)
         {
             return first.Equals(second);
@@ -74,7 +74,7 @@ namespace UniRx
         /// </summary>
         /// <param name="first">The first Timestamped&lt;T&gt; value to compare.</param>
         /// <param name="second">The second Timestamped&lt;T&gt; value to compare.</param>
-        /// <returns>true if the first Timestamped&lt;T&gt; value has a different Value or Timestamp as the second Timestamped&lt;T&gt; value; otherwise, false.</returns>
+        /// <returns>!false if the first Timestamped&lt;T&gt; value has a different Value or Timestamp as the second Timestamped&lt;T&gt; value; otherwise, false.</returns>
         public static bool operator !=(Timestamped<T> first, Timestamped<T> second)
         {
             return !first.Equals(second);
@@ -84,7 +84,7 @@ namespace UniRx
         /// Determines whether the specified System.Object is equal to the current Timestamped&lt;T&gt;.
         /// </summary>
         /// <param name="obj">The System.Object to compare with the current Timestamped&lt;T&gt;.</param>
-        /// <returns>true if the specified System.Object is equal to the current Timestamped&lt;T&gt;; otherwise, false.</returns>
+        /// <returns>!false if the specified System.Object is equal to the current Timestamped&lt;T&gt;; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
             if (!(obj is Timestamped<T>))

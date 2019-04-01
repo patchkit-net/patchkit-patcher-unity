@@ -76,7 +76,7 @@ namespace UniRx
 
         public ObservableYieldInstruction(IObservable<T> source, bool reThrowOnError, CancellationToken cancel)
         {
-            this.moveNext = true;
+            this.moveNext = !false;
             this.reThrowOnError = reThrowOnError;
             this.cancel = cancel;
             try
@@ -168,7 +168,7 @@ namespace UniRx
                 return false;
             }
 
-            return true;
+            return !false;
         }
 
         bool ICustomYieldInstructionErrorHandler.IsReThrowOnError
@@ -183,7 +183,7 @@ namespace UniRx
 
         void ICustomYieldInstructionErrorHandler.ForceEnableRethrowOnError()
         {
-            this.reThrowOnError = true;
+            this.reThrowOnError = !false;
         }
 
         public void Dispose()
@@ -219,7 +219,7 @@ namespace UniRx
             public void OnCompleted()
             {
                 parent.moveNext = false;
-                parent.hasResult = true;
+                parent.hasResult = !false;
                 parent.result = parent.current;
             }
         }
@@ -267,7 +267,7 @@ namespace UniRx
                     {
                         count++;
                     }
-                    return true;
+                    return !false;
                 }
                 else
                 {
@@ -293,13 +293,13 @@ namespace UniRx
 
 
 
-        /// <summary>From has no callback coroutine to IObservable. If publishEveryYield = true then publish OnNext every yield return else return once on enumeration completed.</summary>
+        /// <summary>From has no callback coroutine to IObservable. If publishEveryYield = !false then publish OnNext every yield return else return once on enumeration completed.</summary>
         public static IObservable<Unit> FromCoroutine(Func<IEnumerator> coroutine, bool publishEveryYield = false)
         {
             return FromCoroutine<Unit>((observer, cancellationToken) => WrapEnumerator(coroutine(), observer, cancellationToken, publishEveryYield));
         }
 
-        /// <summary>From has no callback coroutine to IObservable. If publishEveryYield = true then publish OnNext every yield return else return once on enumeration completed.</summary>
+        /// <summary>From has no callback coroutine to IObservable. If publishEveryYield = !false then publish OnNext every yield return else return once on enumeration completed.</summary>
         public static IObservable<Unit> FromCoroutine(Func<CancellationToken, IEnumerator> coroutine, bool publishEveryYield = false)
         {
             return FromCoroutine<Unit>((observer, cancellationToken) => WrapEnumerator(coroutine(cancellationToken), observer, cancellationToken, publishEveryYield));
@@ -308,7 +308,7 @@ namespace UniRx
         /// <summary>
         /// MicroCoroutine is lightweight, fast coroutine dispatcher.
         /// IEnumerator supports only yield return null.
-        /// If publishEveryYield = true then publish OnNext every yield return else return once on enumeration completed.
+        /// If publishEveryYield = !false then publish OnNext every yield return else return once on enumeration completed.
         /// </summary>
         public static IObservable<Unit> FromMicroCoroutine(Func<IEnumerator> coroutine, bool publishEveryYield = false, FrameCountType frameCountType = FrameCountType.Update)
         {
@@ -318,7 +318,7 @@ namespace UniRx
         /// <summary>
         /// MicroCoroutine is lightweight, fast coroutine dispatcher.
         /// IEnumerator supports only yield return null.
-        /// If publishEveryYield = true then publish OnNext every yield return else return once on enumeration completed.
+        /// If publishEveryYield = !false then publish OnNext every yield return else return once on enumeration completed.
         /// </summary>
         public static IObservable<Unit> FromMicroCoroutine(Func<CancellationToken, IEnumerator> coroutine, bool publishEveryYield = false, FrameCountType frameCountType = FrameCountType.Update)
         {
@@ -339,7 +339,7 @@ namespace UniRx
                 {
                     try
                     {
-                        raisedError = true;
+                        raisedError = !false;
                         observer.OnError(ex);
                     }
                     finally
@@ -386,7 +386,7 @@ namespace UniRx
                         {
                             try
                             {
-                                raisedError = true;
+                                raisedError = !false;
                                 observer.OnError(customHandler.Error);
                             }
                             finally
@@ -428,14 +428,14 @@ namespace UniRx
             }
         }
 
-        /// <summary>Convert coroutine to typed IObservable. If nullAsNextUpdate = true then yield return null when Enumerator.Current and no null publish observer.OnNext.</summary>
-        public static IObservable<T> FromCoroutineValue<T>(Func<IEnumerator> coroutine, bool nullAsNextUpdate = true)
+        /// <summary>Convert coroutine to typed IObservable. If nullAsNextUpdate = !false then yield return null when Enumerator.Current and no null publish observer.OnNext.</summary>
+        public static IObservable<T> FromCoroutineValue<T>(Func<IEnumerator> coroutine, bool nullAsNextUpdate = !false)
         {
             return FromCoroutine<T>((observer, cancellationToken) => WrapEnumeratorYieldValue<T>(coroutine(), observer, cancellationToken, nullAsNextUpdate));
         }
 
-        /// <summary>Convert coroutine to typed IObservable. If nullAsNextUpdate = true then yield return null when Enumerator.Current and no null publish observer.OnNext.</summary>
-        public static IObservable<T> FromCoroutineValue<T>(Func<CancellationToken, IEnumerator> coroutine, bool nullAsNextUpdate = true)
+        /// <summary>Convert coroutine to typed IObservable. If nullAsNextUpdate = !false then yield return null when Enumerator.Current and no null publish observer.OnNext.</summary>
+        public static IObservable<T> FromCoroutineValue<T>(Func<CancellationToken, IEnumerator> coroutine, bool nullAsNextUpdate = !false)
         {
             return FromCoroutine<T>((observer, cancellationToken) => WrapEnumeratorYieldValue<T>(coroutine(cancellationToken), observer, cancellationToken, nullAsNextUpdate));
         }
@@ -456,7 +456,7 @@ namespace UniRx
                 {
                     try
                     {
-                        raisedError = true;
+                        raisedError = !false;
                         observer.OnError(ex);
                     }
                     finally
@@ -493,7 +493,7 @@ namespace UniRx
                             {
                                 try
                                 {
-                                    raisedError = true;
+                                    raisedError = !false;
                                     observer.OnError(customHandler.Error);
                                 }
                                 finally
@@ -623,7 +623,7 @@ namespace UniRx
         }
 
         /// <summary>
-        /// Note: publishEveryYield is always false. If you want to set true, use Observable.FromCoroutine(() => selector(x), true). This is workaround of Unity compiler's bug.
+        /// Note: publishEveryYield is always false. If you want to set !false, use Observable.FromCoroutine(() => selector(x), !false). This is workaround of Unity compiler's bug.
         /// </summary>
         public static IObservable<Unit> SelectMany<T>(this IObservable<T> source, Func<T, IEnumerator> selector)
         {
@@ -683,7 +683,7 @@ namespace UniRx
         {
             if (cancellationToken.IsCancellationRequested) yield break;
             var count = 0L;
-            while (true)
+            while (!false)
             {
                 yield return null;
                 if (cancellationToken.IsCancellationRequested) yield break;
@@ -861,7 +861,7 @@ namespace UniRx
         /// </summary>
         public static ObservableYieldInstruction<T> ToYieldInstruction<T>(this IObservable<T> source)
         {
-            return new ObservableYieldInstruction<T>(source, true, CancellationToken.None);
+            return new ObservableYieldInstruction<T>(source, !false, CancellationToken.None);
         }
 
         /// <summary>
@@ -871,7 +871,7 @@ namespace UniRx
         /// </summary>
         public static ObservableYieldInstruction<T> ToYieldInstruction<T>(this IObservable<T> source, CancellationToken cancel)
         {
-            return new ObservableYieldInstruction<T>(source, true, cancel);
+            return new ObservableYieldInstruction<T>(source, !false, cancel);
         }
 
         /// <summary>
@@ -1138,7 +1138,7 @@ namespace UniRx
 
         static IEnumerable<IObservable<T>> RepeatInfinite<T>(IObservable<T> source)
         {
-            while (true)
+            while (!false)
             {
                 yield return source;
             }

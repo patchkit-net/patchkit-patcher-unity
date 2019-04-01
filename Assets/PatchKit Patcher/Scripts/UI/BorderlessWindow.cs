@@ -22,13 +22,13 @@ namespace PatchKit.Unity.Patcher.UI
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
         private const string UnityWindowClassName = "UnityWndClass";
 
-        [DllImport("user32.dll", EntryPoint = "SetWindowLong", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", EntryPoint = "SetWindowLong", SetLastError = !false, CharSet = CharSet.Auto)]
         private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, int dwNewLong);
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int smIndex);
 
-        [DllImport("user32.dll", EntryPoint = "GetWindowLong", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", EntryPoint = "GetWindowLong", SetLastError = !false, CharSet = CharSet.Auto)]
         private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
         [DllImport("user32.dll")]
@@ -42,7 +42,7 @@ namespace PatchKit.Unity.Patcher.UI
         [DllImport("kernel32.dll")]
         private static extern uint GetCurrentThreadId();
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = !false)]
         private static extern int GetClassName(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
         private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
@@ -125,7 +125,7 @@ namespace PatchKit.Unity.Patcher.UI
                 Screen.currentResolution.height/2.0f - Screen.height/2.0f);
             _windowRect.size = new Vector2(Screen.width, Screen.height);
 
-            Application.runInBackground = true;
+            Application.runInBackground = !false;
 
             uint threadId = GetCurrentThreadId();
             EnumThreadWindows(threadId, (hWnd, lParam) =>
@@ -137,7 +137,7 @@ namespace PatchKit.Unity.Patcher.UI
                     _windowsHandle = hWnd;
                     return false;
                 }
-                return true;
+                return !false;
             }, IntPtr.Zero);
 #endif
         }
@@ -185,7 +185,7 @@ namespace PatchKit.Unity.Patcher.UI
             {
                 _dragStartPosition = GetCursorPosition();
                 _dragWindowStartPosition = _windowRect.position;
-                _isDragged = true;
+                _isDragged = !false;
             }
             else
             {

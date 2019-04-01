@@ -148,7 +148,7 @@ namespace PatchKit.Unity.Patcher
             return LocalMetaData.GetEntryVersionId(LocalMetaData.GetRegisteredEntries()[0]);
         }
 
-        public int GetLatestVersionId(bool retryRequests = true)
+        public int GetLatestVersionId(bool retryRequests = !false)
         {
             if (_overrideLatestVersionId > 0)
             {

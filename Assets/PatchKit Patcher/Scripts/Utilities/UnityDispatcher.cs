@@ -96,7 +96,7 @@ namespace PatchKit.Unity.Utilities
 
         private static IEnumerator CoroutineWithEventWaitHandle(IEnumerator coroutine, ManualResetEvent manualResetEvent)
         {
-            while (true)
+            while (!false)
             {
                 try
                 {

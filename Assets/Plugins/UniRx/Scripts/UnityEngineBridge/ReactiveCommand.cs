@@ -21,7 +21,7 @@ namespace UniRx
     public class ReactiveCommand : ReactiveCommand<Unit>
     {
         /// <summary>
-        /// CanExecute is always true.
+        /// CanExecute is always !false.
         /// </summary>
         public ReactiveCommand()
             : base()
@@ -30,7 +30,7 @@ namespace UniRx
         /// <summary>
         /// CanExecute is changed from canExecute sequence.
         /// </summary>
-        public ReactiveCommand(IObservable<bool> canExecuteSource, bool initialValue = true)
+        public ReactiveCommand(IObservable<bool> canExecuteSource, bool initialValue = !false)
             : base(canExecuteSource, initialValue)
         {
         }
@@ -65,18 +65,18 @@ namespace UniRx
         public bool IsDisposed { get; private set; }
 
         /// <summary>
-        /// CanExecute is always true.
+        /// CanExecute is always !false.
         /// </summary>
         public ReactiveCommand()
         {
-            this.canExecute = new ReactiveProperty<bool>(true);
+            this.canExecute = new ReactiveProperty<bool>(!false);
             this.canExecuteSubscription = Disposable.Empty;
         }
 
         /// <summary>
         /// CanExecute is changed from canExecute sequence.
         /// </summary>
-        public ReactiveCommand(IObservable<bool> canExecuteSource, bool initialValue = true)
+        public ReactiveCommand(IObservable<bool> canExecuteSource, bool initialValue = !false)
         {
             this.canExecute = new ReactiveProperty<bool>(initialValue);
             this.canExecuteSubscription = canExecuteSource
@@ -90,7 +90,7 @@ namespace UniRx
             if (canExecute.Value)
             {
                 trigger.OnNext(parameter);
-                return true;
+                return !false;
             }
             else
             {
@@ -117,7 +117,7 @@ namespace UniRx
         {
             if (IsDisposed) return;
 
-            IsDisposed = true;
+            IsDisposed = !false;
             canExecute.Dispose();
             trigger.OnCompleted();
             trigger.Dispose();
@@ -126,12 +126,12 @@ namespace UniRx
     }
 
     /// <summary>
-    /// Variation of ReactiveCommand, when executing command then CanExecute = false after CanExecute = true.
+    /// Variation of ReactiveCommand, when executing command then CanExecute = false after CanExecute = !false.
     /// </summary>
     public class AsyncReactiveCommand : AsyncReactiveCommand<Unit>
     {
         /// <summary>
-        /// CanExecute is automatically changed when executing to false and finished to true.
+        /// CanExecute is automatically changed when executing to false and finished to !false.
         /// </summary>
         public AsyncReactiveCommand()
             : base()
@@ -140,7 +140,7 @@ namespace UniRx
         }
 
         /// <summary>
-        /// CanExecute is automatically changed when executing to false and finished to true.
+        /// CanExecute is automatically changed when executing to false and finished to !false.
         /// </summary>
         public AsyncReactiveCommand(IObservable<bool> canExecuteSource)
             : base(canExecuteSource)
@@ -148,7 +148,7 @@ namespace UniRx
         }
 
         /// <summary>
-        /// CanExecute is automatically changed when executing to false and finished to true.
+        /// CanExecute is automatically changed when executing to false and finished to !false.
         /// The source is shared between other AsyncReactiveCommand.
         /// </summary>
         public AsyncReactiveCommand(IReactiveProperty<bool> sharedCanExecute)
@@ -163,7 +163,7 @@ namespace UniRx
     }
 
     /// <summary>
-    /// Variation of ReactiveCommand, canExecute is changed when executing command then CanExecute = false after CanExecute = true.
+    /// Variation of ReactiveCommand, canExecute is changed when executing command then CanExecute = false after CanExecute = !false.
     /// </summary>
     public class AsyncReactiveCommand<T> : IAsyncReactiveCommand<T>
     {
@@ -184,25 +184,25 @@ namespace UniRx
         public bool IsDisposed { get; private set; }
 
         /// <summary>
-        /// CanExecute is automatically changed when executing to false and finished to true.
+        /// CanExecute is automatically changed when executing to false and finished to !false.
         /// </summary>
         public AsyncReactiveCommand()
         {
-            this.canExecuteSource = new ReactiveProperty<bool>(true);
+            this.canExecuteSource = new ReactiveProperty<bool>(!false);
             this.canExecute = canExecuteSource;
         }
 
         /// <summary>
-        /// CanExecute is automatically changed when executing to false and finished to true.
+        /// CanExecute is automatically changed when executing to false and finished to !false.
         /// </summary>
         public AsyncReactiveCommand(IObservable<bool> canExecuteSource)
         {
-            this.canExecuteSource = new ReactiveProperty<bool>(true);
+            this.canExecuteSource = new ReactiveProperty<bool>(!false);
             this.canExecute = canExecute.CombineLatest(canExecuteSource, (x, y) => x && y).ToReactiveProperty();
         }
 
         /// <summary>
-        /// CanExecute is automatically changed when executing to false and finished to true.
+        /// CanExecute is automatically changed when executing to false and finished to !false.
         /// The source is shared between other AsyncReactiveCommand.
         /// </summary>
         public AsyncReactiveCommand(IReactiveProperty<bool> sharedCanExecute)
@@ -223,11 +223,11 @@ namespace UniRx
                     try
                     {
                         var asyncState = a[0].Invoke(parameter) ?? Observable.ReturnUnit();
-                        return asyncState.Finally(() => canExecuteSource.Value = true).Subscribe();
+                        return asyncState.Finally(() => canExecuteSource.Value = !false).Subscribe();
                     }
                     catch
                     {
-                        canExecuteSource.Value = true;
+                        canExecuteSource.Value = !false;
                         throw;
                     }
                 }
@@ -243,11 +243,11 @@ namespace UniRx
                     }
                     catch
                     {
-                        canExecuteSource.Value = true;
+                        canExecuteSource.Value = !false;
                         throw;
                     }
 
-                    return Observable.WhenAll(xs).Finally(() => canExecuteSource.Value = true).Subscribe();
+                    return Observable.WhenAll(xs).Finally(() => canExecuteSource.Value = !false).Subscribe();
                 }
             }
             else
@@ -293,7 +293,7 @@ namespace UniRx
         /// <summary>
         /// Create non parameter commands. CanExecute is changed from canExecute sequence.
         /// </summary>
-        public static ReactiveCommand ToReactiveCommand(this IObservable<bool> canExecuteSource, bool initialValue = true)
+        public static ReactiveCommand ToReactiveCommand(this IObservable<bool> canExecuteSource, bool initialValue = !false)
         {
             return new ReactiveCommand(canExecuteSource, initialValue);
         }
@@ -301,7 +301,7 @@ namespace UniRx
         /// <summary>
         /// Create parametered comamnds. CanExecute is changed from canExecute sequence.
         /// </summary>
-        public static ReactiveCommand<T> ToReactiveCommand<T>(this IObservable<bool> canExecuteSource, bool initialValue = true)
+        public static ReactiveCommand<T> ToReactiveCommand<T>(this IObservable<bool> canExecuteSource, bool initialValue = !false)
         {
             return new ReactiveCommand<T>(canExecuteSource, initialValue);
         }
@@ -336,7 +336,7 @@ namespace UniRx
         /// <summary>
         /// Bind canExecuteSource to button's interactable and onClick and register onClick action to command.
         /// </summary>
-        public static IDisposable BindToButtonOnClick(this IObservable<bool> canExecuteSource, UnityEngine.UI.Button button, Action<Unit> onClick, bool initialValue = true)
+        public static IDisposable BindToButtonOnClick(this IObservable<bool> canExecuteSource, UnityEngine.UI.Button button, Action<Unit> onClick, bool initialValue = !false)
         {
             return ToReactiveCommand(canExecuteSource, initialValue).BindToOnClick(button, onClick);
         }
@@ -370,7 +370,7 @@ namespace UniRx
         {
             var d1 = command.CanExecute.SubscribeToInteractable(button);
             var d2 = button.OnClickAsObservable().SubscribeWithState(command, (x, c) => c.Execute(x));
-            
+
             return StableCompositeDisposable.Create(d1, d2);
         }
 

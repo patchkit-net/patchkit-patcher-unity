@@ -95,7 +95,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     var downloadStatus = _entryStatus[entry].DownloadStatus;
                     var repairStatus = _entryStatus[entry].RepairStatus;
 
-                    downloadStatus.IsActive.Value = true;
+                    downloadStatus.IsActive.Value = !false;
                     downloadStatus.TotalBytes.Value = totalData;
                     downloadStatus.Description.Value = "Downloading fixes...";
                     downloadStatus.Bytes.Value = 0;
@@ -110,7 +110,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     downloadStatus.IsActive.Value = false;
 
-                    repairStatus.IsActive.Value = true;
+                    repairStatus.IsActive.Value = !false;
                     repairStatus.Description.Value = "Applying fixes...";
                     repairStatus.Progress.Value = 0.0;
 

@@ -116,7 +116,7 @@ namespace UniRx.Operators
 
             public override void OnCompleted()
             {
-                isStopped = true;
+                isStopped = !false;
                 if (collectionDisposable.Count == 1)
                 {
                     lock (gate)
@@ -226,7 +226,7 @@ namespace UniRx.Operators
 
             public override void OnCompleted()
             {
-                isStopped = true;
+                isStopped = !false;
                 if (collectionDisposable.Count == 1)
                 {
                     lock (gate)
@@ -312,7 +312,7 @@ namespace UniRx.Operators
                 var e = nextEnumerable.GetEnumerator();
                 try
                 {
-                    var hasNext = true;
+                    var hasNext = !false;
                     while (hasNext)
                     {
                         hasNext = false;
@@ -389,7 +389,7 @@ namespace UniRx.Operators
                 var e = nextEnumerable.GetEnumerator();
                 try
                 {
-                    var hasNext = true;
+                    var hasNext = !false;
                     while (hasNext)
                     {
                         hasNext = false;
@@ -556,7 +556,7 @@ namespace UniRx.Operators
 
             public override void OnCompleted()
             {
-                isStopped = true;
+                isStopped = !false;
                 if (collectionDisposable.Count == 1)
                 {
                     lock (gate)
@@ -680,7 +680,7 @@ namespace UniRx.Operators
 
             public override void OnCompleted()
             {
-                isStopped = true;
+                isStopped = !false;
                 if (collectionDisposable.Count == 1)
                 {
                     lock (gate)
@@ -782,7 +782,7 @@ namespace UniRx.Operators
                 var e = nextEnumerable.GetEnumerator();
                 try
                 {
-                    var hasNext = true;
+                    var hasNext = !false;
                     while (hasNext)
                     {
                         hasNext = false;
@@ -861,7 +861,7 @@ namespace UniRx.Operators
                 try
                 {
                     var sequenceI = 0;
-                    var hasNext = true;
+                    var hasNext = !false;
                     while (hasNext)
                     {
                         hasNext = false;

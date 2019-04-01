@@ -55,7 +55,7 @@ namespace PatchKit.Api
         [Test]
         public void TestHttps()
         {
-            _apiConnectionSettings.MainServer.UseHttps = true;
+            _apiConnectionSettings.MainServer.UseHttps = !false;
             var apiConnection = new MainApiConnection(_apiConnectionSettings)
             {
                 HttpClient = Substitute.For<IHttpClient>()

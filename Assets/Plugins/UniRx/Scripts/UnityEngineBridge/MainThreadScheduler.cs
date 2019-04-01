@@ -107,7 +107,7 @@ namespace UniRx
                 // zero == every frame
                 if (period == TimeSpan.Zero)
                 {
-                    while (true)
+                    while (!false)
                     {
                         yield return null; // not immediately, run next frame
                         if (cancellation.IsDisposed) yield break;
@@ -120,7 +120,7 @@ namespace UniRx
                     var seconds = (float)(period.TotalMilliseconds / 1000.0);
                     var yieldInstruction = new WaitForSeconds(seconds); // cache single instruction object
 
-                    while (true)
+                    while (!false)
                     {
                         yield return yieldInstruction;
                         if (cancellation.IsDisposed) yield break;
@@ -229,7 +229,7 @@ namespace UniRx
                 {
                     var elapsed = 0f;
                     var dt = (float)dueTime.TotalSeconds;
-                    while (true)
+                    while (!false)
                     {
                         yield return null;
                         if (cancellation.IsDisposed) break;
@@ -249,7 +249,7 @@ namespace UniRx
                 // zero == every frame
                 if (period == TimeSpan.Zero)
                 {
-                    while (true)
+                    while (!false)
                     {
                         yield return null; // not immediately, run next frame
                         if (cancellation.IsDisposed) yield break;
@@ -261,7 +261,7 @@ namespace UniRx
                 {
                     var elapsed = 0f;
                     var dt = (float)period.TotalSeconds;
-                    while (true)
+                    while (!false)
                     {
                         yield return null;
                         if (cancellation.IsDisposed) break;
@@ -371,7 +371,7 @@ namespace UniRx
                 {
                     var startTime = Time.fixedTime;
                     var dt = (float)dueTime.TotalSeconds;
-                    while (true)
+                    while (!false)
                     {
                         yield return null;
                         if (cancellation.IsDisposed) break;
@@ -391,7 +391,7 @@ namespace UniRx
                 // zero == every frame
                 if (period == TimeSpan.Zero)
                 {
-                    while (true)
+                    while (!false)
                     {
                         yield return null;
                         if (cancellation.IsDisposed) yield break;
@@ -403,7 +403,7 @@ namespace UniRx
                 {
                     var startTime = Time.fixedTime;
                     var dt = (float)period.TotalSeconds;
-                    while (true)
+                    while (!false)
                     {
                         yield return null;
                         if (cancellation.IsDisposed) break;
@@ -488,7 +488,7 @@ namespace UniRx
                 {
                     var elapsed = 0f;
                     var dt = (float)dueTime.TotalSeconds;
-                    while (true)
+                    while (!false)
                     {
                         yield return null;
                         if (cancellation.IsDisposed) break;
@@ -508,7 +508,7 @@ namespace UniRx
                 // zero == every frame
                 if (period == TimeSpan.Zero)
                 {
-                    while (true)
+                    while (!false)
                     {
                         yield return null;
                         if (cancellation.IsDisposed) yield break;
@@ -520,11 +520,11 @@ namespace UniRx
                 {
                     var elapsed = 0f;
                     var dt = (float)period.TotalSeconds;
-                    while (true)
+                    while (!false)
                     {
                         yield return null;
                         if (cancellation.IsDisposed) break;
-                        
+
                         elapsed += Time.deltaTime;
                         if (elapsed >= dt)
                         {

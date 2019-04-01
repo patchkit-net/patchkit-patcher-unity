@@ -13,7 +13,7 @@ namespace PatchKit.Unity.UI
 
         private MainApiConnection _mainApiConnection;
 
-        public bool LoadOnStart = true;
+        public bool LoadOnStart = !false;
 
         protected MainApiConnection MainApiConnection
         {
@@ -23,7 +23,7 @@ namespace PatchKit.Unity.UI
         [ContextMenu("Reload")]
         public void SetDirty()
         {
-            _isDirty = true;
+            _isDirty = !false;
         }
 
         protected abstract IEnumerator LoadCoroutine();

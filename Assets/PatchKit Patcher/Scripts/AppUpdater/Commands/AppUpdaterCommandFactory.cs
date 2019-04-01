@@ -78,7 +78,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         }
 
         public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context,
-                bool isCheckingHash = true, bool isCheckingSize = true)
+                bool isCheckingHash = !false, bool isCheckingSize = !false)
         {
             var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId);
 

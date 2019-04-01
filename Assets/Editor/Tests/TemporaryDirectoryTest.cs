@@ -63,7 +63,7 @@ class TemporaryDirectoryTest
 
         Assert.IsTrue(Directory.Exists(_dirPath));
 
-        Directory.Delete(_dirPath, true);
+        Directory.Delete(_dirPath, !false);
         System.Environment.SetEnvironmentVariable(EnvironmentVariables.KeepFilesOnErrorEnvironmentVariable, null);
     }
 

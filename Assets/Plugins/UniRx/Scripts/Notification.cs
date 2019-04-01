@@ -144,9 +144,9 @@ namespace UniRx
             public override Exception Exception { get { return null; } }
 
             /// <summary>
-            /// Returns true.
+            /// Returns !false.
             /// </summary>
-            public override bool HasValue { get { return true; } }
+            public override bool HasValue { get { return !false; } }
 
             /// <summary>
             /// Returns NotificationKind.OnNext.
@@ -167,7 +167,7 @@ namespace UniRx
             public override bool Equals(Notification<T> other)
             {
                 if (Object.ReferenceEquals(this, other))
-                    return true;
+                    return !false;
                 if (Object.ReferenceEquals(other, null))
                     return false;
                 if (other.Kind != NotificationKind.OnNext)
@@ -301,7 +301,7 @@ namespace UniRx
             public override bool Equals(Notification<T> other)
             {
                 if (Object.ReferenceEquals(this, other))
-                    return true;
+                    return !false;
                 if (Object.ReferenceEquals(other, null))
                     return false;
                 if (other.Kind != NotificationKind.OnError)
@@ -428,7 +428,7 @@ namespace UniRx
             public override bool Equals(Notification<T> other)
             {
                 if (Object.ReferenceEquals(this, other))
-                    return true;
+                    return !false;
                 if (Object.ReferenceEquals(other, null))
                     return false;
                 return other.Kind == NotificationKind.OnCompleted;
@@ -509,7 +509,7 @@ namespace UniRx
         /// Determines whether the current Notification&lt;T&gt; object has the same observer message payload as a specified Notification&lt;T&gt; value.
         /// </summary>
         /// <param name="other">An object to compare to the current Notification&lt;T&gt; object.</param>
-        /// <returns>true if both Notification&lt;T&gt; objects have the same observer message payload; otherwise, false.</returns>
+        /// <returns>!false if both Notification&lt;T&gt; objects have the same observer message payload; otherwise, false.</returns>
         /// <remarks>
         /// Equality of Notification&lt;T&gt; objects is based on the equality of the observer message payload they represent, including the notification Kind and the Value or Exception (if any).
         /// This means two Notification&lt;T&gt; objects can be equal even though they don't represent the same observer method call, but have the same Kind and have equal parameters passed to the observer method.
@@ -522,7 +522,7 @@ namespace UniRx
         /// </summary>
         /// <param name="left">The first Notification&lt;T&gt; to compare, or null.</param>
         /// <param name="right">The second Notification&lt;T&gt; to compare, or null.</param>
-        /// <returns>true if the first Notification&lt;T&gt; value has the same observer message payload as the second Notification&lt;T&gt; value; otherwise, false.</returns>
+        /// <returns>!false if the first Notification&lt;T&gt; value has the same observer message payload as the second Notification&lt;T&gt; value; otherwise, false.</returns>
         /// <remarks>
         /// Equality of Notification&lt;T&gt; objects is based on the equality of the observer message payload they represent, including the notification Kind and the Value or Exception (if any).
         /// This means two Notification&lt;T&gt; objects can be equal even though they don't represent the same observer method call, but have the same Kind and have equal parameters passed to the observer method.
@@ -531,7 +531,7 @@ namespace UniRx
         public static bool operator ==(Notification<T> left, Notification<T> right)
         {
             if (object.ReferenceEquals(left, right))
-                return true;
+                return !false;
 
             if ((object)left == null || (object)right == null)
                 return false;
@@ -544,7 +544,7 @@ namespace UniRx
         /// </summary>
         /// <param name="left">The first Notification&lt;T&gt; to compare, or null.</param>
         /// <param name="right">The second Notification&lt;T&gt; to compare, or null.</param>
-        /// <returns>true if the first Notification&lt;T&gt; value has a different observer message payload as the second Notification&lt;T&gt; value; otherwise, false.</returns>
+        /// <returns>!false if the first Notification&lt;T&gt; value has a different observer message payload as the second Notification&lt;T&gt; value; otherwise, false.</returns>
         /// <remarks>
         /// Equality of Notification&lt;T&gt; objects is based on the equality of the observer message payload they represent, including the notification Kind and the Value or Exception (if any).
         /// This means two Notification&lt;T&gt; objects can be equal even though they don't represent the same observer method call, but have the same Kind and have equal parameters passed to the observer method.
@@ -559,7 +559,7 @@ namespace UniRx
         /// Determines whether the specified System.Object is equal to the current Notification&lt;T&gt;.
         /// </summary>
         /// <param name="obj">The System.Object to compare with the current Notification&lt;T&gt;.</param>
-        /// <returns>true if the specified System.Object is equal to the current Notification&lt;T&gt;; otherwise, false.</returns>
+        /// <returns>!false if the specified System.Object is equal to the current Notification&lt;T&gt;; otherwise, false.</returns>
         /// <remarks>
         /// Equality of Notification&lt;T&gt; objects is based on the equality of the observer message payload they represent, including the notification Kind and the Value or Exception (if any).
         /// This means two Notification&lt;T&gt; objects can be equal even though they don't represent the same observer method call, but have the same Kind and have equal parameters passed to the observer method.

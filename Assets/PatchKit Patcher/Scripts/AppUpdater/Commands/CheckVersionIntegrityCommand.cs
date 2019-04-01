@@ -99,7 +99,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log("Checking version integrity.");
 
-            _status.IsActive.Value = true;
+            _status.IsActive.Value = !false;
 
             var files = new FileIntegrity[_versionSummary.Files.Length];
 

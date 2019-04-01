@@ -54,8 +54,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             if (lowestVersionWithContentId > installedVersionId)
             {
                 DebugLogger.Log(
-                    "Repair is impossible because lowest version with content id is " 
-                    + lowestVersionWithContentId + 
+                    "Repair is impossible because lowest version with content id is "
+                    + lowestVersionWithContentId +
                     " and currently installed version id is "
                     + installedVersionId +
                     ". Uninstalling to prepare for content strategy.");
@@ -66,33 +66,33 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 return;
             }
 
-            AppContentSummary installedVersionContentSummary 
+            AppContentSummary installedVersionContentSummary
                 = Context.App.RemoteMetaData.GetContentSummary(installedVersionId);
-                
-            AppContentSummary latestVersionContentSummary 
+
+            AppContentSummary latestVersionContentSummary
                 = Context.App.RemoteMetaData.GetContentSummary(latestVersionId);
-            
+
             bool isNewVersionAvailable = installedVersionId < latestVersionId;
 
             long contentSize = isNewVersionAvailable
                 ? latestVersionContentSummary.Size
                 : installedVersionContentSummary.Size;
-            
+
             ICheckVersionIntegrityCommand checkIntegrity = commandFactory
                 .CreateCheckVersionIntegrityCommand(
-                    versionId: installedVersionId, 
-                    context: Context, 
-                    isCheckingHash: false, 
-                    isCheckingSize: true);
-            
+                    versionId: installedVersionId,
+                    context: Context,
+                    isCheckingHash: false,
+                    isCheckingSize: !false);
+
             checkIntegrity.Prepare(_status);
             checkIntegrity.Execute(cancellationToken);
-            
+
             var missingFiles = checkIntegrity.Results.Files
                 .Where(f => f.Status == FileIntegrityStatus.MissingData);
 
             int missingFilesCount = missingFiles.Count();
-            
+
             var invalidSizeFiles = checkIntegrity.Results.Files
                 .Where(f => f.Status == FileIntegrityStatus.InvalidSize);
 
@@ -103,7 +103,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 DebugLogger.Log("No missing or invalid size files.");
                 return;
             }
-            
+
             double repairCost = CalculateRepairCost(installedVersionContentSummary, missingFiles.Concat(invalidSizeFiles));
 
             if (repairCost < contentSize)
@@ -182,7 +182,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             _strategy.Update(cancellationToken);
 
-            return true;
+            return !false;
         }
     }
 }

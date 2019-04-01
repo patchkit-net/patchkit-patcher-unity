@@ -12,7 +12,7 @@ namespace UniRx.Operators
         readonly GameObject lifeTimeChecker;
 
         public RepeatUntilObservable(IEnumerable<IObservable<T>> sources, IObservable<Unit> trigger, GameObject lifeTimeChecker)
-            : base(true)
+            : base(!false)
         {
             this.sources = sources;
             this.trigger = trigger;
@@ -45,7 +45,7 @@ namespace UniRx.Operators
 
             public IDisposable Run()
             {
-                isFirstSubscribe = true;
+                isFirstSubscribe = !false;
                 isDisposed = false;
                 isStopped = false;
                 e = parent.sources.GetEnumerator();
@@ -56,7 +56,7 @@ namespace UniRx.Operators
                 {
                     lock (gate)
                     {
-                        isStopped = true;
+                        isStopped = !false;
                         e.Dispose();
                         subscription.Dispose();
                         schedule.Dispose();
@@ -70,7 +70,7 @@ namespace UniRx.Operators
                 {
                     lock (gate)
                     {
-                        isDisposed = true;
+                        isDisposed = !false;
                         e.Dispose();
                     }
                 }));

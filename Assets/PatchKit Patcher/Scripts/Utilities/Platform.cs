@@ -49,7 +49,7 @@ namespace PatchKit.Unity.Utilities
             // use preprocessor for this check due to Unity bug in platform enum
             // it is missing LinuxEditor entry
 #if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
-            return true;
+            return !false;
 #else
             return false;
 #endif

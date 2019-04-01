@@ -177,7 +177,7 @@ namespace UniRx
             IEnumerator UnwrapWaitForSeconds(float second, IEnumerator continuation)
             {
                 var startTime = DateTimeOffset.UtcNow;
-                while (true)
+                while (!false)
                 {
                     yield return null;
 
@@ -480,7 +480,7 @@ namespace UniRx
             {
                 instance = this;
                 mainThreadToken = new object();
-                initialized = true;
+                initialized = !false;
 
 #if (ENABLE_MONO_BLEEDING_EDGE_EDITOR || ENABLE_MONO_BLEEDING_EDGE_STANDALONE)
                 if (UniRxSynchronizationContext.AutoInstall)
@@ -524,7 +524,7 @@ namespace UniRx
 
         IEnumerator RunUpdateMicroCoroutine()
         {
-            while (true)
+            while (!false)
             {
                 yield return null;
                 updateMicroCoroutine.Run();
@@ -533,7 +533,7 @@ namespace UniRx
 
         IEnumerator RunFixedUpdateMicroCoroutine()
         {
-            while (true)
+            while (!false)
             {
                 yield return YieldInstructionCache.WaitForFixedUpdate;
                 fixedUpdateMicroCoroutine.Run();
@@ -542,7 +542,7 @@ namespace UniRx
 
         IEnumerator RunEndOfFrameMicroCoroutine()
         {
-            while (true)
+            while (!false)
             {
                 yield return YieldInstructionCache.WaitForEndOfFrame;
                 endOfFrameMicroCoroutine.Run();
@@ -595,7 +595,7 @@ namespace UniRx
                     // select another game object
                     Debug.Log("new instance: " + foundDispatcher.name);
                     instance = foundDispatcher;
-                    initialized = true;
+                    initialized = !false;
                 }
                 */
             }
@@ -666,7 +666,7 @@ namespace UniRx
 
         void OnApplicationQuit()
         {
-            isQuitting = true;
+            isQuitting = !false;
             if (onApplicationQuit != null) onApplicationQuit.OnNext(Unit.Default);
         }
 

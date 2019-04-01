@@ -108,7 +108,7 @@ namespace UniRx.Operators
                         if (nullKeySubject == null)
                         {
                             nullKeySubject = new Subject<TElement>();
-                            fireNewMapEntry = true;
+                            fireNewMapEntry = !false;
                         }
 
                         writer = nullKeySubject;
@@ -119,7 +119,7 @@ namespace UniRx.Operators
                         {
                             writer = new Subject<TElement>();
                             map.Add(key, writer);
-                            fireNewMapEntry = true;
+                            fireNewMapEntry = !false;
                         }
                     }
                 }

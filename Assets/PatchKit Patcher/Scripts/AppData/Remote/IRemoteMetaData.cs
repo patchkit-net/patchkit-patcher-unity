@@ -7,12 +7,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         /// <summary>
         /// Returns latest version id.
         /// </summary>
-        int GetLatestVersionId(bool retryRequests = true);
+        int GetLatestVersionId(bool retryRequests = !false);
 
         /// <summary>
         /// Returns app info.
         /// </summary>
-        Api.Models.Main.App GetAppInfo(bool retryRequests = true);
+        Api.Models.Main.App GetAppInfo(bool retryRequests = !false);
 
         /// <summary>
         /// Returns certain version content summary.
@@ -30,7 +30,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         /// Returns the AppVersion model for the specified version id.
         /// </summary>
         /// <param name="versionId">The version identifier.</param>
-        AppVersion GetAppVersionInfo(int versionId, bool retryRequests = true);
+        AppVersion GetAppVersionInfo(int versionId, bool retryRequests = !false);
 
         /// <summary>
         /// Returns key secret for certain key.

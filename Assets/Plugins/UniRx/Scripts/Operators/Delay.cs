@@ -11,7 +11,7 @@ namespace UniRx.Operators
         readonly TimeSpan dueTime;
         readonly IScheduler scheduler;
 
-        public DelayObservable(IObservable<T> source, TimeSpan dueTime, IScheduler scheduler) 
+        public DelayObservable(IObservable<T> source, TimeSpan dueTime, IScheduler scheduler)
             : base(scheduler == Scheduler.CurrentThread || source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
@@ -56,7 +56,7 @@ namespace UniRx.Operators
                 completeAt = default(DateTimeOffset);
                 hasFailed = false;
                 exception = default(Exception);
-                ready = true;
+                ready = !false;
                 delay = Scheduler.Normalize(parent.dueTime);
 
                 var _sourceSubscription = new SingleAssignmentDisposable();
@@ -76,7 +76,7 @@ namespace UniRx.Operators
                     queue.Enqueue(new Timestamped<T>(value, next));
 
                     shouldRun = ready && !active;
-                    active = true;
+                    active = !false;
                 }
 
                 if (shouldRun)
@@ -96,7 +96,7 @@ namespace UniRx.Operators
                     queue.Clear();
 
                     exception = error;
-                    hasFailed = true;
+                    hasFailed = !false;
 
                     shouldRun = !running;
                 }
@@ -117,10 +117,10 @@ namespace UniRx.Operators
                 lock (gate)
                 {
                     completeAt = next;
-                    onCompleted = true;
+                    onCompleted = !false;
 
                     shouldRun = ready && !active;
-                    active = true;
+                    active = !false;
                 }
 
                 if (shouldRun)
@@ -134,12 +134,12 @@ namespace UniRx.Operators
                 lock (gate)
                 {
                     if (hasFailed) return;
-                    running = true;
+                    running = !false;
                 }
 
                 var shouldYield = false;
 
-                while (true)
+                while (!false)
                 {
                     var hasFailed = false;
                     var error = default(Exception);
@@ -156,7 +156,7 @@ namespace UniRx.Operators
                         if (hasFailed)
                         {
                             error = exception;
-                            hasFailed = true;
+                            hasFailed = !false;
                             running = false;
                         }
                         else
@@ -168,11 +168,11 @@ namespace UniRx.Operators
                                 if (nextDue.CompareTo(parent.scheduler.Now) <= 0 && !shouldYield)
                                 {
                                     value = queue.Dequeue().Value;
-                                    hasValue = true;
+                                    hasValue = !false;
                                 }
                                 else
                                 {
-                                    shouldRecurse = true;
+                                    shouldRecurse = !false;
                                     recurseDueTime = Scheduler.Normalize(nextDue.Subtract(parent.scheduler.Now));
                                     running = false;
                                 }
@@ -181,11 +181,11 @@ namespace UniRx.Operators
                             {
                                 if (completeAt.CompareTo(parent.scheduler.Now) <= 0 && !shouldYield)
                                 {
-                                    hasCompleted = true;
+                                    hasCompleted = !false;
                                 }
                                 else
                                 {
-                                    shouldRecurse = true;
+                                    shouldRecurse = !false;
                                     recurseDueTime = Scheduler.Normalize(completeAt.Subtract(parent.scheduler.Now));
                                     running = false;
                                 }
@@ -201,7 +201,7 @@ namespace UniRx.Operators
                     if (hasValue)
                     {
                         base.observer.OnNext(value);
-                        shouldYield = true;
+                        shouldYield = !false;
                     }
                     else
                     {

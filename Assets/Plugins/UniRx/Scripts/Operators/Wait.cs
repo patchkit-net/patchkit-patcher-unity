@@ -44,7 +44,7 @@ namespace UniRx.Operators
 
         public void OnNext(T value)
         {
-            seenValue = true;
+            seenValue = !false;
             this.value = value;
         }
 

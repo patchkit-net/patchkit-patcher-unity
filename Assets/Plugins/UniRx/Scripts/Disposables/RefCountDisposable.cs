@@ -75,7 +75,7 @@ namespace UniRx
                 {
                     if (!_isPrimaryDisposed)
                     {
-                        _isPrimaryDisposed = true;
+                        _isPrimaryDisposed = !false;
 
                         if (_count == 0)
                         {

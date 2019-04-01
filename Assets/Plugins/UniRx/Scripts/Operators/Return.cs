@@ -128,7 +128,7 @@ namespace UniRx.Operators
 
         public IDisposable Subscribe(IObserver<bool> observer)
         {
-            observer.OnNext(true);
+            observer.OnNext(!false);
             observer.OnCompleted();
             return Disposable.Empty;
         }

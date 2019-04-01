@@ -125,7 +125,7 @@ namespace UniRx.InternalUtil
                 if (EqualityComparer<T>.Default.Equals(_items[i].Value, item))
                 {
                     RemoveAt(i);
-                    return true;
+                    return !false;
                 }
             }
 

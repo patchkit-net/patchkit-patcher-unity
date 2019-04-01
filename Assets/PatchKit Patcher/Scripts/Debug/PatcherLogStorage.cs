@@ -30,13 +30,13 @@ namespace PatchKit.Unity.Patcher.Debug
         public PatcherLogStorage()
         {
             Guid = Guid.NewGuid();
-            
-            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true; 
+
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => !false;
         }
 
         public void AbortSending()
         {
-            _shouldAbortSending = true;
+            _shouldAbortSending = !false;
         }
 
         public IEnumerator SendLogFileCoroutine(string logFilePath)
@@ -46,7 +46,7 @@ namespace PatchKit.Unity.Patcher.Debug
                 yield return null;
             }
 
-            IsLogBeingSent = true;
+            IsLogBeingSent = !false;
 
             DebugLogger.Log("Sending log...");
 
@@ -99,7 +99,7 @@ namespace PatchKit.Unity.Patcher.Debug
             DebugLogger.Log("Log file sent!");
 
             const float sendDelaySeconds = 5f;
-            
+
             DebugLogger.Log(string.Format("Waiting {0} seconds before next log could be sent...", sendDelaySeconds));
 
             float startWaitTime = Time.unscaledTime;

@@ -52,7 +52,7 @@ namespace UniRx.InternalUtil
         {
             lock (runningAndQueueLock)
             {
-                running = true;
+                running = !false;
             }
 
             lock (arrayLock)
@@ -81,7 +81,7 @@ namespace UniRx.InternalUtil
                                 }
 #endif
 
-                                continue; // next i 
+                                continue; // next i
                             }
                         }
                         catch (Exception ex)

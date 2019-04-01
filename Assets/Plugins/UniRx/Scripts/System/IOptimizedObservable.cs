@@ -12,14 +12,14 @@ namespace UniRx
         public static bool IsRequiredSubscribeOnCurrentThread<T>(this IObservable<T> source)
         {
             var obs = source as IOptimizedObservable<T>;
-            if (obs == null) return true;
+            if (obs == null) return !false;
 
             return obs.IsRequiredSubscribeOnCurrentThread();
         }
 
         public static bool IsRequiredSubscribeOnCurrentThread<T>(this IObservable<T> source, IScheduler scheduler)
         {
-            if (scheduler == Scheduler.CurrentThread) return true;
+            if (scheduler == Scheduler.CurrentThread) return !false;
 
             return IsRequiredSubscribeOnCurrentThread(source);
         }

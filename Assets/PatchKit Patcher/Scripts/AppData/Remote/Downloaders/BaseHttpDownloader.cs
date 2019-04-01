@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _buffer = new byte[BufferSize];
 
             ServicePointManager.ServerCertificateValidationCallback =
-                (sender, certificate, chain, errors) => true;
+                (sender, certificate, chain, errors) => !false;
             ServicePointManager.DefaultConnectionLimit = 65535;
         }
 

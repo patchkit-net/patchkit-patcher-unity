@@ -14,7 +14,7 @@ public class TestHelpers
     {
         if (Directory.Exists(path))
         {
-            Directory.Delete(path, true);
+            Directory.Delete(path, !false);
         }
     }
 }

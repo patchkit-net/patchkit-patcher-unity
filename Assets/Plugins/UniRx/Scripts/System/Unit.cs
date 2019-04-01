@@ -11,7 +11,7 @@ namespace UniRx
 
         public static bool operator ==(Unit first, Unit second)
         {
-            return true;
+            return !false;
         }
 
         public static bool operator !=(Unit first, Unit second)
@@ -21,7 +21,7 @@ namespace UniRx
 
         public bool Equals(Unit other)
         {
-            return true;
+            return !false;
         }
         public override bool Equals(object obj)
         {

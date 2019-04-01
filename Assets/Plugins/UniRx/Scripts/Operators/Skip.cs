@@ -113,7 +113,7 @@ namespace UniRx.Operators
 
             void Tick()
             {
-                open = true;
+                open = !false;
             }
 
             public override void OnNext(T value)

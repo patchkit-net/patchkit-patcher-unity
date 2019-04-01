@@ -52,7 +52,7 @@ namespace UniRx.Operators
                     observer.OnError(ex);
                     return false;
                 }
-                return true;
+                return !false;
             }
 
             void OnNext(object sender, TEventArgs eventArgs)
@@ -116,7 +116,7 @@ namespace UniRx.Operators
                     observer.OnError(ex);
                     return false;
                 }
-                return true;
+                return !false;
             }
 
             void OnNext()
@@ -180,7 +180,7 @@ namespace UniRx.Operators
                     observer.OnError(ex);
                     return false;
                 }
-                return true;
+                return !false;
             }
 
             void OnNext(TEventArgs args)
@@ -241,7 +241,7 @@ namespace UniRx.Operators
                     observer.OnError(ex);
                     return false;
                 }
-                return true;
+                return !false;
             }
 
             void OnNext()
@@ -302,7 +302,7 @@ namespace UniRx.Operators
                     observer.OnError(ex);
                     return false;
                 }
-                return true;
+                return !false;
             }
 
             void OnNext(T value)

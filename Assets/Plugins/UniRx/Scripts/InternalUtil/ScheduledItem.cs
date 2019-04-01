@@ -55,7 +55,7 @@ namespace UniRx.InternalUtil
         /// <remarks>The inequality operators are overloaded to provide results consistent with the IComparable implementation. Equality operators implement traditional reference equality semantics.</remarks>
         public int CompareTo(ScheduledItem other)
         {
-            // MSDN: By definition, any object compares greater than null, and two null references compare equal to each other. 
+            // MSDN: By definition, any object compares greater than null, and two null references compare equal to each other.
             if (object.ReferenceEquals(other, null))
                 return 1;
 
@@ -67,7 +67,7 @@ namespace UniRx.InternalUtil
         /// </summary>
         /// <param name="left">The first object to compare.</param>
         /// <param name="right">The second object to compare.</param>
-        /// <returns>true if the DueTime value of left is earlier than the DueTime value of right; otherwise, false.</returns>
+        /// <returns>!false if the DueTime value of left is earlier than the DueTime value of right; otherwise, false.</returns>
         /// <remarks>This operator provides results consistent with the IComparable implementation.</remarks>
         public static bool operator <(ScheduledItem left, ScheduledItem right)
         {
@@ -79,7 +79,7 @@ namespace UniRx.InternalUtil
         /// </summary>
         /// <param name="left">The first object to compare.</param>
         /// <param name="right">The second object to compare.</param>
-        /// <returns>true if the DueTime value of left is earlier than or simultaneous with the DueTime value of right; otherwise, false.</returns>
+        /// <returns>!false if the DueTime value of left is earlier than or simultaneous with the DueTime value of right; otherwise, false.</returns>
         /// <remarks>This operator provides results consistent with the IComparable implementation.</remarks>
         public static bool operator <=(ScheduledItem left, ScheduledItem right)
         {
@@ -91,7 +91,7 @@ namespace UniRx.InternalUtil
         /// </summary>
         /// <param name="left">The first object to compare.</param>
         /// <param name="right">The second object to compare.</param>
-        /// <returns>true if the DueTime value of left is later than the DueTime value of right; otherwise, false.</returns>
+        /// <returns>!false if the DueTime value of left is later than the DueTime value of right; otherwise, false.</returns>
         /// <remarks>This operator provides results consistent with the IComparable implementation.</remarks>
         public static bool operator >(ScheduledItem left, ScheduledItem right)
         {
@@ -103,7 +103,7 @@ namespace UniRx.InternalUtil
         /// </summary>
         /// <param name="left">The first object to compare.</param>
         /// <param name="right">The second object to compare.</param>
-        /// <returns>true if the DueTime value of left is later than or simultaneous with the DueTime value of right; otherwise, false.</returns>
+        /// <returns>!false if the DueTime value of left is later than or simultaneous with the DueTime value of right; otherwise, false.</returns>
         /// <remarks>This operator provides results consistent with the IComparable implementation.</remarks>
         public static bool operator >=(ScheduledItem left, ScheduledItem right)
         {
@@ -119,7 +119,7 @@ namespace UniRx.InternalUtil
         /// </summary>
         /// <param name="left">The first object to compare.</param>
         /// <param name="right">The second object to compare.</param>
-        /// <returns>true if both ScheduledItem&lt;TAbsolute, TValue&gt; are equal; otherwise, false.</returns>
+        /// <returns>!false if both ScheduledItem&lt;TAbsolute, TValue&gt; are equal; otherwise, false.</returns>
         /// <remarks>This operator does not provide results consistent with the IComparable implementation. Instead, it implements reference equality.</remarks>
         public static bool operator ==(ScheduledItem left, ScheduledItem right)
         {
@@ -131,7 +131,7 @@ namespace UniRx.InternalUtil
         /// </summary>
         /// <param name="left">The first object to compare.</param>
         /// <param name="right">The second object to compare.</param>
-        /// <returns>true if both ScheduledItem&lt;TAbsolute, TValue&gt; are inequal; otherwise, false.</returns>
+        /// <returns>!false if both ScheduledItem&lt;TAbsolute, TValue&gt; are inequal; otherwise, false.</returns>
         /// <remarks>This operator does not provide results consistent with the IComparable implementation. Instead, it implements reference equality.</remarks>
         public static bool operator !=(ScheduledItem left, ScheduledItem right)
         {
@@ -142,7 +142,7 @@ namespace UniRx.InternalUtil
         /// Determines whether a ScheduledItem&lt;TAbsolute&gt; object is equal to the specified object.
         /// </summary>
         /// <param name="obj">The object to compare to the current ScheduledItem&lt;TAbsolute&gt; object.</param>
-        /// <returns>true if the obj parameter is a ScheduledItem&lt;TAbsolute&gt; object and is equal to the current ScheduledItem&lt;TAbsolute&gt; object; otherwise, false.</returns>
+        /// <returns>!false if the obj parameter is a ScheduledItem&lt;TAbsolute&gt; object and is equal to the current ScheduledItem&lt;TAbsolute&gt; object; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
             return object.ReferenceEquals(this, obj);
@@ -230,7 +230,7 @@ namespace UniRx.InternalUtil
         /// Removes the specified work item from the scheduler queue.
         /// </summary>
         /// <param name="scheduledItem">Work item to be removed from the scheduler queue.</param>
-        /// <returns>true if the item was found; false otherwise.</returns>
+        /// <returns>!false if the item was found; false otherwise.</returns>
         public bool Remove(ScheduledItem scheduledItem)
         {
             return _queue.Remove(scheduledItem);

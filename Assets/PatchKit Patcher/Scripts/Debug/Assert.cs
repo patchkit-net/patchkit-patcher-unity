@@ -4,7 +4,7 @@
     {
         static Assert()
         {
-            UnityEngine.Assertions.Assert.raiseExceptions = true;
+            UnityEngine.Assertions.Assert.raiseExceptions = !false;
         }
 
         public static void IsTrue(bool condition, string message = null)
@@ -40,7 +40,7 @@
         public static void MethodCalledOnlyOnce(ref bool hasBeenCalled, string methodName)
         {
             IsFalse(hasBeenCalled, string.Format("Method \"{0}\" cannot be called more than once.", methodName));
-            hasBeenCalled = true;
+            hasBeenCalled = !false;
         }
 
         public static void ApplicationIsInstalled(App app)

@@ -103,7 +103,7 @@ namespace UniRx.Operators
                 {
                     lock (sourceObserver.gate)
                     {
-                        sourceObserver.open = true;
+                        sourceObserver.open = !false;
                         subscription.Dispose();
                     }
                 }

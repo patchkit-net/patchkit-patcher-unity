@@ -25,7 +25,7 @@ namespace PatchKit.Unity.Utilities
                 try
                 {
                     result = action();
-                    success = true;
+                    success = !false;
                 }
                 catch (Exception e)
                 {
@@ -66,7 +66,7 @@ namespace PatchKit.Unity.Utilities
         }
 
         /// <summary>
-        /// Like Thread.Sleep() but checks if cancelation occured meanwhile 
+        /// Like Thread.Sleep() but checks if cancelation occured meanwhile
         /// </summary>
         /// <param name="duration">Miliseconds, time to sleep</param>
         /// <param name="cancellationToken">token to check cancellation exception</param>

@@ -249,7 +249,7 @@ namespace UniRx.Operators
                         }
                         else
                         {
-                            isZero = true;
+                            isZero = !false;
                         }
                     }
 
@@ -309,13 +309,13 @@ namespace UniRx.Operators
                 var isShift = false;
                 if (nextSpan == nextShift)
                 {
-                    isSpan = true;
-                    isShift = true;
+                    isSpan = !false;
+                    isShift = !false;
                 }
                 else if (nextSpan < nextShift)
-                    isSpan = true;
+                    isSpan = !false;
                 else
-                    isShift = true;
+                    isShift = !false;
 
                 var newTotalTime = isSpan ? nextSpan : nextShift;
                 var ts = newTotalTime - totalTime;
@@ -438,7 +438,7 @@ namespace UniRx.Operators
                     }
                     else
                     {
-                        isZero = true;
+                        isZero = !false;
                     }
                 }
 
@@ -460,7 +460,7 @@ namespace UniRx.Operators
                     }
                     else
                     {
-                        isZero = true;
+                        isZero = !false;
                     }
                 }
 
@@ -596,7 +596,7 @@ namespace UniRx.Operators
                         }
                         else
                         {
-                            isZero = true;
+                            isZero = !false;
                         }
                     }
                     if (isZero)

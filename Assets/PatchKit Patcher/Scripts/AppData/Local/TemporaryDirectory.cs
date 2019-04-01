@@ -29,7 +29,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             if (Directory.Exists(Path))
             {
-                DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
+                DirectoryOperations.Delete(Path, CancellationToken.Empty, !false);
             }
 
             DirectoryOperations.CreateDirectory(Path, CancellationToken.Empty);
@@ -56,14 +56,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void Keep()
         {
-            _keep = true;
+            _keep = !false;
         }
 
         private void ReleaseUnmanagedResources()
         {
             if (!_keep && Directory.Exists(Path))
             {
-                DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
+                DirectoryOperations.Delete(Path, CancellationToken.Empty, !false);
             }
         }
 

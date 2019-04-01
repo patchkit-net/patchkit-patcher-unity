@@ -56,7 +56,7 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
-        private bool _canStartThread = true;
+        private bool _canStartThread = !false;
 
         private readonly PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _threadCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
 
@@ -236,14 +236,14 @@ namespace PatchKit.Unity.Patcher
 
         private void Awake()
         {
-            UnityEngine.Assertions.Assert.raiseExceptions = true;
+            UnityEngine.Assertions.Assert.raiseExceptions = !false;
 
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 
             _instance = this;
             UnityDispatcher.Initialize();
-            Application.runInBackground = true;
+            Application.runInBackground = !false;
 
             DebugLogger.LogFormat("patchkit-patcher-unity: {0}", Version.Value);
             DebugLogger.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
@@ -297,7 +297,7 @@ namespace PatchKit.Unity.Patcher
                 yield break;
             }
 
-            _isForceQuitting = true;
+            _isForceQuitting = !false;
 
             try
             {
@@ -437,7 +437,7 @@ namespace PatchKit.Unity.Patcher
 
                 PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
 
-                while (true)
+                while (!false)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -605,8 +605,8 @@ namespace PatchKit.Unity.Patcher
                 if (canInstallApp && _configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
                 {
                     DebugLogger.Log("Automatically deciding to install app.");
-                    _hasAutomaticallyInstalledApp = true;
-                    _hasAutomaticallyCheckedForAppUpdate = true;
+                    _hasAutomaticallyInstalledApp = !false;
+                    _hasAutomaticallyCheckedForAppUpdate = !false;
                     _userDecision = UserDecision.InstallAppAutomatically;
                     return;
                 }
@@ -615,8 +615,8 @@ namespace PatchKit.Unity.Patcher
                     !_hasAutomaticallyCheckedForAppUpdate)
                 {
                     DebugLogger.Log("Automatically deciding to check for app updates.");
-                    _hasAutomaticallyInstalledApp = true;
-                    _hasAutomaticallyCheckedForAppUpdate = true;
+                    _hasAutomaticallyInstalledApp = !false;
+                    _hasAutomaticallyCheckedForAppUpdate = !false;
                     _userDecision = UserDecision.CheckForAppUpdatesAutomatically;
                     return;
                 }
@@ -624,7 +624,7 @@ namespace PatchKit.Unity.Patcher
                 if (canStartApp && _configuration.AutomaticallyStartApp && !_hasAutomaticallyStartedApp)
                 {
                     DebugLogger.Log("Automatically deciding to start app.");
-                    _hasAutomaticallyStartedApp = true;
+                    _hasAutomaticallyStartedApp = !false;
                     _userDecision = UserDecision.StartAppAutomatically;
                     return;
                 }
@@ -693,14 +693,14 @@ namespace PatchKit.Unity.Patcher
                         break;
                     case UserDecision.InstallAppAutomatically:
                         displayWarningInsteadOfError = _app.IsFullyInstalled();
-                        ThreadUpdateApp(true, cancellationToken);
+                        ThreadUpdateApp(!false, cancellationToken);
                         break;
                     case UserDecision.InstallApp:
                         ThreadUpdateApp(false, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdatesAutomatically:
                         displayWarningInsteadOfError = _app.IsFullyInstalled();
-                        ThreadUpdateApp(true, cancellationToken);
+                        ThreadUpdateApp(!false, cancellationToken);
                         break;
                     case UserDecision.CheckForAppUpdates:
                         ThreadUpdateApp(false, cancellationToken);
@@ -780,7 +780,7 @@ namespace PatchKit.Unity.Patcher
         private void ThreadDisplayError(PatcherError error, CancellationToken cancellationToken)
         {
             PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
-            
+
             try
             {
                 _state.Value = PatcherState.DisplayingError;
@@ -821,7 +821,7 @@ namespace PatchKit.Unity.Patcher
             appStarter.Start();
 
             PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededGameStarted);
-            _hasGameBeenStarted = true;
+            _hasGameBeenStarted = !false;
 
             UnityDispatcher.Invoke(Quit);
         }
@@ -850,7 +850,7 @@ namespace PatchKit.Unity.Patcher
                     using (_updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
                     {
                         appUpdater.Update(_updateAppCancellationTokenSource.Token);
-                        _wasUpdateSuccessfulOrNotNecessary = true;
+                        _wasUpdateSuccessfulOrNotNecessary = !false;
                     }
                 }
                 catch (OperationCanceledException)
@@ -891,7 +891,7 @@ namespace PatchKit.Unity.Patcher
                         FileName = applicationDataPath.Replace("_Data", ".exe"),
                         Arguments =
                             string.Join(" ", Environment.GetCommandLineArgs().Select(s => "\"" + s + "\"").ToArray()),
-                        UseShellExecute = true,
+                        UseShellExecute = !false,
                         Verb = "runas"
                     };
 
@@ -899,7 +899,7 @@ namespace PatchKit.Unity.Patcher
 
                     DebugLogger.Log("Patcher restarted with request for permissions.");
 
-                    return true;
+                    return !false;
                 }
 
                 DebugLogger.Log(string.Format("Restarting patcher with request for permissions not possible: unsupported platform {0}.", applicationPlatform));

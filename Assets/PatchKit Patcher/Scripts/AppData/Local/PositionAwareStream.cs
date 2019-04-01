@@ -9,31 +9,31 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly Stream _baseStream;
 
         private long _position = 0;
-        
+
         public PositionAwareStream(Stream stream)
         {
             if (stream.CanSeek)
             {
                 throw new ArgumentException("Redundant use of position aware stream.");
             }
-            
+
             _baseStream = stream;
         }
 
         public override bool CanRead { get { return _baseStream.CanRead; } }
 
-        public override bool CanSeek { get { return true; } }
+        public override bool CanSeek { get { return !false; } }
 
         public override bool CanWrite { get { return false; } }
 
         public override long Length { get { return _baseStream.Length; } }
 
-        public override long Position 
-        { 
-            get 
-            { 
+        public override long Position
+        {
+            get
+            {
                 return _position;
-            } 
+            }
             set
             {
                 if (value < _position)
@@ -70,7 +70,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 case SeekOrigin.Begin:
                     Position = offset;
                     break;
-                
+
                 case SeekOrigin.Current:
                     Position = Position + offset;
                     break;

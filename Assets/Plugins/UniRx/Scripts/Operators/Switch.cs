@@ -10,7 +10,7 @@ namespace UniRx.Operators
         readonly IObservable<IObservable<T>> sources;
 
         public SwitchObservable(IObservable<IObservable<T>> sources)
-            : base(true)
+            : base(!false)
         {
             this.sources = sources;
         }
@@ -47,7 +47,7 @@ namespace UniRx.Operators
                 lock (gate)
                 {
                     id = unchecked(++latest);
-                    hasLatest = true;
+                    hasLatest = !false;
                 }
 
                 var d = new SingleAssignmentDisposable();
@@ -68,7 +68,7 @@ namespace UniRx.Operators
             {
                 lock (gate)
                 {
-                    isStopped = true;
+                    isStopped = !false;
                     if (!hasLatest)
                     {
                         try { observer.OnCompleted(); }

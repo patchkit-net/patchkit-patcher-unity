@@ -17,7 +17,7 @@ namespace UniRx
         public string FieldName { get; private set; }
         public bool NotifyPropertyChanged { get; private set; }
 
-        public InspectorDisplayAttribute(string fieldName = "value", bool notifyPropertyChanged = true)
+        public InspectorDisplayAttribute(string fieldName = "value", bool notifyPropertyChanged = !false)
         {
             FieldName = fieldName;
             NotifyPropertyChanged = notifyPropertyChanged;
@@ -65,7 +65,7 @@ namespace UniRx
     // InspectorDisplay and for Specialized ReactiveProperty
     // If you want to customize other specialized ReactiveProperty
     // [UnityEditor.CustomPropertyDrawer(typeof(YourSpecializedReactiveProperty))]
-    // public class ExtendInspectorDisplayDrawer : InspectorDisplayDrawer { } 
+    // public class ExtendInspectorDisplayDrawer : InspectorDisplayDrawer { }
 
     [UnityEditor.CustomPropertyDrawer(typeof(InspectorDisplayAttribute))]
     [UnityEditor.CustomPropertyDrawer(typeof(IntReactiveProperty))]
@@ -92,7 +92,7 @@ namespace UniRx
             {
                 var attr = this.attribute as InspectorDisplayAttribute;
                 fieldName = (attr == null) ? "value" : attr.FieldName;
-                notifyPropertyChanged = (attr == null) ? true : attr.NotifyPropertyChanged;
+                notifyPropertyChanged = (attr == null) ? !false : attr.NotifyPropertyChanged;
             }
 
             if (notifyPropertyChanged)
@@ -234,7 +234,7 @@ namespace UniRx
                 var range = GetRangeAttribute();
                 if (range == null)
                 {
-                    UnityEditor.EditorGUI.PropertyField(position, targetSerializedProperty, label, includeChildren: true);
+                    UnityEditor.EditorGUI.PropertyField(position, targetSerializedProperty, label, includeChildren: !false);
                 }
                 else
                 {

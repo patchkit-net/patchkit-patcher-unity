@@ -144,7 +144,7 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.leftCompleted = true;
+                        parent.leftCompleted = !false;
                         if (parent.rightCompleted) parent.OnCompleted();
                     }
                 }
@@ -180,7 +180,7 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.rightCompleted = true;
+                        parent.rightCompleted = !false;
                         if (parent.leftCompleted) parent.OnCompleted();
                     }
                 }
@@ -194,7 +194,7 @@ namespace UniRx.Operators
         readonly IObservable<T>[] sources;
 
         public ZipObservable(IObservable<T>[] sources)
-            : base(true)
+            : base(!false)
         {
             this.sources = sources;
         }
@@ -254,7 +254,7 @@ namespace UniRx.Operators
             // dequeue is in the lock
             void Dequeue(int index)
             {
-                var allQueueHasValue = true;
+                var allQueueHasValue = !false;
                 for (int i = 0; i < length; i++)
                 {
                     if (queues[i].Count == 0)
@@ -266,7 +266,7 @@ namespace UniRx.Operators
 
                 if (!allQueueHasValue)
                 {
-                    var allCompletedWithoutSelf = true;
+                    var allCompletedWithoutSelf = !false;
                     for (int i = 0; i < length; i++)
                     {
                         if (i == index) continue;
@@ -347,8 +347,8 @@ namespace UniRx.Operators
                 {
                     lock (parent.gate)
                     {
-                        parent.isDone[index] = true;
-                        var allTrue = true;
+                        parent.isDone[index] = !false;
+                        var allTrue = !false;
                         for (int i = 0; i < parent.length; i++)
                         {
                             if (!parent.isDone[i])
@@ -883,7 +883,7 @@ namespace UniRx.Operators
         // operators in lock
         public void Dequeue(int index)
         {
-            var allQueueHasValue = true;
+            var allQueueHasValue = !false;
             for (int i = 0; i < length; i++)
             {
                 if (queues[i].Count == 0)
@@ -895,7 +895,7 @@ namespace UniRx.Operators
 
             if (!allQueueHasValue)
             {
-                var allCompletedWithoutSelf = true;
+                var allCompletedWithoutSelf = !false;
                 for (int i = 0; i < length; i++)
                 {
                     if (i == index) continue;
@@ -934,8 +934,8 @@ namespace UniRx.Operators
 
         public void Done(int index)
         {
-            isDone[index] = true;
-            var allTrue = true;
+            isDone[index] = !false;
+            var allTrue = !false;
             for (int i = 0; i < length; i++)
             {
                 if (!isDone[i])

@@ -48,7 +48,7 @@ namespace UniRx.Operators
                 {
                     lock (gate)
                     {
-                        isDisposed = true;
+                        isDisposed = !false;
                         e.Dispose();
                     }
                 }));
@@ -107,7 +107,7 @@ namespace UniRx.Operators
 
             public override void OnNext(T value)
             {
-                isRunNext = true;
+                isRunNext = !false;
                 base.observer.OnNext(value);
             }
             public override void OnError(Exception error)

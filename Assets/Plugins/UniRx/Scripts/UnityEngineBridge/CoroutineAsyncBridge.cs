@@ -31,7 +31,7 @@ namespace UniRx
         IEnumerator Run<T>(T target)
         {
             yield return target;
-            IsCompleted = true;
+            IsCompleted = !false;
             continuation();
         }
 
@@ -68,7 +68,7 @@ namespace UniRx
         IEnumerator Run(T target)
         {
             yield return target;
-            IsCompleted = true;
+            IsCompleted = !false;
             continuation();
         }
 

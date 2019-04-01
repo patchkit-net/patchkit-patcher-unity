@@ -277,7 +277,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 _logger.LogDebug("Data loaded from file.");
 
-                return true;
+                return !false;
             }
             catch (Exception e)
             {

@@ -7,7 +7,7 @@ namespace UniRx.Operators
         readonly Func<IObserver<T>, IDisposable> subscribe;
 
         public CreateObservable(Func<IObserver<T>, IDisposable> subscribe)
-            : base(true) // fail safe
+            : base(!false) // fail safe
         {
             this.subscribe = subscribe;
         }
@@ -55,7 +55,7 @@ namespace UniRx.Operators
         readonly Func<TState, IObserver<T>, IDisposable> subscribe;
 
         public CreateObservable(TState state, Func<TState, IObserver<T>, IDisposable> subscribe)
-            : base(true) // fail safe
+            : base(!false) // fail safe
         {
             this.state = state;
             this.subscribe = subscribe;
@@ -104,7 +104,7 @@ namespace UniRx.Operators
         readonly Func<IObserver<T>, IDisposable> subscribe;
 
         public CreateSafeObservable(Func<IObserver<T>, IDisposable> subscribe)
-            : base(true) // fail safe
+            : base(!false) // fail safe
         {
             this.subscribe = subscribe;
         }

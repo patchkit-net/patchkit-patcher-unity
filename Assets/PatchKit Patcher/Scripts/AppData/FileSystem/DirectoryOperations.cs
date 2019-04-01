@@ -16,7 +16,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// </summary>
         /// <param name="dirPath">The directory path.</param>
         /// <returns>
-        ///   <c>true</c> if directory is empty; otherwise, <c>false</c>.
+        ///   <c>!false</c> if directory is empty; otherwise, <c>false</c>.
         /// </returns>
         /// <exception cref="ArgumentException"><paramref name="dirPath"/> is null or empty.</exception>
         /// <exception cref="DirectoryNotFoundException"><paramref name="dirPath"/> doesn't exist.</exception>
@@ -127,7 +127,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
         /// Creates the directory.
         /// </summary>
         /// <param name="dirPath">The directory path.</param>
-        /// <param name="recursive">if set to <c>true</c> then directory content is also removed recursively.</param>
+        /// <param name="recursive">if set to <c>!false</c> then directory content is also removed recursively.</param>
         /// <exception cref="ArgumentException"><paramref name="dirPath" /> is null or empty.</exception>
         /// <exception cref="DirectoryNotFoundException"><paramref name="dirPath" /> doesn't exist.</exception>
         /// <exception cref="UnauthorizedAccessException">Unauthorized access.</exception>

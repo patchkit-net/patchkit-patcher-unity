@@ -15,7 +15,7 @@
                 MainServer = new ApiConnectionServer
                 {
                     Host = "api2.patchkit.net",
-                    UseHttps = true
+                    UseHttps = !false
                 },
                 CacheServers =
                     new[]
@@ -23,7 +23,7 @@
                         new ApiConnectionServer
                         {
                             Host = "api-cache.patchkit.net",
-                            UseHttps = true
+                            UseHttps = !false
                         }
                     }
             };

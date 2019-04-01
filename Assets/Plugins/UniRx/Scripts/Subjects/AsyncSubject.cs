@@ -56,7 +56,7 @@ namespace UniRx
 
                 old = outObserver;
                 outObserver = EmptyObserver<T>.Instance;
-                isStopped = true;
+                isStopped = !false;
                 v = lastValue;
                 hv = hasValue;
             }
@@ -84,7 +84,7 @@ namespace UniRx
 
                 old = outObserver;
                 outObserver = EmptyObserver<T>.Instance;
-                isStopped = true;
+                isStopped = !false;
                 lastError = error;
             }
 
@@ -98,7 +98,7 @@ namespace UniRx
                 ThrowIfDisposed();
                 if (isStopped) return;
 
-                this.hasValue = true;
+                this.hasValue = !false;
                 this.lastValue = value;
             }
         }
@@ -163,7 +163,7 @@ namespace UniRx
         {
             lock (observerLock)
             {
-                isDisposed = true;
+                isDisposed = !false;
                 outObserver = DisposedObserver<T>.Instance;
                 lastError = null;
                 lastValue = default(T);
@@ -240,7 +240,7 @@ namespace UniRx
             if (continuation == null)
                 throw new ArgumentNullException("continuation");
 
-            OnCompleted(continuation, true);
+            OnCompleted(continuation, !false);
         }
 
          void OnCompleted(Action continuation, bool originalContext)

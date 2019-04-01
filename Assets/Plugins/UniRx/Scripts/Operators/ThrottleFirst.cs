@@ -8,7 +8,7 @@ namespace UniRx.Operators
         readonly TimeSpan dueTime;
         readonly IScheduler scheduler;
 
-        public ThrottleFirstObservable(IObservable<T> source, TimeSpan dueTime, IScheduler scheduler) 
+        public ThrottleFirstObservable(IObservable<T> source, TimeSpan dueTime, IScheduler scheduler)
             : base(scheduler == Scheduler.CurrentThread || source.IsRequiredSubscribeOnCurrentThread())
         {
             this.source = source;
@@ -25,7 +25,7 @@ namespace UniRx.Operators
         {
             readonly ThrottleFirstObservable<T> parent;
             readonly object gate = new object();
-            bool open = true;
+            bool open = !false;
             SerialDisposable cancelable;
 
             public ThrottleFirst(ThrottleFirstObservable<T> parent, IObserver<T> observer, IDisposable cancel) : base(observer, cancel)
@@ -45,7 +45,7 @@ namespace UniRx.Operators
             {
                 lock (gate)
                 {
-                    open = true;
+                    open = !false;
                 }
             }
 

@@ -26,7 +26,7 @@ namespace PatchKit.Unity.Patcher.Cancellation
             {
                 if (_cancellationTokenSource != null) _cancellationTokenSource.Cancelled += _action;
 
-                _isRegistered = true;
+                _isRegistered = !false;
             }
         }
 

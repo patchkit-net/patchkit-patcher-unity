@@ -129,8 +129,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             if (isCachedKeyAvailable && !didUseCachedKey)
             {
                 _licenseDialog.SetKey(cachedKey);
-                didUseCachedKey = true;
-                isUsingCachedKey = true;
+                didUseCachedKey = !false;
+                isUsingCachedKey = !false;
 
                 return cachedKey;
             }
@@ -174,20 +174,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 _logger.LogDebug("License key is not found.");
                 HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.InvalidLicense);
-                return true;
+                return !false;
             }
             if (statusCode == 410)
             {
                 _logger.LogDebug("License key is blocked.");
                 HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.BlockedLicense);
-                return true;
+                return !false;
             }
             if (statusCode == 403)
             {
                 _logger.LogDebug(
                     "License key validation service is not available.");
                 HandleApiError(ref messageType, isUsingCachedKey, LicenseDialogMessageType.ServiceUnavailable);
-                return true;
+                return !false;
             }
 
             _logger.LogError("Unrecognized server or API error.");
@@ -212,7 +212,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public override void Prepare([NotNull] UpdaterStatus status)
         {
             base.Prepare(status);
-            
+
             if (status == null) throw new ArgumentNullException("status");
         }
 

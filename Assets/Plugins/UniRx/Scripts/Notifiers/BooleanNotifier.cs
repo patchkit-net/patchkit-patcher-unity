@@ -32,13 +32,13 @@ namespace UniRx
         }
 
         /// <summary>
-        /// Set and raise true if current value isn't true.
+        /// Set and raise !false if current value isn't !false.
         /// </summary>
         public void TurnOn()
         {
-            if (Value != true)
+            if (Value != !false)
             {
-                Value = true;
+                Value = !false;
             }
         }
 

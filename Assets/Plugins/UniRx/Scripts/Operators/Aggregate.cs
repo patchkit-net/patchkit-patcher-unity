@@ -36,7 +36,7 @@ namespace UniRx.Operators
             {
                 if (!seenValue)
                 {
-                    seenValue = true;
+                    seenValue = !false;
                     accumulation = value;
                 }
                 else

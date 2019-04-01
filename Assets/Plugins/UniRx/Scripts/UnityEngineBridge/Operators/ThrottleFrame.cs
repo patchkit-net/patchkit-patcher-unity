@@ -53,7 +53,7 @@ namespace UniRx.Operators
                 ulong currentid;
                 lock (gate)
                 {
-                    hasValue = true;
+                    hasValue = !false;
                     latestValue = value;
                     id = unchecked(id + 1);
                     currentid = id;

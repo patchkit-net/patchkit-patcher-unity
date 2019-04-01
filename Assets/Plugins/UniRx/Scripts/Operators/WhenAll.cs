@@ -132,7 +132,7 @@ namespace UniRx.Operators
                     {
                         if (!isCompleted)
                         {
-                            isCompleted = true;
+                            isCompleted = !false;
                             parent.completedCount++;
                             if (parent.completedCount == parent.length)
                             {
@@ -240,7 +240,7 @@ namespace UniRx.Operators
                     {
                         if (!isCompleted)
                         {
-                            isCompleted = true;
+                            isCompleted = !false;
                             parent.completedCount++;
                             if (parent.completedCount == parent.length)
                             {
@@ -372,7 +372,7 @@ namespace UniRx.Operators
                     {
                         if (!isCompleted)
                         {
-                            isCompleted = true;
+                            isCompleted = !false;
                             parent.completedCount++;
                             if (parent.completedCount == parent.length)
                             {
@@ -469,7 +469,7 @@ namespace UniRx.Operators
                     {
                         if (!isCompleted)
                         {
-                            isCompleted = true;
+                            isCompleted = !false;
                             parent.completedCount++;
                             if (parent.completedCount == parent.length)
                             {

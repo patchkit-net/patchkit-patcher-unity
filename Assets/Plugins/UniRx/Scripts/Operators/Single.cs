@@ -56,7 +56,7 @@ namespace UniRx.Operators
                 }
                 else
                 {
-                    seenValue = true;
+                    seenValue = !false;
                     lastValue = value;
                 }
             }
@@ -135,7 +135,7 @@ namespace UniRx.Operators
                     }
                     else
                     {
-                        seenValue = true;
+                        seenValue = !false;
                         lastValue = value;
                     }
                 }

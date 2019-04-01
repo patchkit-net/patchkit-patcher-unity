@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             };
         }
 
-        public int GetLatestVersionId(bool retryRequests = true)
+        public int GetLatestVersionId(bool retryRequests = !false)
         {
             DebugLogger.Log("Getting latest version id.");
             DebugLogger.Log("retryRequests = " + retryRequests);
@@ -64,7 +64,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 #pragma warning restore 612
         }
 
-        public Api.Models.Main.App GetAppInfo(bool retryRequests = true)
+        public Api.Models.Main.App GetAppInfo(bool retryRequests = !false)
         {
             DebugLogger.Log("Getting app info.");
             DebugLogger.Log("retryRequests = " + retryRequests);
@@ -99,8 +99,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         }
 
         public AppVersion GetAppVersionInfo(
-            int versionId, 
-            bool retryRequests = true)
+            int versionId,
+            bool retryRequests = !false)
         {
             if (versionId <= 0)
             {

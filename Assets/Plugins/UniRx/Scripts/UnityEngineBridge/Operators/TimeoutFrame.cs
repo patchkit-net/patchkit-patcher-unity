@@ -128,7 +128,7 @@ namespace UniRx.Operators
                     {
                         if (parent.objectId == timerId)
                         {
-                            parent.isTimeout = true;
+                            parent.isTimeout = !false;
                         }
                     }
                     if (parent.isTimeout)

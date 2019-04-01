@@ -23,7 +23,7 @@ namespace UniRx.Operators
         class DistinctUntilChanged : OperatorObserverBase<T, T>
         {
             readonly DistinctUntilChangedObservable<T> parent;
-            bool isFirst = true;
+            bool isFirst = !false;
             T prevKey = default(T);
 
             public DistinctUntilChanged(DistinctUntilChangedObservable<T> parent, IObserver<T> observer, IDisposable cancel)
@@ -104,7 +104,7 @@ namespace UniRx.Operators
         class DistinctUntilChanged : OperatorObserverBase<T, T>
         {
             readonly DistinctUntilChangedObservable<T, TKey> parent;
-            bool isFirst = true;
+            bool isFirst = !false;
             TKey prevKey = default(TKey);
 
             public DistinctUntilChanged(DistinctUntilChangedObservable<T, TKey> parent, IObserver<T> observer, IDisposable cancel)
