@@ -102,6 +102,7 @@ namespace PatchKit.Unity
             }
 
             ScriptingRuntimeVersionFix.Fix();
+            ApiCompatibilityLevelFix.Fix();
 
             string[] scenePaths = EditorBuildSettings.scenes
                 .Where(s => s.enabled)
