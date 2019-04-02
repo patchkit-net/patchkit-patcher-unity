@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.12.1]
+### Added
+- Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer
+
+### Fixed
+- Unity 2017 and newer compilation issues
+
 ## [3.12.0]
 ### Added
 - Support for newer versions of Unity (#1191)
