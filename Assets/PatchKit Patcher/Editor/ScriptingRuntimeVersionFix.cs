@@ -8,7 +8,7 @@ public static class ScriptingRuntimeVersionFix
 {
     static ScriptingRuntimeVersionFix()
     {
-        Fix();
+        EditorApplication.delayCall += Fix;
     }
 
     public static void Fix()
