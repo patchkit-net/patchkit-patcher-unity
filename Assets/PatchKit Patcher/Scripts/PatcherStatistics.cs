@@ -205,7 +205,11 @@ namespace PatchKit.Unity.Patcher
 
             yield return request.Send();
 
+#if UNITY_2017_1_OR_NEWER
+            if (request.isNetworkError || request.responseCode != 201)
+#else
             if (request.isError || request.responseCode != 201)
+#endif
             {
                 UnityEngine.Debug.LogError("Failed to send event " + eventName + " (" + request.responseCode + "):\n" + request.error);
             }
