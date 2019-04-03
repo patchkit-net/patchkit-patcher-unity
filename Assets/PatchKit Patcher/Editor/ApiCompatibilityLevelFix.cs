@@ -12,15 +12,10 @@ public class ApiCompatibilityLevelFix
 
     public static void Fix()
     {
-#if UNITY_5_6_OR_NEWER
-        if (PlayerSettings.GetApiCompatibilityLevel(BuildTargetGroup.Standalone) != ApiCompatibilityLevel.NET_2_0)
+#if UNITY_2017_1_OR_NEWER
+        if (PlayerSettings.GetApiCompatibilityLevel(BuildTargetGroup.Standalone) != ApiCompatibilityLevel.NET_4_6)
         {
-            PlayerSettings.SetApiCompatibilityLevel(BuildTargetGroup.Standalone, ApiCompatibilityLevel.NET_2_0);
-        }
-#else
-        if (PlayerSettings.apiCompatibilityLevel != ApiCompatibilityLevel.NET_2_0)
-        {
-            PlayerSettings.apiCompatibilityLevel = ApiCompatibilityLevel.NET_2_0;
+            PlayerSettings.SetApiCompatibilityLevel(BuildTargetGroup.Standalone, ApiCompatibilityLevel.NET_4_6);
         }
 #endif
     }

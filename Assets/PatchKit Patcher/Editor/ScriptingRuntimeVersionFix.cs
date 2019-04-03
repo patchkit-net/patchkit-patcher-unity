@@ -17,8 +17,8 @@ public static class ScriptingRuntimeVersionFix
         if (PlayerSettings.scriptingRuntimeVersion != ScriptingRuntimeVersion.Legacy)
         {
             EditorUtility.DisplayDialog("Required change of scripting runtime",
-                "PatchKit Patcher doesn't support .NET 4.x scirpting runtime. " +
-                "It needs to be changed to .NET 3.5. " +
+                "PatchKit Patcher doesn't support .NET 3.5 scirpting runtime. " +
+                "It needs to be changed to .NET 4.x. " +
                 "The action will be performed automatically, after clicking the OK button." +
                 "\n\n" +
                 "Unity Editor will be closed and you will need to open the project again." +
@@ -26,7 +26,7 @@ public static class ScriptingRuntimeVersionFix
                 "All current changes will be saved.",
                 "OK");
 
-            PlayerSettings.scriptingRuntimeVersion = ScriptingRuntimeVersion.Legacy;
+            PlayerSettings.scriptingRuntimeVersion = ScriptingRuntimeVersion.Latest;
 
             EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             AssetDatabase.SaveAssets();
