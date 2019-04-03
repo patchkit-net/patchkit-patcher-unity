@@ -1,6 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 using PatchKit.Api;
+using PatchKit.Core.CSharp;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 
@@ -30,8 +31,8 @@ namespace PatchKit.Unity
             }
 
             var settings = CreateInstance<Settings>();
-            settings.MainApiConnectionSettings = MainApiConnection.GetDefaultSettings();
-            settings.KeysApiConnectionSettings = KeysApiConnection.GetDefaultSettings();
+            settings.MainApiConnectionSettings = PatchKit.Api.Properties.AssemblyModule.DefaultApiConnectionSettings;
+            settings.KeysApiConnectionSettings = PatchKit.Api.Properties.AssemblyModule.DefaultKeysApiConnectionSettings;
 
             UnityEditor.AssetDatabase.CreateAsset(settings,
                 string.Format("Assets/PatchKit Patcher/Resources/{0}.asset", AssetFileName));
@@ -71,12 +72,10 @@ namespace PatchKit.Unity
             {
                 var uri = new Uri(url);
 
-                return new ApiConnectionServer
-                {
-                    Host = uri.Host,
-                    Port = uri.Port,
-                    UseHttps = uri.Scheme == Uri.UriSchemeHttps
-                };
+                return new ApiConnectionServer(
+                    host: uri.Host,
+                    port: uri.Port,
+                    useHttps: uri.Scheme == Uri.UriSchemeHttps);
             }
 
             return null;
@@ -87,14 +86,16 @@ namespace PatchKit.Unity
             var instance = FindInstance();
 
             var settings = instance == null
-                ? MainApiConnection.GetDefaultSettings()
+                ? PatchKit.Api.Properties.AssemblyModule.DefaultApiConnectionSettings
                 : instance.MainApiConnectionSettings;
 
             var overrideMain = GetApiConnectionServerFromEnvVar(EnvironmentVariables.ApiUrlEnvironmentVariable);
 
             if (overrideMain.HasValue)
             {
-                settings.MainServer = overrideMain.Value;
+                settings = new ApiConnectionSettings(
+                    mainServer: overrideMain.Value,
+                    cacheServers: settings.CacheServers);
             }
 
             var overrideMainCache =
@@ -102,7 +103,9 @@ namespace PatchKit.Unity
 
             if (overrideMainCache.HasValue)
             {
-                settings.CacheServers = new[] {overrideMainCache.Value};
+                settings = new ApiConnectionSettings(
+                    mainServer: settings.MainServer,
+                    cacheServers: new[] {overrideMainCache.Value}.ToImmutableArray());
             }
 
             return settings;
@@ -113,14 +116,16 @@ namespace PatchKit.Unity
             var instance = FindInstance();
 
             var settings = instance == null
-                ? KeysApiConnection.GetDefaultSettings()
+                ? PatchKit.Api.Properties.AssemblyModule.DefaultKeysApiConnectionSettings
                 : instance.KeysApiConnectionSettings;
 
             var overrideKeys = GetApiConnectionServerFromEnvVar(EnvironmentVariables.KeysUrlEnvironmentVariable);
 
             if (overrideKeys.HasValue)
             {
-                settings.MainServer = overrideKeys.Value;
+                settings = new ApiConnectionSettings(
+                    mainServer: overrideKeys.Value,
+                    cacheServers: settings.CacheServers);
             }
 
             return settings;

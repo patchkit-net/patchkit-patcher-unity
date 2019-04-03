@@ -42,17 +42,5 @@
             IsFalse(hasBeenCalled, string.Format("Method \"{0}\" cannot be called more than once.", methodName));
             hasBeenCalled = true;
         }
-
-        public static void ApplicationIsInstalled(App app)
-        {
-            IsTrue(app.IsFullyInstalled() ||  app.IsInstallationBroken(), "Application is not installed.");
-        }
-
-        public static void ApplicationVersionEquals(App app, int versionId)
-        {
-            ApplicationIsInstalled(app);
-
-            AreEqual(app.GetInstalledVersionId(), versionId, "Application versions don't match.");
-        }
     }
 }

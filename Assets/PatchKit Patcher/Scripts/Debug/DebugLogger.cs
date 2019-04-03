@@ -14,62 +14,62 @@ namespace PatchKit.Unity.Patcher.Debug
             _logger = PatcherLogManager.DefaultLogger;
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void Log(string message)
         {
             _logger.LogDebug(message);
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogFormat(string message, params object[] args)
         {
             Log(string.Format(message, args));
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogWarning(string message)
         {
             _logger.LogWarning(message);
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogWarningFormat(string message, params object[] args)
         {
             LogWarning(string.Format(message, args));
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogError(string message)
         {
             _logger.LogError(message);
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogErrorFormat(string message, params object[] args)
         {
             LogError(string.Format(message, args));
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogException(Exception exception)
         {
             _logger.LogError("An exception has occured", exception);
             OnExceptionOccured(exception);
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogConstructor()
         {
             Log(string.Format("{0} constructor.", _context));
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogDispose()
         {
             Log(string.Format("{0} dispose.", _context));
         }
 
-        [IgnoreLogStackTrace]
+        [IgnoreMessageSourceStack]
         public void LogVariable(object value, string name)
         {
             Log(string.Format("{0} = {1}", name, value));

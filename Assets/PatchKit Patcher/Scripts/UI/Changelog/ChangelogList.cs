@@ -1,8 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
-using PatchKit.Api.Models.Main;
+using System.Threading;
+using PatchKit.Api.Models;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.Utilities;
+using Timeout = PatchKit.Core.Timeout;
 
 namespace PatchKit.Unity.Patcher.UI
 {
@@ -20,7 +23,7 @@ namespace PatchKit.Unity.Patcher.UI
             }
 
             yield return
-                Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Data.Value.AppSecret),
+                Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Data.Value.AppSecret, null, new Timeout(TimeSpan.FromSeconds(15)), CancellationToken.None),
                     response =>
                     {
                         foreach (var version in response.OrderByDescending(version => version.Id))

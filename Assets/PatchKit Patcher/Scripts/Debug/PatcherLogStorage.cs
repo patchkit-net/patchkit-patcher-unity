@@ -3,8 +3,9 @@ using System.Collections;
 using System.IO;
 using System.Net;
 using System.Text;
-using Ionic.Zlib;
 using Newtonsoft.Json;
+using SharpCompress.Compressors;
+using SharpCompress.Compressors.Deflate;
 using UnityEngine;
 
 #if UNITY_5_4_OR_NEWER

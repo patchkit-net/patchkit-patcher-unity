@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using PatchKit.Api;
-using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit_Patcher.Scripts;
 using UnityEngine;
 
 namespace PatchKit.Unity.UI
@@ -11,11 +11,11 @@ namespace PatchKit.Unity.UI
 
         private bool _isDirty;
 
-        private MainApiConnection _mainApiConnection;
+        private IApiConnection _mainApiConnection;
 
         public bool LoadOnStart = true;
 
-        protected MainApiConnection MainApiConnection
+        protected IApiConnection MainApiConnection
         {
             get { return _mainApiConnection; }
         }
@@ -47,8 +47,7 @@ namespace PatchKit.Unity.UI
 
         protected virtual void Awake()
         {
-            _mainApiConnection = new MainApiConnection(Settings.GetMainApiConnectionSettings());
-            _mainApiConnection.HttpClient = new UnityHttpClient();
+            _mainApiConnection = LibPkAppsContainer.Resolve<IApiConnection>();
         }
 
         protected virtual void Start()

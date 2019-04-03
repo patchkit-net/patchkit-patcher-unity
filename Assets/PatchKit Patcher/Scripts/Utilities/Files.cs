@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
+using PatchKit.Core.IO;
 using PatchKit.Unity.Patcher.AppData;
-using PatchKit.Unity.Patcher.AppData.FileSystem;
-using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.Data;
+using PatchKit_Patcher.Scripts;
+using Path = System.IO.Path;
 
 namespace PatchKit.Unity.Utilities
 {
@@ -14,23 +14,19 @@ namespace PatchKit.Unity.Utilities
             var dirName = Path.GetDirectoryName(path);
             if (dirName != null)
             {
-                DirectoryOperations.CreateDirectory(dirName, CancellationToken.Empty);
+                if(!Directory.Exists(dirName))
+                {
+                    Directory.CreateDirectory(dirName);
+                }
             }
         }
 
         public static bool IsExecutable(string filePath, PlatformType platformType)
         {
-            switch (platformType)
-            {
-                case PlatformType.Windows:
-                    return filePath.EndsWith(".exe");
-                case PlatformType.OSX:
-                    return MagicBytes.IsMacExecutable(filePath);
-                case PlatformType.Linux:
-                    return MagicBytes.IsLinuxExecutable(filePath);
-                default:
-                    throw new ArgumentOutOfRangeException("platformType", platformType, null);
-            }
+            return LibPkAppsContainer.Resolve<IsFileCurrentPlatformExecutableDelegate>()(
+                new PatchKit.Core.IO.Path(filePath),
+                null,
+                null);
         }
     }
 }

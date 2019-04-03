@@ -4,19 +4,17 @@ using PatchKit.Logging;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    public class UnityMessageWriter : IMessageWriter
+    public class UnityMessageWriter : IMessagesStreamObserver
     {
         [NotNull]
         private readonly IMessageFormatter _formatter;
 
         public UnityMessageWriter([NotNull] IMessageFormatter formatter)
         {
-            Checks.ArgumentNotNull(formatter, "formatter");
-
             _formatter = formatter;
         }
 
-        public void Write(Message message, MessageContext messageContext)
+        public void OnNext(Message message, MessageContext messageContext)
         {
             var text = _formatter.Format(message, messageContext);
 

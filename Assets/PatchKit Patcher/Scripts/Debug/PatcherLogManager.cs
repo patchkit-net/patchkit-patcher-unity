@@ -1,21 +1,21 @@
 ﻿using System;
 using JetBrains.Annotations;
-using PatchKit.IssueReporting;
 using PatchKit.Logging;
 using PatchKit.Unity.Utilities;
+using PatchKit_Patcher.Scripts;
 using UnityEngine;
 using UniRx;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
-    public class PatcherLogManager : MonoBehaviour, IIssueReporter
+    public class PatcherLogManager : MonoBehaviour
     {
         private static DefaultLogger _defaultLogger;
 
         [NotNull]
         public static DefaultLogger DefaultLogger
         {
-            get { return _defaultLogger ?? (_defaultLogger = new DefaultLogger(new DefaultLogStackFrameLocator())); }
+            get { return LibPkAppsContainer.Resolve<DefaultLogger>(); }
         }
 
         private static PatcherLogManager _instance;
@@ -44,7 +44,7 @@ namespace PatchKit.Unity.Patcher.Debug
             }
         }
 
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLogManager));
+        private DebugLogger DebugLogger;
 
         private PatcherLogStream _stream;
 
@@ -64,7 +64,9 @@ namespace PatchKit.Unity.Patcher.Debug
 
         private void Awake()
         {
-            DefaultLogger.AddWriter(new UnityMessageWriter(new SimpleMessageFormatter()));
+            DebugLogger = new DebugLogger(typeof(PatcherLogManager));
+
+            DefaultLogger.Subscribe(new UnityMessageWriter(new SimpleMessageFormatter()));
 
             _isEditor = Application.isEditor;
             _stream = new PatcherLogStream();
@@ -114,16 +116,6 @@ namespace PatchKit.Unity.Patcher.Debug
             DebugLogger.Log("Cancelling application quit because log is being sent or is about to be sent.");
             _storage.AbortSending();
             Application.CancelQuit();
-        }
-
-        public void Report(Issue issue)
-        {
-            if (_isEditor && IgnoreEditorErrors)
-            {
-                return;
-            }
-            
-            _sentryRegistry.RegisterWithException(issue, _storage.Guid.ToString());
         }
     }
 }

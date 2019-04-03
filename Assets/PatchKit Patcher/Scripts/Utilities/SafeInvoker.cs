@@ -7,7 +7,6 @@ namespace PatchKit.Unity.Utilities
     {
         public static void Invoke(Action action, Action onSucessAction = null, Action<Exception> onFailedAction = null)
         {
-            Checks.ArgumentNotNull(action, "action");
             try
             {
                 action();

@@ -1,6 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Threading;
 using PatchKit.Unity.Utilities;
-using UnityEngine.UI;
+using Text = UnityEngine.UI.Text;
+using Timeout = PatchKit.Core.Timeout;
 
 namespace PatchKit.Unity.UI
 {
@@ -10,7 +13,7 @@ namespace PatchKit.Unity.UI
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield return Threading.StartThreadCoroutine(() => MainApiConnection.GetAppLatestAppVersion(AppSecret),
+            yield return Threading.StartThreadCoroutine(() => MainApiConnection.GetAppLatestAppVersion(AppSecret, new Timeout(TimeSpan.FromSeconds(10)), CancellationToken.None),
                 response =>
                 {
                     Text.text = response.Changelog;

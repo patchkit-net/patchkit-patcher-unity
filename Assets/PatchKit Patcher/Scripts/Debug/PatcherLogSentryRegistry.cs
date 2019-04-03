@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using PatchKit.IssueReporting;
 using SharpRaven;
 using SharpRaven.Data;
 
@@ -27,26 +26,12 @@ namespace PatchKit.Unity.Patcher.Debug
             _ravenClient = new RavenClient(RavenClientId);
         }
 
-        public void RegisterWithException(Issue issue, string logFileGuid)
-        {
-            var sentryEvent = new SentryEvent(issue.Exception)
-            {
-                Tags = issue.Tags
-            };
-            if (issue.Message != null)
-            {
-                sentryEvent.Message = issue.Message;
-            }
-            AddDataToSentryEvent(sentryEvent, logFileGuid);
-            _ravenClient.Capture(sentryEvent);
-        }
-
         public void RegisterWithException(Exception exception, string logFileGuid)
         {
-            RegisterWithException(new Issue()
-            {
-                Exception = exception
-            }, logFileGuid);
+            var sentryEvent = new SentryEvent(exception);
+
+            AddDataToSentryEvent(sentryEvent, logFileGuid);
+            _ravenClient.Capture(sentryEvent);
         }
 
         public static void AddDataToSentryEvent(SentryEvent sentryEvent, string logFileGuid)

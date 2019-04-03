@@ -5,16 +5,10 @@ using PatchKit.Logging;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.AppData.Local;
-using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
-using PatchKit.Api.Models.Main;
+using PatchKit.Api.Models;
 using System;
 using System.IO;
-using System.Collections;
-using PatchKit.Unity.Patcher.AppData;
-using PatchKit.Unity.Patcher.AppData.FileSystem;
-using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
 public class Background : MonoBehaviour
 {
@@ -31,7 +25,7 @@ public class Background : MonoBehaviour
         public string BannerFilePath;
     }
 
-    private ICache _cache = null;
+    private UnityCache _cache = null;
 
     private const string CachedBannerPathKey = "cached-banner-path-key";
     private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
@@ -200,12 +194,14 @@ public class Background : MonoBehaviour
             return;
         }
 
-        FileOperations.Delete(CachedBannerPath, CancellationToken.Empty);
+        File.Delete(CachedBannerPath);
         CachedBannerPath = "";
     }
 
     private void AquireRemoteBanner(Data data)
     {
+        //TODO:
+        /*
         _logger.LogDebug(string.Format("Aquiring the remote banner image from {0}", data.BannerData.ImageUrl));
         var coroutine = Threading.StartThreadCoroutine(() => {
             CancellationTokenSource source = new CancellationTokenSource();
@@ -239,7 +235,7 @@ public class Background : MonoBehaviour
             }
         });
 
-        StartCoroutine(coroutine);
+        StartCoroutine(coroutine);*/
     }
 
     private void LoadBannerImage(string filepath, Image target)
