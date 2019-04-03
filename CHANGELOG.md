@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.12.1]
 ### Added
 - Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer
+- Automated Unity API compatiblity change from .NET 2.0 subset to .NET 2.0
 
 ### Fixed
 - Unity 2017 and newer compilation issues
