@@ -872,41 +872,86 @@ namespace PatchKit.Unity.Patcher
             {
                 try
                 {
-                    var updaterStatus = new UpdaterStatus();
-                    var downloadStatus = new DownloadStatus {Bytes = {Value = 0}, TotalBytes = {Value = 0}};
+                    AppLicenseKey? licenseKey = null;
 
-                    updaterStatus.RegisterOperation(downloadStatus);
-                    downloadStatus.Weight.Value = 1.0;
-                    downloadStatus.IsActive.Value = true;
+                    bool retry = true;
 
-                    _updaterStatus.Value = updaterStatus;
-                    _state.Value = PatcherState.UpdatingApp;
-
-                    var lastUpdate = DateTime.Now;
-
-                    LibPkAppsContainer.Resolve<UpdateAppLatestDelegate>()(
-                        new App(new PatchKit.Core.IO.Path(_data.Value.AppDataPath)),
-                        new AppSecret(_data.Value.AppSecret),
-                        null,
-                        UpdateAppMode.Regular,
-                        progress =>
+                    while (retry)
+                    {
+                        try
                         {
-                            if (DateTime.Now - lastUpdate < TimeSpan.FromSeconds(1))
+                            var updaterStatus = new UpdaterStatus();
+                            var downloadStatus = new DownloadStatus {Bytes = {Value = 0}, TotalBytes = {Value = 0}};
+
+                            updaterStatus.RegisterOperation(downloadStatus);
+                            downloadStatus.Weight.Value = 1.0;
+                            downloadStatus.IsActive.Value = true;
+
+                            _updaterStatus.Value = updaterStatus;
+                            _state.Value = PatcherState.UpdatingApp;
+
+                            var lastUpdate = DateTime.Now;
+
+                            LibPkAppsContainer.Resolve<UpdateAppLatestDelegate>()(
+                                new App(new PatchKit.Core.IO.Path(_data.Value.AppDataPath)),
+                                new AppSecret(_data.Value.AppSecret),
+                                licenseKey,
+                                UpdateAppMode.Regular,
+                                progress =>
+                                {
+                                    if (DateTime.Now - lastUpdate < TimeSpan.FromSeconds(1))
+                                    {
+                                        return;
+                                    }
+
+                                    lastUpdate = DateTime.Now;
+
+                                    downloadStatus.Bytes.Value = progress.InstalledBytes;
+                                    downloadStatus.TotalBytes.Value = progress.TotalBytes;
+                                },
+                                _updateAppCancellationTokenSource.Token,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null);
+
+                            retry = false;
+                        }
+                        catch (AppLicenseKeyRequired)
+                        {
+                            var result = LicenseDialog.Instance.Display(LicenseDialogMessageType.None);
+
+                            if (result.Type == LicenseDialogResultType.Aborted)
                             {
-                                return;
+                                throw new OperationCanceledException();
                             }
 
-                            lastUpdate = DateTime.Now;
+                            licenseKey = new AppLicenseKey(result.Key);
+                        }
+                        catch (InvalidAppLicenseKey)
+                        {
+                            var result = LicenseDialog.Instance.Display(LicenseDialogMessageType.InvalidLicense);
 
-                            downloadStatus.Bytes.Value = progress.InstalledBytes;
-                            downloadStatus.TotalBytes.Value = progress.TotalBytes;
-                        },
-                        _updateAppCancellationTokenSource.Token,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null);
+                            if (result.Type == LicenseDialogResultType.Aborted)
+                            {
+                                throw new OperationCanceledException();
+                            }
+
+                            licenseKey = new AppLicenseKey(result.Key);
+                        }
+                        catch (BlockedAppLicenseKey)
+                        {
+                            var result = LicenseDialog.Instance.Display(LicenseDialogMessageType.BlockedLicense);
+
+                            if (result.Type == LicenseDialogResultType.Aborted)
+                            {
+                                throw new OperationCanceledException();
+                            }
+
+                            licenseKey = new AppLicenseKey(result.Key);
+                        }
+                    }
                 }
                 catch (OperationCanceledException)
                 {
