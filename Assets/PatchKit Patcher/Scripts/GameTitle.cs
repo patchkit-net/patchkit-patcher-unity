@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using UniRx;
 using PatchKit.Unity.Patcher.Debug;
+using UnityEngine.Assertions;
 
 namespace PatchKit.Unity
 {

@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using UniRx;
 using PatchKit.Unity.Patcher.Debug;
+using UnityEngine.Assertions;
 
 namespace PatchKit.Unity
 {

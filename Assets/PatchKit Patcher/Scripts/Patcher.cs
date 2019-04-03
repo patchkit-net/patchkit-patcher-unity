@@ -19,6 +19,7 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit_Patcher.Scripts;
+using UnityEngine.Assertions;
 using CancellationToken = System.Threading.CancellationToken;
 
 namespace PatchKit.Unity.Patcher
@@ -237,7 +238,7 @@ namespace PatchKit.Unity.Patcher
             DebugLogger = new DebugLogger(typeof(Patcher));
             UnityEngine.Assertions.Assert.raiseExceptions = true;
 
-            Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
+            UnityEngine.Assertions.Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 
             _instance = this;

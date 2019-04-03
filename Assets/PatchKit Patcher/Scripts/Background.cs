@@ -9,6 +9,7 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Api.Models;
 using System;
 using System.IO;
+using UnityEngine.Assertions;
 
 public class Background : MonoBehaviour
 {

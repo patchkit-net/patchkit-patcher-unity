@@ -1,6 +1,7 @@
 using System.Threading;
 using UnityEngine;
 using PatchKit.Unity.Patcher.Debug;
+using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
