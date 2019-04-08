@@ -9,6 +9,8 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 
+// TODO: This class is mostly copy-paste from BaseHttpDownloader, but there should be some way to remove code duplication
+
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
     public sealed class BaseHttpStream : IBaseHttpStream

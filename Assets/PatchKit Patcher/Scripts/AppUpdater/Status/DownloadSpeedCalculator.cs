@@ -68,9 +68,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             _lastTime = time;
         }
 
-        public double Calculate(long? bytes, DateTime time)
+        public double Calculate(long? bytes, DateTime? time = null)
         {
-            AddSample(bytes, DateTime.Now);
+            AddSample(bytes, time.HasValue ? time.Value : DateTime.Now);
 
             return BytesPerSecond;
         }

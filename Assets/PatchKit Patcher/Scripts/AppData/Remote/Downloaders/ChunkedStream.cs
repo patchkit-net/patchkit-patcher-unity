@@ -7,12 +7,22 @@ using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
+    public interface IChunkedStream
+    {
+        long VerifiedLength { get; }
+        long SavedLength { get; }
+        long RemainingLength { get; }
+        long Length { get; }
+
+        void Write([NotNull] byte[] buffer, int offset, int count);
+    }
+
     /// <summary>
     /// A generic implementation of a chunked data stream. Can be used to save chunked data into any stream be it file or buffer.
     ///
     /// Be aware that this class doesn't implement the Stream interface. But you can use the Write method as if it did.
     /// </summary>
-    public class ChunkedStream<T> : IDisposable where T: Stream
+    public class ChunkedStream<T> : IChunkedStream, IDisposable where T: Stream
     {
         private readonly ILogger _logger;
 
