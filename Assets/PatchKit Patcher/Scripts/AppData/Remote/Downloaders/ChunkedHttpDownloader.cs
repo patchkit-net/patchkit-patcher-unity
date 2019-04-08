@@ -92,7 +92,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
 
             _logger.LogTrace(string.Format("Opening chunked file stream for chunks {0}-{1}", startChunk, endChunk));
-            return new ChunkedFileStream(_destinationFilePath, _size, _chunksData,
+            return ChunkedFileStream.CreateChunkedFileStream(_destinationFilePath, _size, _chunksData,
                 HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile, startChunk, endChunk);
         }
 
@@ -261,7 +261,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             // The effective range is the original range contained within multiples of chunk size
             BytesRange effectiveRange = range.Chunkify(chunksData);
             var dataBounds = new BytesRange(currentOffset, -1);
-            
+
             BytesRange bounds = effectiveRange.ContainIn(dataBounds);
 
             // An uncommon edge case might occur, in which bounds.Start is equal to dataSize,
@@ -298,7 +298,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     lastPart += 1;
                 }
             }
-            
+
             long lastByte = dataSize - 1;
 
             for (int i = firstPart; i < lastPart; i++)
