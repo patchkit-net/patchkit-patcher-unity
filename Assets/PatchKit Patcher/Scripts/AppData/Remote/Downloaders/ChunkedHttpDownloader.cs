@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
@@ -161,54 +162,31 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
+        private void MainDownloadJob(object parameters)
+        {
+
+        }
+
         private bool TryDownload(ResourceUrl url, ChunkedFileStream fileStream, CancellationToken cancellationToken)
         {
             try
             {
-                _logger.LogDebug(string.Format("Trying to download from {0}", url.Url));
-                _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
-
                 var downloadJobQueue = BuildDownloadJobQueue(url, fileStream.VerifiedLength);
+
                 foreach (var downloadJob in downloadJobQueue)
                 {
-                    _logger.LogDebug(string.Format("Executing download job {0} with offest {1}", downloadJob.Url,
-                        downloadJob.Range.Start));
-                    _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
-                    _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
-
-                    var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeoutCalculator.Timeout);
+                    var baseHttpDownloader = new BaseHttpStream(downloadJob.Url, _timeoutCalculator.Timeout);
                     baseHttpDownloader.SetBytesRange(downloadJob.Range);
 
-                    const long downloadStatusLogInterval = 5000L;
-                    var stopwatch = Stopwatch.StartNew();
-
-                    long downloadedBytes = 0;
-
-                    var job = downloadJob;
-                    baseHttpDownloader.DataAvailable += (bytes, length) =>
+                    foreach (var dataPacket in baseHttpDownloader.Download(cancellationToken))
                     {
+                        var bytes = dataPacket.Data;
+                        var length = dataPacket.Length;
+
                         fileStream.Write(bytes, 0, length);
 
-                        downloadedBytes += length;
-
-                        if (stopwatch.ElapsedMilliseconds > downloadStatusLogInterval)
-                        {
-                            stopwatch.Reset();
-                            stopwatch.Start();
-
-                            _logger.LogDebug(string.Format("Downloaded {0} from {1}", downloadedBytes, job.Url));
-                            _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
-                            _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
-                        }
-
                         OnDownloadProgressChanged(fileStream.VerifiedLength);
-                    };
-
-                    baseHttpDownloader.Download(cancellationToken);
-
-                    _logger.LogDebug("Download job execution success.");
-                    _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
-                    _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+                    }
                 }
 
                 if (fileStream.RemainingLength != 0)
@@ -216,7 +194,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     throw new IncompleteDataException("Chunks downloading must finish downloading whole file");
                 }
 
-                _logger.LogDebug(string.Format("Download from {0} has been successful.", url.Url));
                 return true;
             }
             catch (IncompleteDataException e)
