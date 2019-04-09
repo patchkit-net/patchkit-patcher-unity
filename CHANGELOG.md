@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.0]
+### Changed
+- Move to usage of libpkapps
+- Upgrade to Unity 2018.3.11f1
+
 ## [3.12.1]
 ### Added
 - Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer
