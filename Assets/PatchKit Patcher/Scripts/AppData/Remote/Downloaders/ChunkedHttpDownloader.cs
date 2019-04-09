@@ -9,6 +9,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
@@ -127,7 +128,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     do
                     {
                         bool success =
-                            _urls.Any(url => TryDownload(url, fileStream, cancellationToken));
+                            _urls.Any((primaryUrl, secondaryUrl) => TryDownload(url, fileStream, cancellationToken));
 
                         if (success)
                         {
@@ -162,15 +163,16 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private void MainDownloadJob(object parameters)
+        private ResourceUrl? GetNextUrl(ResourceUrl url)
         {
-
+            _urls.
         }
 
         private bool TryDownload(ResourceUrl url, ChunkedFileStream fileStream, CancellationToken cancellationToken)
         {
             try
             {
+                var calculator = new DownloadSpeedCalculator();
                 var downloadJobQueue = BuildDownloadJobQueue(url, fileStream.VerifiedLength);
 
                 foreach (var downloadJob in downloadJobQueue)
@@ -184,6 +186,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                         var length = dataPacket.Length;
 
                         fileStream.Write(bytes, 0, length);
+
+                        calculator.AddSample(length, DateTime.Now);
 
                         OnDownloadProgressChanged(fileStream.VerifiedLength);
                     }
