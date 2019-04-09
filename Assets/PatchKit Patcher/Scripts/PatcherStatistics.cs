@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Debugging;
 using PatchKit.Unity.Utilities;
 #if UNITY_5_4_OR_NEWER
 using UnityEngine.Networking;

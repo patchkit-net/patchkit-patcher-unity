@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
-using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Debugging;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity

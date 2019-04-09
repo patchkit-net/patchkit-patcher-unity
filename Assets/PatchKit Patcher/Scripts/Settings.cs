@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using PatchKit.Api;
 using PatchKit.Core.CSharp;
-using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Debugging;
 using UnityEngine;
 
 namespace PatchKit.Unity

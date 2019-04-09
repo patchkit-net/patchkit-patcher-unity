@@ -1,6 +1,4 @@
 ﻿using System.IO;
-using PatchKit.Logging;
-using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
@@ -14,8 +12,6 @@ namespace PatchKit.Unity.Patcher.UI
     public class BorderlessWindow : MonoBehaviour
     {
         public const string ScreenSizeFilename = "screensize";
-
-        private PatchKit.Logging.ILogger _logger;
 
         public Rect DraggableArea;
 
@@ -116,8 +112,6 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Awake()
         {
-            _logger = PatcherLogManager.DefaultLogger;
-
             EnforceCorrectScreenSize();
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
@@ -145,11 +139,11 @@ namespace PatchKit.Unity.Patcher.UI
         private void EnforceCorrectScreenSize()
         {
             string screenSizeFilePath = Path.Combine(Application.dataPath, ScreenSizeFilename);
-            _logger.LogDebug("Reading correct screen size from " + screenSizeFilePath);
+            Debug.Log("Reading correct screen size from " + screenSizeFilePath);
 
             if (!File.Exists(screenSizeFilePath))
             {
-                _logger.LogWarning(screenSizeFilePath + " file does not exist.");
+                Debug.LogWarning(screenSizeFilePath + " file does not exist.");
                 return;
             }
 
@@ -168,7 +162,8 @@ namespace PatchKit.Unity.Patcher.UI
             }
             catch (System.Exception e)
             {
-                _logger.LogError("Failed to correct screen sizing due to an exception.", e);
+                Debug.LogError("Failed to correct screen sizing due to an exception.");
+                Debug.LogException(e);
             }
         }
 

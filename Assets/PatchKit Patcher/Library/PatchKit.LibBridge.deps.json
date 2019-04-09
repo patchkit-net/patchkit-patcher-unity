@@ -1,0 +1,524 @@
+{
+  "runtimeTarget": {
+    "name": ".NETStandard,Version=v2.0/",
+    "signature": "7c49a653d15915a79c2af9e1be4cf1ad1a5e6bcf"
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETStandard,Version=v2.0": {},
+    ".NETStandard,Version=v2.0/": {
+      "PatchKit.LibBridge/1.0.0": {
+        "dependencies": {
+          "Autofac": "4.8.1",
+          "NETStandard.Library": "2.0.3",
+          "Newtonsoft.Json": "12.0.1",
+          "PatchKit.Api": "1.0.0",
+          "PatchKit.Apps": "1.0.0",
+          "PatchKit.Apps.Updating": "1.0.0",
+          "PatchKit.Core": "1.0.0",
+          "PatchKit.Network": "1.0.0",
+          "Sentry": "1.1.2"
+        },
+        "runtime": {
+          "PatchKit.LibBridge.dll": {}
+        }
+      },
+      "Autofac/4.8.1": {
+        "dependencies": {
+          "NETStandard.Library": "2.0.3",
+          "System.ComponentModel": "4.0.1"
+        },
+        "runtime": {
+          "lib/netstandard1.1/Autofac.dll": {
+            "assemblyVersion": "4.8.1.0",
+            "fileVersion": "4.8.1.0"
+          }
+        }
+      },
+      "JetBrains.Annotations/2018.3.0": {
+        "runtime": {
+          "lib/netstandard2.0/JetBrains.Annotations.dll": {
+            "assemblyVersion": "2018.3.0.0",
+            "fileVersion": "2018.3.0.0"
+          }
+        }
+      },
+      "Microsoft.NETCore.Platforms/1.1.0": {},
+      "Microsoft.NETCore.Targets/1.1.0": {},
+      "NETStandard.Library/2.0.3": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
+        }
+      },
+      "Newtonsoft.Json/12.0.1": {
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.0.1.22727"
+          }
+        }
+      },
+      "Sentry/1.1.2": {
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.1",
+          "Sentry.PlatformAbstractions": "1.0.0",
+          "Sentry.Protocol": "1.0.3",
+          "System.Collections.Immutable": "1.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Sentry.dll": {
+            "assemblyVersion": "1.1.2.0",
+            "fileVersion": "1.1.2.0"
+          }
+        }
+      },
+      "Sentry.PlatformAbstractions/1.0.0": {
+        "runtime": {
+          "lib/netstandard2.0/Sentry.PlatformAbstractions.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Sentry.Protocol/1.0.3": {
+        "runtime": {
+          "lib/netstandard2.0/Sentry.Protocol.dll": {
+            "assemblyVersion": "1.0.3.0",
+            "fileVersion": "1.0.3.0"
+          }
+        }
+      },
+      "SharpCompress/0.22.0": {
+        "dependencies": {
+          "System.Text.Encoding.CodePages": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/SharpCompress.dll": {
+            "assemblyVersion": "0.22.0.0",
+            "fileVersion": "0.22.0.0"
+          }
+        }
+      },
+      "SharpZipLib/1.1.0": {
+        "runtime": {
+          "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll": {
+            "assemblyVersion": "1.1.0.145",
+            "fileVersion": "1.1.0.145"
+          }
+        }
+      },
+      "Standart.Hash.xxHash/1.0.6": {
+        "dependencies": {
+          "System.Buffers": "4.5.0",
+          "System.IO": "4.3.0",
+          "System.Memory": "4.5.1",
+          "System.Threading.Tasks.Extensions": "4.5.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Standart.Hash.xxHash.dll": {
+            "assemblyVersion": "1.0.6.0",
+            "fileVersion": "1.0.6.0"
+          }
+        }
+      },
+      "System.Buffers/4.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Buffers.dll": {
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "System.Collections.Immutable/1.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Collections.Immutable.dll": {
+            "assemblyVersion": "1.2.3.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "System.ComponentModel/4.0.1": {
+        "dependencies": {
+          "System.Runtime": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.3/System.ComponentModel.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
+          }
+        }
+      },
+      "System.IO/4.3.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.NETCore.Targets": "1.1.0",
+          "System.Runtime": "4.3.0",
+          "System.Text.Encoding": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
+        }
+      },
+      "System.Memory/4.5.1": {
+        "dependencies": {
+          "System.Buffers": "4.5.0",
+          "System.Numerics.Vectors": "4.4.0",
+          "System.Runtime.CompilerServices.Unsafe": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Memory.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "4.6.26606.5"
+          }
+        }
+      },
+      "System.Numerics.Vectors/4.4.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Numerics.Vectors.dll": {
+            "assemblyVersion": "4.1.3.0",
+            "fileVersion": "4.6.25519.3"
+          }
+        }
+      },
+      "System.Runtime/4.3.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.NETCore.Targets": "1.1.0"
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/4.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {
+            "assemblyVersion": "4.0.4.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "System.Text.Encoding/4.3.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.NETCore.Targets": "1.1.0",
+          "System.Runtime": "4.3.0"
+        }
+      },
+      "System.Text.Encoding.CodePages/4.5.0": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Text.Encoding.CodePages.dll": {
+            "assemblyVersion": "4.1.1.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "System.Threading.Tasks/4.3.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.NETCore.Targets": "1.1.0",
+          "System.Runtime": "4.3.0"
+        }
+      },
+      "System.Threading.Tasks.Extensions/4.5.1": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll": {
+            "assemblyVersion": "4.2.0.0",
+            "fileVersion": "4.6.26606.5"
+          }
+        }
+      },
+      "PatchKit.Api/1.0.0": {
+        "dependencies": {
+          "Autofac": "4.8.1",
+          "JetBrains.Annotations": "2018.3.0",
+          "Newtonsoft.Json": "12.0.1",
+          "PatchKit.Core": "1.0.0",
+          "PatchKit.Network": "1.0.0"
+        },
+        "runtime": {
+          "PatchKit.Api.dll": {}
+        }
+      },
+      "PatchKit.Apps/1.0.0": {
+        "dependencies": {
+          "Autofac": "4.8.1",
+          "JetBrains.Annotations": "2018.3.0",
+          "Newtonsoft.Json": "12.0.1",
+          "PatchKit.Core": "1.0.0",
+          "PatchKit.Librsync": "1.0.0"
+        },
+        "runtime": {
+          "PatchKit.Apps.dll": {}
+        }
+      },
+      "PatchKit.Apps.Updating/1.0.0": {
+        "dependencies": {
+          "Autofac": "4.8.1",
+          "JetBrains.Annotations": "2018.3.0",
+          "Newtonsoft.Json": "12.0.1",
+          "PatchKit.Api": "1.0.0",
+          "PatchKit.Apps": "1.0.0",
+          "PatchKit.Core": "1.0.0",
+          "PatchKit.Logging": "1.0.0",
+          "PatchKit.Network": "1.0.0",
+          "SharpCompress": "0.22.0",
+          "SharpZipLib": "1.1.0"
+        },
+        "runtime": {
+          "PatchKit.Apps.Updating.dll": {}
+        }
+      },
+      "PatchKit.Core/1.0.0": {
+        "dependencies": {
+          "Autofac": "4.8.1",
+          "JetBrains.Annotations": "2018.3.0",
+          "Newtonsoft.Json": "12.0.1",
+          "Standart.Hash.xxHash": "1.0.6"
+        },
+        "runtime": {
+          "PatchKit.Core.dll": {}
+        }
+      },
+      "PatchKit.Librsync/1.0.0": {
+        "dependencies": {
+          "Autofac": "4.8.1",
+          "PatchKit.Core": "1.0.0"
+        },
+        "runtime": {
+          "PatchKit.Librsync.dll": {}
+        }
+      },
+      "PatchKit.Logging/1.0.0": {
+        "dependencies": {
+          "Autofac": "4.8.1",
+          "JetBrains.Annotations": "2018.3.0",
+          "PatchKit.Core": "1.0.0"
+        },
+        "runtime": {
+          "PatchKit.Logging.dll": {}
+        }
+      },
+      "PatchKit.Network/1.0.0": {
+        "dependencies": {
+          "Autofac": "4.8.1",
+          "JetBrains.Annotations": "2018.3.0",
+          "PatchKit.Core": "1.0.0"
+        },
+        "runtime": {
+          "PatchKit.Network.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "PatchKit.LibBridge/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Autofac/4.8.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-aIT9rupCOdab5RMfxvWTBmOxGU77tLqmvSF4V89SzV6oQcJrtuKw/Xp55xy9EijSktbMka55SbroAPOyT+lziw==",
+      "path": "autofac/4.8.1",
+      "hashPath": "autofac.4.8.1.nupkg.sha512"
+    },
+    "JetBrains.Annotations/2018.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6EyyfdCtckcJpMyPotkR7jyjx/eDSIF3k5Sar/oVOisxyoFZ8rf57sPazuhvWxqin4LrIzEZpWMoDkyC5s1Gug==",
+      "path": "jetbrains.annotations/2018.3.0",
+      "hashPath": "jetbrains.annotations.2018.3.0.nupkg.sha512"
+    },
+    "Microsoft.NETCore.Platforms/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-a/iSwnRZb+LHFk49hQOyThh/ZNC3vsbZsF65XwQIb863qF6msmhdQtxGXFL28Ob2NsCz/drEj28BJd/YPpLRBg==",
+      "path": "microsoft.netcore.platforms/1.1.0",
+      "hashPath": "microsoft.netcore.platforms.1.1.0.nupkg.sha512"
+    },
+    "Microsoft.NETCore.Targets/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HvAzpoaIqrmZfsHAN4rLFji0r7YY5TP8r3SdkziXN7qU9KCpRIG+zfcBx+mIri/jkBNqjq4iWIfuYNtFBjSQ/g==",
+      "path": "microsoft.netcore.targets/1.1.0",
+      "hashPath": "microsoft.netcore.targets.1.1.0.nupkg.sha512"
+    },
+    "NETStandard.Library/2.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
+      "path": "netstandard.library/2.0.3",
+      "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
+    },
+    "Newtonsoft.Json/12.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jmVyoEyk0In8r+AObYQyFKVFm7uSRzE0XSHSbEtBJcZDMV6DqJoyB4FLcHwprPVhAh826so0db3DIKXVnpGoPA==",
+      "path": "newtonsoft.json/12.0.1",
+      "hashPath": "newtonsoft.json.12.0.1.nupkg.sha512"
+    },
+    "Sentry/1.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XScZna47XL1+yxYInS9Nk9MQroVeH85OFiNlHAVCBmm2slxUL0gzCVxie3KeN2Brr8zTWGAcADVkTfGg6WZmjA==",
+      "path": "sentry/1.1.2",
+      "hashPath": "sentry.1.1.2.nupkg.sha512"
+    },
+    "Sentry.PlatformAbstractions/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-d5eFP0i9lDbZ+wXiZ7M9MfU09iLuRviIxXgFyAg0vRSoHCubi/KNb1wCRoX60tE6HQZMwtSseGa0LnLABMjI8Q==",
+      "path": "sentry.platformabstractions/1.0.0",
+      "hashPath": "sentry.platformabstractions.1.0.0.nupkg.sha512"
+    },
+    "Sentry.Protocol/1.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-STtMGVdQ8wF6A9a4FDmuJyxxStZYAFsH9AnMdMw/yECnRH9f6o3DmLHLMvI+gJ0Lf9bhLBWscD33q25QvuTOPQ==",
+      "path": "sentry.protocol/1.0.3",
+      "hashPath": "sentry.protocol.1.0.3.nupkg.sha512"
+    },
+    "SharpCompress/0.22.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-DVbDhcPDFCp3AtIkdnae27MB9M3qAWi5emBLVGxf6FxRqyzGycl/hYKR/zKeE4GxYGlmHpcHDxrPh4zKCROBiA==",
+      "path": "sharpcompress/0.22.0",
+      "hashPath": "sharpcompress.0.22.0.nupkg.sha512"
+    },
+    "SharpZipLib/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-EJumBbvOb4lm7NKLf/yavJMfUKvR9aNVLDCMwFu/OLfUv8G8/1ko8MpCyc9crgcNfF5PnB4JuHHy7nIkEojwpQ==",
+      "path": "sharpziplib/1.1.0",
+      "hashPath": "sharpziplib.1.1.0.nupkg.sha512"
+    },
+    "Standart.Hash.xxHash/1.0.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pPAurUfyUB3lQDOBvcrr5PoWzkiHrRJN7ksMKZs4ivmkHscUuSbo3qg2L8cwlZz713ebndicEg6xClAPJTfnCg==",
+      "path": "standart.hash.xxhash/1.0.6",
+      "hashPath": "standart.hash.xxhash.1.0.6.nupkg.sha512"
+    },
+    "System.Buffers/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xpHYjjtyTEpzMwtSQBWdVc3dPjLdQtvyUg6fBlBqcLl1r2Y7gDG/W/enAYOB98nG3oD3Q153Y2FBO8JDWd+0Xw==",
+      "path": "system.buffers/4.5.0",
+      "hashPath": "system.buffers.4.5.0.nupkg.sha512"
+    },
+    "System.Collections.Immutable/1.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-T5XGQlcHhEO75Qx38GGCUDPdk4n/7yrRmTgy4yczzJV8alPHaxPU55TBC2UFrkQ42bu34sZPfK0dU+nWZUOEJA==",
+      "path": "system.collections.immutable/1.5.0",
+      "hashPath": "system.collections.immutable.1.5.0.nupkg.sha512"
+    },
+    "System.ComponentModel/4.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-tN5DPMYg6yFO5lF5L5hF6TIZDcRQ/+f1YcXGP8y2Yy4971XoxPOLH4lkkL20v6zb4aAVsp+xrkRwzMFeR5ZHqw==",
+      "path": "system.componentmodel/4.0.1",
+      "hashPath": "system.componentmodel.4.0.1.nupkg.sha512"
+    },
+    "System.IO/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3qjaHvxQPDpSOYICjUoTsmoq5u6QJAFRUITgeT/4gqkF1bajbSmb1kwSxEA8AHlofqgcKJcM8udgieRNhaJ5Cg==",
+      "path": "system.io/4.3.0",
+      "hashPath": "system.io.4.3.0.nupkg.sha512"
+    },
+    "System.Memory/4.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-vcG3/MbfpxznMkkkaAblJi7RHOmuP7kawQMhDgLSuA1tRpRQYsFSCTxRSINDUgn2QNn2jWeLxv8er5BXbyACkw==",
+      "path": "system.memory/4.5.1",
+      "hashPath": "system.memory.4.5.1.nupkg.sha512"
+    },
+    "System.Numerics.Vectors/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-gdRrUJs1RrjW3JB5p82hYjA67xoeFLvh0SdSIWjTiN8qExlbFt/RtXwVYNc5BukJ/f9OKzQQS6gakzbJeHTqHg==",
+      "path": "system.numerics.vectors/4.4.0",
+      "hashPath": "system.numerics.vectors.4.4.0.nupkg.sha512"
+    },
+    "System.Runtime/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JufQi0vPQ0xGnAczR13AUFglDyVYt4Kqnz1AZaiKZ5+GICq0/1MH/mO/eAJHt/mHW1zjKBJd7kV26SrxddAhiw==",
+      "path": "system.runtime/4.3.0",
+      "hashPath": "system.runtime.4.3.0.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6zBxkHYemB0kQiHP3vGXGRXejZVoNVuMn2paUuqKKi5Wyjkxfkp+D0rd0c3VrGwotidRINt6KpOi2smL4VkJKw==",
+      "path": "system.runtime.compilerservices.unsafe/4.5.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.4.5.0.nupkg.sha512"
+    },
+    "System.Text.Encoding/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BiIg+KWaSDOITze6jGQynxg64naAPtqGHBwDrLaCtixsa5bKiR8dpPOHA7ge3C0JJQizJE+sfkz1wV+BAKAYZw==",
+      "path": "system.text.encoding/4.3.0",
+      "hashPath": "system.text.encoding.4.3.0.nupkg.sha512"
+    },
+    "System.Text.Encoding.CodePages/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-16EVkWmNnoH3/Yj9c5s5VuLK5Uv/Dnkc3P2kMmnD7wJcUuvcHVvM2IhVJanf2hHRZUitH+cIkPCPHrBoCXc7Rw==",
+      "path": "system.text.encoding.codepages/4.5.0",
+      "hashPath": "system.text.encoding.codepages.4.5.0.nupkg.sha512"
+    },
+    "System.Threading.Tasks/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-LbSxKEdOUhVe8BezB/9uOGGppt+nZf6e1VFyw6v3DN6lqitm0OSn2uXMOdtP0M3W4iMcqcivm2J6UgqiwwnXiA==",
+      "path": "system.threading.tasks/4.3.0",
+      "hashPath": "system.threading.tasks.4.3.0.nupkg.sha512"
+    },
+    "System.Threading.Tasks.Extensions/4.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-L1Zt2zXgsKYistLZdhod2qqdqly3T2QUBZOBroIm4V6lD17/JBzfhc0zfBzg3As2EYhQvEPqUWhcJ+9m570gPg==",
+      "path": "system.threading.tasks.extensions/4.5.1",
+      "hashPath": "system.threading.tasks.extensions.4.5.1.nupkg.sha512"
+    },
+    "PatchKit.Api/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PatchKit.Apps/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PatchKit.Apps.Updating/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PatchKit.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PatchKit.Librsync/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PatchKit.Logging/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PatchKit.Network/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

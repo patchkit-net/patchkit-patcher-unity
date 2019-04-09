@@ -28,7 +28,7 @@ namespace PatchKit.Unity.Patcher.UI
         {
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
-                _animator.SetBool("IsOpened", state == PatcherState.WaitingForUserDecision);
+                _animator.SetBool("IsOpened", state == PatcherStateKindOld.WaitingForUserDecision);
             }).AddTo(this);
 
             Patcher.Instance.CanStartApp.ObserveOnMainThread().Subscribe(canStartApp =>

@@ -20,17 +20,17 @@ namespace PatchKit.Unity.Patcher.UI
             {
                 switch (state)
                 {
-                    case PatcherState.None:
+                    case PatcherStateKindOld.None:
                         return string.Empty;
-                    case PatcherState.LoadingPatcherData:
+                    case PatcherStateKindOld.LoadingPatcherData:
                         return "Loading data...";
-                    case PatcherState.LoadingPatcherConfiguration:
+                    case PatcherStateKindOld.LoadingPatcherConfiguration:
                         return "Loading configuration...";
-                    case PatcherState.WaitingForUserDecision:
+                    case PatcherStateKindOld.WaitingForUserDecision:
                         return string.Empty;
-                    case PatcherState.StartingApp:
+                    case PatcherStateKindOld.StartingApp:
                         return "Starting application...";
-                    case PatcherState.UpdatingApp:
+                    case PatcherStateKindOld.UpdatingApp:
                         return description;
                 }
                 return string.Empty;

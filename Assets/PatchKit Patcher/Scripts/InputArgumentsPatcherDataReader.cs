@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Debugging;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 
@@ -10,30 +10,24 @@ namespace PatchKit.Unity.Patcher
 {
     public class InputArgumentsPatcherDataReader
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(InputArgumentsPatcherDataReader));
         private static readonly List<string> _commandLineArgs = Environment.GetCommandLineArgs().ToList();
-
-        public InputArgumentsPatcherDataReader()
-        {
-            DebugLogger.LogConstructor();
-        }
 
         public PatcherData Read()
         {
-            DebugLogger.Log("Reading.");
+            Debug.Log("Reading.");
 
             PatcherData data = new PatcherData();
 
             if (!HasArgument("--secret") || !HasArgument("--installdir"))
             {
-                DebugLogger.Log("Expected the secret and installdir to be present in the command line arguments.");
+                Debug.Log("Expected the secret and installdir to be present in the command line arguments.");
                 throw new NonLauncherExecutionException("Patcher has been started without a Launcher.");
             }
 
             string forceAppSecret;
             if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceSecretEnvironmentVariable, out forceAppSecret))
             {
-                DebugLogger.LogFormat("Setting forced app secret {0}", forceAppSecret);
+                Debug.Log($"Setting forced app secret {forceAppSecret}");
                 data.AppSecret = forceAppSecret;
             }
             else
@@ -54,7 +48,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (int.TryParse(forceOverrideLatestVersionIdString, out forceOverrideLatestVersionId))
                 {
-                    DebugLogger.LogFormat("Setting forced version id {0}", forceOverrideLatestVersionId);
+                    Debug.Log($"Setting forced version id {forceOverrideLatestVersionId}");
                     data.OverrideLatestVersionId = forceOverrideLatestVersionId;
                 }
             }
@@ -75,11 +69,11 @@ namespace PatchKit.Unity.Patcher
             if (TryReadArgument("--lockfile", out lockFilePath))
             {
                 data.LockFilePath = lockFilePath;
-                DebugLogger.LogFormat("Using lock file: {0}", lockFilePath);
+                Debug.Log($"Using lock file: {lockFilePath}");
             }
             else
             {
-                DebugLogger.LogWarning("Lock file not provided.");
+                Debug.LogWarning("Lock file not provided.");
             }
 
             if (HasArgument("--online"))

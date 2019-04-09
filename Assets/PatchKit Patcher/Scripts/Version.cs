@@ -6,7 +6,7 @@ namespace PatchKit.Unity.Patcher
         public const int Minor = 12;
         public const int Release = 1;
 
-        public static string Value
+        public static string Text
         {
 #if PK_OFFICIAL
             get { return string.Format("v{0}.{1}.{2}-official", Major, Minor, Release); }

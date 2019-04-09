@@ -18,7 +18,7 @@ namespace PatchKit.Unity.Patcher.UI
         {
             public double Progress;
 
-            public PatcherState State;
+            public PatcherStateKindOld State;
 
             public bool IsAppInstalled;
         }
@@ -66,13 +66,13 @@ namespace PatchKit.Unity.Patcher.UI
 
             switch (data.State)
             {
-                case PatcherState.LoadingPatcherData:
-                case PatcherState.LoadingPatcherConfiguration:
-                case PatcherState.Connecting:
+                case PatcherStateKindOld.LoadingPatcherData:
+                case PatcherStateKindOld.LoadingPatcherConfiguration:
+                case PatcherStateKindOld.Connecting:
                     SetIdle();
                     return;
 
-                case PatcherState.UpdatingApp:
+                case PatcherStateKindOld.UpdatingApp:
                     if (data.Progress <= 0)
                     {
                         SetIdle();
@@ -83,7 +83,7 @@ namespace PatchKit.Unity.Patcher.UI
                     SetProgressBarLinear((float) data.Progress);
                     break;
 
-                case PatcherState.WaitingForUserDecision:
+                case PatcherStateKindOld.WaitingForUserDecision:
                     if (data.IsAppInstalled)
                     {
                         SetProgressBarText(FormatProgressForDisplay(1.0));
@@ -96,17 +96,17 @@ namespace PatchKit.Unity.Patcher.UI
                     }
                     break;
 
-                case PatcherState.DisplayingError:
+                case PatcherStateKindOld.DisplayingError:
                     SetProgressBarText("Error...");
                     SetProgressBarLinear(0);
                     break;
 
-                case PatcherState.StartingApp:
+                case PatcherStateKindOld.StartingApp:
                     SetProgressBarText(FormatProgressForDisplay(1.0));
                     SetProgressBarLinear(1);
                     break;
 
-                case PatcherState.None:
+                case PatcherStateKindOld.None:
                 default:
                     _isIdle = false;
                     break;

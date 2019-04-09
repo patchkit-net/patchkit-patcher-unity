@@ -1,6 +1,6 @@
 using System.Threading;
 using UnityEngine;
-using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Patcher.Debugging;
 using UnityEngine.Assertions;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs

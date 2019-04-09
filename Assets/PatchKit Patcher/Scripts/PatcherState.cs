@@ -1,14 +1,11 @@
-﻿namespace PatchKit.Unity.Patcher
+namespace PatchKit_Patcher.Scripts
 {
-    public enum PatcherState
+    public struct PatcherState
     {
-        None,
-        Connecting,
-        LoadingPatcherData,
-        LoadingPatcherConfiguration,
-        WaitingForUserDecision,
-        UpdatingApp,
-        StartingApp,
-        DisplayingError,
+        public PatcherStateKind Kind { get; }
+
+        public PatcherUpdateAppState? UpdateAppState { get; }
+
+        public PatcherAppState AppState { get; }
     }
 }

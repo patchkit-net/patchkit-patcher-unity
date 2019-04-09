@@ -1,13 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
-using PatchKit.Logging;
-using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher;
-using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Api.Models;
-using System;
 using System.IO;
 using UnityEngine.Assertions;
 
@@ -68,12 +64,8 @@ public class Background : MonoBehaviour
 
     public Animator MainAnimator;
 
-    private PatchKit.Logging.ILogger _logger;
-
     private void Start()
     {
-        _logger = PatcherLogManager.DefaultLogger;
-
         var patcher = Patcher.Instance;
 
         Assert.IsNotNull(patcher);
@@ -95,7 +87,7 @@ public class Background : MonoBehaviour
 
         if (IsCachedBannerAvailable())
         {
-            _logger.LogDebug(string.Format("A cached banner image is available at {0}", CachedBannerPath));
+            Debug.Log($"A cached banner image is available at {CachedBannerPath}");
             LoadBannerImage(CachedBannerPath, OldImage);
         }
 
@@ -120,7 +112,7 @@ public class Background : MonoBehaviour
 
     private void OnBannerDataUpdate(Data data)
     {
-        _logger.LogDebug("On patcher data update.");
+        Debug.Log("On patcher data update.");
         var bannerData = data.BannerData;
 
         if (IsLocalBannerMissing(data))
@@ -133,7 +125,7 @@ public class Background : MonoBehaviour
         }
         else if (HasBannerBeenRemoved(data))
         {
-            _logger.LogDebug("Banner image has been removed.");
+            Debug.Log("Banner image has been removed.");
             ClearCachedBanner();
             CachedBannerModificationDate = bannerData.ModificationDate;
 
@@ -141,18 +133,18 @@ public class Background : MonoBehaviour
         }
         else if (IsCachedBannerSameAsRemote(data.BannerData))
         {
-            _logger.LogDebug("Nothing has changed.");
+            Debug.Log("Nothing has changed.");
         }
         else
         {
-            _logger.LogDebug("Banner has never been set.");
+            Debug.Log("Banner has never been set.");
             SwitchToDefault();
         }
     }
 
     private void SwitchToDefault()
     {
-        _logger.LogDebug("Switching to default background");
+        Debug.Log("Switching to default background");
         NewImage.sprite = DefaultBackground;
         MainAnimator.SetTrigger(AnimationSwitchTrigger);
     }
@@ -188,10 +180,10 @@ public class Background : MonoBehaviour
 
     private void ClearCachedBanner()
     {
-        _logger.LogDebug(string.Format("Clearning the cached banner at {0}", CachedBannerPath));
+        Debug.Log($"Clearning the cached banner at {CachedBannerPath}");
         if (!File.Exists(CachedBannerPath))
         {
-            _logger.LogError("The cached banner doesn't exist.");
+            Debug.LogError("The cached banner doesn't exist.");
             return;
         }
 
@@ -249,19 +241,19 @@ public class Background : MonoBehaviour
 
             if (string.IsNullOrEmpty(filepath))
             {
-                _logger.LogWarning("Banner file path was null or empty.");
+                Debug.LogWarning("Banner file path was null or empty.");
                 return;
             }
         }
 
         if (File.Exists(filepath))
         {
-            _logger.LogDebug(string.Format("Loading the banner image from {0}", filepath));
+            Debug.Log($"Loading the banner image from {filepath}");
             var fileBytes = File.ReadAllBytes(filepath);
 
             if (!texture.LoadImage(fileBytes))
             {
-                _logger.LogError("Failed to load the banner image.");
+                Debug.LogError("Failed to load the banner image.");
                 return;
             }
 
@@ -271,7 +263,7 @@ public class Background : MonoBehaviour
         }
         else
         {
-            _logger.LogWarning("The cached banner image doesn't exist.");
+            Debug.LogWarning("The cached banner image doesn't exist.");
         }
     }
 }

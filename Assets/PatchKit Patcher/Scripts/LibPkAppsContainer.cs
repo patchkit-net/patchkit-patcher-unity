@@ -2,10 +2,7 @@ using System;
 using Autofac;
 using PatchKit.Core;
 using PatchKit.Core.CSharp;
-using PatchKit.Logging;
-using PatchKit.Unity;
 using UnityEngine;
-using ILogger = PatchKit.Logging.ILogger;
 
 namespace PatchKit_Patcher.Scripts
 {
@@ -13,7 +10,7 @@ namespace PatchKit_Patcher.Scripts
     {
         private static IContainer _container;
 
-        private static PlatformType GetPlatformType()
+        public static PlatformType GetPlatformType()
         {
             bool is64Bit = IntPtr.Size == 8;
 
@@ -129,8 +126,6 @@ namespace PatchKit_Patcher.Scripts
             PatchKit.Librsync.Properties.AssemblyModule librsyncModule =
                 new PatchKit.Librsync.Properties.AssemblyModule();
 
-            builder.RegisterModule(new PatchKit.Logging.Properties.AssemblyModule());
-            builder.RegisterType<DefaultLogger>().As<DefaultLogger>().As<ILogger>().As<IMessagesStream>().SingleInstance();
             builder.RegisterModule(coreModule);
             builder.RegisterModule(networkModule);
             builder.RegisterModule(apiModule);

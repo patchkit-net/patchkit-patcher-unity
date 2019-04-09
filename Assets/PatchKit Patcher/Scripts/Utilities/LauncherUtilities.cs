@@ -1,15 +1,11 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using PatchKit.Logging;
-using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Utilities
 {
     public static class LauncherUtilities
     {
-        private static readonly ILogger Logger = PatcherLogManager.DefaultLogger;
-
         private const string LauncherPathFileName = "launcher_path";
 
         private static string GetDefaultLauncherName(PlatformType platformType)
@@ -50,9 +46,9 @@ namespace PatchKit.Unity.Utilities
         private static ProcessStartInfo GetLauncherProcessStartInfo(PlatformType platformType)
         {
             var launcherPath = Path.GetFullPath(FindLauncherExecutable(platformType));
-            Logger.LogTrace("launcherPath = " + launcherPath);
+            UnityEngine.Debug.Log("launcherPath = " + launcherPath);
 
-            Logger.LogDebug("Checking if launcher is valid executable...");
+            UnityEngine.Debug.Log("Checking if launcher is valid executable...");
             if (!Files.IsExecutable(launcherPath, platformType))
             {
                 throw new ApplicationException("Invalid Launcher executable.");
@@ -81,27 +77,28 @@ namespace PatchKit.Unity.Utilities
         {
             try
             {
-                Logger.LogDebug("Executing launcher...");
+                UnityEngine.Debug.Log("Executing launcher...");
 
                 var platformType = Platform.GetPlatformType();
-                Logger.LogTrace("platformType = " + platformType);
+                UnityEngine.Debug.Log("platformType = " + platformType);
 
                 var processStartInfo = GetLauncherProcessStartInfo(platformType);
 
-                Logger.LogDebug("Starting launcher process...");
-                Logger.LogTrace("fileName = " + processStartInfo.FileName);
-                Logger.LogTrace("arguments = " + processStartInfo.Arguments);
+                UnityEngine.Debug.Log("Starting launcher process...");
+                UnityEngine.Debug.Log("fileName = " + processStartInfo.FileName);
+                UnityEngine.Debug.Log("arguments = " + processStartInfo.Arguments);
 
                 if (Process.Start(processStartInfo) == null)
                 {
                     throw new ApplicationException("Failed to start Launcher process.");
                 }
 
-                Logger.LogDebug("Launcher executed.");
+                UnityEngine.Debug.Log("Launcher executed.");
             }
             catch (Exception e)
             {
-                Logger.LogError("Failed to execute launcher.", e);
+                UnityEngine.Debug.LogError("Failed to execute launcher.");
+                UnityEngine.Debug.LogException(e);
                 throw;
             }
         }
