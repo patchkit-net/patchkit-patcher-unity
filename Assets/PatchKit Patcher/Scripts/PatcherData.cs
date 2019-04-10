@@ -1,8 +1,5 @@
-﻿using System;
-
-namespace PatchKit.Unity.Patcher
+﻿namespace PatchKit.Unity.Patcher
 {
-    [Serializable]
     public struct PatcherData
     {
         public string AppSecret;

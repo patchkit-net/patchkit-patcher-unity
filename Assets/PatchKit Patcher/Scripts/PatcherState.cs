@@ -1,11 +1,37 @@
+using JetBrains.Annotations;
+
 namespace PatchKit_Patcher.Scripts
 {
-    public struct PatcherState
+public class PatcherState
+{
+    public PatcherState(
+        [NotNull] string appSecret,
+        [NotNull] string appPath,
+        int? overrideAppLatestVersionId,
+        string lockFilePath)
     {
-        public PatcherStateKind Kind { get; }
+        AppState = new PatcherAppState(
+            secret: appSecret,
+            path: appPath,
+            overrideLatestVersionId: overrideAppLatestVersionId);
 
-        public PatcherUpdateAppState? UpdateAppState { get; }
+        UpdateAppState = new PatcherUpdateAppState();
 
-        public PatcherAppState AppState { get; }
+        LockFilePath = lockFilePath;
     }
+
+    [NotNull]
+    public PatcherAppState AppState { get; }
+
+    [NotNull]
+    public PatcherUpdateAppState UpdateAppState { get; }
+
+    public string LockFilePath { get; }
+
+    public PatcherStateKind Kind { get; set; }
+
+    public bool IsOnline { get; set; }
+
+    public bool HasChanged { get; set; }
+}
 }

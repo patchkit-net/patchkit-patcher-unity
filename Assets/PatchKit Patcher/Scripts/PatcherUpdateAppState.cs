@@ -1,11 +1,11 @@
 namespace PatchKit_Patcher.Scripts
 {
-    public struct PatcherUpdateAppState
-    {
-        public long InstalledBytes { get; }
+public class PatcherUpdateAppState
+{
+    public long InstalledBytes { get; set; }
 
-        public long TotalBytes { get; }
+    public long TotalBytes { get; set; }
 
-        public double BytesPerSecond { get; }
-    }
+    public double BytesPerSecond { get; set; }
+}
 }
