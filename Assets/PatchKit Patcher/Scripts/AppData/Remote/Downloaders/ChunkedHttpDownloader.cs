@@ -36,6 +36,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             public BytesRange Range;
         }
 
+        public struct UrlPair
+        {
+            public UrlPair(ResourceUrl primary, ResourceUrl? secondary = null)
+            {
+                Primary = primary;
+                Secondary = secondary;
+            }
+
+            public readonly ResourceUrl Primary;
+            public readonly ResourceUrl? Secondary;
+        }
+
         private readonly ILogger _logger;
 
         private readonly IRequestTimeoutCalculator _timeoutCalculator = new SimpleRequestTimeoutCalculator();
@@ -127,8 +139,22 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     do
                     {
+                        var urlsWithBackup = Enumerable.Range(0, _urls.Length)
+                            // .Select(idx => _urls.Length - (idx + 1)) // Reverse, only for testing purposes
+                            .Select(idx => {
+                                    var nextIdx = idx + 1;
+                                    if (nextIdx >= _urls.Length)
+                                    {
+                                        return new UrlPair(_urls[idx]);
+                                    }
+                                    else
+                                    {
+                                        return new UrlPair(_urls[idx], _urls[nextIdx]);
+                                    }
+                                });
+
                         bool success =
-                            _urls.Any((primaryUrl, secondaryUrl) => TryDownload(url, fileStream, cancellationToken));
+                            urlsWithBackup.Any(urlPair => TryDownload(urlPair.Primary, urlPair.Secondary, fileStream, cancellationToken));
 
                         if (success)
                         {
@@ -163,17 +189,22 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private ResourceUrl? GetNextUrl(ResourceUrl url)
-        {
-            _urls.
-        }
-
-        private bool TryDownload(ResourceUrl url, ChunkedFileStream fileStream, CancellationToken cancellationToken)
+        private bool TryDownload(ResourceUrl url, ResourceUrl? secondaryUrl, ChunkedFileStream fileStream, CancellationToken cancellationToken)
         {
             try
             {
+                _logger.LogDebug(string.Format("Downloading from {0}", url));
+                if (!secondaryUrl.HasValue)
+                {
+                    _logger.LogDebug("Secondary url is null");
+                }
+
+                NodeTester secondaryNodeTester = null;
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
                 var calculator = new DownloadSpeedCalculator();
-                var downloadJobQueue = BuildDownloadJobQueue(url, fileStream.VerifiedLength);
+                IEnumerable<DownloadJob> downloadJobQueue = BuildDownloadJobQueue(url, fileStream.VerifiedLength);
 
                 foreach (var downloadJob in downloadJobQueue)
                 {
@@ -182,6 +213,31 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     foreach (var dataPacket in baseHttpDownloader.Download(cancellationToken))
                     {
+                        if (secondaryUrl.HasValue && stopwatch.IsRunning && stopwatch.Elapsed > TimeSpan.FromSeconds(0))
+                        {
+                            if (secondaryNodeTester == null)
+                            {
+                                _logger.LogDebug("Testing secondary url");
+                                secondaryNodeTester = new NodeTester(secondaryUrl.Value.Url);
+                                secondaryNodeTester.Start(cancellationToken);
+
+                                stopwatch.Reset();
+                                stopwatch.Start();
+                            }
+                            else
+                            {
+                                if (secondaryNodeTester.IsReady)
+                                {
+                                    _logger.LogDebug("Secondary url test finished.");
+                                    if (secondaryNodeTester.BytesPerSecond > 2 * calculator.BytesPerSecond)
+                                    {
+                                        _logger.LogDebug("Secondary url download speed is 2 times faster, switching...");
+                                        return false;
+                                    }
+                                    stopwatch.Stop();
+                                }
+                            }
+                        }
                         var bytes = dataPacket.Data;
                         var length = dataPacket.Length;
 

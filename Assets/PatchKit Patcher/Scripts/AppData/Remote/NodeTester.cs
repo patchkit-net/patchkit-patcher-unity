@@ -39,7 +39,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private Thread _thread = null;
 
-        private DownloadSpeedCalculator _calculator;
+        private DownloadSpeedCalculator _calculator = new DownloadSpeedCalculator();
 
         private bool _isDone;
 
@@ -47,6 +47,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private static readonly ulong DefaultSize = (ulong) (5 * Units.MB);
         private static readonly double DefaultSeed = 0.123;
+
+        public static string PruneUrl(string url, ulong size, double seed)
+        {
+            var uri = new Uri(url);
+            return string.Format("{3}://{0}:8888/garbage.php?r={1}&ckSize={2}", uri.Host, seed, size, uri.Scheme);
+        }
 
         public NodeTester(string url)
             : this(url, DefaultSize, DefaultSeed)
@@ -106,7 +112,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 CancellationTokenSource cancellationSource = new CancellationTokenSource();
                 cancellationToken.Register(cancellationSource.Cancel);
 
-                var downloader = new BaseHttpDownloader(_url, Timeout);
+                var downloader = new BaseHttpDownloader(PruneUrl(_url, _size, _seed), Timeout);
 
                 downloader.DataAvailable += (data, length) => {
                     lock (_calculator)
@@ -120,7 +126,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 _wasSuccess = true;
             });
 
-            _thread.Start();
+            _thread.Start(1);
         }
 
 
