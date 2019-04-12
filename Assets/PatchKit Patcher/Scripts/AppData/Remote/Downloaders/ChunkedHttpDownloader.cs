@@ -64,7 +64,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private bool _downloadHasBeenCalled;
 
-        private bool _hasChangedServers = false;
+        private bool _hasCheckedAnotherNode = false;
 
         private BytesRange _range = new BytesRange(0, -1);
 
@@ -202,56 +202,87 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 }
 
                 NodeTester secondaryNodeTester = null;
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
+                var nodeTestingStopwatch = new Stopwatch();
+                nodeTestingStopwatch.Start();
+
+                var downloadLogIntervalStopwatch = new Stopwatch();
 
                 var calculator = new DownloadSpeedCalculator();
                 IEnumerable<DownloadJob> downloadJobQueue = BuildDownloadJobQueue(url, fileStream.VerifiedLength);
 
                 foreach (var downloadJob in downloadJobQueue)
                 {
+                    _logger.LogDebug(string.Format("Executing download job {0} with offest {1}",
+                        downloadJob.Url, downloadJob.Range.Start));
+                    _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+                    _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+
                     var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeoutCalculator.Timeout);
                     baseHttpDownloader.SetBytesRange(downloadJob.Range);
 
+                    downloadLogIntervalStopwatch.Start();
+
+                    ulong totalBytesDownloaded = 0;
+
                     foreach (var dataPacket in baseHttpDownloader.ReadPackets(cancellationToken))
                     {
-                        if (!_hasChangedServers &&
-                            calculator.TimeRemaining(_size) > TimeSpan.FromMinutes(2.0) &&
-                            secondaryUrl.HasValue &&
-                            stopwatch.IsRunning &&
-                            stopwatch.Elapsed > TimeSpan.FromSeconds(15.0))
+                        if (!_hasCheckedAnotherNode
+                         && calculator.TimeRemaining(_size) > TimeSpan.FromMinutes(2.0)
+                         && secondaryUrl.HasValue)
                         {
-                            if (secondaryNodeTester == null)
+                            if (secondaryNodeTester == null &&
+                                nodeTestingStopwatch.IsRunning &&
+                                nodeTestingStopwatch.Elapsed > TimeSpan.FromSeconds(15.0))
                             {
                                 _logger.LogDebug("Testing secondary url");
                                 secondaryNodeTester = new NodeTester(secondaryUrl.Value.Url);
                                 secondaryNodeTester.Start(cancellationToken);
 
-                                stopwatch.Reset();
-                                stopwatch.Start();
+                                nodeTestingStopwatch.Reset();
+                                nodeTestingStopwatch.Start();
                             }
-                            else
+
+                            if (secondaryNodeTester != null)
                             {
                                 if (secondaryNodeTester.IsReady)
                                 {
                                     _logger.LogDebug("Secondary url test finished.");
+                                    _logger.LogTrace(string.Format("Current download speed {0} bps", calculator.BytesPerSecond));
+                                    _logger.LogTrace(string.Format("Secondary node download speed {0} bps", secondaryNodeTester.BytesPerSecond));
+
                                     if (secondaryNodeTester.BytesPerSecond > 2 * calculator.BytesPerSecond)
                                     {
-                                        _logger.LogDebug("Secondary url download speed is 2 times faster, switching...");
+                                        _logger.LogDebug("Secondary url download speed is 2 times faster, switching.");
                                         fileStream.ClearUnverified();
-                                        _hasChangedServers = true;
+                                        _hasCheckedAnotherNode = true;
                                         return false;
                                     }
-                                    stopwatch.Stop();
+                                    else
+                                    {
+                                        _logger.LogDebug("Secondary node download speed was not 2 times faster, not switching.");
+                                    }
                                 }
+
                             }
                         }
-                        var bytes = dataPacket.Data;
-                        var length = dataPacket.Length;
 
-                        fileStream.Write(bytes, 0, length);
+                        int length = dataPacket.Length;
 
-                        if (!_hasChangedServers)
+                        totalBytesDownloaded += (ulong) length;
+
+                        fileStream.Write(dataPacket.Data, 0, length);
+
+                        if (downloadLogIntervalStopwatch.Elapsed > TimeSpan.FromSeconds(5))
+                        {
+                            downloadLogIntervalStopwatch.Reset();
+                            downloadLogIntervalStopwatch.Start();
+
+                            _logger.LogDebug(string.Format("Downloaded {0} from {1}", totalBytesDownloaded, downloadJob.Url));
+                            _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+                            _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+                        }
+
+                        if (!_hasCheckedAnotherNode)
                         {
                             calculator.AddSample(length, DateTime.Now);
                         }
@@ -259,6 +290,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                         OnDownloadProgressChanged(fileStream.VerifiedLength);
                     }
                 }
+
+                _logger.LogDebug("Download job execution success.");
+                _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+                _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
 
                 if (fileStream.RemainingLength != 0)
                 {
