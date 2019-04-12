@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private bool _wasSuccess;
 
-        private static readonly ulong DefaultSize = (ulong) (5 * Units.MB);
+        private static readonly ulong DefaultSize = 5;
         private static readonly double DefaultSeed = 0.123;
 
         public static string PruneUrl(string url, ulong size, double seed)
@@ -114,14 +114,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
                 var downloader = new BaseHttpDownloader(PruneUrl(_url, _size, _seed), Timeout);
 
-                downloader.DataAvailable += (data, length) => {
+                downloader.Download(cancellationSource.Token, (data, length) => {
                     lock (_calculator)
                     {
                         _calculator.AddSample(length, DateTime.Now);
                     }
-                };
+                });
 
-                downloader.Download(cancellationSource.Token);
                 _isDone = true;
                 _wasSuccess = true;
             });

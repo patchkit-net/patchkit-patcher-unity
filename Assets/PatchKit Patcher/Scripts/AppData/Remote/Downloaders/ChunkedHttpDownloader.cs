@@ -64,6 +64,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private bool _downloadHasBeenCalled;
 
+        private bool _hasChangedServers = false;
+
         private BytesRange _range = new BytesRange(0, -1);
 
         public event DownloadProgressChangedHandler DownloadProgressChanged;
@@ -208,12 +210,16 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 foreach (var downloadJob in downloadJobQueue)
                 {
-                    var baseHttpDownloader = new BaseHttpStream(downloadJob.Url, _timeoutCalculator.Timeout);
+                    var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeoutCalculator.Timeout);
                     baseHttpDownloader.SetBytesRange(downloadJob.Range);
 
-                    foreach (var dataPacket in baseHttpDownloader.Download(cancellationToken))
+                    foreach (var dataPacket in baseHttpDownloader.ReadPackets(cancellationToken))
                     {
-                        if (secondaryUrl.HasValue && stopwatch.IsRunning && stopwatch.Elapsed > TimeSpan.FromSeconds(0))
+                        if (!_hasChangedServers &&
+                            calculator.TimeRemaining(_size) > TimeSpan.FromMinutes(2.0) &&
+                            secondaryUrl.HasValue &&
+                            stopwatch.IsRunning &&
+                            stopwatch.Elapsed > TimeSpan.FromSeconds(15.0))
                         {
                             if (secondaryNodeTester == null)
                             {
@@ -232,6 +238,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                                     if (secondaryNodeTester.BytesPerSecond > 2 * calculator.BytesPerSecond)
                                     {
                                         _logger.LogDebug("Secondary url download speed is 2 times faster, switching...");
+                                        fileStream.ClearUnverified();
+                                        _hasChangedServers = true;
                                         return false;
                                     }
                                     stopwatch.Stop();
@@ -243,7 +251,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         fileStream.Write(bytes, 0, length);
 
-                        calculator.AddSample(length, DateTime.Now);
+                        if (!_hasChangedServers)
+                        {
+                            calculator.AddSample(length, DateTime.Now);
+                        }
 
                         OnDownloadProgressChanged(fileStream.VerifiedLength);
                     }

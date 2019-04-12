@@ -75,6 +75,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             return BytesPerSecond;
         }
 
+        public TimeSpan TimeRemaining(long dataSize)
+        {
+            return TimeSpan.FromSeconds(dataSize / BytesPerSecond);
+        }
+
         public double BytesPerSecond
         {
             get

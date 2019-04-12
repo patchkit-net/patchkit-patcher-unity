@@ -15,6 +15,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         long Length { get; }
 
         void Write([NotNull] byte[] buffer, int offset, int count);
+        void ClearUnverified();
     }
 
     /// <summary>
@@ -37,7 +38,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         protected int _chunkIndex;
 
         private int _startChunk;
-        private int _endChunk;
 
         private T _targetStream;
 
@@ -82,7 +82,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _logger.LogTrace("chunksData.ChunkSize = " + chunksData.ChunkSize);
 
             _startChunk = startChunk;
-            _endChunk = endChunk;
 
             bool noEndChunk = endChunk == -1;
             bool isLastChunkIncomplete = !noEndChunk && (endChunk * chunksData.ChunkSize > size);
@@ -158,6 +157,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     }
                 }
             } while (count > 0);
+        }
+
+        public void ClearUnverified()
+        {
+            DiscardBuffer();
         }
 
         private bool ChunkFullyInBuffer()
