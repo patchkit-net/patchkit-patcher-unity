@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private bool _wasSuccess;
 
-        private static readonly ulong DefaultSize = 5;
+        private static readonly ulong DefaultSize = 50;
         private static readonly double DefaultSeed = 0.123;
 
         public static string PruneUrl(string url, ulong size, double seed)
