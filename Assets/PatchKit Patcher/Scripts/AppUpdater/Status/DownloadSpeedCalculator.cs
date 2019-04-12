@@ -77,7 +77,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
 
         public TimeSpan TimeRemaining(long dataSize)
         {
-            return TimeSpan.FromSeconds(dataSize / BytesPerSecond);
+            try
+            {
+                return TimeSpan.FromSeconds(dataSize / BytesPerSecond);
+            }
+            catch (OverflowException)
+            {
+                return new TimeSpan(Int64.MaxValue);
+            }
         }
 
         public double BytesPerSecond
