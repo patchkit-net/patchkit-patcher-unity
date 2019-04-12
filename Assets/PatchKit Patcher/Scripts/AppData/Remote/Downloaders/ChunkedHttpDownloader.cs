@@ -228,42 +228,38 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     {
                         if (!_hasCheckedAnotherNode
                          && calculator.TimeRemaining(_size) > TimeSpan.FromMinutes(2.0)
-                         && secondaryUrl.HasValue)
+                         && secondaryUrl.HasValue
+                         && secondaryNodeTester == null
+                         && nodeTestingStopwatch.IsRunning
+                         && nodeTestingStopwatch.Elapsed > TimeSpan.FromSeconds(15.0))
                         {
-                            if (secondaryNodeTester == null &&
-                                nodeTestingStopwatch.IsRunning &&
-                                nodeTestingStopwatch.Elapsed > TimeSpan.FromSeconds(15.0))
-                            {
-                                _logger.LogDebug("Testing secondary url");
-                                secondaryNodeTester = new NodeTester(secondaryUrl.Value.Url);
-                                secondaryNodeTester.Start(cancellationToken);
+                            _logger.LogDebug("Testing secondary url");
+                            secondaryNodeTester = new NodeTester(secondaryUrl.Value.Url);
+                            secondaryNodeTester.Start(cancellationToken);
 
-                                nodeTestingStopwatch.Reset();
-                                nodeTestingStopwatch.Start();
+                            nodeTestingStopwatch.Stop();
+                        }
+
+                        if (secondaryNodeTester != null && secondaryNodeTester.IsReady)
+                        {
+                            _logger.LogDebug("Secondary url test finished.");
+                            _logger.LogTrace(string.Format("Current download speed {0} bps", calculator.BytesPerSecond));
+                            _logger.LogTrace(string.Format("Secondary node download speed {0} bps", secondaryNodeTester.BytesPerSecond));
+
+                            if (secondaryNodeTester.BytesPerSecond > 2 * calculator.BytesPerSecond)
+                            {
+                                _logger.LogDebug("Secondary url download speed is 2 times faster, switching.");
+                                fileStream.ClearUnverified();
+                                _hasCheckedAnotherNode = true;
+                                return false;
+                            }
+                            else
+                            {
+                                _logger.LogDebug("Secondary node download speed was not 2 times faster, not switching.");
+                                _hasCheckedAnotherNode = true;
+                                secondaryNodeTester = null;
                             }
 
-                            if (secondaryNodeTester != null)
-                            {
-                                if (secondaryNodeTester.IsReady)
-                                {
-                                    _logger.LogDebug("Secondary url test finished.");
-                                    _logger.LogTrace(string.Format("Current download speed {0} bps", calculator.BytesPerSecond));
-                                    _logger.LogTrace(string.Format("Secondary node download speed {0} bps", secondaryNodeTester.BytesPerSecond));
-
-                                    if (secondaryNodeTester.BytesPerSecond > 2 * calculator.BytesPerSecond)
-                                    {
-                                        _logger.LogDebug("Secondary url download speed is 2 times faster, switching.");
-                                        fileStream.ClearUnverified();
-                                        _hasCheckedAnotherNode = true;
-                                        return false;
-                                    }
-                                    else
-                                    {
-                                        _logger.LogDebug("Secondary node download speed was not 2 times faster, not switching.");
-                                    }
-                                }
-
-                            }
                         }
 
                         int length = dataPacket.Length;
@@ -280,11 +276,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             _logger.LogDebug(string.Format("Downloaded {0} from {1}", totalBytesDownloaded, downloadJob.Url));
                             _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
                             _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+                            _logger.LogTrace("calculator.BytesPerSecond = " + calculator.BytesPerSecond);
                         }
 
                         if (!_hasCheckedAnotherNode)
                         {
-                            calculator.AddSample(length, DateTime.Now);
+                            calculator.AddSample((long) totalBytesDownloaded, DateTime.Now);
                         }
 
                         OnDownloadProgressChanged(fileStream.VerifiedLength);

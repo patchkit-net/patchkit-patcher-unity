@@ -37,32 +37,32 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             _samples.Clear();
         }
 
-        public void AddSample(long? bytes, DateTime time)
+        public void AddSample(long? totalBytes, DateTime time)
         {
-            if (bytes.HasValue && _lastBytes > bytes)
+            if (totalBytes.HasValue && _lastBytes > totalBytes)
             {
                 Restart(time);
             }
 
             var duration = time - _lastTime;
 
-            if (duration < MinimumDelayBetweenSamples)
+            if (_samples.Count > 0 && duration < MinimumDelayBetweenSamples)
             {
                 return;
             }
 
             CleanOldSamples(time);
 
-            if (bytes.HasValue)
+            if (totalBytes.HasValue)
             {
                 _samples.Add(new Sample
                 {
-                    Bytes = bytes.Value - _lastBytes,
+                    Bytes = totalBytes.Value - _lastBytes,
                     Duration = duration,
                     AddTime = time
                 });
 
-                _lastBytes = bytes.Value;
+                _lastBytes = totalBytes.Value;
             }
 
             _lastTime = time;

@@ -48,6 +48,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private static readonly ulong DefaultSize = 50;
         private static readonly double DefaultSeed = 0.123;
 
+        private static readonly TimeSpan MaxTestDuration = TimeSpan.FromSeconds(15.0);
+
         public static string PruneUrl(string url, ulong size, double seed)
         {
             var uri = new Uri(url);
@@ -112,14 +114,26 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 CancellationTokenSource cancellationSource = new CancellationTokenSource();
                 cancellationToken.Register(cancellationSource.Cancel);
 
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
                 var downloader = new BaseHttpDownloader(PruneUrl(_url, _size, _seed), Timeout);
 
-                downloader.Download(cancellationSource.Token, (data, length) => {
+                long totalBytes = 0;
+
+                foreach (var packet in downloader.ReadPackets(cancellationSource.Token))
+                {
+                    totalBytes += packet.Length;
                     lock (_calculator)
                     {
-                        _calculator.AddSample(length, DateTime.Now);
+                        _calculator.AddSample(totalBytes, DateTime.Now);
                     }
-                });
+
+                    if (stopwatch.Elapsed > MaxTestDuration)
+                    {
+                        break;
+                    }
+                }
 
                 _isDone = true;
                 _wasSuccess = true;
