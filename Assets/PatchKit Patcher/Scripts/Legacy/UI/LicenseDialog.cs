@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Threading;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
-using Utilities;
 
 namespace Legacy.UI
 {
-public class LicenseDialog : Dialog<LicenseDialog>, ILicenseDialog
+public class LicenseDialog : MonoBehaviour
 {
-    private LicenseDialogResult _result;
-
     public Text ErrorMessageText;
-
     public InputField KeyInputField;
 
     [Multiline]
@@ -20,75 +16,70 @@ public class LicenseDialog : Dialog<LicenseDialog>, ILicenseDialog
     [Multiline]
     public string BlockedLicenseMessageText;
 
+    //TODO: Use it
     [Multiline]
     public string ServiceUnavailableMessageText;
 
+    private void Awake()
+    {
+        var animator = GetComponent<Animator>();
+
+        Assert.IsNotNull(value: animator);
+
+        Patcher.Instance.StateChanged += state =>
+        {
+            Assert.IsNotNull(value: state);
+            Assert.IsNotNull(value: ErrorMessageText);
+
+            bool isAskingForLicenseKey =
+                state.Kind == PatcherStateKind.AskingForLicenseKey;
+
+            animator.SetBool(
+                name: "IsOpened",
+                value: isAskingForLicenseKey);
+
+            if (!isAskingForLicenseKey)
+            {
+                return;
+            }
+
+            switch (state.AppState.LicenseKeyIssue)
+            {
+                case PatcherLicenseKeyIssue.None:
+                    ErrorMessageText.text = string.Empty;
+                    break;
+                case PatcherLicenseKeyIssue.Invalid:
+                    ErrorMessageText.text = InvalidLicenseMessageText;
+                    break;
+                case PatcherLicenseKeyIssue.Blocked:
+                    ErrorMessageText.text = BlockedLicenseMessageText;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        };
+    }
+
     public void Confirm()
     {
-        string key = KeyInputField.text;
-        key = key.ToUpper().Trim();
+        Assert.IsNotNull(value: KeyInputField);
 
-        if (string.IsNullOrEmpty(key))
+        string licenseKey = KeyInputField.text;
+
+        if (string.IsNullOrEmpty(value: licenseKey))
         {
             return;
         }
 
-        _result = new LicenseDialogResult
-        {
-            Key = key,
-            Type = LicenseDialogResultType.Confirmed
-        };
+        licenseKey = licenseKey.ToUpper().Trim();
 
-        base.OnDisplayed();
+        Patcher.Instance.OnUpdateAppWithLicenseKeyRequested(
+            licenseKey: licenseKey);
     }
 
     public void Abort()
     {
-        _result = new LicenseDialogResult
-        {
-            Key = null,
-            Type = LicenseDialogResultType.Aborted
-        };
-
-        base.OnDisplayed();
-    }
-
-    public void SetKey(string key)
-    {
-        UnityDispatcher.Invoke(() => KeyInputField.text = key);
-    }
-
-    public LicenseDialogResult Display(LicenseDialogMessageType messageType)
-    {
-        UnityDispatcher.Invoke(() => UpdateMessage(messageType));
-
-        base.Display(CancellationToken.None);
-
-        return _result;
-    }
-
-    private void UpdateMessage(LicenseDialogMessageType messageType)
-    {
-        switch (messageType)
-        {
-            case LicenseDialogMessageType.None:
-                ErrorMessageText.text = string.Empty;
-                break;
-            case LicenseDialogMessageType.InvalidLicense:
-                ErrorMessageText.text = InvalidLicenseMessageText;
-                break;
-            case LicenseDialogMessageType.BlockedLicense:
-                ErrorMessageText.text = BlockedLicenseMessageText;
-                break;
-            case LicenseDialogMessageType.ServiceUnavailable:
-                ErrorMessageText.text = ServiceUnavailableMessageText;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(
-                    "messageType",
-                    messageType,
-                    null);
-        }
+        Patcher.Instance.OnCancelUpdateAppRequested();
     }
 }
 }

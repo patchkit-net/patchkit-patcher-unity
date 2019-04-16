@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 public partial class Patcher
 {
     public async void OnStartAppRequested()
@@ -8,6 +10,13 @@ public partial class Patcher
     public async void OnUpdateAppRequested()
     {
         await SafeInvoke(func: UpdateApp);
+    }
+
+    public async void OnUpdateAppWithLicenseKeyRequested(
+        [NotNull] string licenseKey)
+    {
+        await SafeInvoke(
+            func: () => UpdateAppWithLicenseKey(licenseKey: licenseKey));
     }
 
     public void OnCancelUpdateAppRequested()

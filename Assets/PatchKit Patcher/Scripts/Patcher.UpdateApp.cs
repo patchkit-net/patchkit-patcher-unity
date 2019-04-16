@@ -8,12 +8,20 @@ public partial class Patcher
 
     public void CancelUpdateApp()
     {
-        _updateAppCancellationTokenSource?.Cancel();
+        if (State.Kind == PatcherStateKind.AskingForLicenseKey)
+        {
+            ModifyState(x: () => State.Kind = PatcherStateKind.Idle);
+        }
+        else
+        {
+            _updateAppCancellationTokenSource?.Cancel();
+        }
     }
 
     private async Task UpdateApp()
     {
-        if (State.Kind != PatcherStateKind.Idle)
+        if (State.Kind != PatcherStateKind.Idle &&
+            State.Kind != PatcherStateKind.AskingForLicenseKey)
         {
             return;
         }
