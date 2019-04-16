@@ -2,9 +2,9 @@
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
-namespace Legacy.UI
+namespace UI
 {
-public class GameTitle : MonoBehaviour
+public class AppName : MonoBehaviour
 {
     public Text Text;
 

@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
-namespace Legacy.UI
+namespace UI
 {
-public class ProgressBar : MonoBehaviour
+public class UpdateProgressBar : MonoBehaviour
 {
     public Text Text;
     public Image Image;

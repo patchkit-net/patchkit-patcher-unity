@@ -5,9 +5,9 @@ using UnityEngine.Assertions;
 using UnityEngine.UI;
 using Utilities;
 
-namespace Legacy.UI
+namespace UI
 {
-public class DownloadSpeed : MonoBehaviour
+public class UpdateSpeed : MonoBehaviour
 {
     public Text Text;
 

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace UI
 {
-public class DownloadStatus : MonoBehaviour
+public class UpdateStatus : MonoBehaviour
 {
     public Text Text;
 
