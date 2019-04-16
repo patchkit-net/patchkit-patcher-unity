@@ -1,6 +1,6 @@
 using System;
 
-namespace PatchKit.Unity.Utilities
+namespace Utilities
 {
     /// <summary>
     /// Utility for converting Unix time stamp.

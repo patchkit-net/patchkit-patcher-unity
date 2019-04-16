@@ -1,6 +1,7 @@
 using System.IO;
 using JetBrains.Annotations;
-using PatchKit.Unity.Patcher.UI;
+using UI;
+using UI.Legacy;
 using UnityEditor;
 using UnityEditor.Callbacks;
 

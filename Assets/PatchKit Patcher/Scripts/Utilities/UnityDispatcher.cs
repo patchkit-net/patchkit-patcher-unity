@@ -1,10 +1,10 @@
 ﻿using System;
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using UnityEngine;
 
-namespace PatchKit.Unity.Utilities
+namespace Utilities
 {
     [AddComponentMenu("")]
     public class UnityDispatcher : MonoBehaviour

@@ -2,152 +2,149 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PatchKit.Unity.Patcher.Debugging;
-using PatchKit.Unity.Utilities;
+using Debugging;
 using UnityEngine;
+using Utilities;
 
-namespace PatchKit.Unity.Patcher
+public class InputArgumentsPatcherDataReader
 {
-    public class InputArgumentsPatcherDataReader
+    private static readonly List<string> _commandLineArgs = Environment.GetCommandLineArgs().ToList();
+
+    public PatcherData Read()
     {
-        private static readonly List<string> _commandLineArgs = Environment.GetCommandLineArgs().ToList();
+        Debug.Log("Reading.");
 
-        public PatcherData Read()
+        PatcherData data = new PatcherData();
+
+        if (!HasArgument("--secret") || !HasArgument("--installdir"))
         {
-            Debug.Log("Reading.");
-
-            PatcherData data = new PatcherData();
-
-            if (!HasArgument("--secret") || !HasArgument("--installdir"))
-            {
-                Debug.Log("Expected the secret and installdir to be present in the command line arguments.");
-                throw new NonLauncherExecutionException("Patcher has been started without a Launcher.");
-            }
-
-            string forceAppSecret;
-            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceSecretEnvironmentVariable, out forceAppSecret))
-            {
-                Debug.Log($"Setting forced app secret {forceAppSecret}");
-                data.AppSecret = forceAppSecret;
-            }
-            else
-            {
-                string appSecret;
-
-                if (!TryReadArgument("--secret", out appSecret))
-                {
-                    throw new ApplicationException("Unable to parse secret from command line.");
-                }
-                data.AppSecret = IsReadable() ? appSecret : DecodeSecret(appSecret);
-            }
-
-            string forceOverrideLatestVersionIdString;
-            if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceVersionEnvironmentVariable, out forceOverrideLatestVersionIdString))
-            {
-                int forceOverrideLatestVersionId;
-
-                if (int.TryParse(forceOverrideLatestVersionIdString, out forceOverrideLatestVersionId))
-                {
-                    Debug.Log($"Setting forced version id {forceOverrideLatestVersionId}");
-                    data.OverrideLatestVersionId = forceOverrideLatestVersionId;
-                }
-            }
-            else
-            {
-                data.OverrideLatestVersionId = 0;
-            }
-
-            string relativeAppDataPath;
-
-            if (!TryReadArgument("--installdir", out relativeAppDataPath))
-            {
-                throw new ApplicationException("Unable to parse app data path from command line.");
-            }
-            data.AppDataPath = MakeAppDataPathAbsolute(relativeAppDataPath);
-
-            string lockFilePath;
-            if (TryReadArgument("--lockfile", out lockFilePath))
-            {
-                data.LockFilePath = lockFilePath;
-                Debug.Log($"Using lock file: {lockFilePath}");
-            }
-            else
-            {
-                Debug.LogWarning("Lock file not provided.");
-            }
-
-            if (HasArgument("--online"))
-            {
-                data.IsOnline = true;
-            }
-            else if (HasArgument("--offline"))
-            {
-                data.IsOnline = false;
-            }
-            else
-            {
-                data.IsOnline = null;
-            }
-
-            return data;
+            Debug.Log("Expected the secret and installdir to be present in the command line arguments.");
+            throw new NonLauncherExecutionException("Patcher has been started without a Launcher.");
         }
 
-        private static string MakeAppDataPathAbsolute(string relativeAppDataPath)
+        string forceAppSecret;
+        if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceSecretEnvironmentVariable, out forceAppSecret))
         {
-            string path = Path.GetDirectoryName(Application.dataPath);
+            Debug.Log($"Setting forced app secret {forceAppSecret}");
+            data.AppSecret = forceAppSecret;
+        }
+        else
+        {
+            string appSecret;
 
-            if (Platform.GetRuntimePlatform() == RuntimePlatform.OSXPlayer)
+            if (!TryReadArgument("--secret", out appSecret))
             {
-                path = Path.GetDirectoryName(path);
+                throw new ApplicationException("Unable to parse secret from command line.");
             }
-
-            // ReSharper disable once AssignNullToNotNullAttribute
-            return Path.Combine(path, relativeAppDataPath);
+            data.AppSecret = IsReadable() ? appSecret : DecodeSecret(appSecret);
         }
 
-        private static bool TryReadArgument(string argumentName, out string value)
+        string forceOverrideLatestVersionIdString;
+        if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceVersionEnvironmentVariable, out forceOverrideLatestVersionIdString))
         {
-            int index = _commandLineArgs.IndexOf(argumentName);
+            int forceOverrideLatestVersionId;
 
-            if (index != -1 && index < _commandLineArgs.Count - 1)
+            if (int.TryParse(forceOverrideLatestVersionIdString, out forceOverrideLatestVersionId))
             {
-                value = _commandLineArgs[index + 1];
-
-                return true;
+                Debug.Log($"Setting forced version id {forceOverrideLatestVersionId}");
+                data.OverrideLatestVersionId = forceOverrideLatestVersionId;
             }
-
-            value = null;
-
-            return false;
         }
-
-        private static bool IsReadable()
+        else
         {
-            return HasArgument("--readable");
+            data.OverrideLatestVersionId = 0;
         }
 
-        private static bool HasArgument(string argumentName)
+        string relativeAppDataPath;
+
+        if (!TryReadArgument("--installdir", out relativeAppDataPath))
         {
-            return _commandLineArgs.Contains(argumentName);
+            throw new ApplicationException("Unable to parse app data path from command line.");
         }
+        data.AppDataPath = MakeAppDataPathAbsolute(relativeAppDataPath);
 
-        private static string DecodeSecret(string encodedSecret)
+        string lockFilePath;
+        if (TryReadArgument("--lockfile", out lockFilePath))
         {
-            var bytes = Convert.FromBase64String(encodedSecret);
-
-            for (int i = 0; i < bytes.Length; ++i)
-            {
-                byte b = bytes[i];
-                bool lsb = (b & 1) > 0;
-                b >>= 1;
-                b |= (byte) (lsb ? 128 : 0);
-                b = (byte) ~b;
-                bytes[i] = b;
-            }
-
-            var chars = new char[bytes.Length/sizeof(char)];
-            Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
-            return new string(chars);
+            data.LockFilePath = lockFilePath;
+            Debug.Log($"Using lock file: {lockFilePath}");
         }
+        else
+        {
+            Debug.LogWarning("Lock file not provided.");
+        }
+
+        if (HasArgument("--online"))
+        {
+            data.IsOnline = true;
+        }
+        else if (HasArgument("--offline"))
+        {
+            data.IsOnline = false;
+        }
+        else
+        {
+            data.IsOnline = null;
+        }
+
+        return data;
+    }
+
+    private static string MakeAppDataPathAbsolute(string relativeAppDataPath)
+    {
+        string path = Path.GetDirectoryName(Application.dataPath);
+
+        if (Platform.GetRuntimePlatform() == RuntimePlatform.OSXPlayer)
+        {
+            path = Path.GetDirectoryName(path);
+        }
+
+        // ReSharper disable once AssignNullToNotNullAttribute
+        return Path.Combine(path, relativeAppDataPath);
+    }
+
+    private static bool TryReadArgument(string argumentName, out string value)
+    {
+        int index = _commandLineArgs.IndexOf(argumentName);
+
+        if (index != -1 && index < _commandLineArgs.Count - 1)
+        {
+            value = _commandLineArgs[index + 1];
+
+            return true;
+        }
+
+        value = null;
+
+        return false;
+    }
+
+    private static bool IsReadable()
+    {
+        return HasArgument("--readable");
+    }
+
+    private static bool HasArgument(string argumentName)
+    {
+        return _commandLineArgs.Contains(argumentName);
+    }
+
+    private static string DecodeSecret(string encodedSecret)
+    {
+        var bytes = Convert.FromBase64String(encodedSecret);
+
+        for (int i = 0; i < bytes.Length; ++i)
+        {
+            byte b = bytes[i];
+            bool lsb = (b & 1) > 0;
+            b >>= 1;
+            b |= (byte) (lsb ? 128 : 0);
+            b = (byte) ~b;
+            bytes[i] = b;
+        }
+
+        var chars = new char[bytes.Length/sizeof(char)];
+        Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
+        return new string(chars);
     }
 }

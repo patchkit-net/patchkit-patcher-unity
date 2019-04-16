@@ -1,4 +1,4 @@
-namespace PatchKit.Unity.Utilities
+namespace Utilities
 {
     public static class Units
     {

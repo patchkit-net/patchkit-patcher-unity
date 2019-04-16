@@ -115,13 +115,13 @@ namespace PatchKit.Unity
                 return;
             }
 
-            Patcher.Patcher patcher = null;
+            global::Patcher patcher = null;
             foreach (var scenePath in scenePaths)
             {
                 var scene = EditorSceneManager.OpenScene(scenePath);
                 EditorSceneManager.SetActiveScene(scene);
 
-                patcher = PatchKit.Unity.Patcher.Patcher.Instance;
+                patcher = global::Patcher.Instance;
 
                 if (patcher)
                 {
@@ -133,23 +133,6 @@ namespace PatchKit.Unity
             {
                 EditorUtility.DisplayDialog("Error", "Couldn't resolve an instance of the Patcher component in any of the build scenes.", "Ok");
                 return;
-            }
-
-            if (patcher.EditorAppSecret != PatchKit.Unity.Patcher.Patcher.EditorAllowedSecret)
-            {
-                if (EditorUtility.DisplayDialog("Error", "Please reset the editor app secret to continue building.", "Reset the secret and continue", "Cancel"))
-                {
-                    patcher.EditorAppSecret = PatchKit.Unity.Patcher.Patcher.EditorAllowedSecret;
-
-                    var activeScene = EditorSceneManager.GetActiveScene();
-
-                    EditorSceneManager.MarkSceneDirty(activeScene);
-                    EditorSceneManager.SaveScene(activeScene);
-                }
-                else
-                {
-                    return;
-                }
             }
 
             BuildOptions buildOptions = BuildOptions.ForceEnableAssertions

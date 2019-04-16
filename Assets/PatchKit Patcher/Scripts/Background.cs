@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
-using PatchKit.Unity.Patcher;
-using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Api.Models;
 using System.IO;
 using UnityEngine.Assertions;
@@ -22,8 +20,6 @@ public class Background : MonoBehaviour
         public string BannerFilePath;
     }
 
-    private UnityCache _cache = null;
-
     private const string CachedBannerPathKey = "cached-banner-path-key";
     private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
 
@@ -36,11 +32,16 @@ public class Background : MonoBehaviour
     {
         get
         {
-            return _cache.GetValue(CachedBannerPathKey);
+            return AppPlayerPrefs.GetString(
+                CachedBannerPathKey,
+                Patcher.Instance.State.AppState.Secret);
         }
         private set
         {
-            _cache.SetValue(CachedBannerPathKey, value);
+            AppPlayerPrefs.SetString(
+                CachedBannerPathKey,
+                Patcher.Instance.State.AppState.Secret,
+                value);
         }
     }
 
@@ -48,12 +49,17 @@ public class Background : MonoBehaviour
     {
         get
         {
-            return _cache.GetValue(CachedBannerModificationDateKey);
+            return AppPlayerPrefs.GetString(
+                CachedBannerModificationDateKey,
+                Patcher.Instance.State.AppState.Secret);
         }
 
         private set
         {
-            _cache.SetValue(CachedBannerModificationDateKey, value);
+            AppPlayerPrefs.SetString(
+                CachedBannerModificationDateKey,
+                Patcher.Instance.State.AppState.Secret,
+                value);
         }
     }
 
@@ -64,6 +70,8 @@ public class Background : MonoBehaviour
 
     public Animator MainAnimator;
 
+    private bool _initialized;
+
     private void Start()
     {
         var patcher = Patcher.Instance;
@@ -73,41 +81,40 @@ public class Background : MonoBehaviour
         Assert.IsNotNull(NewImage);
         Assert.IsNotNull(OldImage);
 
-        patcher.Data
-            .SkipWhile(data => string.IsNullOrEmpty(data.AppSecret))
-            .First()
-            .ObserveOnMainThread()
-            .Subscribe(Initialize);
-        //TODO: Dispose subscription
-    }
-
-    private void Initialize(PatcherData data)
-    {
-        _cache = new UnityCache(data.AppSecret);
-
         if (IsCachedBannerAvailable())
         {
             Debug.Log($"A cached banner image is available at {CachedBannerPath}");
             LoadBannerImage(CachedBannerPath, OldImage);
         }
 
-        var patcher = Patcher.Instance;
+        Patcher.Instance.StateChanged += state => Initialize();
+    }
 
-        patcher.AppInfo
-            .SkipWhile(info => info.Id == default(int))
-            .Select(info => new Data
+    private void Initialize()
+    {
+        if (!Patcher.Instance.State.AppState.Info.HasValue || _initialized)
+        {
+            return;
+        }
+
+        var info = Patcher.Instance.State.AppState.Info.Value;
+
+        _initialized = true;
+
+        var data = new Data
+        {
+            BannerData = new PatcherBannerData
             {
-                BannerData = new PatcherBannerData
-                {
-                    ImageUrl = info.PatcherBannerImage,
-                    Dimensions = info.PatcherBannerImageDimensions,
-                    ModificationDate = info.PatcherBannerImageUpdatedAt
-                },
-                BannerFilePath = Path.Combine(data.AppDataPath, BannerImageFilename)
-            })
-            .ObserveOnMainThread()
-            .Subscribe(OnBannerDataUpdate);
-        //TODO: Dispose subscription
+                ImageUrl = info.PatcherBannerImage,
+                Dimensions = info.PatcherBannerImageDimensions,
+                ModificationDate = info.PatcherBannerImageUpdatedAt
+            },
+            BannerFilePath = Path.Combine(
+                Patcher.Instance.State.AppState.Path,
+                BannerImageFilename)
+        };
+
+        OnBannerDataUpdate(data);
     }
 
     private void OnBannerDataUpdate(Data data)

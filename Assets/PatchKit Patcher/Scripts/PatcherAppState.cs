@@ -1,9 +1,6 @@
 using JetBrains.Annotations;
 using PatchKit.Api.Models;
-using App = PatchKit.Api.Models.App;
 
-namespace PatchKit_Patcher.Scripts
-{
 public class PatcherAppState
 {
     public PatcherAppState(
@@ -22,6 +19,14 @@ public class PatcherAppState
     [NotNull]
     public string Path { get; }
 
+    public bool ShouldBeUpdatedAutomatically { get; set; }
+
+    public bool ShouldBeStartedAutomatically { get; set; }
+
+    public string LicenseKey { get; set; }
+
+    public PatcherLicenseKeyIssue LicenseKeyIssue { get; set; }
+
     public int? OverrideLatestVersionId { get; }
 
     public int? InstalledVersionId { get; set; }
@@ -31,5 +36,4 @@ public class PatcherAppState
     public App? Info { get; set; }
 
     public AppVersion[] Versions { get; set; }
-}
 }

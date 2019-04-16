@@ -1,7 +1,5 @@
 using JetBrains.Annotations;
 
-namespace PatchKit_Patcher.Scripts
-{
 public class PatcherState
 {
     public PatcherState(
@@ -33,5 +31,4 @@ public class PatcherState
     public bool IsOnline { get; set; }
 
     public bool HasChanged { get; set; }
-}
 }

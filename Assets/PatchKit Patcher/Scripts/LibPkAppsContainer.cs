@@ -4,141 +4,138 @@ using PatchKit.Core;
 using PatchKit.Core.CSharp;
 using UnityEngine;
 
-namespace PatchKit_Patcher.Scripts
+public static class LibPkAppsContainer
 {
-    public static class LibPkAppsContainer
+    private static IContainer _container;
+
+    public static PlatformType GetPlatformType()
     {
-        private static IContainer _container;
+        bool is64Bit = IntPtr.Size == 8;
 
-        public static PlatformType GetPlatformType()
+        if (Application.platform == RuntimePlatform.LinuxEditor ||
+            Application.platform == RuntimePlatform.LinuxPlayer)
         {
-            bool is64Bit = IntPtr.Size == 8;
-
-            if (Application.platform == RuntimePlatform.LinuxEditor ||
-                Application.platform == RuntimePlatform.LinuxPlayer)
-            {
-                return is64Bit ? PlatformType.Linux64bit : PlatformType.Linux86bit;
-            }
-
-            if (Application.platform == RuntimePlatform.WindowsEditor ||
-                Application.platform == RuntimePlatform.WindowsPlayer)
-            {
-                return is64Bit ? PlatformType.Win64bit : PlatformType.Win86bit;
-            }
-
-            if (Application.platform == RuntimePlatform.OSXEditor ||
-                Application.platform == RuntimePlatform.OSXPlayer)
-            {
-                return PlatformType.OSX64bit;
-            }
-
-            throw new InvalidOperationException("Not supported platform.");
+            return is64Bit ? PlatformType.Linux64bit : PlatformType.Linux86bit;
         }
 
-        static LibPkAppsContainer()
+        if (Application.platform == RuntimePlatform.WindowsEditor ||
+            Application.platform == RuntimePlatform.WindowsPlayer)
         {
-            ContainerBuilder builder = new ContainerBuilder();
+            return is64Bit ? PlatformType.Win64bit : PlatformType.Win86bit;
+        }
 
-            var platformType = GetPlatformType();
+        if (Application.platform == RuntimePlatform.OSXEditor ||
+            Application.platform == RuntimePlatform.OSXPlayer)
+        {
+            return PlatformType.OSX64bit;
+        }
 
-            int indentLevel = 0;
-            string indent = "";
+        throw new InvalidOperationException("Not supported platform.");
+    }
 
-            int disabledLevel = 0;
-            bool disabled = false;
+    static LibPkAppsContainer()
+    {
+        ContainerBuilder builder = new ContainerBuilder();
 
-            Action refreshIndent = () =>
+        var platformType = GetPlatformType();
+
+        int indentLevel = 0;
+        string indent = "";
+
+        int disabledLevel = 0;
+        bool disabled = false;
+
+        Action refreshIndent = () =>
+        {
+            indent = "";
+            for (int i = 0; i < indentLevel; i++)
             {
-                indent = "";
-                for (int i = 0; i < indentLevel; i++)
+                indent += " ";
+            }
+        };
+
+        PatchKit.Core.Properties.AssemblyModule coreModule = new PatchKit.Core.Properties.AssemblyModule(
+            platformType, x =>
+            {
+                if (disabled)
+                    return;
+                string str;
+                switch (x.Type)
                 {
-                    indent += " ";
+                    case LogMessageType.Trace:
+                        str = "[TRACE]";
+                        break;
+                    case LogMessageType.Info:
+                        str = "[ LOG ]";
+                        break;
+                    case LogMessageType.Warning:
+                        str = "[ WAR ]";
+                        break;
+                    case LogMessageType.Error:
+                        str = "[ERROR]";
+                        break;
+                    default:
+                        str = "[?????]";
+                        break;
                 }
-            };
 
-            PatchKit.Core.Properties.AssemblyModule coreModule = new PatchKit.Core.Properties.AssemblyModule(
-                platformType, x =>
-                {
-                    if (disabled)
-                        return;
-                    string str;
-                    switch (x.Type)
-                    {
-                        case LogMessageType.Trace:
-                            str = "[TRACE]";
-                            break;
-                        case LogMessageType.Info:
-                            str = "[ LOG ]";
-                            break;
-                        case LogMessageType.Warning:
-                            str = "[ WAR ]";
-                            break;
-                        case LogMessageType.Error:
-                            str = "[ERROR]";
-                            break;
-                        default:
-                            str = "[?????]";
-                            break;
-                    }
+                Debug.Log(str + " " + x.Message);
 
-                    Debug.Log(str + " " + x.Message);
+                if (x.Exception == null)
+                    return;
 
-                    if (x.Exception == null)
-                        return;
+                Debug.LogException(x.Exception);
+            }, enabled =>
+            {
+                ++indentLevel;
+                if (!enabled)
+                    ++disabledLevel;
 
-                    Debug.LogException(x.Exception);
-                }, enabled =>
-                {
-                    ++indentLevel;
-                    if (!enabled)
-                        ++disabledLevel;
+                refreshIndent();
 
-                    refreshIndent();
+                disabled = disabledLevel > 0;
+            }, enabled =>
+            {
+                --indentLevel;
+                if (!enabled)
+                    --disabledLevel;
 
-                    disabled = disabledLevel > 0;
-                }, enabled =>
-                {
-                    --indentLevel;
-                    if (!enabled)
-                        --disabledLevel;
+                refreshIndent();
 
-                    refreshIndent();
+                disabled = disabledLevel > 0;
+            });
 
-                    disabled = disabledLevel > 0;
-                });
+        PatchKit.Network.Properties.AssemblyModule networkModule =
+            new PatchKit.Network.Properties.AssemblyModule(coreModule);
 
-            PatchKit.Network.Properties.AssemblyModule networkModule =
-                new PatchKit.Network.Properties.AssemblyModule(coreModule);
+        PatchKit.Api.Properties.AssemblyModule apiModule =
+            new PatchKit.Api.Properties.AssemblyModule(
+                //Settings.GetMainApiConnectionSettings(),
+                //Settings.GetKeysApiConnectionSettings(),
+                coreModule,
+                networkModule);
 
-            PatchKit.Api.Properties.AssemblyModule apiModule =
-                new PatchKit.Api.Properties.AssemblyModule(
-                    //Settings.GetMainApiConnectionSettings(),
-                    //Settings.GetKeysApiConnectionSettings(),
-                    coreModule,
-                    networkModule);
+        PatchKit.Apps.Properties.AssemblyModule
+            appsModule = new PatchKit.Apps.Properties.AssemblyModule(coreModule);
 
-            PatchKit.Apps.Properties.AssemblyModule
-                appsModule = new PatchKit.Apps.Properties.AssemblyModule(coreModule);
+        PatchKit.Apps.Updating.Properties.AssemblyModule appsUpdatingModule =
+            new PatchKit.Apps.Updating.Properties.AssemblyModule(coreModule, networkModule, appsModule);
 
-            PatchKit.Apps.Updating.Properties.AssemblyModule appsUpdatingModule =
-                new PatchKit.Apps.Updating.Properties.AssemblyModule(coreModule, networkModule, appsModule);
+        PatchKit.Librsync.Properties.AssemblyModule librsyncModule =
+            new PatchKit.Librsync.Properties.AssemblyModule();
 
-            PatchKit.Librsync.Properties.AssemblyModule librsyncModule =
-                new PatchKit.Librsync.Properties.AssemblyModule();
+        builder.RegisterModule(coreModule);
+        builder.RegisterModule(networkModule);
+        builder.RegisterModule(apiModule);
+        builder.RegisterModule(librsyncModule);
+        builder.RegisterModule(appsModule);
+        builder.RegisterModule(appsUpdatingModule);
 
-            builder.RegisterModule(coreModule);
-            builder.RegisterModule(networkModule);
-            builder.RegisterModule(apiModule);
-            builder.RegisterModule(librsyncModule);
-            builder.RegisterModule(appsModule);
-            builder.RegisterModule(appsUpdatingModule);
+        _container = builder.Build();
+    }
 
-            _container = builder.Build();
-        }
-
-        public static T Resolve<T>()
-        {
-            return _container.Resolve<T>();
-        }
+    public static T Resolve<T>()
+    {
+        return _container.Resolve<T>();
     }
 }

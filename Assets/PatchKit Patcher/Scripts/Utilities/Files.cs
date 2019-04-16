@@ -1,11 +1,8 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using PatchKit.Core.IO;
-using PatchKit.Unity.Patcher.AppData;
-using PatchKit_Patcher.Scripts;
 using Path = System.IO.Path;
 
-namespace PatchKit.Unity.Utilities
+namespace Utilities
 {
     public static class Files
     {

@@ -1,10 +1,9 @@
-namespace PatchKit_Patcher.Scripts
-{
 public enum PatcherStateKind
 {
+    Initializing,
     Idle,
+    AskingForLicenseKey,
     UpdatingApp,
     StartingApp,
     Quitting
-}
 }

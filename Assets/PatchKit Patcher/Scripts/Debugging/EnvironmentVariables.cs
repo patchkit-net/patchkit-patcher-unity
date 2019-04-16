@@ -1,4 +1,4 @@
-﻿namespace PatchKit.Unity.Patcher.Debugging
+﻿namespace Debugging
 {
     public static class EnvironmentVariables
     {
