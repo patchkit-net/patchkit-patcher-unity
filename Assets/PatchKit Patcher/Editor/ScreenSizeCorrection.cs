@@ -1,7 +1,6 @@
 using System.IO;
 using JetBrains.Annotations;
 using UI;
-using UI.Legacy;
 using UnityEditor;
 using UnityEditor.Callbacks;
 

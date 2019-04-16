@@ -3,83 +3,90 @@ using UnityEngine;
 
 namespace Utilities
 {
-    public class Platform
+public class Platform
+{
+    public static PlatformResolver PlatformResolver { get; set; }
+
+    static Platform()
     {
-        public static PlatformResolver PlatformResolver { get; set; }
+        PlatformResolver = new PlatformResolver();
+    }
 
-        static Platform()
+    public static RuntimePlatform GetRuntimePlatform()
+    {
+        return PlatformResolver.GetRuntimePlatform();
+    }
+
+    public static PlatformType GetPlatformType()
+    {
+        if (IsWindows())
         {
-            PlatformResolver = new PlatformResolver();
+            return PlatformType.Windows;
         }
 
-        public static RuntimePlatform GetRuntimePlatform()
+        if (IsOSX())
         {
-            return PlatformResolver.GetRuntimePlatform();
+            return PlatformType.OSX;
         }
 
-        public static PlatformType GetPlatformType()
+        if (IsLinux())
         {
-            if (IsWindows())
-            {
-                return PlatformType.Windows;
-            }
-            if (IsOSX())
-            {
-                return PlatformType.OSX;
-            }
-            if (IsLinux())
-            {
-                return PlatformType.Linux;
-            }
-            return PlatformType.Unknown;
+            return PlatformType.Linux;
         }
 
-        public static bool IsWindows()
-        {
-            return IsOneOf(RuntimePlatform.WindowsPlayer, RuntimePlatform.WindowsEditor);
-        }
+        return PlatformType.Unknown;
+    }
 
-        public static bool IsOSX()
-        {
-            return IsOneOf(RuntimePlatform.OSXPlayer, RuntimePlatform.OSXEditor);
-        }
+    public static bool IsWindows()
+    {
+        return IsOneOf(
+            RuntimePlatform.WindowsPlayer,
+            RuntimePlatform.WindowsEditor);
+    }
 
-        public static bool IsLinux()
-        {
-            // use preprocessor for this check due to Unity bug in platform enum
-            // it is missing LinuxEditor entry
+    public static bool IsOSX()
+    {
+        return IsOneOf(
+            RuntimePlatform.OSXPlayer,
+            RuntimePlatform.OSXEditor);
+    }
+
+    public static bool IsLinux()
+    {
+        // use preprocessor for this check due to Unity bug in platform enum
+        // it is missing LinuxEditor entry
 #if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
             return true;
 #else
-            return false;
+        return false;
 #endif
-        }
-
-        public static bool IsPosix()
-        {
-            return IsLinux() || IsOSX();
-        }
-
-        public static bool IsOneOf(params RuntimePlatform[] platforms)
-        {
-            var runtimePlatform = GetRuntimePlatform();
-            return platforms.Any(platform => platform == runtimePlatform);
-        }
     }
 
-    public class PlatformResolver
+    public static bool IsPosix()
     {
-        public virtual RuntimePlatform GetRuntimePlatform()
-        {
-            return Application.platform;
-        }
+        return IsLinux() || IsOSX();
     }
 
-    public enum PlatformType
+    public static bool IsOneOf(params RuntimePlatform[] platforms)
     {
-        Unknown,
-        Windows,
-        OSX,
-        Linux,
+        var runtimePlatform = GetRuntimePlatform();
+        return platforms.Any(platform => platform == runtimePlatform);
     }
+}
+
+public class PlatformResolver
+{
+    public virtual RuntimePlatform GetRuntimePlatform()
+    {
+        return Application.platform;
+    }
+}
+
+public enum PlatformType
+{
+    Unknown,
+    Windows,
+    OSX,
+    Linux,
+}
 }

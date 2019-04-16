@@ -141,7 +141,7 @@ public class PatcherLogManager : MonoBehaviour
                 path: _logPath,
                 guid: _logGuid,
                 appId: "patcher-unity",
-                appVersion: Version.Text);
+                appVersion: PatcherVersion.Text);
         }
 
         OpenLogWriter();

@@ -5,7 +5,7 @@ using UnityEngine.Assertions;
 using UnityEngine.UI;
 using Utilities;
 
-namespace UI.Legacy
+namespace Legacy.UI
 {
 public class DownloadSpeed : MonoBehaviour
 {

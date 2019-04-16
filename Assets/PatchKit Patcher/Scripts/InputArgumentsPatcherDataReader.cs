@@ -8,7 +8,8 @@ using Utilities;
 
 public class InputArgumentsPatcherDataReader
 {
-    private static readonly List<string> _commandLineArgs = Environment.GetCommandLineArgs().ToList();
+    private static readonly List<string> _commandLineArgs =
+        Environment.GetCommandLineArgs().ToList();
 
     public PatcherData Read()
     {
@@ -18,12 +19,16 @@ public class InputArgumentsPatcherDataReader
 
         if (!HasArgument("--secret") || !HasArgument("--installdir"))
         {
-            Debug.Log("Expected the secret and installdir to be present in the command line arguments.");
-            throw new NonLauncherExecutionException("Patcher has been started without a Launcher.");
+            Debug.Log(
+                "Expected the secret and installdir to be present in the command line arguments.");
+            throw new NonLauncherExecutionException(
+                "Patcher has been started without a Launcher.");
         }
 
         string forceAppSecret;
-        if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceSecretEnvironmentVariable, out forceAppSecret))
+        if (EnvironmentInfo.TryReadEnvironmentVariable(
+            EnvironmentVariables.ForceSecretEnvironmentVariable,
+            out forceAppSecret))
         {
             Debug.Log($"Setting forced app secret {forceAppSecret}");
             data.AppSecret = forceAppSecret;
@@ -32,21 +37,30 @@ public class InputArgumentsPatcherDataReader
         {
             string appSecret;
 
-            if (!TryReadArgument("--secret", out appSecret))
+            if (!TryReadArgument(
+                "--secret",
+                out appSecret))
             {
-                throw new ApplicationException("Unable to parse secret from command line.");
+                throw new ApplicationException(
+                    "Unable to parse secret from command line.");
             }
+
             data.AppSecret = IsReadable() ? appSecret : DecodeSecret(appSecret);
         }
 
         string forceOverrideLatestVersionIdString;
-        if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.ForceVersionEnvironmentVariable, out forceOverrideLatestVersionIdString))
+        if (EnvironmentInfo.TryReadEnvironmentVariable(
+            EnvironmentVariables.ForceVersionEnvironmentVariable,
+            out forceOverrideLatestVersionIdString))
         {
             int forceOverrideLatestVersionId;
 
-            if (int.TryParse(forceOverrideLatestVersionIdString, out forceOverrideLatestVersionId))
+            if (int.TryParse(
+                forceOverrideLatestVersionIdString,
+                out forceOverrideLatestVersionId))
             {
-                Debug.Log($"Setting forced version id {forceOverrideLatestVersionId}");
+                Debug.Log(
+                    $"Setting forced version id {forceOverrideLatestVersionId}");
                 data.OverrideLatestVersionId = forceOverrideLatestVersionId;
             }
         }
@@ -57,14 +71,20 @@ public class InputArgumentsPatcherDataReader
 
         string relativeAppDataPath;
 
-        if (!TryReadArgument("--installdir", out relativeAppDataPath))
+        if (!TryReadArgument(
+            "--installdir",
+            out relativeAppDataPath))
         {
-            throw new ApplicationException("Unable to parse app data path from command line.");
+            throw new ApplicationException(
+                "Unable to parse app data path from command line.");
         }
+
         data.AppDataPath = MakeAppDataPathAbsolute(relativeAppDataPath);
 
         string lockFilePath;
-        if (TryReadArgument("--lockfile", out lockFilePath))
+        if (TryReadArgument(
+            "--lockfile",
+            out lockFilePath))
         {
             data.LockFilePath = lockFilePath;
             Debug.Log($"Using lock file: {lockFilePath}");
@@ -100,10 +120,14 @@ public class InputArgumentsPatcherDataReader
         }
 
         // ReSharper disable once AssignNullToNotNullAttribute
-        return Path.Combine(path, relativeAppDataPath);
+        return Path.Combine(
+            path,
+            relativeAppDataPath);
     }
 
-    private static bool TryReadArgument(string argumentName, out string value)
+    private static bool TryReadArgument(
+        string argumentName,
+        out string value)
     {
         int index = _commandLineArgs.IndexOf(argumentName);
 
@@ -143,8 +167,13 @@ public class InputArgumentsPatcherDataReader
             bytes[i] = b;
         }
 
-        var chars = new char[bytes.Length/sizeof(char)];
-        Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
+        var chars = new char[bytes.Length / sizeof(char)];
+        Buffer.BlockCopy(
+            bytes,
+            0,
+            chars,
+            0,
+            bytes.Length);
         return new string(chars);
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
-namespace UI.Legacy
+namespace Legacy.UI
 {
 public class Status : MonoBehaviour
 {

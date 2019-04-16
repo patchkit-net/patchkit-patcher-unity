@@ -9,9 +9,11 @@ public class Settings : ScriptableObject
 {
     private const string AssetFileName = "PatchKit Settings";
 
-    [SerializeField] public ApiConnectionSettings MainApiConnectionSettings;
+    [SerializeField]
+    public ApiConnectionSettings MainApiConnectionSettings;
 
-    [SerializeField] public ApiConnectionSettings KeysApiConnectionSettings;
+    [SerializeField]
+    public ApiConnectionSettings KeysApiConnectionSettings;
 
 #if UNITY_EDITOR
     private static Settings CreateSettingsInstance()
@@ -22,18 +24,25 @@ public class Settings : ScriptableObject
         {
             UnityEditor.EditorApplication.isPaused = true;
 
-            UnityEditor.EditorUtility.DisplayDialog("PatchKit Settings has been created.",
-                                                    "PatchKit Settings asset has been created.", "OK");
+            UnityEditor.EditorUtility.DisplayDialog(
+                "PatchKit Settings has been created.",
+                "PatchKit Settings asset has been created.",
+                "OK");
 
             pingObject = true;
         }
 
         var settings = CreateInstance<Settings>();
-        settings.MainApiConnectionSettings = PatchKit.Api.Properties.AssemblyModule.DefaultApiConnectionSettings;
-        settings.KeysApiConnectionSettings = PatchKit.Api.Properties.AssemblyModule.DefaultKeysApiConnectionSettings;
+        settings.MainApiConnectionSettings = PatchKit.Api.Properties
+            .AssemblyModule.DefaultApiConnectionSettings;
+        settings.KeysApiConnectionSettings = PatchKit.Api.Properties
+            .AssemblyModule.DefaultKeysApiConnectionSettings;
 
-        UnityEditor.AssetDatabase.CreateAsset(settings,
-                                              string.Format("Assets/PatchKit Patcher/Resources/{0}.asset", AssetFileName));
+        UnityEditor.AssetDatabase.CreateAsset(
+            settings,
+            string.Format(
+                "Assets/PatchKit Patcher/Resources/{0}.asset",
+                AssetFileName));
         UnityEditor.EditorUtility.SetDirty(settings);
 
         UnityEditor.AssetDatabase.Refresh();
@@ -62,11 +71,14 @@ public class Settings : ScriptableObject
         return settings;
     }
 
-    private static ApiConnectionServer? GetApiConnectionServerFromEnvVar(string argumentName)
+    private static ApiConnectionServer? GetApiConnectionServerFromEnvVar(
+        string argumentName)
     {
         string url;
 
-        if (EnvironmentInfo.TryReadEnvironmentVariable(argumentName, out url))
+        if (EnvironmentInfo.TryReadEnvironmentVariable(
+            argumentName,
+            out url))
         {
             var uri = new Uri(url);
 
@@ -84,10 +96,12 @@ public class Settings : ScriptableObject
         var instance = FindInstance();
 
         var settings = instance == null
-            ? PatchKit.Api.Properties.AssemblyModule.DefaultApiConnectionSettings
+            ? PatchKit.Api.Properties.AssemblyModule
+                .DefaultApiConnectionSettings
             : instance.MainApiConnectionSettings;
 
-        var overrideMain = GetApiConnectionServerFromEnvVar(EnvironmentVariables.ApiUrlEnvironmentVariable);
+        var overrideMain = GetApiConnectionServerFromEnvVar(
+            EnvironmentVariables.ApiUrlEnvironmentVariable);
 
         if (overrideMain.HasValue)
         {
@@ -96,14 +110,17 @@ public class Settings : ScriptableObject
                 cacheServers: settings.CacheServers);
         }
 
-        var overrideMainCache =
-            GetApiConnectionServerFromEnvVar(EnvironmentVariables.ApiCacheUrlEnvironmentVariable);
+        var overrideMainCache = GetApiConnectionServerFromEnvVar(
+            EnvironmentVariables.ApiCacheUrlEnvironmentVariable);
 
         if (overrideMainCache.HasValue)
         {
             settings = new ApiConnectionSettings(
                 mainServer: settings.MainServer,
-                cacheServers: new[] {overrideMainCache.Value}.ToImmutableArray());
+                cacheServers: new[]
+                {
+                    overrideMainCache.Value
+                }.ToImmutableArray());
         }
 
         return settings;
@@ -114,10 +131,12 @@ public class Settings : ScriptableObject
         var instance = FindInstance();
 
         var settings = instance == null
-            ? PatchKit.Api.Properties.AssemblyModule.DefaultKeysApiConnectionSettings
+            ? PatchKit.Api.Properties.AssemblyModule
+                .DefaultKeysApiConnectionSettings
             : instance.KeysApiConnectionSettings;
 
-        var overrideKeys = GetApiConnectionServerFromEnvVar(EnvironmentVariables.KeysUrlEnvironmentVariable);
+        var overrideKeys = GetApiConnectionServerFromEnvVar(
+            EnvironmentVariables.KeysUrlEnvironmentVariable);
 
         if (overrideKeys.HasValue)
         {

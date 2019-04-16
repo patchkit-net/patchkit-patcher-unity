@@ -15,7 +15,8 @@ public class DownloadSpeedCalculator
 
     private static readonly TimeSpan SampleLifeTime = TimeSpan.FromSeconds(5.0);
 
-    private static readonly TimeSpan MinimumDelayBetweenSamples = TimeSpan.FromSeconds(1.0);
+    private static readonly TimeSpan MinimumDelayBetweenSamples =
+        TimeSpan.FromSeconds(1.0);
 
     private readonly List<Sample> _samples = new List<Sample>();
 
@@ -35,7 +36,9 @@ public class DownloadSpeedCalculator
         _samples.Clear();
     }
 
-    public void AddSample(long? bytes, DateTime time)
+    public void AddSample(
+        long? bytes,
+        DateTime time)
     {
         if (bytes.HasValue && _lastBytes > bytes)
         {
@@ -53,12 +56,13 @@ public class DownloadSpeedCalculator
 
         if (bytes.HasValue)
         {
-            _samples.Add(new Sample
-            {
-                Bytes = bytes.Value - _lastBytes,
-                Duration = duration,
-                AddTime = time
-            });
+            _samples.Add(
+                new Sample
+                {
+                    Bytes = bytes.Value - _lastBytes,
+                    Duration = duration,
+                    AddTime = time
+                });
 
             _lastBytes = bytes.Value;
         }
@@ -66,9 +70,13 @@ public class DownloadSpeedCalculator
         _lastTime = time;
     }
 
-    public double Calculate(long? bytes, DateTime time)
+    public double Calculate(
+        long? bytes,
+        DateTime time)
     {
-        AddSample(bytes, DateTime.Now);
+        AddSample(
+            bytes,
+            DateTime.Now);
 
         return BytesPerSecond;
     }

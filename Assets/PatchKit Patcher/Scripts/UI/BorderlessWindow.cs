@@ -7,24 +7,26 @@ using System.Runtime.InteropServices;
 using System.Text;
 #endif
 
-namespace UI.Legacy
+namespace UI
 {
-    public class BorderlessWindow : MonoBehaviour
-    {
-        public const string ScreenSizeFilename = "screensize";
+public class BorderlessWindow : MonoBehaviour
+{
+    public const string ScreenSizeFilename = "screensize";
 
-        public Rect DraggableArea;
+    public Rect DraggableArea;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
         private const string UnityWindowClassName = "UnityWndClass";
 
-        [DllImport("user32.dll", EntryPoint = "SetWindowLong", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", EntryPoint = "SetWindowLong", SetLastError =
+ true, CharSet = CharSet.Auto)]
         private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, int dwNewLong);
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int smIndex);
 
-        [DllImport("user32.dll", EntryPoint = "GetWindowLong", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", EntryPoint = "GetWindowLong", SetLastError =
+ true, CharSet = CharSet.Auto)]
         private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
         [DllImport("user32.dll")]
@@ -110,12 +112,13 @@ namespace UI.Legacy
         private Vector2 _dragWindowStartPosition;
 #endif
 
-        private void Awake()
-        {
-            EnforceCorrectScreenSize();
+    private void Awake()
+    {
+        EnforceCorrectScreenSize();
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
-            _windowRect.position = new Vector2(Screen.currentResolution.width/2.0f - Screen.width/2.0f,
+            _windowRect.position =
+ new Vector2(Screen.currentResolution.width/2.0f - Screen.width/2.0f,
                 Screen.currentResolution.height/2.0f - Screen.height/2.0f);
             _windowRect.size = new Vector2(Screen.width, Screen.height);
 
@@ -124,7 +127,8 @@ namespace UI.Legacy
             uint threadId = GetCurrentThreadId();
             EnumThreadWindows(threadId, (hWnd, lParam) =>
             {
-                var classText = new StringBuilder(UnityWindowClassName.Length + 1);
+                var classText =
+ new StringBuilder(UnityWindowClassName.Length + 1);
                 GetClassName(hWnd, classText, classText.Capacity);
                 if (classText.ToString() == UnityWindowClassName)
                 {
@@ -134,41 +138,54 @@ namespace UI.Legacy
                 return true;
             }, IntPtr.Zero);
 #endif
+    }
+
+    private void EnforceCorrectScreenSize()
+    {
+        string screenSizeFilePath = Path.Combine(
+            Application.dataPath,
+            ScreenSizeFilename);
+        Debug.Log("Reading correct screen size from " + screenSizeFilePath);
+
+        if (!File.Exists(screenSizeFilePath))
+        {
+            Debug.LogWarning(screenSizeFilePath + " file does not exist.");
+            return;
         }
 
-        private void EnforceCorrectScreenSize()
+        var screenResolutionText =
+            File.ReadAllText(screenSizeFilePath).Split(' ');
+
+        try
         {
-            string screenSizeFilePath = Path.Combine(Application.dataPath, ScreenSizeFilename);
-            Debug.Log("Reading correct screen size from " + screenSizeFilePath);
+            int width = int.Parse(screenResolutionText[0]);
+            int height = int.Parse(screenResolutionText[1]);
 
-            if (!File.Exists(screenSizeFilePath))
-            {
-                Debug.LogWarning(screenSizeFilePath + " file does not exist.");
-                return;
-            }
+            PlayerPrefs.SetInt(
+                "Screenmanager Resolution Width",
+                width);
+            PlayerPrefs.SetInt(
+                "Screenmanager Resolution Height",
+                height);
+            PlayerPrefs.SetInt(
+                "Screenmanager Is Fullscreen mode",
+                0);
 
-            var screenResolutionText = File.ReadAllText(screenSizeFilePath).Split(' ');
-
-            try
-            {
-                int width = int.Parse(screenResolutionText[0]);
-                int height = int.Parse(screenResolutionText[1]);
-
-                PlayerPrefs.SetInt("Screenmanager Resolution Width", width);
-                PlayerPrefs.SetInt("Screenmanager Resolution Height", height);
-                PlayerPrefs.SetInt("Screenmanager Is Fullscreen mode", 0);
-
-                Screen.SetResolution(width, height, false);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError("Failed to correct screen sizing due to an exception.");
-                Debug.LogException(e);
-            }
+            Screen.SetResolution(
+                width,
+                height,
+                false);
         }
-
-        private void Update()
+        catch (System.Exception e)
         {
+            Debug.LogError(
+                "Failed to correct screen sizing due to an exception.");
+            Debug.LogException(e);
+        }
+    }
+
+    private void Update()
+    {
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
             if (Input.GetMouseButton(0) && _isDragged)
             {
@@ -193,7 +210,8 @@ namespace UI.Legacy
             screenMax.x -= Screen.width;
             screenMax.y -= Screen.height;
 
-            _windowRect.position = new Vector2(Mathf.Clamp(_windowRect.position.x, 0.0f, screenMax.x),
+            _windowRect.position =
+ new Vector2(Mathf.Clamp(_windowRect.position.x, 0.0f, screenMax.x),
                 Mathf.Clamp(_windowRect.position.y, 0.0f, screenMax.y));
 
             int flags = (int) GetWindowLongPtr(_windowsHandle, GwlStyle);
@@ -209,18 +227,18 @@ namespace UI.Legacy
 
             SetWindowLongPtr(_windowsHandle, GwlStyle, flags);
 #endif
-        }
+    }
 
-        public void MinimizeWindow()
-        {
+    public void MinimizeWindow()
+    {
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
             ShowWindow(_windowsHandle, SwMinimize);
 #endif
-        }
-
-        public void CloseWindow()
-        {
-            Application.Quit();
-        }
     }
+
+    public void CloseWindow()
+    {
+        Application.Quit();
+    }
+}
 }

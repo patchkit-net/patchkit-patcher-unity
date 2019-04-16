@@ -1,4 +1,4 @@
-public static class Version
+public static class PatcherVersion
 {
     public const int Major = 4;
     public const int Minor = 0;

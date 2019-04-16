@@ -54,56 +54,60 @@ public static class LibPkAppsContainer
             }
         };
 
-        PatchKit.Core.Properties.AssemblyModule coreModule = new PatchKit.Core.Properties.AssemblyModule(
-            platformType, x =>
-            {
-                if (disabled)
-                    return;
-                string str;
-                switch (x.Type)
+        PatchKit.Core.Properties.AssemblyModule coreModule =
+            new PatchKit.Core.Properties.AssemblyModule(
+                platformType,
+                x =>
                 {
-                    case LogMessageType.Trace:
-                        str = "[TRACE]";
-                        break;
-                    case LogMessageType.Info:
-                        str = "[ LOG ]";
-                        break;
-                    case LogMessageType.Warning:
-                        str = "[ WAR ]";
-                        break;
-                    case LogMessageType.Error:
-                        str = "[ERROR]";
-                        break;
-                    default:
-                        str = "[?????]";
-                        break;
-                }
+                    if (disabled)
+                        return;
+                    string str;
+                    switch (x.Type)
+                    {
+                        case LogMessageType.Trace:
+                            str = "[TRACE]";
+                            break;
+                        case LogMessageType.Info:
+                            str = "[ LOG ]";
+                            break;
+                        case LogMessageType.Warning:
+                            str = "[ WAR ]";
+                            break;
+                        case LogMessageType.Error:
+                            str = "[ERROR]";
+                            break;
+                        default:
+                            str = "[?????]";
+                            break;
+                    }
 
-                Debug.Log(str + " " + x.Message);
+                    Debug.Log(str + " " + x.Message);
 
-                if (x.Exception == null)
-                    return;
+                    if (x.Exception == null)
+                        return;
 
-                Debug.LogException(x.Exception);
-            }, enabled =>
-            {
-                ++indentLevel;
-                if (!enabled)
-                    ++disabledLevel;
+                    Debug.LogException(x.Exception);
+                },
+                enabled =>
+                {
+                    ++indentLevel;
+                    if (!enabled)
+                        ++disabledLevel;
 
-                refreshIndent();
+                    refreshIndent();
 
-                disabled = disabledLevel > 0;
-            }, enabled =>
-            {
-                --indentLevel;
-                if (!enabled)
-                    --disabledLevel;
+                    disabled = disabledLevel > 0;
+                },
+                enabled =>
+                {
+                    --indentLevel;
+                    if (!enabled)
+                        --disabledLevel;
 
-                refreshIndent();
+                    refreshIndent();
 
-                disabled = disabledLevel > 0;
-            });
+                    disabled = disabledLevel > 0;
+                });
 
         PatchKit.Network.Properties.AssemblyModule networkModule =
             new PatchKit.Network.Properties.AssemblyModule(coreModule);
@@ -115,11 +119,14 @@ public static class LibPkAppsContainer
                 coreModule,
                 networkModule);
 
-        PatchKit.Apps.Properties.AssemblyModule
-            appsModule = new PatchKit.Apps.Properties.AssemblyModule(coreModule);
+        PatchKit.Apps.Properties.AssemblyModule appsModule =
+            new PatchKit.Apps.Properties.AssemblyModule(coreModule);
 
         PatchKit.Apps.Updating.Properties.AssemblyModule appsUpdatingModule =
-            new PatchKit.Apps.Updating.Properties.AssemblyModule(coreModule, networkModule, appsModule);
+            new PatchKit.Apps.Updating.Properties.AssemblyModule(
+                coreModule,
+                networkModule,
+                appsModule);
 
         PatchKit.Librsync.Properties.AssemblyModule librsyncModule =
             new PatchKit.Librsync.Properties.AssemblyModule();

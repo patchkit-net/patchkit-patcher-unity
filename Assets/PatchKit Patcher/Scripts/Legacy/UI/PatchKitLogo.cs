@@ -2,7 +2,7 @@
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
-namespace UI.Legacy
+namespace Legacy.UI
 {
 [RequireComponent(requiredComponent: typeof(Button))]
 [RequireComponent(requiredComponent: typeof(Image))]

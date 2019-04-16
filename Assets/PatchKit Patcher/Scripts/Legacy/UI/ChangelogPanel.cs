@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace UI.Legacy
+namespace Legacy.UI
 {
 [RequireComponent(requiredComponent: typeof(Animator))]
 public class ChangelogPanel : MonoBehaviour

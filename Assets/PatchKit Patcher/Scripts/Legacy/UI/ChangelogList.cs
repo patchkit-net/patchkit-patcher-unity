@@ -4,7 +4,7 @@ using PatchKit.Api.Models;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace UI.Legacy
+namespace Legacy.UI
 {
 public class ChangelogList : MonoBehaviour
 {

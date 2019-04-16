@@ -1,10 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using UniRx;
+﻿using System.IO;
 using PatchKit.Api.Models;
-using System.IO;
+using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
+namespace Legacy.UI
+{
 public class Background : MonoBehaviour
 {
     public struct PatcherBannerData
@@ -21,7 +22,9 @@ public class Background : MonoBehaviour
     }
 
     private const string CachedBannerPathKey = "cached-banner-path-key";
-    private const string CachedBannerModificationDateKey = "cached-banner-modif-date-key";
+
+    private const string CachedBannerModificationDateKey =
+        "cached-banner-modif-date-key";
 
     private const string BannerImageFilename = "banner";
 
@@ -30,11 +33,7 @@ public class Background : MonoBehaviour
 
     public string CachedBannerPath
     {
-        get
-        {
-            return PatcherPlayerPrefs.GetString(
-                CachedBannerPathKey);
-        }
+        get { return PatcherPlayerPrefs.GetString(CachedBannerPathKey); }
         private set
         {
             PatcherPlayerPrefs.SetString(
@@ -79,8 +78,11 @@ public class Background : MonoBehaviour
 
         if (IsCachedBannerAvailable())
         {
-            Debug.Log($"A cached banner image is available at {CachedBannerPath}");
-            LoadBannerImage(CachedBannerPath, OldImage);
+            Debug.Log(
+                $"A cached banner image is available at {CachedBannerPath}");
+            LoadBannerImage(
+                CachedBannerPath,
+                OldImage);
         }
 
         Patcher.Instance.StateChanged += state => Initialize();
@@ -154,26 +156,27 @@ public class Background : MonoBehaviour
 
     private bool IsLocalBannerMissing(Data data)
     {
-        return !string.IsNullOrEmpty(CachedBannerModificationDate) && !File.Exists(CachedBannerPath);
+        return !string.IsNullOrEmpty(CachedBannerModificationDate) &&
+            !File.Exists(CachedBannerPath);
     }
 
     private bool IsNewBannerAvailable(Data data)
     {
-        return !string.IsNullOrEmpty(data.BannerData.ImageUrl)
-            && !IsCachedBannerSameAsRemote(data.BannerData);
+        return !string.IsNullOrEmpty(data.BannerData.ImageUrl) &&
+            !IsCachedBannerSameAsRemote(data.BannerData);
     }
 
     private bool HasBannerBeenRemoved(Data data)
     {
-        return string.IsNullOrEmpty(data.BannerData.ImageUrl)
-            && !string.IsNullOrEmpty(data.BannerData.ModificationDate)
-            && IsCachedBannerAvailable();
+        return string.IsNullOrEmpty(data.BannerData.ImageUrl) &&
+            !string.IsNullOrEmpty(data.BannerData.ModificationDate) &&
+            IsCachedBannerAvailable();
     }
 
     private bool IsCachedBannerAvailable()
     {
-        return !string.IsNullOrEmpty(CachedBannerPath)
-             && File.Exists(CachedBannerPath);
+        return !string.IsNullOrEmpty(CachedBannerPath) &&
+            File.Exists(CachedBannerPath);
     }
 
     private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
@@ -234,9 +237,13 @@ public class Background : MonoBehaviour
         StartCoroutine(coroutine);*/
     }
 
-    private void LoadBannerImage(string filepath, Image target)
+    private void LoadBannerImage(
+        string filepath,
+        Image target)
     {
-        Texture2D texture = new Texture2D(0, 0);
+        Texture2D texture = new Texture2D(
+            0,
+            0);
 
         if (string.IsNullOrEmpty(filepath))
         {
@@ -260,7 +267,14 @@ public class Background : MonoBehaviour
                 return;
             }
 
-            var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+            var sprite = Sprite.Create(
+                texture,
+                new Rect(
+                    0,
+                    0,
+                    texture.width,
+                    texture.height),
+                Vector2.zero);
 
             target.sprite = sprite;
         }
@@ -269,4 +283,5 @@ public class Background : MonoBehaviour
             Debug.LogWarning("The cached banner image doesn't exist.");
         }
     }
+}
 }

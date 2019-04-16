@@ -1,6 +1,6 @@
 ﻿using UnityEngine.UI;
 
-namespace UI.Legacy
+namespace Legacy.UI
 {
 public class ErrorDialog : Dialog<ErrorDialog>
 {

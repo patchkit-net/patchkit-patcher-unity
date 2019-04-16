@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace UI.Legacy
+namespace Legacy.UI
 {
 public class ChangelogElement : MonoBehaviour
 {

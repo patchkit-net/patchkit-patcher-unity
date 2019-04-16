@@ -2,28 +2,30 @@
 
 namespace Debugging
 {
-    public static class EnvironmentInfo
+public static class EnvironmentInfo
+{
+    public static string GetRuntimeVersion()
     {
-        public static string GetRuntimeVersion()
-        {
-            return Environment.Version.ToString();
-        }
-
-        public static string GetSystemVersion()
-        {
-            return Environment.OSVersion.ToString();
-        }
-
-        public static string GetSystemInformation()
-        {
-            return UnityEngine.SystemInfo.operatingSystem;
-        }
-
-        public static bool TryReadEnvironmentVariable(string argumentName, out string value)
-        {
-            value = Environment.GetEnvironmentVariable(argumentName);
-
-            return value != null;
-        }
+        return Environment.Version.ToString();
     }
+
+    public static string GetSystemVersion()
+    {
+        return Environment.OSVersion.ToString();
+    }
+
+    public static string GetSystemInformation()
+    {
+        return UnityEngine.SystemInfo.operatingSystem;
+    }
+
+    public static bool TryReadEnvironmentVariable(
+        string argumentName,
+        out string value)
+    {
+        value = Environment.GetEnvironmentVariable(argumentName);
+
+        return value != null;
+    }
+}
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
-namespace UI.Legacy
+namespace Legacy.UI
 {
 public class ProgressBar : MonoBehaviour
 {
@@ -99,7 +99,7 @@ public class ProgressBar : MonoBehaviour
         _isIdle = false;
         Text.text = $"{progress * 100.0:0.0}%";
         SetImageRange(
-            from: 0f,
+            @from: 0f,
             to: progress);
     }
 
@@ -116,7 +116,7 @@ public class ProgressBar : MonoBehaviour
         }
 
         SetImageRange(
-            from: _idleProgress,
+            @from: _idleProgress,
             to: _idleProgress + IdleBarWidth);
 
         _idleProgress += Time.deltaTime * IdleBarSpeed;

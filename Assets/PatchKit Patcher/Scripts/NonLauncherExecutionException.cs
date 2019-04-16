@@ -8,17 +8,26 @@ public class NonLauncherExecutionException : Exception
     {
     }
 
-    public NonLauncherExecutionException(string message) : base(message)
+    public NonLauncherExecutionException(string message)
+        : base(message)
     {
     }
 
-    public NonLauncherExecutionException(string message, Exception inner) : base(message, inner)
+    public NonLauncherExecutionException(
+        string message,
+        Exception inner)
+        : base(
+            message,
+            inner)
     {
     }
 
     protected NonLauncherExecutionException(
         SerializationInfo info,
-        StreamingContext context) : base(info, context)
+        StreamingContext context)
+        : base(
+            info,
+            context)
     {
     }
 }
