@@ -4,7 +4,7 @@ using System.Text;
 using JetBrains.Annotations;
 using UnityEngine;
 
-public static class AppPlayerPrefs
+public static class PatcherPlayerPrefs
 {
     [NotNull]
     private static string GetHashedAppSecret([NotNull] string appSecret)
@@ -21,33 +21,26 @@ public static class AppPlayerPrefs
     }
 
     [NotNull]
-    private static string GetFormattedKey(
-        [NotNull] string key,
-        [NotNull] string appSecret)
+    private static string GetFormattedKey([NotNull] string key)
     {
+        string appSecret = Patcher.Instance.State.AppState.Secret;
+
         return $"{GetHashedAppSecret(appSecret: appSecret)}-{key}";
     }
 
     public static void SetString(
         [NotNull] string key,
-        [NotNull] string appSecret,
         string value)
     {
         PlayerPrefs.SetString(
-            key: GetFormattedKey(
-                key: key,
-                appSecret: appSecret),
+            key: GetFormattedKey(key: key),
             value: value);
     }
 
-    public static string GetString(
-        [NotNull] string key,
-        [NotNull] string appSecret)
+    public static string GetString([NotNull] string key)
     {
         return PlayerPrefs.GetString(
-            key: GetFormattedKey(
-                key: key,
-                appSecret: appSecret),
+            key: GetFormattedKey(key: key),
             defaultValue: null);
     }
 }

@@ -18,9 +18,6 @@ public class Status : MonoBehaviour
 
             switch (state.Kind)
             {
-                case PatcherStateKind.Initializing:
-                    Text.text = "Initializing...";
-                    break;
                 case PatcherStateKind.Idle:
                     Text.text = string.Empty;
                     break;

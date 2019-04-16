@@ -25,9 +25,6 @@ public class ProgressBar : MonoBehaviour
 
             switch (state.Kind)
             {
-                case PatcherStateKind.Initializing:
-                    SetIdle(message: "Initializing...");
-                    break;
                 case PatcherStateKind.Idle:
                     SetValue(
                         progress: state.AppState.InstalledVersionId.HasValue

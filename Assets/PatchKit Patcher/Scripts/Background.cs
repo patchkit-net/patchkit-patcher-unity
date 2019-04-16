@@ -32,15 +32,13 @@ public class Background : MonoBehaviour
     {
         get
         {
-            return AppPlayerPrefs.GetString(
-                CachedBannerPathKey,
-                Patcher.Instance.State.AppState.Secret);
+            return PatcherPlayerPrefs.GetString(
+                CachedBannerPathKey);
         }
         private set
         {
-            AppPlayerPrefs.SetString(
+            PatcherPlayerPrefs.SetString(
                 CachedBannerPathKey,
-                Patcher.Instance.State.AppState.Secret,
                 value);
         }
     }
@@ -49,16 +47,14 @@ public class Background : MonoBehaviour
     {
         get
         {
-            return AppPlayerPrefs.GetString(
-                CachedBannerModificationDateKey,
-                Patcher.Instance.State.AppState.Secret);
+            return PatcherPlayerPrefs.GetString(
+                CachedBannerModificationDateKey);
         }
 
         private set
         {
-            AppPlayerPrefs.SetString(
+            PatcherPlayerPrefs.SetString(
                 CachedBannerModificationDateKey,
-                Patcher.Instance.State.AppState.Secret,
                 value);
         }
     }
