@@ -21,6 +21,7 @@ public class Patcher : MonoBehaviour
     }
 
     public PatcherConfiguration Configuration;
+
 #if UNITY_EDITOR
     public string EditorAppSecret;
     public int EditorOverrideAppLatestVersionId;
@@ -300,6 +301,7 @@ public class Patcher : MonoBehaviour
     private void ReportUpdateAppProgress(
         LibPatchKitAppsUpdateAppProgress progress)
     {
+        State.UpdateAppState.IsConnecting = false;
         State.UpdateAppState.InstalledBytes = progress.InstalledBytes;
         State.UpdateAppState.TotalBytes = progress.TotalBytes;
         State.UpdateAppState.Progress =
@@ -397,5 +399,11 @@ public class Patcher : MonoBehaviour
     public void OnCloseRequested()
     {
         Close();
+    }
+
+    //TODO: Move into Legacy
+    public void Quit()
+    {
+        OnCloseRequested();
     }
 }
