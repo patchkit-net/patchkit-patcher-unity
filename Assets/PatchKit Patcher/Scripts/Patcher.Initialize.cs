@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Utilities;
 
 public partial class Patcher
 {
@@ -76,7 +75,6 @@ public partial class Patcher
     {
         Assert.raiseExceptions = true;
         Application.runInBackground = true;
-        UnityDispatcher.Initialize();
 
         InitializeLibPatchKitApps();
         InitializeState();

@@ -1,9 +1,7 @@
 ﻿using System;
 using Debugging;
-using JetBrains.Annotations;
 using PatchKit.Api;
 using PatchKit.Core.CSharp;
-using UnityEngine;
 
 public class Settings
 {
