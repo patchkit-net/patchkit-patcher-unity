@@ -59,7 +59,7 @@ public partial class Patcher
                 ? (int?) data.OverrideLatestVersionId
                 : null)
         {
-            Kind = PatcherStateKind.Idle,
+            Kind = PatcherStateKind.Initializing,
             IsOnline = data.IsOnline ?? true,
             AppState =
             {

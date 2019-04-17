@@ -5,7 +5,8 @@ public partial class Patcher
 {
     private async Task StartApp()
     {
-        if (State.Kind != PatcherStateKind.Idle)
+        if (State.Kind != PatcherStateKind.Idle &&
+            State.Kind != PatcherStateKind.Initializing)
         {
             return;
         }

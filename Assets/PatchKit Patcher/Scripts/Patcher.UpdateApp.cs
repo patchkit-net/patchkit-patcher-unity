@@ -21,7 +21,8 @@ public partial class Patcher
     private async Task UpdateApp()
     {
         if (State.Kind != PatcherStateKind.Idle &&
-            State.Kind != PatcherStateKind.AskingForLicenseKey)
+            State.Kind != PatcherStateKind.AskingForLicenseKey &&
+            State.Kind != PatcherStateKind.Initializing)
         {
             return;
         }
