@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
-using Utilities;
 
 namespace UI
 {
@@ -67,7 +66,7 @@ public class UpdateSpeed : MonoBehaviour
             case "human_readable":
             default:
             {
-                return bytesPerSecond > Units.MB
+                return bytesPerSecond > BytesUnits.MB
                     ? FormatDownloadSpeedMegabytes(
                         bytesPerSecond: bytesPerSecond)
                     : FormatDownloadSpeedKilobytes(
@@ -78,12 +77,12 @@ public class UpdateSpeed : MonoBehaviour
 
     private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
     {
-        return FormatDownloadSpeed(s: bytesPerSecond / Units.MB) + " MB/sec.";
+        return FormatDownloadSpeed(s: bytesPerSecond / BytesUnits.MB) + " MB/sec.";
     }
 
     private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
     {
-        return FormatDownloadSpeed(s: bytesPerSecond / Units.KB) + " KB/sec.";
+        return FormatDownloadSpeed(s: bytesPerSecond / BytesUnits.KB) + " KB/sec.";
     }
 
     private static string FormatDownloadSpeed(double s)

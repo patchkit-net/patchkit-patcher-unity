@@ -28,4 +28,9 @@ public partial class Patcher
     {
         Quit();
     }
+
+    public async void OnAcceptErrorRequested()
+    {
+        await AcceptError();
+    }
 }

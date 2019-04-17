@@ -4,8 +4,9 @@ using System.IO;
 using System.Linq;
 using Debugging;
 using UnityEngine;
-using Utilities;
 
+namespace Deprecated
+{
 public class InputArgumentsPatcherDataReader
 {
     private static readonly List<string> _commandLineArgs =
@@ -176,4 +177,5 @@ public class InputArgumentsPatcherDataReader
             bytes.Length);
         return new string(chars);
     }
+}
 }

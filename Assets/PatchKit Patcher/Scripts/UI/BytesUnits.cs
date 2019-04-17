@@ -1,6 +1,6 @@
-namespace Utilities
+namespace UI
 {
-public static class Units
+public static class BytesUnits
 {
     public static readonly long KB = 1024;
     public static readonly long MB = 1024 * KB;

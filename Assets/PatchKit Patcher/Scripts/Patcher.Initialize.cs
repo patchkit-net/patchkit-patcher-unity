@@ -63,9 +63,9 @@ public partial class Patcher
             AppState =
             {
                 ShouldBeUpdatedAutomatically =
-                    Configuration.AutomaticallyUpdateApp,
+                    AutomaticallyUpdateApp,
                 ShouldBeStartedAutomatically =
-                    Configuration.AutomaticallyStartApp
+                    AutomaticallyStartApp
             },
             HasChanged = true
         };

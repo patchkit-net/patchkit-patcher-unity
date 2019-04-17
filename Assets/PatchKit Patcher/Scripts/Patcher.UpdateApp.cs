@@ -153,7 +153,10 @@ public partial class Patcher
         }
         catch (LibPatchKitAppsOutOfFreeDiskSpaceException)
         {
-            // TODO: Do something
+            ModifyState(
+                x: () =>
+                    State.Kind = PatcherStateKind.DisplyingOutOfDiskSpaceError);
+            return;
         }
 
         await FetchAppInstalledVersionId();

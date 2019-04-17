@@ -6,7 +6,10 @@ public partial class Patcher
     public void Quit()
     {
         if (State.Kind != PatcherStateKind.Idle &&
-            State.Kind != PatcherStateKind.StartingApp)
+            State.Kind != PatcherStateKind.StartingApp &&
+            State.Kind != PatcherStateKind.DisplayingInternalError &&
+            State.Kind != PatcherStateKind.DisplayingMultipleInstancesError &&
+            State.Kind != PatcherStateKind.DisplayingNoLauncherError)
         {
             return;
         }

@@ -32,9 +32,6 @@ public class UpdateProgressBar : MonoBehaviour
                             : 0f);
 
                     break;
-                case PatcherStateKind.AskingForLicenseKey:
-                    SetIdle(message: string.Empty);
-                    break;
                 case PatcherStateKind.UpdatingApp:
                     if (state.UpdateAppState.IsConnecting)
                     {
@@ -54,7 +51,8 @@ public class UpdateProgressBar : MonoBehaviour
                     SetIdle(message: "Quitting...");
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    SetIdle(message: string.Empty);
+                    break;
             }
         };
     }

@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.Serialization;
 
+namespace Deprecated
+{
 [Serializable]
 public class NonLauncherExecutionException : Exception
 {
@@ -30,4 +32,5 @@ public class NonLauncherExecutionException : Exception
             context)
     {
     }
+}
 }

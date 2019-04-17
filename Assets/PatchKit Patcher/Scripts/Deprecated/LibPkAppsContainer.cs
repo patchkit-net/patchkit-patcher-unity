@@ -1,33 +1,34 @@
 using System;
 using Autofac;
-using PatchKit.Core;
 using PatchKit.Core.CSharp;
 using UnityEngine;
 
+namespace Deprecated
+{
 public static class LibPkAppsContainer
 {
     private static IContainer _container;
 
-    public static PlatformType GetPlatformType()
+    public static PatchKit.Core.PlatformType GetPlatformType()
     {
         bool is64Bit = IntPtr.Size == 8;
 
         if (Application.platform == RuntimePlatform.LinuxEditor ||
             Application.platform == RuntimePlatform.LinuxPlayer)
         {
-            return is64Bit ? PlatformType.Linux64bit : PlatformType.Linux86bit;
+            return is64Bit ? PatchKit.Core.PlatformType.Linux64bit : PatchKit.Core.PlatformType.Linux86bit;
         }
 
         if (Application.platform == RuntimePlatform.WindowsEditor ||
             Application.platform == RuntimePlatform.WindowsPlayer)
         {
-            return is64Bit ? PlatformType.Win64bit : PlatformType.Win86bit;
+            return is64Bit ? PatchKit.Core.PlatformType.Win64bit : PatchKit.Core.PlatformType.Win86bit;
         }
 
         if (Application.platform == RuntimePlatform.OSXEditor ||
             Application.platform == RuntimePlatform.OSXPlayer)
         {
-            return PlatformType.OSX64bit;
+            return PatchKit.Core.PlatformType.OSX64bit;
         }
 
         throw new InvalidOperationException("Not supported platform.");
@@ -145,4 +146,5 @@ public static class LibPkAppsContainer
     {
         return _container.Resolve<T>();
     }
+}
 }

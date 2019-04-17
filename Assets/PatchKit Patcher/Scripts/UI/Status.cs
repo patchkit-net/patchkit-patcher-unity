@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
@@ -18,11 +17,8 @@ public class Status : MonoBehaviour
 
             switch (state.Kind)
             {
-                case PatcherStateKind.Idle:
-                    Text.text = string.Empty;
-                    break;
-                case PatcherStateKind.AskingForLicenseKey:
-                    Text.text = string.Empty;
+                case PatcherStateKind.Initializing:
+                    Text.text = "Initializing...";
                     break;
                 case PatcherStateKind.UpdatingApp:
                     Text.text = "Updating...";
@@ -34,7 +30,8 @@ public class Status : MonoBehaviour
                     Text.text = "Quitting...";
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    Text.text = string.Empty;
+                    break;
             }
         };
     }

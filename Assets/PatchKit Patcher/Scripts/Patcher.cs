@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Standart.Hash.xxHash;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -18,7 +19,9 @@ public partial class Patcher : MonoBehaviour
         }
     }
 
-    public PatcherConfiguration Configuration;
+    public bool AutomaticallyStartApp;
+
+    public bool AutomaticallyUpdateApp = true;
 
 #if UNITY_EDITOR
     public string EditorAppSecret;
@@ -42,6 +45,11 @@ public partial class Patcher : MonoBehaviour
         UpdateState();
     }
 
+    private void OnDestroy()
+    {
+        Dispose();
+    }
+
     private async Task SafeInvoke([NotNull] Func<Task> func)
     {
         try
@@ -53,14 +61,16 @@ public partial class Patcher : MonoBehaviour
         // ReSharper disable once RedundantCatchClause
         catch (LibPatchKitAppsInternalErrorException)
         {
-            // TODO: Display error and quit the app
-            throw;
+            ModifyState(
+                x: () => State.Kind = PatcherStateKind.DisplayingInternalError);
         }
         // ReSharper disable once RedundantCatchClause
         catch (LibPatchKitAppsUnauthorizedAccessException)
         {
-            // TODO: Display error and quit the app
-            throw;
+            ModifyState(
+                x: () =>
+                    State.Kind = PatcherStateKind
+                        .DisplayingUnauthorizedAccessError);
         }
     }
 }
