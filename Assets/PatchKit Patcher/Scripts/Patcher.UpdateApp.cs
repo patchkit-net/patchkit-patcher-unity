@@ -39,6 +39,51 @@ public partial class Patcher
 
         try
         {
+            DateTime? lastReportProgress = null;
+            long lastInstalledBytes = 0;
+
+            var reportProgressDelay = TimeSpan.FromSeconds(value: 1);
+
+            Action<LibPatchKitAppsUpdateAppProgress> reportProgress =
+                progress =>
+                {
+                    double bytesPerSecond = 0.0;
+
+                    var now = DateTime.Now;
+
+                    if (lastReportProgress.HasValue)
+                    {
+                        var span = now - lastReportProgress.Value;
+
+                        if (span < reportProgressDelay)
+                        {
+                            return;
+                        }
+
+                        bytesPerSecond =
+                            (progress.InstalledBytes - lastInstalledBytes) /
+                            span.TotalSeconds;
+                    }
+
+                    lastReportProgress = now;
+                    lastInstalledBytes = progress.InstalledBytes;
+
+                    ModifyState(
+                        x: () =>
+                        {
+                            State.UpdateAppState.IsConnecting = false;
+                            State.UpdateAppState.InstalledBytes =
+                                progress.InstalledBytes;
+                            State.UpdateAppState.TotalBytes =
+                                progress.TotalBytes;
+                            State.UpdateAppState.Progress =
+                                progress.InstalledBytes /
+                                (double) progress.TotalBytes;
+                            State.UpdateAppState.BytesPerSecond =
+                                bytesPerSecond;
+                        });
+                };
+
             if (State.AppState.OverrideLatestVersionId.HasValue)
             {
                 // ReSharper disable once PossibleNullReferenceException
@@ -48,7 +93,7 @@ public partial class Patcher
                     licenseKey: State.AppState.LicenseKey,
                     targetVersionId: State.AppState.OverrideLatestVersionId
                         .Value,
-                    reportProgress: ReportUpdateAppProgress,
+                    reportProgress: reportProgress,
                     cancellationToken: (_updateAppCancellationTokenSource =
                         new CancellationTokenSource()).Token);
             }
@@ -59,7 +104,7 @@ public partial class Patcher
                     path: State.AppState.Path,
                     secret: State.AppState.Secret,
                     licenseKey: State.AppState.LicenseKey,
-                    reportProgress: ReportUpdateAppProgress,
+                    reportProgress: reportProgress,
                     cancellationToken: (_updateAppCancellationTokenSource =
                         new CancellationTokenSource()).Token);
             }
@@ -114,19 +159,5 @@ public partial class Patcher
         await FetchAppInstalledVersionId();
 
         ModifyState(x: () => State.Kind = PatcherStateKind.Idle);
-    }
-
-    private void ReportUpdateAppProgress(
-        LibPatchKitAppsUpdateAppProgress progress)
-    {
-        ModifyState(
-            x: () =>
-            {
-                State.UpdateAppState.IsConnecting = false;
-                State.UpdateAppState.InstalledBytes = progress.InstalledBytes;
-                State.UpdateAppState.TotalBytes = progress.TotalBytes;
-                State.UpdateAppState.Progress = progress.InstalledBytes /
-                    (double) progress.TotalBytes;
-            });
     }
 }
