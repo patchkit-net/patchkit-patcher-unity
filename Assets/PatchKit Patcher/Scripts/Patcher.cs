@@ -493,7 +493,8 @@ namespace PatchKit.Unity.Patcher
                         AppDataPath =
                             Application.dataPath.Replace("/Assets",
                                 string.Format("/Temp/PatcherApp{0}", EditorAppSecret)),
-                        OverrideLatestVersionId = EditorOverrideLatestVersionId
+                        OverrideLatestVersionId = EditorOverrideLatestVersionId,
+                        IsOnline = false
                     };
                 }).WaitOne();
 #else
@@ -505,6 +506,19 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");
                 DebugLogger.LogVariable(_data.Value.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
                 DebugLogger.LogVariable(_data.Value.LockFilePath, "Data.LockFilePath");
+                DebugLogger.LogVariable(_data.Value.IsOnline, "Data.IsOnline");
+
+
+                if (_data.Value.IsOnline.HasValue &&
+                    !_data.Value.IsOnline.Value)
+                {
+                    DebugLogger.Log("Disabling auto-updating because patcher is in offline mode.");
+
+                    _hasAutomaticallyInstalledApp = true;
+                    _hasAutomaticallyCheckedForAppUpdate = true;
+
+                    _warning.Value = "Working in offline mode";
+                }
 
                 DebugLogger.Log("Patcher data loaded.");
             }
