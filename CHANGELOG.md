@@ -6,12 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.13.0]
 ### Added
-- #1226 Dynamic url testing for faster nodes
-- Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer
-- Automated Unity API compatiblity change from .NET 2.0 subset to .NET 2.0
+- Dynamic url testing for faster nodes (#1226)
+- Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer (#1241)
+- Automated Unity API compatiblity change from .NET 2.0 subset to .NET 2.0 (#1242)
+- Displaying proper message when in offline mode (#1217)
+- Support for Chinese, Japanese, Korean and all other regions characters (#1171)
+
+### Changed
+- Disabled automated update when in offline mode (#1217)
 
 ### Fixed
-- Unity 2017 and newer compilation issues
+- Unity 2017 and newer compilation issues (#1243)
+- Cancelling update (#1242)
 
 ## [3.12.0]
 ### Added
