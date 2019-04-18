@@ -494,7 +494,7 @@ namespace PatchKit.Unity.Patcher
                             Application.dataPath.Replace("/Assets",
                                 string.Format("/Temp/PatcherApp{0}", EditorAppSecret)),
                         OverrideLatestVersionId = EditorOverrideLatestVersionId,
-                        IsOnline = false
+                        IsOnline = null
                     };
                 }).WaitOne();
 #else
