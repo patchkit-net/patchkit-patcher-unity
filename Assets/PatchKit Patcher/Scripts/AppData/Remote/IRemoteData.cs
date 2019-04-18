@@ -1,4 +1,6 @@
-﻿namespace PatchKit.Unity.Patcher.AppData.Remote
+﻿using PatchKit.Unity.Patcher.Cancellation;
+
+namespace PatchKit.Unity.Patcher.AppData.Remote
 {
     public interface IRemoteData
     {
@@ -8,14 +10,14 @@
         /// <param name="versionId">The version id.</param>
         /// <param name="keySecret">The key secret.</param>
         /// <param name="countryCode"></param>
-        RemoteResource GetContentPackageResource(int versionId, string keySecret, string countryCode);
+        RemoteResource GetContentPackageResource(int versionId, string keySecret, string countryCode, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the diff package resource.
         /// </summary>
         /// <param name="versionId">The version id.</param>
         /// <param name="keySecret">The key secret.</param>
-        RemoteResource GetDiffPackageResource(int versionId, string keySecret, string countryCode);
+        RemoteResource GetDiffPackageResource(int versionId, string keySecret, string countryCode, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns password of the content package resource.

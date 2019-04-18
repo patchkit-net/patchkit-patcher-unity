@@ -830,17 +830,17 @@ namespace PatchKit.Unity.Patcher
         {
             _state.Value = PatcherState.Connecting;
 
-            _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically);
-            _remoteVersionId.Value = _app.GetLatestVersionId(!automatically);
-            if (_app.IsFullyInstalled())
-            {
-                _localVersionId.Value = _app.GetInstalledVersionId();
-            }
-
             _updateAppCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
 
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
+                _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically, _updateAppCancellationTokenSource.Token);
+                _remoteVersionId.Value = _app.GetLatestVersionId(!automatically, _updateAppCancellationTokenSource.Token);
+                if (_app.IsFullyInstalled())
+                {
+                    _localVersionId.Value = _app.GetInstalledVersionId();
+                }
+
                 var appUpdater = new AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration ) );
 
                 try

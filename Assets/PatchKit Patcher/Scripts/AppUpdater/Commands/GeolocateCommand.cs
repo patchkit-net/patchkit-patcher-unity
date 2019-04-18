@@ -109,7 +109,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public void Prepare(UpdaterStatus status)
+        public void Prepare(UpdaterStatus status, CancellationToken cancellationToken)
         {
             // not needed
         }

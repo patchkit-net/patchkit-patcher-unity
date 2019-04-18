@@ -130,9 +130,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public override void Prepare(UpdaterStatus status)
+        public override void Prepare(UpdaterStatus status, CancellationToken cancellationToken)
         {
-            base.Prepare(status);
+            base.Prepare(status, cancellationToken);
 
             foreach(var entry in _entries)
             {

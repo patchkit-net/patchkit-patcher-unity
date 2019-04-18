@@ -1,5 +1,7 @@
 using PatchKit.Api.Models.Keys;
 using System.Collections.Generic;
+using System.Threading;
+using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
 namespace PatchKit.Api
 {
@@ -7,12 +9,12 @@ namespace PatchKit.Api
     {
         
         /// <param name="guid"></param>
-        public Job GetJobInfo(string guid)
+        public Job GetJobInfo(string guid, CancellationToken cancellationToken)
         {
             string path = "/v2/jobs/{guid}";
             path = path.Replace("{guid}", guid.ToString());
             string query = string.Empty;
-            var response = GetResponse(path, query);
+            var response = GetResponse(path, query, cancellationToken);
             return ParseResponse<Job>(response);
         }
         
@@ -25,7 +27,7 @@ namespace PatchKit.Api
         /// <param name="key"></param>
         /// <param name="appSecret"></param>
         /// <param name="keySecret">If provided and valid, will only do a blocked check.</param>
-        public LicenseKey GetKeyInfo(string key, string appSecret, string keySecret = null)
+        public LicenseKey GetKeyInfo(string key, string appSecret, string keySecret, CancellationToken cancellationToken)
         {
             string path = "/v2/keys/{key}";
             List<string> queryList = new List<string>();
@@ -36,7 +38,7 @@ namespace PatchKit.Api
                 queryList.Add("key_secret="+keySecret);
             }
             string query = string.Join("&", queryList.ToArray());
-            var response = GetResponse(path, query);
+            var response = GetResponse(path, query, cancellationToken);
             return ParseResponse<LicenseKey>(response);
         }
         

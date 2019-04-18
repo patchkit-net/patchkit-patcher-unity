@@ -48,8 +48,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var commandFactory = new AppUpdaterCommandFactory();
 
             int installedVersionId = Context.App.GetInstalledVersionId();
-            int latestVersionId = Context.App.GetLatestVersionId();
-            int lowestVersionWithContentId = Context.App.GetLowestVersionWithContentId();
+            int latestVersionId = Context.App.GetLatestVersionId(true, cancellationToken);
+            int lowestVersionWithContentId = Context.App.GetLowestVersionWithContentId(cancellationToken);
 
             if (lowestVersionWithContentId > installedVersionId)
             {
@@ -61,16 +61,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     ". Uninstalling to prepare for content strategy.");
 
                 IUninstallCommand uninstall = commandFactory.CreateUninstallCommand(Context);
-                uninstall.Prepare(_status);
+                uninstall.Prepare(_status, cancellationToken);
                 uninstall.Execute(cancellationToken);
                 return;
             }
 
             AppContentSummary installedVersionContentSummary 
-                = Context.App.RemoteMetaData.GetContentSummary(installedVersionId);
+                = Context.App.RemoteMetaData.GetContentSummary(installedVersionId, cancellationToken);
                 
             AppContentSummary latestVersionContentSummary 
-                = Context.App.RemoteMetaData.GetContentSummary(latestVersionId);
+                = Context.App.RemoteMetaData.GetContentSummary(latestVersionId, cancellationToken);
             
             bool isNewVersionAvailable = installedVersionId < latestVersionId;
 
@@ -83,9 +83,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     versionId: installedVersionId, 
                     context: Context, 
                     isCheckingHash: false, 
-                    isCheckingSize: true);
+                    isCheckingSize: true,
+                    cancellationToken: cancellationToken);
             
-            checkIntegrity.Prepare(_status);
+            checkIntegrity.Prepare(_status, cancellationToken);
             checkIntegrity.Execute(cancellationToken);
             
             var missingFiles = checkIntegrity.Results.Files
@@ -116,7 +117,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             {
                 DebugLogger.Log("Content cost is smaller than repair. Uninstalling to prepare for content strategy.");
                 IUninstallCommand uninstall = commandFactory.CreateUninstallCommand(Context);
-                uninstall.Prepare(_status);
+                uninstall.Prepare(_status, cancellationToken);
                 uninstall.Execute(cancellationToken);
             }
         }
@@ -139,7 +140,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.Log("Updating.");
 
-            StrategyType type = _strategyResolver.Resolve(Context);
+            StrategyType type = _strategyResolver.Resolve(Context, cancellationToken);
             _strategy = _strategyResolver.Create(type, Context);
 
             try

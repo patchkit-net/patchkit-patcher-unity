@@ -53,7 +53,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.Log("Updating with diff strategy.");
 
-            var latestVersionId = _context.App.GetLatestVersionId();
+            var latestVersionId = _context.App.GetLatestVersionId(true, cancellationToken);
             var currentLocalVersionId = _context.App.GetInstalledVersionId();
 
             DebugLogger.LogVariable(latestVersionId, "latestVersionId");
@@ -62,15 +62,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var commandFactory = new AppUpdaterCommandFactory();
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
 
-            geolocateCommand.Prepare(_status);
+            geolocateCommand.Prepare(_status, cancellationToken);
             geolocateCommand.Execute(cancellationToken);
 
-            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForDiff(latestVersionId, _context);
-            checkDiskSpaceCommand.Prepare(_status);
+            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForDiff(latestVersionId, _context, cancellationToken);
+            checkDiskSpaceCommand.Prepare(_status, cancellationToken);
             checkDiskSpaceCommand.Execute(cancellationToken);
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_status);
+            validateLicense.Prepare(_status, cancellationToken);
             validateLicense.Execute(cancellationToken);
 
             var diffCommandsList = new List<DiffCommands>();
@@ -79,18 +79,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             {
                 DiffCommands diffCommands;
 
-                var resource = _context.App.RemoteData.GetDiffPackageResource(i, validateLicense.KeySecret, geolocateCommand.CountryCode);
+                var resource = _context.App.RemoteData.GetDiffPackageResource(i, validateLicense.KeySecret, geolocateCommand.CountryCode, cancellationToken);
 
                 diffCommands.Download = new DiffCommands.Context<IDownloadPackageCommand>{
                     Command = commandFactory.CreateDownloadDiffPackageCommand(i, validateLicense.KeySecret,
-                        geolocateCommand.CountryCode, _context),
+                        geolocateCommand.CountryCode, _context, cancellationToken),
                     VersionId = i,
                     Size = resource.Size,
                 };
-                diffCommands.Download.Command.Prepare(_status);
+                diffCommands.Download.Command.Prepare(_status, cancellationToken);
 
                 diffCommands.Install = commandFactory.CreateInstallDiffCommand(i, _context);
-                diffCommands.Install.Prepare(_status);
+                diffCommands.Install.Prepare(_status, cancellationToken);
 
                 diffCommandsList.Add(diffCommands);
             }

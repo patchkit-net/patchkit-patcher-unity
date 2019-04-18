@@ -137,7 +137,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return requiredDiskSpace;
         }
 
-        public void Prepare(UpdaterStatus status)
+        public void Prepare(UpdaterStatus status, CancellationToken cancellationToken)
         {
             // do nothing
         }

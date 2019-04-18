@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Utilities;
 using UnityEngine.UI;
 
@@ -10,7 +11,7 @@ namespace PatchKit.Unity.UI
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield return Threading.StartThreadCoroutine(() => MainApiConnection.GetAppLatestAppVersion(AppSecret),
+            yield return Threading.StartThreadCoroutine(() => MainApiConnection.GetAppLatestAppVersion(AppSecret, CancellationToken.Empty),
                 response =>
                 {
                     Text.text = response.Label;

@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             Assert.IsTrue(_prepareHasBeenCalled, "Command not prepared.");
         }
 
-        public virtual void Prepare(UpdaterStatus status)
+        public virtual void Prepare(UpdaterStatus status, CancellationToken cancellationToken)
         {
             Assert.MethodCalledOnlyOnce(ref _prepareHasBeenCalled, "Prepare");
         }

@@ -80,7 +80,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _remoteMetaData = remoteMetaData;
         }
 
-        public override void Prepare([NotNull] UpdaterStatus status)
+        public override void Prepare([NotNull] UpdaterStatus status, CancellationToken cancellationToken)
         {
             if (status == null)
             {
@@ -91,13 +91,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 _logger.LogDebug("Preparing diff installation...");
 
-                base.Prepare(status);
+                base.Prepare(status, cancellationToken);
 
                 _localData.PrepareForWriting();
 
-                _previousContentSummary = _remoteMetaData.GetContentSummary(_versionId - 1);
-                _contentSummary = _remoteMetaData.GetContentSummary(_versionId);
-                _diffSummary = _remoteMetaData.GetDiffSummary(_versionId);
+                _previousContentSummary = _remoteMetaData.GetContentSummary(_versionId - 1, cancellationToken);
+                _contentSummary = _remoteMetaData.GetContentSummary(_versionId, cancellationToken);
+                _diffSummary = _remoteMetaData.GetDiffSummary(_versionId, cancellationToken);
 
                 double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_diffSummary.Size);
                 _logger.LogTrace("unarchivePackageWeight = " + unarchivePackageWeight);

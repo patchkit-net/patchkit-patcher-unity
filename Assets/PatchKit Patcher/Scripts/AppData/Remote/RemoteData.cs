@@ -2,6 +2,7 @@
 using System.Linq;
 using PatchKit.Api;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
@@ -44,7 +45,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             };
         }
 
-        public RemoteResource GetContentPackageResource(int versionId, string keySecret, string countryCode)
+        public RemoteResource GetContentPackageResource(int versionId, string keySecret, string countryCode, CancellationToken cancellationToken)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
 
@@ -54,8 +55,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             RemoteResource resource = new RemoteResource();
 
-            var summary = _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId);
-            var urls = _mainApiConnection.GetAppVersionContentUrls(_appSecret, versionId, countryCode, keySecret);
+            var summary = _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId, cancellationToken);
+            var urls = _mainApiConnection.GetAppVersionContentUrls(_appSecret, versionId, countryCode, keySecret, cancellationToken);
 
             resource.Size = summary.Size;
             resource.HashCode = summary.HashCode;
@@ -65,7 +66,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             return resource;
         }
 
-        public RemoteResource GetDiffPackageResource(int versionId, string keySecret, string countryCode)
+        public RemoteResource GetDiffPackageResource(int versionId, string keySecret, string countryCode, CancellationToken cancellationToken)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
 
@@ -75,8 +76,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             RemoteResource resource = new RemoteResource();
 
-            var summary = _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
-            var urls = _mainApiConnection.GetAppVersionDiffUrls(_appSecret, versionId, countryCode, keySecret);
+            var summary = _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId, cancellationToken);
+            var urls = _mainApiConnection.GetAppVersionDiffUrls(_appSecret, versionId, countryCode, keySecret, cancellationToken);
 
             resource.Size = summary.Size;
             resource.HashCode = summary.HashCode;

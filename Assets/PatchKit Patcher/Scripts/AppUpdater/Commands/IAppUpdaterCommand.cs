@@ -7,6 +7,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     {
         void Execute(CancellationToken cancellationToken);
 
-        void Prepare(UpdaterStatus status);
+        void Prepare(UpdaterStatus status, CancellationToken cancellationToken);
     }
 }

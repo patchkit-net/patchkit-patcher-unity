@@ -50,7 +50,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 KeySecret = null;
 
-                var appInfo = _remoteMetaData.GetAppInfo();
+                var appInfo = _remoteMetaData.GetAppInfo(true, cancellationToken);
 
                 if (!appInfo.UseKeys)
                 {
@@ -79,7 +79,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                         _logger.LogDebug("Validating key...");
 
-                        KeySecret = _remoteMetaData.GetKeySecret(key, cachedKeySecret);
+                        KeySecret = _remoteMetaData.GetKeySecret(key, cachedKeySecret, cancellationToken);
 
                         _logger.LogDebug("License has been validated!");
                         PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationSucceeded);
@@ -209,9 +209,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        public override void Prepare([NotNull] UpdaterStatus status)
+        public override void Prepare([NotNull] UpdaterStatus status, CancellationToken cancellationToken)
         {
-            base.Prepare(status);
+            base.Prepare(status, cancellationToken);
             
             if (status == null) throw new ArgumentNullException("status");
         }

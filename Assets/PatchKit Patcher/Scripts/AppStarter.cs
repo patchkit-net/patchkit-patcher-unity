@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
@@ -70,7 +71,8 @@ namespace PatchKit.Unity.Patcher
             {
                 appVersion = _app.RemoteMetaData.GetAppVersionInfo(
                     _app.GetInstalledVersionId(),
-                    false);
+                    false,
+                    CancellationToken.Empty);
             }
             catch (Exception e)
             {

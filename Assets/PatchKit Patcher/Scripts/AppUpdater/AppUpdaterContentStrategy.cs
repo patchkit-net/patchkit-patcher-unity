@@ -41,32 +41,32 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var commandFactory = new Commands.AppUpdaterCommandFactory();
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
 
-            geolocateCommand.Prepare(_status);
+            geolocateCommand.Prepare(_status, cancellationToken);
             geolocateCommand.Execute(cancellationToken);
 
-            var latestVersionId = _context.App.GetLatestVersionId();
+            var latestVersionId = _context.App.GetLatestVersionId(true, cancellationToken);
 
             DebugLogger.LogVariable(latestVersionId, "latestVersionId");
 
-            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForContent(latestVersionId, _context);
-            checkDiskSpaceCommand.Prepare(_status);
+            var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForContent(latestVersionId, _context, cancellationToken);
+            checkDiskSpaceCommand.Prepare(_status, cancellationToken);
             checkDiskSpaceCommand.Execute(cancellationToken);
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_status);
+            validateLicense.Prepare(_status, cancellationToken);
             validateLicense.Execute(cancellationToken);
 
             var uninstall = commandFactory.CreateUninstallCommand(_context);
-            uninstall.Prepare(_status);
+            uninstall.Prepare(_status, cancellationToken);
 
-            var resource = _context.App.RemoteData.GetContentPackageResource(latestVersionId, validateLicense.KeySecret, geolocateCommand.CountryCode);
+            var resource = _context.App.RemoteData.GetContentPackageResource(latestVersionId, validateLicense.KeySecret, geolocateCommand.CountryCode, cancellationToken);
 
             var downloadContentPackage = commandFactory.CreateDownloadContentPackageCommand(latestVersionId,
-                validateLicense.KeySecret, geolocateCommand.CountryCode, _context);
-            downloadContentPackage.Prepare(_status);
+                validateLicense.KeySecret, geolocateCommand.CountryCode, _context, cancellationToken);
+            downloadContentPackage.Prepare(_status, cancellationToken);
 
-            var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context);
-            installContent.Prepare(_status);
+            var installContent = commandFactory.CreateInstallContentCommand(latestVersionId, _context, cancellationToken);
+            installContent.Prepare(_status, cancellationToken);
 
             uninstall.Execute(cancellationToken);
 

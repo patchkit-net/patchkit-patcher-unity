@@ -5,6 +5,7 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher
@@ -148,25 +149,25 @@ namespace PatchKit.Unity.Patcher
             return LocalMetaData.GetEntryVersionId(LocalMetaData.GetRegisteredEntries()[0]);
         }
 
-        public int GetLatestVersionId(bool retryRequests = true)
+        public int GetLatestVersionId(bool retryRequests, CancellationToken cancellationToken)
         {
             if (_overrideLatestVersionId > 0)
             {
                 return _overrideLatestVersionId;
             }
 
-            return RemoteMetaData.GetLatestVersionId(retryRequests);
+            return RemoteMetaData.GetLatestVersionId(retryRequests, cancellationToken);
         }
 
-        public int GetLowestVersionWithDiffId()
+        public int GetLowestVersionWithDiffId(CancellationToken cancellationToken)
         {
-            var appInfo = RemoteMetaData.GetAppInfo();
+            var appInfo = RemoteMetaData.GetAppInfo(true, cancellationToken);
             return appInfo.LowestVersionWithDiff;
         }
 
-        public int GetLowestVersionWithContentId()
+        public int GetLowestVersionWithContentId(CancellationToken cancellationToken)
         {
-            var appInfo = RemoteMetaData.GetAppInfo();
+            var appInfo = RemoteMetaData.GetAppInfo(true, cancellationToken);
             return appInfo.LowestVersionWithContent;
         }
 
