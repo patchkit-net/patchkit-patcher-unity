@@ -32,7 +32,7 @@ public class LicenseDialog : MonoBehaviour
             Assert.IsNotNull(value: ErrorMessageText);
 
             bool isAskingForLicenseKey =
-                state.Kind == PatcherStateKind.AskingForLicenseKey;
+                state.Kind == PatcherStateKind.AskingForAppLicenseKey;
 
             animator.SetBool(
                 name: "IsOpened",
@@ -43,15 +43,17 @@ public class LicenseDialog : MonoBehaviour
                 return;
             }
 
+            Assert.IsNotNull(value: state.AppState);
+
             switch (state.AppState.LicenseKeyIssue)
             {
-                case PatcherLicenseKeyIssue.None:
+                case PatcherAppLicenseKeyIssue.None:
                     ErrorMessageText.text = string.Empty;
                     break;
-                case PatcherLicenseKeyIssue.Invalid:
+                case PatcherAppLicenseKeyIssue.Invalid:
                     ErrorMessageText.text = InvalidLicenseMessageText;
                     break;
-                case PatcherLicenseKeyIssue.Blocked:
+                case PatcherAppLicenseKeyIssue.Blocked:
                     ErrorMessageText.text = BlockedLicenseMessageText;
                     break;
                 default:

@@ -23,7 +23,8 @@ public static class PatcherPlayerPrefs
     [NotNull]
     private static string GetFormattedKey([NotNull] string key)
     {
-        string appSecret = Patcher.Instance.State.AppState.Secret;
+        string appSecret =
+            Patcher.Instance.State.AppState?.Secret ?? "emptySecret";
 
         return $"{GetHashedAppSecret(appSecret: appSecret)}-{key}";
     }

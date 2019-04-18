@@ -15,18 +15,25 @@ public class UpdateStatus : MonoBehaviour
             Assert.IsNotNull(value: state);
             Assert.IsNotNull(value: Text);
 
-            if (state.Kind != PatcherStateKind.UpdatingApp ||
-                state.UpdateAppState.IsConnecting)
+            if (state.Kind != PatcherStateKind.UpdatingApp)
+            {
+                Text.text = string.Empty;
+                return;
+            }
+
+            Assert.IsNotNull(value: state.AppState);
+
+            if (state.AppState.UpdateState.IsConnecting)
             {
                 Text.text = string.Empty;
                 return;
             }
 
             string installedBytesText =
-                $"{state.UpdateAppState.InstalledBytes / 1024.0 / 1024.0:0.0} MB";
+                $"{state.AppState.UpdateState.InstalledBytes / 1024.0 / 1024.0:0.0} MB";
 
             string totalBytesText =
-                $"{state.UpdateAppState.TotalBytes / 1024.0 / 1024.0:0.0} MB";
+                $"{state.AppState.UpdateState.TotalBytes / 1024.0 / 1024.0:0.0} MB";
 
 
             Text.text = $"{installedBytesText} of {totalBytesText}";

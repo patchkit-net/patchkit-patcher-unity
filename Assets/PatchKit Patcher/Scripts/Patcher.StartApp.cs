@@ -1,15 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Assertions;
 
 public partial class Patcher
 {
     private async Task StartApp()
     {
-        if (State.Kind != PatcherStateKind.Idle &&
-            State.Kind != PatcherStateKind.Initializing)
-        {
-            return;
-        }
+        Assert.IsNotNull(value: State.AppState);
 
         if (!State.AppState.InstalledVersionId.HasValue)
         {

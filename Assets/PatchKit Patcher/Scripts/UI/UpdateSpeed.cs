@@ -17,23 +17,30 @@ public class UpdateSpeed : MonoBehaviour
             Assert.IsNotNull(value: state);
             Assert.IsNotNull(value: Text);
 
-            if (state.Kind != PatcherStateKind.UpdatingApp ||
-                state.UpdateAppState.IsConnecting)
+            if (state.Kind != PatcherStateKind.UpdatingApp)
+            {
+                Text.text = string.Empty;
+                return;
+            }
+
+            Assert.IsNotNull(value: state.AppState);
+
+            if (state.AppState.UpdateState.IsConnecting)
             {
                 Text.text = string.Empty;
                 return;
             }
 
             var remainingTime = GetRemainingTime(
-                bytes: state.UpdateAppState.InstalledBytes,
-                totalBytes: state.UpdateAppState.TotalBytes,
-                bytesPerSecond: state.UpdateAppState.BytesPerSecond);
+                bytes: state.AppState.UpdateState.InstalledBytes,
+                totalBytes: state.AppState.UpdateState.TotalBytes,
+                bytesPerSecond: state.AppState.UpdateState.BytesPerSecond);
 
             string formattedRemainingTime =
                 GetFormattedRemainingTime(remainingTime: remainingTime);
 
             string formattedDownloadSpeed = GetFormattedDownloadSpeed(
-                bytesPerSecond: state.UpdateAppState.BytesPerSecond,
+                bytesPerSecond: state.AppState.UpdateState.BytesPerSecond,
                 downloadSpeedUnit:
                 state.AppState.Info?.PatcherDownloadSpeedUnit);
 
@@ -77,12 +84,14 @@ public class UpdateSpeed : MonoBehaviour
 
     private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
     {
-        return FormatDownloadSpeed(s: bytesPerSecond / BytesUnits.MB) + " MB/sec.";
+        return FormatDownloadSpeed(s: bytesPerSecond / BytesUnits.MB) +
+            " MB/sec.";
     }
 
     private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
     {
-        return FormatDownloadSpeed(s: bytesPerSecond / BytesUnits.KB) + " KB/sec.";
+        return FormatDownloadSpeed(s: bytesPerSecond / BytesUnits.KB) +
+            " KB/sec.";
     }
 
     private static string FormatDownloadSpeed(double s)

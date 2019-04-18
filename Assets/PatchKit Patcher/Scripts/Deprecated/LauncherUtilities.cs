@@ -49,14 +49,12 @@ public static class LauncherUtilities
             : null;
     }
 
-    private static ProcessStartInfo GetLauncherProcessStartInfo(
-        PlatformType platformType)
+    private static ProcessStartInfo GetLauncherProcessStartInfo()
     {
         string launcherPath = Path.GetFullPath(path: FindLauncherExecutable());
 
         if (!Files.IsExecutable(
-            filePath: launcherPath,
-            platformType: platformType))
+            filePath: launcherPath))
         {
             throw new ApplicationException(
                 message: "Invalid Launcher executable.");
@@ -92,10 +90,8 @@ public static class LauncherUtilities
 
     public static void ExecuteLauncher()
     {
-        var platformType = Platform.GetPlatformType();
-
         var processStartInfo =
-            GetLauncherProcessStartInfo(platformType: platformType);
+            GetLauncherProcessStartInfo();
 
         if (Process.Start(startInfo: processStartInfo) == null)
         {

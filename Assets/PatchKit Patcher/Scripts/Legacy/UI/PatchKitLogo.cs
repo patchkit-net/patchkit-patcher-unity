@@ -31,7 +31,7 @@ public class PatchKitLogo : MonoBehaviour
         {
             Assert.IsNotNull(value: state);
 
-            bool isWhitelabel = state.AppState.Info?.PatcherWhitelabel ?? true;
+            bool isWhitelabel = state.AppState?.Info?.PatcherWhitelabel ?? true;
 
             button.enabled = !isWhitelabel;
             image.enabled = !isWhitelabel;

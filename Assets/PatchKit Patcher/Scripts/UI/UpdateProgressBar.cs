@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -26,6 +25,8 @@ public class UpdateProgressBar : MonoBehaviour
             switch (state.Kind)
             {
                 case PatcherStateKind.Idle:
+                    Assert.IsNotNull(value: state.AppState);
+
                     SetValue(
                         progress: state.AppState.InstalledVersionId.HasValue
                             ? 1f
@@ -33,16 +34,22 @@ public class UpdateProgressBar : MonoBehaviour
 
                     break;
                 case PatcherStateKind.UpdatingApp:
-                    if (state.UpdateAppState.IsConnecting)
+                    Assert.IsNotNull(value: state.AppState);
+
+                    if (state.AppState.UpdateState.IsConnecting)
                     {
                         SetIdle(message: "Connecting...");
                     }
                     else
                     {
                         SetValue(
-                            progress: (float) state.UpdateAppState.Progress);
+                            progress: (float) state.AppState.UpdateState
+                                .Progress);
                     }
 
+                    break;
+                case PatcherStateKind.Initializing:
+                    SetIdle(message: "Initializing...");
                     break;
                 case PatcherStateKind.StartingApp:
                     SetIdle(message: "Starting...");
@@ -97,7 +104,7 @@ public class UpdateProgressBar : MonoBehaviour
         _isIdle = false;
         Text.text = $"{progress * 100.0:0.0}%";
         SetImageRange(
-            @from: 0f,
+            from: 0f,
             to: progress);
     }
 
@@ -114,7 +121,7 @@ public class UpdateProgressBar : MonoBehaviour
         }
 
         SetImageRange(
-            @from: _idleProgress,
+            from: _idleProgress,
             to: _idleProgress + IdleBarWidth);
 
         _idleProgress += Time.deltaTime * IdleBarSpeed;

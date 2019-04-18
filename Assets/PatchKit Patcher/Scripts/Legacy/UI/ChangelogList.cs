@@ -19,7 +19,7 @@ public class ChangelogList : MonoBehaviour
         {
             Assert.IsNotNull(value: state);
 
-            if (state.AppState.Versions != null)
+            if (state.AppState?.Versions != null)
             {
                 Create(versions: state.AppState.Versions);
             }

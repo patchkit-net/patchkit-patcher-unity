@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Assertions;
 
 public partial class Patcher
 {
@@ -8,7 +9,7 @@ public partial class Patcher
 
     public void CancelUpdateApp()
     {
-        if (State.Kind == PatcherStateKind.AskingForLicenseKey)
+        if (State.Kind == PatcherStateKind.AskingForAppLicenseKey)
         {
             ModifyState(x: () => State.Kind = PatcherStateKind.Idle);
         }
@@ -20,21 +21,16 @@ public partial class Patcher
 
     private async Task UpdateApp()
     {
-        if (State.Kind != PatcherStateKind.Idle &&
-            State.Kind != PatcherStateKind.AskingForLicenseKey &&
-            State.Kind != PatcherStateKind.Initializing)
-        {
-            return;
-        }
+        Assert.IsNotNull(value: State.AppState);
 
         ModifyState(
             x: () =>
             {
                 State.Kind = PatcherStateKind.UpdatingApp;
-                State.UpdateAppState.TotalBytes = 0;
-                State.UpdateAppState.InstalledBytes = 0;
-                State.UpdateAppState.BytesPerSecond = 0;
-                State.UpdateAppState.IsConnecting = true;
+                State.AppState.UpdateState.TotalBytes = 0;
+                State.AppState.UpdateState.InstalledBytes = 0;
+                State.AppState.UpdateState.BytesPerSecond = 0;
+                State.AppState.UpdateState.IsConnecting = true;
             });
 
         try
@@ -71,15 +67,15 @@ public partial class Patcher
                     ModifyState(
                         x: () =>
                         {
-                            State.UpdateAppState.IsConnecting = false;
-                            State.UpdateAppState.InstalledBytes =
+                            State.AppState.UpdateState.IsConnecting = false;
+                            State.AppState.UpdateState.InstalledBytes =
                                 progress.InstalledBytes;
-                            State.UpdateAppState.TotalBytes =
+                            State.AppState.UpdateState.TotalBytes =
                                 progress.TotalBytes;
-                            State.UpdateAppState.Progress =
+                            State.AppState.UpdateState.Progress =
                                 progress.InstalledBytes /
                                 (double) progress.TotalBytes;
-                            State.UpdateAppState.BytesPerSecond =
+                            State.AppState.UpdateState.BytesPerSecond =
                                 bytesPerSecond;
                         });
                 };
@@ -120,9 +116,9 @@ public partial class Patcher
             ModifyState(
                 x: () =>
                 {
-                    State.Kind = PatcherStateKind.AskingForLicenseKey;
+                    State.Kind = PatcherStateKind.AskingForAppLicenseKey;
                     State.AppState.LicenseKeyIssue =
-                        PatcherLicenseKeyIssue.None;
+                        PatcherAppLicenseKeyIssue.None;
                 });
 
             return;
@@ -132,9 +128,9 @@ public partial class Patcher
             ModifyState(
                 x: () =>
                 {
-                    State.Kind = PatcherStateKind.AskingForLicenseKey;
+                    State.Kind = PatcherStateKind.AskingForAppLicenseKey;
                     State.AppState.LicenseKeyIssue =
-                        PatcherLicenseKeyIssue.Blocked;
+                        PatcherAppLicenseKeyIssue.Blocked;
                 });
 
             return;
@@ -144,9 +140,9 @@ public partial class Patcher
             ModifyState(
                 x: () =>
                 {
-                    State.Kind = PatcherStateKind.AskingForLicenseKey;
+                    State.Kind = PatcherStateKind.AskingForAppLicenseKey;
                     State.AppState.LicenseKeyIssue =
-                        PatcherLicenseKeyIssue.Invalid;
+                        PatcherAppLicenseKeyIssue.Invalid;
                 });
 
             return;
@@ -155,7 +151,10 @@ public partial class Patcher
         {
             ModifyState(
                 x: () =>
-                    State.Kind = PatcherStateKind.DisplyingOutOfDiskSpaceError);
+                {
+                    State.Kind = PatcherStateKind.DisplayingError;
+                    State.Error = PatcherError.OutOfDiskSpaceError;
+                });
             return;
         }
 

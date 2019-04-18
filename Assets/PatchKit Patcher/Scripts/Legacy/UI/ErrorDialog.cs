@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 
@@ -19,42 +20,45 @@ public class ErrorDialog : MonoBehaviour
             Assert.IsNotNull(value: state);
             Assert.IsNotNull(value: ErrorText);
 
-            bool isOpened = false;
+            bool isOpened = state.Kind == PatcherStateKind.DisplayingError;
 
-            switch (state.Kind)
+            if (!isOpened)
             {
-                case PatcherStateKind.DisplayingNoLauncherError:
-                    isOpened = true;
-                    ErrorText.text = "Patcher must be started with launcher.";
-                    break;
-                case PatcherStateKind.DisplayingMultipleInstancesError:
-                    isOpened = true;
-                    ErrorText.text =
-                        "Another instance of patcher is already running.";
-                    break;
-                case PatcherStateKind.DisplyingOutOfDiskSpaceError:
-                    isOpened = true;
-                    ErrorText.text =
-                        "You don't have enough disk space to install the application.\n" +
-                        "Please make some and restart the installation.";
-                    break;
-                case PatcherStateKind.DisplayingInternalError:
-                    isOpened = true;
-                    ErrorText.text = "Internal error.";
-                    break;
-                case PatcherStateKind.DisplayingUnauthorizedAccessError:
-                    isOpened = true;
-                    ErrorText.text =
-                        "Patcher don't have enough permissions to install the application.";
-                    break;
-                default:
-                    ErrorText.text = string.Empty;
-                    break;
+                animator.SetBool(
+                    name: "IsOpened",
+                    value: false);
+
+                return;
             }
 
             animator.SetBool(
                 name: "IsOpened",
-                value: isOpened);
+                value: true);
+
+            switch (state.Error)
+            {
+                case PatcherError.NoLauncherError:
+                    ErrorText.text = "Patcher must be started with launcher.";
+                    break;
+                case PatcherError.MultipleInstancesError:
+                    ErrorText.text =
+                        "Another instance of patcher is already running.";
+                    break;
+                case PatcherError.OutOfDiskSpaceError:
+                    ErrorText.text =
+                        "You don't have enough disk space to install the application.\n" +
+                        "Please make some and restart the installation.";
+                    break;
+                case PatcherError.InternalError:
+                    ErrorText.text = "Internal error.";
+                    break;
+                case PatcherError.UnauthorizedAccessError:
+                    ErrorText.text =
+                        "Patcher don't have enough permissions to install the application.";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         };
     }
 

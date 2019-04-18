@@ -1,10 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Assertions;
 
 public partial class Patcher
 {
     private async Task FetchAppInstalledVersionId()
     {
+        Assert.IsNotNull(value: State.AppState);
+
         // ReSharper disable once PossibleNullReferenceException
         int? installedVersionId =
             await LibPatchKitApps.GetAppInstalledVersionIdAsync(

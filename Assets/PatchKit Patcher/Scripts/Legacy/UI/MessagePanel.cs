@@ -39,10 +39,12 @@ public class MessagePanel : MonoBehaviour
                 name: "IsOpened",
                 value: state.Kind == PatcherStateKind.Idle);
 
-            PlayButton.interactable =
-                state.AppState.InstalledVersionId.HasValue;
+            bool isInstalled =
+                state.AppState?.InstalledVersionId.HasValue ?? false;
 
-            CheckButtonText.text = state.AppState.InstalledVersionId.HasValue
+            PlayButton.interactable = isInstalled;
+
+            CheckButtonText.text = isInstalled
                 ? "Check for updates"
                 : "Install";
         };

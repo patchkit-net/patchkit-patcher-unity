@@ -85,7 +85,15 @@ public class Background : MonoBehaviour
                 OldImage);
         }
 
-        Patcher.Instance.StateChanged += state => Initialize();
+        Patcher.Instance.StateChanged += state =>
+        {
+            Assert.IsNotNull(value: state);
+
+            if (state.AppState != null)
+            {
+                Initialize();
+            }
+        };
     }
 
     private void Initialize()

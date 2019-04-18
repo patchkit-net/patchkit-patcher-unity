@@ -5,8 +5,7 @@ namespace Deprecated
 public static class Files
 {
     public static bool IsExecutable(
-        string filePath,
-        PlatformType platformType)
+        string filePath)
     {
         return LibPkAppsContainer
             .Resolve<IsFileCurrentPlatformExecutableDelegate>()(

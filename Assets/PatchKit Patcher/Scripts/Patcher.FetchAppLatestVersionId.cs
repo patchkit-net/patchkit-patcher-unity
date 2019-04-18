@@ -1,10 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Assertions;
 
 public partial class Patcher
 {
     private async Task FetchAppLatestVersionId()
     {
+        Assert.IsNotNull(value: State.AppState);
+
         int latestVersionId;
 
         if (State.AppState.OverrideLatestVersionId.HasValue)
