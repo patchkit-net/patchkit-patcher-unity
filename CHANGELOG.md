@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.13.0]
 ### Added
+- #1226 Dynamic url testing for faster nodes
 - Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer
 - Automated Unity API compatiblity change from .NET 2.0 subset to .NET 2.0
 
