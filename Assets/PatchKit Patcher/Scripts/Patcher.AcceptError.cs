@@ -8,11 +8,19 @@ public partial class Patcher
         {
             case PatcherError.InternalError:
             case PatcherError.MultipleInstancesError:
+                await Quit();
+                break;
             case PatcherError.NoLauncherError:
-                Quit();
+                if (!await TryToRestartWithLauncher())
+                {
+                    await Quit();
+                }
                 break;
             case PatcherError.UnauthorizedAccessError:
-                // restart with launcher permissions
+                if (!await TryToRestartWithHigherPermissions())
+                {
+                    await Quit();
+                }
                 break;
             case PatcherError.OutOfDiskSpaceError:
                 ModifyState(x: () => State.Kind = PatcherStateKind.Idle);

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public partial class Patcher
 {
-    private void Quit2()
+    private async Task Quit2()
     {
         ModifyState(x: () => State.Kind = PatcherStateKind.Quitting);
 

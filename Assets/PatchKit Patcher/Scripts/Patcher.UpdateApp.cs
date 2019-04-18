@@ -7,7 +7,7 @@ public partial class Patcher
 {
     private CancellationTokenSource _updateAppCancellationTokenSource;
 
-    public void CancelUpdateApp()
+    public async Task CancelUpdateApp()
     {
         if (State.Kind == PatcherStateKind.AskingForAppLicenseKey)
         {

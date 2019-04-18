@@ -1,27 +1,22 @@
 using System;
-using System.Diagnostics;
-using System.IO;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Assertions;
 
-namespace Deprecated
-{
-public static class LauncherUtilities
+public partial class Patcher
 {
     private const string LauncherPathFileName = "launcher_path";
 
     [NotNull]
-    private static string GetDefaultLauncherName()
+    private string GetDefaultLauncherName()
     {
         switch (Application.platform)
         {
-            case RuntimePlatform.LinuxEditor:
             case RuntimePlatform.LinuxPlayer:
                 return "Launcher";
-            case RuntimePlatform.WindowsEditor:
             case RuntimePlatform.WindowsPlayer:
                 return "Launcher.exe";
-            case RuntimePlatform.OSXEditor:
             case RuntimePlatform.OSXPlayer:
                 return "Launcher.app";
             default:
@@ -29,7 +24,7 @@ public static class LauncherUtilities
         }
     }
 
-    private static string FindLauncherExecutable()
+    private string GetLauncherPath()
     {
         if (File.Exists(path: LauncherPathFileName))
         {
@@ -44,60 +39,62 @@ public static class LauncherUtilities
             path1: "..",
             path2: GetDefaultLauncherName());
 
+        defaultLauncherPath = Path.GetFullPath(path: defaultLauncherPath);
+
         return File.Exists(path: defaultLauncherPath)
             ? defaultLauncherPath
             : null;
     }
 
-    private static ProcessStartInfo GetLauncherProcessStartInfo()
+    private ProcessStartInfo GetLauncherProcessStartInfo()
     {
-        string launcherPath = Path.GetFullPath(path: FindLauncherExecutable());
+        string launcherPath = GetLauncherPath();
 
-        if (!Files.IsExecutable(
+        //TODO: Expose in libpkapps function to check if file is executable
+        /*if (!Files.IsExecutable(
             filePath: launcherPath))
         {
-            throw new ApplicationException(
-                message: "Invalid Launcher executable.");
-        }
+            return null;
+        }*/
 
         switch (Application.platform)
         {
-            case RuntimePlatform.LinuxEditor:
             case RuntimePlatform.LinuxPlayer:
                 return new ProcessStartInfo
                 {
                     FileName = launcherPath
                 };
-            case RuntimePlatform.WindowsEditor:
             case RuntimePlatform.WindowsPlayer:
                 return new ProcessStartInfo
                 {
                     FileName = launcherPath
                 };
-            case RuntimePlatform.OSXEditor:
             case RuntimePlatform.OSXPlayer:
                 return new ProcessStartInfo
                 {
                     FileName = "open",
-                    Arguments = string.Format(
-                        format: "\"{0}\"",
-                        arg0: launcherPath)
+                    Arguments = $"\"{launcherPath}\""
                 };
             default:
                 throw new NotSupportedException();
         }
     }
 
-    public static void ExecuteLauncher()
+    private async Task<bool> TryToRestartWithLauncher()
     {
         var processStartInfo =
             GetLauncherProcessStartInfo();
 
+        if (processStartInfo == null)
+        {
+            return false;
+        }
+
         if (Process.Start(startInfo: processStartInfo) == null)
         {
-            throw new ApplicationException(
-                message: "Failed to start Launcher process.");
+            return false;
         }
+
+        return true;
     }
-}
 }
