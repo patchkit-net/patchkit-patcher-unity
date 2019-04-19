@@ -10,11 +10,6 @@ public partial class Patcher : MonoBehaviour
 
     public bool AutomaticallyUpdateApp = true;
 
-#if UNITY_EDITOR
-    public string EditorAppSecret;
-    public int EditorOverrideAppLatestVersionId;
-#endif
-
     private void Awake()
     {
         Initialize();

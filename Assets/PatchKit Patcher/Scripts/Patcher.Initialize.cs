@@ -34,27 +34,10 @@ public partial class Patcher
         public bool? IsOnline;
     }
 
-    private InitializationData? GetEditorInitializationData()
-    {
-        Assert.IsNotNull(value: Application.dataPath);
-        Assert.IsNotNull(value: EditorAppSecret);
-
-        return new InitializationData
-        {
-            AppPath = Application.dataPath.Replace(
-                oldValue: "/Assets",
-                newValue: $"/Temp/PatcherApp{EditorAppSecret}"),
-            AppSecret = EditorAppSecret,
-            LockFilePath = null,
-            OverrideAppLatestVersionId = EditorOverrideAppLatestVersionId > 0
-                ? (int?) EditorOverrideAppLatestVersionId
-                : null,
-            IsOnline = null
-        };
-    }
-
     private void InitializeLibPatchKitApps()
     {
+        Debug.Log(message: "Initializing libpkapps...");
+
         bool is64Bit = IntPtr.Size == 8;
 
         if (Application.platform == RuntimePlatform.LinuxEditor ||
@@ -81,10 +64,14 @@ public partial class Patcher
             LibPatchKitApps.SetPlatformType(
                 platformType: LibPatchKitAppsPlatformType.Osx64);
         }
+
+        Debug.Log(message: "libpkapps initialized.");
     }
 
     private void Initialize()
     {
+        Debug.Log(message: "Initializing patcher...");
+
         _instance = this;
         Assert.raiseExceptions = true;
         Application.runInBackground = true;
@@ -92,13 +79,18 @@ public partial class Patcher
         InitializeLibPatchKitApps();
 
 #if UNITY_EDITOR
-        var data = GetEditorInitializationData();
+        var data = LoadEditorInitializationData();
 #else
-        var data = GetCommandLineInitializationData();
+        var data = LoadCommandLineInitializationData();
 #endif
 
         if (!data.HasValue)
         {
+            Debug.Log(message: "Initialization data wasn't loaded.");
+            Debug.Log(
+                message:
+                "Creating state with kind: DisplayingError (NoLauncherError).");
+
             _state = new PatcherState
             {
                 Kind = PatcherStateKind.DisplayingError,
@@ -106,8 +98,26 @@ public partial class Patcher
                 HasChanged = true
             };
 
+            Debug.Log(message: "Initializing patcher finished.");
+
             return;
         }
+
+        Debug.Log(
+            message: $"InitializationData.AppPath = {data.Value.AppPath}");
+        Debug.Log(
+            message: $"InitializationData.AppSecret = {data.Value.AppSecret}");
+        Debug.Log(
+            message:
+            $"InitializationData.IsOnline = {data.Value.IsOnline?.ToString() ?? "null"}");
+        Debug.Log(
+            message:
+            $"InitializationData.LockFilePath = {data.Value.LockFilePath ?? "null"}");
+        Debug.Log(
+            message:
+            $"InitializationData.OverrideAppLatestVersionId = {data.Value.OverrideAppLatestVersionId?.ToString() ?? "null"}");
+
+        Debug.Log(message: "Creating state with kind: Initializing.");
 
         _state = new PatcherState(
             appSecret: data.Value.AppSecret,
@@ -137,30 +147,46 @@ public partial class Patcher
 
     private async Task FinishInitialization()
     {
+        Debug.Log(message: "Finishing initialization...");
+
         Assert.IsNotNull(value: State.AppState);
+        Assert.IsTrue(condition: State.Kind == PatcherStateKind.Initializing);
 
         try
         {
             if (!string.IsNullOrEmpty(value: State.LockFilePath))
             {
+                Debug.Log(
+                    message: $"Getting file lock on '{State.LockFilePath}'...");
+
                 // ReSharper disable once PossibleNullReferenceException
                 _fileLock = await LibPatchKitApps.GetFileLockAsync(
                     path: State.LockFilePath,
                     cancellationToken: CancellationToken.None);
+
+                Debug.Log(message: "File lock acquired.");
             }
         }
         catch (LibPatchKitAppsFileAlreadyInUseException)
         {
+            Debug.Log(message: "Failed to get file lock: already in use.");
+
             ModifyState(
                 x: () =>
                 {
                     State.Kind = PatcherStateKind.DisplayingError;
                     State.Error = PatcherError.MultipleInstancesError;
                 });
+
+            Debug.Log(
+                message:
+                "Initialization finished with MultipleInstancesError.");
+
             return;
         }
         catch (LibPatchKitAppsNotExistingFileException)
         {
+            Debug.Log(message: "Failed to get file lock: file doesn't exist.");
         }
 
         var updates = Task.WhenAll(
@@ -171,18 +197,24 @@ public partial class Patcher
 
         Assert.IsNotNull(value: updates);
 
-        if (State.AppState.ShouldBeUpdatedAutomatically)
+        if (State.AppState.ShouldBeUpdatedAutomatically && State.IsOnline)
         {
+            Debug.Log(message: "Automatically updating app.");
+
             await UpdateApp();
         }
 
         if (State.AppState.ShouldBeStartedAutomatically)
         {
+            Debug.Log(message: "Automatically starting app.");
+
             await StartApp();
         }
 
         ModifyState(x: () => State.Kind = PatcherStateKind.Idle);
 
         await updates;
+
+        Debug.Log(message: "Initialization finished.");
     }
 }

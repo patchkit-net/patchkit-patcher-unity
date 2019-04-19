@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 public partial class Patcher
@@ -32,6 +33,8 @@ public partial class Patcher
         {
             x();
             State.HasChanged = true;
+
+            Debug.Log(message: $"State update: {State}");
         }
     }
 

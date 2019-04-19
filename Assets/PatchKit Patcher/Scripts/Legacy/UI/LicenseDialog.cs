@@ -75,13 +75,13 @@ public class LicenseDialog : MonoBehaviour
 
         licenseKey = licenseKey.ToUpper().Trim();
 
-        Patcher.Instance.OnUpdateAppWithLicenseKeyRequested(
+        Patcher.Instance.OnSetLicenseKeyAndUpdateAppRequested(
             licenseKey: licenseKey);
     }
 
     public void Abort()
     {
-        Patcher.Instance.OnCancelUpdateAppRequested();
+        Patcher.Instance.OnCancelSettingLicenseKeyRequested();
     }
 }
 }

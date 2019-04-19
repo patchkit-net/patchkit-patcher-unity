@@ -2,14 +2,19 @@ using System;
 using System.IO;
 using System.Linq;
 using Debugging;
-using Deprecated;
 using UnityEngine;
 
 public partial class Patcher
 {
-    private InitializationData? GetCommandLineInitializationData()
+    private InitializationData? LoadCommandLineInitializationData()
     {
+        Debug.Log(message: "Loading initialization data from command line...");
+
         var args = Environment.GetCommandLineArgs().ToList();
+
+        Debug.Log(
+            message:
+            $"Command line args: {string.Join(separator: " ", values: args)}");
 
         bool areReadable = args.Contains(item: "--readable");
 
@@ -89,7 +94,7 @@ public partial class Patcher
             return null;
         }
 
-        return new InitializationData
+        var result = new InitializationData
         {
             AppPath = appPath,
             AppSecret = appSecret,
@@ -97,6 +102,10 @@ public partial class Patcher
             LockFilePath = lockFilePath,
             OverrideAppLatestVersionId = overrideAppLatestVersionId
         };
+
+        Debug.Log(message: "Initialization data loaded.");
+
+        return result;
     }
 
     private static string MakeAppPathAbsolute(string relativeAppDataPath)

@@ -12,6 +12,15 @@ public class PatcherUpdateAppState
     public double Progress { get; set; }
 
     public double BytesPerSecond { get; set; }
+
+    public override string ToString()
+    {
+        return $"{{ IsConnecting: {IsConnecting}, " +
+            $"InstalledBytes: {InstalledBytes}, " +
+            $"TotalBytes: {TotalBytes}, " +
+            $"Progress: {Progress}, " +
+            $"BytesPerSecond: {BytesPerSecond} }}";
+    }
 }
 
 public enum PatcherAppLicenseKeyIssue
@@ -61,6 +70,22 @@ public class PatcherAppState
 
     [NotNull]
     public PatcherUpdateAppState UpdateState { get; }
+
+    public override string ToString()
+    {
+        return $"{{ Secret: \"{Secret}\", " +
+            $"Path: \"{Path}\", " +
+            $"OverrideLatestVersionId: {OverrideLatestVersionId?.ToString() ?? "null"}, " +
+            $"ShouldBeUpdatedAutomatically: {ShouldBeUpdatedAutomatically}, " +
+            $"ShouldBeStartedAutomatically: {ShouldBeStartedAutomatically}, " +
+            $"LicenseKey: \"{LicenseKey}\", " +
+            $"LicenseKeyIssue: {LicenseKeyIssue}, " +
+            $"InstalledVersionId: {InstalledVersionId?.ToString() ?? "null"}, " +
+            $"LatestVersionId: {LatestVersionId?.ToString() ?? "null"}, " +
+            $"Info: {Info?.ToString() ?? "null"}, " +
+            $"Versions: {Versions?.ToString() ?? "null"}, " +
+            $"UpdateState: {UpdateState} }}";
+    }
 }
 
 public enum PatcherStateKind
@@ -114,4 +139,13 @@ public class PatcherState
     public bool IsOnline { get; set; }
 
     public bool HasChanged { get; set; }
+
+    public override string ToString()
+    {
+        return $"{{ AppState: \"{AppState?.ToString() ?? "null"}\", " +
+            $"LockFilePath: \"{LockFilePath ?? "null"}\", " +
+            $"Kind: {Kind}, " +
+            $"Error: {Error}, " +
+            $"IsOnline: {IsOnline} }}";
+    }
 }

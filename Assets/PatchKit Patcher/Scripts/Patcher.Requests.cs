@@ -22,18 +22,6 @@ public partial class Patcher
         await SafeInvoke(func: UpdateApp);
     }
 
-    public async void OnUpdateAppWithLicenseKeyRequested(
-        [NotNull] string licenseKey)
-    {
-        if (State.Kind != PatcherStateKind.AskingForAppLicenseKey)
-        {
-            return;
-        }
-
-        await SafeInvoke(
-            func: () => UpdateAppWithLicenseKey(licenseKey: licenseKey));
-    }
-
     public async void OnCancelUpdateAppRequested()
     {
         if (State.Kind != PatcherStateKind.UpdatingApp &&
@@ -42,13 +30,42 @@ public partial class Patcher
             return;
         }
 
-        await SafeInvoke(func: CancelUpdateApp);
+        await SafeInvoke(func: CancelUpdateApp2);
     }
 
-    //TODO: Make it private after moving to Legacy
+    public async void OnSetLicenseKeyAndUpdateAppRequested(
+        [NotNull] string licenseKey)
+    {
+        if (State.Kind != PatcherStateKind.AskingForAppLicenseKey)
+        {
+            return;
+        }
+
+        await SafeInvoke(func: () => SetLicenseKey(licenseKey: licenseKey));
+
+        await UpdateApp();
+    }
+
+    public async void OnCancelSettingLicenseKeyRequested()
+    {
+        if (State.Kind != PatcherStateKind.AskingForAppLicenseKey)
+        {
+            return;
+        }
+
+        await CancelSettingLicenseKey();
+    }
+
+    //TODO: Remove after moving to Legacy
     public void Quit()
     {
         OnQuitRequested();
+    }
+
+    //TODO: Remove after moving to Legacy
+    public void CancelUpdateApp()
+    {
+        OnCancelUpdateAppRequested();
     }
 
     public async void OnQuitRequested()

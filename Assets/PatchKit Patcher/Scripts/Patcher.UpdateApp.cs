@@ -1,27 +1,33 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 public partial class Patcher
 {
     private CancellationTokenSource _updateAppCancellationTokenSource;
 
-    public async Task CancelUpdateApp()
+    public async Task CancelUpdateApp2()
     {
-        if (State.Kind == PatcherStateKind.AskingForAppLicenseKey)
-        {
-            ModifyState(x: () => State.Kind = PatcherStateKind.Idle);
-        }
-        else
-        {
-            _updateAppCancellationTokenSource?.Cancel();
-        }
+        Debug.Log(message: "Cancelling updating app...");
+
+        Assert.IsTrue(condition: State.Kind == PatcherStateKind.UpdatingApp);
+        Assert.IsNotNull(value: _updateAppCancellationTokenSource);
+
+        _updateAppCancellationTokenSource.Cancel();
+
+        Debug.Log(message: "Successfully cancelled updating app.");
     }
 
     private async Task UpdateApp()
     {
+        Debug.Log(message: "Updating app...");
+
         Assert.IsNotNull(value: State.AppState);
+        Assert.IsTrue(
+            condition: State.Kind == PatcherStateKind.Initializing ||
+            State.Kind == PatcherStateKind.Idle);
 
         ModifyState(
             x: () =>
@@ -107,12 +113,17 @@ public partial class Patcher
         }
         catch (OperationCanceledException)
         {
+            Debug.Log(message: "Failed to update app: cancelled.");
+
             ModifyState(x: () => State.Kind = PatcherStateKind.Idle);
 
             return;
         }
         catch (LibPatchKitAppsAppLicenseKeyRequiredException)
         {
+            Debug.Log(
+                message: "Failed to update app: app license key required.");
+
             ModifyState(
                 x: () =>
                 {
@@ -125,6 +136,9 @@ public partial class Patcher
         }
         catch (LibPatchKitAppsBlockedAppLicenseKeyException)
         {
+            Debug.Log(
+                message: "Failed to update app: blocked app license key.");
+
             ModifyState(
                 x: () =>
                 {
@@ -137,6 +151,9 @@ public partial class Patcher
         }
         catch (LibPatchKitAppsInvalidAppLicenseKeyException)
         {
+            Debug.Log(
+                message: "Failed to update app: invalid app license key.");
+
             ModifyState(
                 x: () =>
                 {
@@ -149,6 +166,8 @@ public partial class Patcher
         }
         catch (LibPatchKitAppsOutOfFreeDiskSpaceException)
         {
+            Debug.Log(message: "Failed to update app: out of disk space.");
+
             ModifyState(
                 x: () =>
                 {
@@ -157,6 +176,8 @@ public partial class Patcher
                 });
             return;
         }
+
+        Debug.Log(message: "Successfully updated app.");
 
         await FetchAppInstalledVersionId();
 

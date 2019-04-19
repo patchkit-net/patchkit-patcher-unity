@@ -1,9 +1,12 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 public partial class Patcher
 {
     private async Task Quit2()
     {
+        Debug.Log(message: "Quitting...");
+
         ModifyState(x: () => State.Kind = PatcherStateKind.Quitting);
 
 #if UNITY_EDITOR
@@ -16,5 +19,7 @@ public partial class Patcher
         {
             Application.Quit();
         }
+
+        Debug.Log(message: "Quitting finished.");
     }
 }

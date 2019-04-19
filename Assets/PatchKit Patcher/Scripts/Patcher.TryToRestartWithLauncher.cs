@@ -1,8 +1,9 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public partial class Patcher
 {
@@ -50,6 +51,11 @@ public partial class Patcher
     {
         string launcherPath = GetLauncherPath();
 
+        if (launcherPath == null)
+        {
+            return null;
+        }
+
         //TODO: Expose in libpkapps function to check if file is executable
         /*if (!Files.IsExecutable(
             filePath: launcherPath))
@@ -82,8 +88,7 @@ public partial class Patcher
 
     private async Task<bool> TryToRestartWithLauncher()
     {
-        var processStartInfo =
-            GetLauncherProcessStartInfo();
+        var processStartInfo = GetLauncherProcessStartInfo();
 
         if (processStartInfo == null)
         {

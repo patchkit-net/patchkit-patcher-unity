@@ -1,15 +1,24 @@
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 public partial class Patcher
 {
     private async Task StartApp()
     {
+        Debug.Log(message: "Starting app...");
+
         Assert.IsNotNull(value: State.AppState);
+        Assert.IsTrue(
+            condition: State.Kind == PatcherStateKind.Initializing ||
+            State.Kind == PatcherStateKind.Idle);
 
         if (!State.AppState.InstalledVersionId.HasValue)
         {
+            Debug.Log(
+                message: "App couldn't be started because it's not installed.");
+
             return;
         }
 
@@ -20,6 +29,8 @@ public partial class Patcher
             path: State.AppState.Path,
             cancellationToken: CancellationToken.None);
 
-        Quit();
+        Debug.Log(message: "Successfully started app.");
+
+        await Quit2();
     }
 }
