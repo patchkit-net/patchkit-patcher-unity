@@ -24,8 +24,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private readonly ILogger _logger;
 
-        private const string ResponseEncoding = "iso-8859-2";
-
         public UnityHttpClient()
         {
             _logger = PatcherLogManager.DefaultLogger;
@@ -78,7 +76,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                     var statusCode = ReadStatusCode(result);
 
                     _logger.LogDebug("Successfuly received response.");
-                    return new UnityHttpResponse(result.Text, statusCode, ResponseEncoding);
+                    return new UnityHttpResponse(result.Text, statusCode);
                 }
             }
             catch (Exception e)
