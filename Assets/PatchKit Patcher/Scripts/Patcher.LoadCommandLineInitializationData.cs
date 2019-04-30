@@ -6,7 +6,7 @@ using UnityEngine;
 
 public partial class Patcher
 {
-    private InitializationData? LoadCommandLineInitializationData()
+    private static InitializationData? LoadCommandLineInitializationData()
     {
         Debug.Log(message: "Loading initialization data from command line...");
 

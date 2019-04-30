@@ -10,9 +10,7 @@ public partial class Patcher
         Debug.Log(message: "Starting app...");
 
         Assert.IsNotNull(value: State.AppState);
-        Assert.IsTrue(
-            condition: State.Kind == PatcherStateKind.Initializing ||
-            State.Kind == PatcherStateKind.Idle);
+        Assert.IsTrue(condition: State.Kind == PatcherStateKind.Idle);
 
         if (!State.AppState.InstalledVersionId.HasValue)
         {

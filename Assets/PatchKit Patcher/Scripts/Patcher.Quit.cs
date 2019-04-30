@@ -1,9 +1,11 @@
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public partial class Patcher
 {
-    private async Task Quit2()
+    [NotNull]
+    private Task Quit2()
     {
         Debug.Log(message: "Quitting...");
 
@@ -21,5 +23,7 @@ public partial class Patcher
         }
 
         Debug.Log(message: "Quitting finished.");
+
+        return Task.CompletedTask;
     }
 }

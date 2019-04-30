@@ -1,3 +1,4 @@
+using System.Threading;
 using JetBrains.Annotations;
 using PatchKit.Api.Models;
 
@@ -12,6 +13,8 @@ public class PatcherUpdateAppState
     public double Progress { get; set; }
 
     public double BytesPerSecond { get; set; }
+
+    public CancellationTokenSource CancellationTokenSource { get; set; }
 
     public override string ToString()
     {
@@ -52,10 +55,6 @@ public class PatcherAppState
 
     public int? OverrideLatestVersionId { get; }
 
-    public bool ShouldBeUpdatedAutomatically { get; set; }
-
-    public bool ShouldBeStartedAutomatically { get; set; }
-
     public string LicenseKey { get; set; }
 
     public PatcherAppLicenseKeyIssue LicenseKeyIssue { get; set; }
@@ -76,8 +75,6 @@ public class PatcherAppState
         return $"{{ Secret: \"{Secret}\", " +
             $"Path: \"{Path}\", " +
             $"OverrideLatestVersionId: {OverrideLatestVersionId?.ToString() ?? "null"}, " +
-            $"ShouldBeUpdatedAutomatically: {ShouldBeUpdatedAutomatically}, " +
-            $"ShouldBeStartedAutomatically: {ShouldBeStartedAutomatically}, " +
             $"LicenseKey: \"{LicenseKey}\", " +
             $"LicenseKeyIssue: {LicenseKeyIssue}, " +
             $"InstalledVersionId: {InstalledVersionId?.ToString() ?? "null"}, " +
@@ -132,6 +129,8 @@ public class PatcherState
 
     public string LockFilePath { get; }
 
+    public LibPatchKitAppsFileLock FileLock { get; set; }
+
     public PatcherStateKind Kind { get; set; }
 
     public PatcherError Error { get; set; }
@@ -144,6 +143,7 @@ public class PatcherState
     {
         return $"{{ AppState: \"{AppState?.ToString() ?? "null"}\", " +
             $"LockFilePath: \"{LockFilePath ?? "null"}\", " +
+            $"FileLock: \"{FileLock}\", " +
             $"Kind: {Kind}, " +
             $"Error: {Error}, " +
             $"IsOnline: {IsOnline} }}";

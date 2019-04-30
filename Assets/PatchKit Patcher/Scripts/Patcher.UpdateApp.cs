@@ -1,23 +1,27 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 public partial class Patcher
 {
-    private CancellationTokenSource _updateAppCancellationTokenSource;
-
-    public async Task CancelUpdateApp2()
+    [NotNull]
+    private Task CancelUpdateApp2()
     {
         Debug.Log(message: "Cancelling updating app...");
 
         Assert.IsTrue(condition: State.Kind == PatcherStateKind.UpdatingApp);
-        Assert.IsNotNull(value: _updateAppCancellationTokenSource);
+        Assert.IsNotNull(value: State.AppState);
+        Assert.IsNotNull(
+            value: State.AppState.UpdateState.CancellationTokenSource);
 
-        _updateAppCancellationTokenSource.Cancel();
+        State.AppState.UpdateState.CancellationTokenSource.Cancel();
 
         Debug.Log(message: "Successfully cancelled updating app.");
+
+        return Task.CompletedTask;
     }
 
     private async Task UpdateApp()
@@ -25,9 +29,7 @@ public partial class Patcher
         Debug.Log(message: "Updating app...");
 
         Assert.IsNotNull(value: State.AppState);
-        Assert.IsTrue(
-            condition: State.Kind == PatcherStateKind.Initializing ||
-            State.Kind == PatcherStateKind.Idle);
+        Assert.IsTrue(condition: State.Kind == PatcherStateKind.Idle);
 
         ModifyState(
             x: () =>
@@ -86,6 +88,9 @@ public partial class Patcher
                         });
                 };
 
+            State.AppState.UpdateState.CancellationTokenSource =
+                new CancellationTokenSource();
+
             if (State.AppState.OverrideLatestVersionId.HasValue)
             {
                 // ReSharper disable once PossibleNullReferenceException
@@ -96,8 +101,8 @@ public partial class Patcher
                     targetVersionId: State.AppState.OverrideLatestVersionId
                         .Value,
                     reportProgress: reportProgress,
-                    cancellationToken: (_updateAppCancellationTokenSource =
-                        new CancellationTokenSource()).Token);
+                    cancellationToken: State.AppState.UpdateState
+                        .CancellationTokenSource.Token);
             }
             else
             {
@@ -107,8 +112,8 @@ public partial class Patcher
                     secret: State.AppState.Secret,
                     licenseKey: State.AppState.LicenseKey,
                     reportProgress: reportProgress,
-                    cancellationToken: (_updateAppCancellationTokenSource =
-                        new CancellationTokenSource()).Token);
+                    cancellationToken: State.AppState.UpdateState
+                        .CancellationTokenSource.Token);
             }
         }
         catch (OperationCanceledException)

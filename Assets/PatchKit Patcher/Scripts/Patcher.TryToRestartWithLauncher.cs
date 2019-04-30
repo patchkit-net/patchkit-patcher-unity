@@ -7,10 +7,28 @@ using UnityEngine;
 
 public partial class Patcher
 {
+    [NotNull]
+    private Task<bool> TryToRestartWithLauncher()
+    {
+        var processStartInfo = GetLauncherProcessStartInfo();
+
+        if (processStartInfo == null)
+        {
+            return Task.FromResult(result: false);
+        }
+
+        if (Process.Start(startInfo: processStartInfo) == null)
+        {
+            return Task.FromResult(result: false);
+        }
+
+        return Task.FromResult(result: true);
+    }
+
     private const string LauncherPathFileName = "launcher_path";
 
     [NotNull]
-    private string GetDefaultLauncherName()
+    private static string GetDefaultLauncherName()
     {
         switch (Application.platform)
         {
@@ -25,7 +43,7 @@ public partial class Patcher
         }
     }
 
-    private string GetLauncherPath()
+    private static string GetLauncherPath()
     {
         if (File.Exists(path: LauncherPathFileName))
         {
@@ -47,7 +65,7 @@ public partial class Patcher
             : null;
     }
 
-    private ProcessStartInfo GetLauncherProcessStartInfo()
+    private static ProcessStartInfo GetLauncherProcessStartInfo()
     {
         string launcherPath = GetLauncherPath();
 
@@ -84,22 +102,5 @@ public partial class Patcher
             default:
                 throw new NotSupportedException();
         }
-    }
-
-    private async Task<bool> TryToRestartWithLauncher()
-    {
-        var processStartInfo = GetLauncherProcessStartInfo();
-
-        if (processStartInfo == null)
-        {
-            return false;
-        }
-
-        if (Process.Start(startInfo: processStartInfo) == null)
-        {
-            return false;
-        }
-
-        return true;
     }
 }

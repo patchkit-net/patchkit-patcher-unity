@@ -5,7 +5,8 @@ using UnityEngine.Assertions;
 
 public partial class Patcher
 {
-    private async Task CancelSettingLicenseKey()
+    [NotNull]
+    private Task CancelSettingLicenseKey()
     {
         Debug.Log(message: "Cancelling setting license key...");
 
@@ -15,9 +16,12 @@ public partial class Patcher
         ModifyState(x: () => { State.Kind = PatcherStateKind.Idle; });
 
         Debug.Log(message: "Successfully cancelled license key.");
+
+        return Task.CompletedTask;
     }
 
-    private async Task SetLicenseKey([NotNull] string licenseKey)
+    [NotNull]
+    private async Task SetLicenseKeyAndUpdateApp([NotNull] string licenseKey)
     {
         Debug.Log(message: $"Setting license key to '{licenseKey}'...");
 
@@ -33,5 +37,7 @@ public partial class Patcher
             });
 
         Debug.Log(message: "Successfully set license key.");
+
+        await UpdateApp();
     }
 }
