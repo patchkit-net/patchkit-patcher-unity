@@ -71,6 +71,10 @@ public partial class Patcher
             argumentName: EnvironmentVariables.ForceSecretEnvironmentVariable,
             value: out forceAppSecret))
         {
+            Debug.Log(
+                message:
+                $"Using app secret from environment variable: {EnvironmentVariables.ForceSecretEnvironmentVariable}={forceAppSecret}");
+
             appSecret = forceAppSecret;
         }
 
@@ -85,6 +89,11 @@ public partial class Patcher
                 s: forceOverrideLatestVersionIdString,
                 result: out forceOverrideLatestVersionId))
             {
+                Debug.Log(
+                    message:
+                    $"Using override latest version id from environment variable: {EnvironmentVariables.ForceVersionEnvironmentVariable}={forceOverrideLatestVersionId}");
+
+
                 overrideAppLatestVersionId = forceOverrideLatestVersionId;
             }
         }

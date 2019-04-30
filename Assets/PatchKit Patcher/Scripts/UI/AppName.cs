@@ -16,7 +16,7 @@ public class AppName : MonoBehaviour
         {
             Assert.IsNotNull(value: state);
 
-            Text.text = state.AppState?.Info?.DisplayName ?? "GAME";
+            Text.text = state.AppState?.Info?.DisplayName ?? "APPLICATION";
         };
     }
 }

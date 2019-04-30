@@ -9,12 +9,12 @@ public partial class Patcher
 
     private InitializationData? LoadEditorInitializationData()
     {
-        Debug.Log(message: "Loading initialization data from editor.");
+        Debug.Log(message: "Loading initialization data from editor...");
 
         Assert.IsNotNull(value: Application.dataPath);
         Assert.IsNotNull(value: EditorAppSecret);
 
-        return new InitializationData
+        var result = new InitializationData
         {
             AppPath = Application.dataPath.Replace(
                 oldValue: "/Assets",
@@ -26,6 +26,10 @@ public partial class Patcher
                 : null,
             IsOnline = null
         };
+
+        Debug.Log(message: "Initialization data loaded.");
+
+        return result;
     }
 #endif
 }
