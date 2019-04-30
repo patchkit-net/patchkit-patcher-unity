@@ -10,12 +10,18 @@ public partial class Patcher
     {
         Debug.Log(message: "Cancelling setting license key...");
 
+        Assert.IsNotNull(value: State.AppState);
         Assert.IsTrue(
             condition: State.Kind == PatcherStateKind.AskingForAppLicenseKey);
 
-        ModifyState(x: () => { State.Kind = PatcherStateKind.Idle; });
+        ModifyState(
+            x: () =>
+            {
+                State.Kind = PatcherStateKind.Idle;
+                State.AppState.LicenseKeyIssue = PatcherAppLicenseKeyIssue.None;
+            });
 
-        Debug.Log(message: "Successfully cancelled license key.");
+        Debug.Log(message: "Successfully cancelled setting license key.");
 
         return Task.CompletedTask;
     }
@@ -33,6 +39,7 @@ public partial class Patcher
             x: () =>
             {
                 State.AppState.LicenseKey = licenseKey;
+                State.AppState.LicenseKeyIssue = PatcherAppLicenseKeyIssue.None;
                 State.Kind = PatcherStateKind.Idle;
             });
 

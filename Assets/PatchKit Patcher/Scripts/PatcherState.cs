@@ -18,11 +18,12 @@ public class PatcherUpdateAppState
 
     public override string ToString()
     {
-        return $"{{ IsConnecting: {IsConnecting}, " +
-            $"InstalledBytes: {InstalledBytes}, " +
-            $"TotalBytes: {TotalBytes}, " +
-            $"Progress: {Progress}, " +
-            $"BytesPerSecond: {BytesPerSecond} }}";
+        return $"{{ \"IsConnecting\": {IsConnecting.ToString().ToLower()}, " +
+            $"\"InstalledBytes\": {InstalledBytes}, " +
+            $"\"TotalBytes\": {TotalBytes}, " +
+            $"\"Progress\": {Progress}, " +
+            $"\"BytesPerSecond\": {BytesPerSecond}, " +
+            $"\"CancellationTokenSource\": {CancellationTokenSource?.ToString().SurroundWithQuotes() ?? "null"} }}";
     }
 }
 
@@ -72,16 +73,16 @@ public class PatcherAppState
 
     public override string ToString()
     {
-        return $"{{ Secret: \"{Secret}\", " +
-            $"Path: \"{Path}\", " +
-            $"OverrideLatestVersionId: {OverrideLatestVersionId?.ToString() ?? "null"}, " +
-            $"LicenseKey: \"{LicenseKey}\", " +
-            $"LicenseKeyIssue: {LicenseKeyIssue}, " +
-            $"InstalledVersionId: {InstalledVersionId?.ToString() ?? "null"}, " +
-            $"LatestVersionId: {LatestVersionId?.ToString() ?? "null"}, " +
-            $"Info: {Info?.ToString() ?? "null"}, " +
-            $"Versions: {Versions?.ToString() ?? "null"}, " +
-            $"UpdateState: {UpdateState} }}";
+        return $"{{ \"Secret\": \"{Secret}\", " +
+            $"\"Path\": \"{Path}\", " +
+            $"\"OverrideLatestVersionId\": {OverrideLatestVersionId?.ToString() ?? "null"}, " +
+            $"\"LicenseKey\": {LicenseKey?.SurroundWithQuotes() ?? "null"}, " +
+            $"\"LicenseKeyIssue\": {LicenseKeyIssue.ToString().SurroundWithQuotes() ?? "null"}, " +
+            $"\"InstalledVersionId\": {InstalledVersionId?.ToString() ?? "null"}, " +
+            $"\"LatestVersionId\": {LatestVersionId?.ToString() ?? "null"}, " +
+            $"\"Info\": {Info?.ToString().SurroundWithQuotes() ?? "null"}, " +
+            $"\"Versions\": {Versions?.ToString().SurroundWithQuotes() ?? "null"}, " +
+            $"\"UpdateState\": {UpdateState} }}";
     }
 }
 
@@ -133,7 +134,7 @@ public class PatcherState
 
     public PatcherStateKind Kind { get; set; }
 
-    public PatcherError Error { get; set; }
+    public PatcherError? Error { get; set; }
 
     public bool IsOnline { get; set; }
 
@@ -141,11 +142,11 @@ public class PatcherState
 
     public override string ToString()
     {
-        return $"{{ AppState: \"{AppState?.ToString() ?? "null"}\", " +
-            $"LockFilePath: \"{LockFilePath ?? "null"}\", " +
-            $"FileLock: \"{FileLock}\", " +
-            $"Kind: {Kind}, " +
-            $"Error: {Error}, " +
-            $"IsOnline: {IsOnline} }}";
+        return $"{{ \"AppState\": {AppState?.ToString() ?? "null"}, " +
+            $"\"LockFilePath\": {LockFilePath?.SurroundWithQuotes() ?? "null"}, " +
+            $"\"FileLock\": {FileLock?.ToString().SurroundWithQuotes() ?? "null"}, " +
+            $"\"Kind\": \"{Kind}\", " +
+            $"\"Error\": {Error?.ToString().SurroundWithQuotes() ?? "null"}, " +
+            $"\"IsOnline\": {IsOnline.ToString().ToLower()} }}";
     }
 }

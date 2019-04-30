@@ -11,7 +11,7 @@ public class UpdateProgressBar : MonoBehaviour
     public Image Image;
 
     private bool _isIdle;
-    private float _idleProgress;
+    private float _idleProgress = -IdleBarWidth;
 
     private const float IdleBarWidth = 0.2f;
     private const float IdleBarSpeed = 1.2f;
@@ -93,7 +93,6 @@ public class UpdateProgressBar : MonoBehaviour
 
         Text.text = message;
         _isIdle = true;
-        _idleProgress = -IdleBarWidth;
     }
 
     private void SetValue(float progress)

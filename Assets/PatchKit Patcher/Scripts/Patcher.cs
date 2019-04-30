@@ -39,6 +39,10 @@ public partial class Patcher : MonoBehaviour
 
     private async void Awake()
     {
+        _instance = this;
+        Assert.raiseExceptions = true;
+        Application.runInBackground = true;
+
         await SafeInvoke(func: Initialize);
 
         var updates = Task.WhenAll(
@@ -61,10 +65,6 @@ public partial class Patcher : MonoBehaviour
             Debug.Log(message: "Automatically starting app.");
 
             await SafeInvoke(func: StartApp);
-        }
-        else
-        {
-            ModifyState(x: () => State.Kind = PatcherStateKind.Idle);
         }
 
         await updates;
@@ -179,9 +179,23 @@ public partial class Patcher : MonoBehaviour
                     State.Error = PatcherError.UnauthorizedAccessError;
                 });
         }
+        catch (LibPatchKitAppsInternalErrorException e)
+        {
+            Debug.LogError(message: "libpkapps internal error");
+            Debug.LogException(exception: e);
+
+            ModifyState(
+                x: () =>
+                {
+                    State.Kind = PatcherStateKind.DisplayingError;
+                    State.Error = PatcherError.InternalError;
+                });
+        }
         catch (Exception e)
         {
+            Debug.LogError(message: "Fatal error");
             Debug.LogException(exception: e);
+            //TODO: Report exception
 
             ModifyState(
                 x: () =>

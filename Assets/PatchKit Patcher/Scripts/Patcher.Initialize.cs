@@ -11,10 +11,6 @@ public partial class Patcher
     {
         Debug.Log(message: "Initializing patcher...");
 
-        _instance = this;
-        Assert.raiseExceptions = true;
-        Application.runInBackground = true;
-
         InitializeLibPatchKitApps();
 
 #if UNITY_EDITOR
@@ -26,18 +22,17 @@ public partial class Patcher
         if (!data.HasValue)
         {
             Debug.Log(message: "Initialization data wasn't loaded.");
+
+            _state = new PatcherState();
+            ModifyState(
+                x: () =>
+                {
+                    State.Kind = PatcherStateKind.DisplayingError;
+                    State.Error = PatcherError.NoLauncherError;
+                });
+
             Debug.Log(
-                message:
-                "Creating state with kind: DisplayingError (NoLauncherError).");
-
-            _state = new PatcherState
-            {
-                Kind = PatcherStateKind.DisplayingError,
-                Error = PatcherError.NoLauncherError,
-                HasChanged = true
-            };
-
-            Debug.Log(message: "Initializing patcher finished.");
+                message: "Initializing patcher finished with NoLauncherError.");
 
             return;
         }
@@ -56,18 +51,18 @@ public partial class Patcher
             message:
             $"InitializationData.OverrideAppLatestVersionId = {data.Value.OverrideAppLatestVersionId?.ToString() ?? "null"}");
 
-        Debug.Log(message: "Creating state with kind: Initializing.");
-
         _state = new PatcherState(
             appSecret: data.Value.AppSecret,
             appPath: data.Value.AppPath,
             lockFilePath: data.Value.LockFilePath,
-            overrideAppLatestVersionId: data.Value.OverrideAppLatestVersionId)
-        {
-            Kind = PatcherStateKind.Initializing,
-            IsOnline = data.Value.IsOnline ?? true,
-            HasChanged = true
-        };
+            overrideAppLatestVersionId: data.Value.OverrideAppLatestVersionId);
+
+        ModifyState(
+            x: () =>
+            {
+                State.Kind = PatcherStateKind.Initializing;
+                State.IsOnline = data.Value.IsOnline ?? true;
+            });
 
         try
         {
@@ -113,6 +108,7 @@ public partial class Patcher
 
     private static void InitializeLibPatchKitApps()
     {
+        //TODO: Override API with environment variables
         Debug.Log(message: "Initializing libpkapps...");
 
         bool is64Bit = IntPtr.Size == 8;

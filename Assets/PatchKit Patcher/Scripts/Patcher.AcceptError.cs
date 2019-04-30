@@ -1,14 +1,21 @@
+using System;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 public partial class Patcher
 {
     private async Task AcceptError()
     {
+        Debug.Log(message: "Accepting error...");
+
         Assert.IsTrue(
             condition: State.Kind == PatcherStateKind.DisplayingError);
+        Assert.IsTrue(condition: State.Error.HasValue);
 
-        switch (State.Error)
+        Debug.Log(message: $"Error = {State.Error.Value}");
+
+        switch (State.Error.Value)
         {
             case PatcherError.InternalError:
             case PatcherError.MultipleInstancesError:
@@ -31,6 +38,15 @@ public partial class Patcher
             case PatcherError.OutOfDiskSpaceError:
                 ModifyState(x: () => State.Kind = PatcherStateKind.Idle);
                 break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
+
+        Assert.IsFalse(
+            condition: State.Kind == PatcherStateKind.DisplayingError);
+
+        ModifyState(x: () => State.Error = null);
+
+        Debug.Log(message: "Successfully accepted error.");
     }
 }

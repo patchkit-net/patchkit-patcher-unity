@@ -27,6 +27,6 @@ public partial class Patcher
 
         Debug.Log(
             message:
-            $"Successfully fetched app installed version id: {installedVersionId}.");
+            $"Successfully fetched app installed version id: {installedVersionId?.ToString() ?? "null"}.");
     }
 }

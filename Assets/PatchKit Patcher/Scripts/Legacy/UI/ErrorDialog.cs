@@ -35,7 +35,9 @@ public class ErrorDialog : MonoBehaviour
                 name: "IsOpened",
                 value: true);
 
-            switch (state.Error)
+            Assert.IsTrue(condition: state.Error.HasValue);
+
+            switch (state.Error.Value)
             {
                 case PatcherError.NoLauncherError:
                     ErrorText.text = "Patcher must be started with launcher.";
