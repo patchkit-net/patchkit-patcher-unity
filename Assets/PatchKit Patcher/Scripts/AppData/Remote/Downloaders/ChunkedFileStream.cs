@@ -89,7 +89,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 fileStream = OpenNewFileStream(path);
             }
 
-            return new ChunkedFileStream(fileStream, fileSize, chunksData, hashFunction);
+            return new ChunkedFileStream(fileStream, fileSize, chunksData, hashFunction, startChunk, endChunk);
         }
 
         private static FileStream OpenNewFileStream(string path)
