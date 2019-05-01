@@ -11,12 +11,14 @@ public partial class Patcher
     private async Task Initialize()
     {
         Debug.Log(message: "Initializing patcher...");
+        Debug.Log(message: $"Patcher version: {PatcherVersion.Text}");
         Debug.Log(
-            message: "Runtime version: " + EnvironmentInfo.GetRuntimeVersion());
+            message: $"Runtime version: {EnvironmentInfo.GetRuntimeVersion()}");
         Debug.Log(
-            message: "System version: " + EnvironmentInfo.GetSystemVersion());
+            message: $"System version: {EnvironmentInfo.GetSystemVersion()}");
         Debug.Log(
-            message: "System information: " + EnvironmentInfo.GetSystemInformation());
+            message:
+            $"System information: {EnvironmentInfo.GetSystemInformation()}");
 
         InitializeLibPatchKitApps();
 
