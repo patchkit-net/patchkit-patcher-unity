@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Debugging;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -195,7 +196,8 @@ public partial class Patcher : MonoBehaviour
         {
             Debug.LogError(message: "Fatal error");
             Debug.LogException(exception: e);
-            //TODO: Report exception
+
+            await PatcherLogManager.Instance.OnException(exception: e);
 
             ModifyState(
                 x: () =>

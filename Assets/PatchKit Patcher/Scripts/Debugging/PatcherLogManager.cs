@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Sentry;
 using UnityEngine;
 
 namespace Debugging
 {
 public class PatcherLogManager : MonoBehaviour
 {
+    [NotNull]
     public static PatcherLogManager Instance { get; private set; }
 
     private StreamWriter _logWriter;
@@ -15,9 +18,9 @@ public class PatcherLogManager : MonoBehaviour
 
     private string _logPath;
     private string _logGuid;
-    private string _logUrl;
 
-    private object _writeToLogLock = new object();
+    [NotNull]
+    private readonly object _writeToLogLock = new object();
 
     private void CreateLogFile()
     {
@@ -118,30 +121,53 @@ public class PatcherLogManager : MonoBehaviour
             trace,
             type) =>
         {
-            WriteToLog($"[{type}] {condition}\n{trace}");
+            WriteToLog(text: $"[{type}] {condition}\n{trace}");
         };
     }
 
     [NotNull]
-    public string GetLogUrl()
+    private static SentryClient GetSentryClient()
     {
-        return _logUrl ??
-            LibPatchKitApps.GetLogUrlPrediction(
-                guid: _logGuid,
-                appId: "patcher-unity");
+        return new SentryClient(
+            options: new SentryOptions
+            {
+                Dsn = new Dsn(
+                    dsn:
+                    "https://4e111c71954d44f2a4decedc450c392d@sentry.io/1450096"),
+                Environment = "development",
+                Release = $"patchkit-patcher-unity@{PatcherVersion.Text}"
+            });
     }
 
-    public void SendLog()
+    public async Task OnException(Exception exception)
     {
         CloseLogWriter();
 
-        lock (_writeToLogLock)
+        string logUrl = await LibPatchKitApps.SendLogAsync(
+            path: _logPath,
+            guid: _logGuid,
+            appId: "patcher-unity",
+            appVersion: PatcherVersion.Text);
+
+        try
         {
-            _logUrl = LibPatchKitApps.SendLog(
-                path: _logPath,
-                guid: _logGuid,
-                appId: "patcher-unity",
-                appVersion: PatcherVersion.Text);
+            using (var sentryClient = GetSentryClient())
+            {
+                var sentryEvent = new SentryEvent(exception: exception);
+
+                if (logUrl != null)
+                {
+                    sentryEvent.SetExtra(
+                        key: "log_url",
+                        value: logUrl);
+                }
+
+                sentryClient.CaptureEvent(@event: sentryEvent);
+            }
+        }
+        catch
+        {
+            // For safety ignore all exceptions
         }
 
         OpenLogWriter();

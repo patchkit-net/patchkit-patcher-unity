@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Debugging;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -10,6 +11,12 @@ public partial class Patcher
     private async Task Initialize()
     {
         Debug.Log(message: "Initializing patcher...");
+        Debug.Log(
+            message: "Runtime version: " + EnvironmentInfo.GetRuntimeVersion());
+        Debug.Log(
+            message: "System version: " + EnvironmentInfo.GetSystemVersion());
+        Debug.Log(
+            message: "System information: " + EnvironmentInfo.GetSystemInformation());
 
         InitializeLibPatchKitApps();
 
