@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Unity 2017 and newer compilation issues (#1243)
-- Cancelling update (#1242)
+- Cancelling update (#1222)
 - Displaying transparent banner images (#1249)
 
 ## [3.12.0]
