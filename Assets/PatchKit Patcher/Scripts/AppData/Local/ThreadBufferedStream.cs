@@ -14,7 +14,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private volatile bool _abort;
 
-        private readonly Semaphore _semaphore = new Semaphore(0, 1);
+        private readonly Semaphore _semaphore = new Semaphore(1, int.MaxValue);
 
         // Accessed only in lock (_buffer)
         private bool _eof;
@@ -70,10 +70,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     try
                     {
+                        //UnityEngine.Debug.Log("Entering semaphore from thread...");
                         _semaphore.WaitOne();
                         {
                             if (_eof)
                             {
+                                //UnityEngine.Debug.Log("BREAKING semaphore from thread...");
                                 break;
                             }
 
@@ -85,10 +87,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     }
                     finally
                     {
+                        //UnityEngine.Debug.Log("Leaving semaphore from thread.");
                         _semaphore.Release();
                     }
 
-                    Thread.Sleep(1);
+                    Thread.Sleep(100);
                 }
             })
             {
@@ -104,6 +107,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             try
             {
+                //UnityEngine.Debug.Log("Entering semaphore from Read..." + count);
                 _semaphore.WaitOne();
                 {
                     // repeat while there's something to read
@@ -134,6 +138,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                         if (copied == count)
                         {
                             // all bytes has been copied
+                            //UnityEngine.Debug.Log("BREAK semaphore from Read.");
                             break;
                         }
                     }
@@ -141,28 +146,40 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
             finally
             {
+                //UnityEngine.Debug.Log("Leaving semaphore from Read.");
                 _semaphore.Release();
             }
 
             _position += copied;
+
+            //UnityEngine.Debug.Log("Returning " + copied);
 
             return copied;
         }
 
         private void ReadToBuffer()
         {
-            int read = _innerStream.Read(_buffer, _bufferedBytes, _buffer.Length - _bufferedBytes);
+            int size = _buffer.Length - _bufferedBytes;
+            //UnityEngine.Debug.Log("Reading into buffer " + size);
+
+            int read = _innerStream.Read(_buffer, _bufferedBytes, size);
             _bufferedBytes += read;
 
             if (read == 0)
             {
+                //UnityEngine.Debug.Log("End of file");
                 _eof = true;
             }
         }
 
         private void ShiftLeftArray(byte[] buffer, int offset)
         {
-            Buffer.BlockCopy(buffer, offset, buffer, 0, buffer.Length - offset);
+            Buffer.BlockCopy(
+                src: buffer,
+                srcOffset: offset,
+                dst: buffer,
+                dstOffset: 0,
+                count: buffer.Length - offset);
         }
 
         public override void Flush()
@@ -188,7 +205,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             base.Close();
             _abort = true;
-            _readerThread.Join();
+            if(_readerThread != null) _readerThread.Join();
         }
     }
 }

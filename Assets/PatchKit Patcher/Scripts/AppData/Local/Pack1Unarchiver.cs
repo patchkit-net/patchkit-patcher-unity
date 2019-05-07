@@ -223,7 +223,16 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 KeySize = 256
             };
 
-            ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
+            var aesAlg = new AesCryptoServiceProvider
+            {
+                IV = _iv,
+                Key = _key
+            };
+
+            ICryptoTransform decryptor = aesAlg.CreateDecryptor(
+                aesAlg.Key,
+                aesAlg.IV);
+
             DecompressorCreator decompressorCreator = ResolveDecompressor(_metaData);
 
             using (var fs = new FileStream(_packagePath, FileMode.Open))
@@ -232,11 +241,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 using (var limitedStream = new LimitedStream(fs, file.Size.Value))
                 {
-                    using (var bufferedLimitedStream = new ThreadBufferedStream(limitedStream, 5 * 1024 * 1024))
+                    //using (var bufferedLimitedStream = new ThreadBufferedStream(limitedStream, 8 * 1024 * 1024))
                     {
                         using (var target = new FileStream(destPath, FileMode.Create))
                         {
-                            ExtractFileFromStream(bufferedLimitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
+                            ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
                         }
                     }
 
@@ -278,17 +287,17 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (var bufferedCryptoStream = new ThreadBufferedStream(cryptoStream, 5 * 1024 * 1024))
+                using (var bufferedCryptoStream = new ThreadBufferedStream(cryptoStream, 8 * 1024 * 1024))
                 {
-                    using (var wrapperStream = new GZipReadWrapperStream(bufferedCryptoStream))
+                    //using (var wrapperStream = new GZipReadWrapperStream(bufferedCryptoStream))
                     {
-                        using (Stream decompressionStream = createDecompressor(wrapperStream))
+                        using (Stream decompressionStream = createDecompressor(bufferedCryptoStream))
                         {
-                            using (var bufferedDecompressionStream = new ThreadBufferedStream(decompressionStream, 5 * 1024 * 1024))
+                            using (var bufferedDecompressionStream = new ThreadBufferedStream(decompressionStream, 8 * 1024 * 1024))
                             {
                                 try
                                 {
-                                    const int bufferSize = 128 * 1024;
+                                    const int bufferSize = 8 * 1024 * 1024;
                                     var buffer = new byte[bufferSize];
                                     int count;
 
