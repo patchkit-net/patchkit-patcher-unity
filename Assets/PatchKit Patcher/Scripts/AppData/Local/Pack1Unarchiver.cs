@@ -232,9 +232,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 using (var limitedStream = new LimitedStream(fs, file.Size.Value))
                 {
-                    using (var target = new FileStream(destPath, FileMode.Create))
+                    using (var bufferedLimitedStream = new ThreadBufferedStream(limitedStream, 5 * 1024 * 1024))
                     {
-                        ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
+                        using (var target = new FileStream(destPath, FileMode.Create))
+                        {
+                            ExtractFileFromStream(bufferedLimitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
+                        }
                     }
 
                     if (Platform.IsPosix())
@@ -265,7 +268,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         }
 
         private void ExtractFileFromStream(
-            LimitedStream sourceStream,
+            Stream sourceStream,
             Stream targetStream,
             long fileSize,
             ICryptoTransform decryptor,
@@ -275,44 +278,50 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (var wrapperStream = new GZipReadWrapperStream(cryptoStream))
+                using (var bufferedCryptoStream = new ThreadBufferedStream(cryptoStream, 5 * 1024 * 1024))
                 {
-                    using (Stream decompressionStream = createDecompressor(wrapperStream))
+                    using (var wrapperStream = new GZipReadWrapperStream(bufferedCryptoStream))
                     {
-                        try
+                        using (Stream decompressionStream = createDecompressor(wrapperStream))
                         {
-                            const int bufferSize = 128 * 1024;
-                            var buffer = new byte[bufferSize];
-                            int count;
-
-                            while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                            using (var bufferedDecompressionStream = new ThreadBufferedStream(decompressionStream, 5 * 1024 * 1024))
                             {
-                                cancellationToken.ThrowIfCancellationRequested();
-                                targetStream.Write(buffer, 0, count);
+                                try
+                                {
+                                    const int bufferSize = 128 * 1024;
+                                    var buffer = new byte[bufferSize];
+                                    int count;
 
-                                long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
-                                onProgress(bytesProcessed / (double) fileSize);
+                                    while ((count = bufferedDecompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                                    {
+                                        cancellationToken.ThrowIfCancellationRequested();
+                                        targetStream.Write(buffer, 0, count);
+
+                                        long bytesProcessed = sourceStream.Position;
+                                        onProgress(bytesProcessed / (double) fileSize);
+                                    }
+                                }
+                                catch (OperationCanceledException)
+                                {
+                                    throw;
+                                }
+                                catch (Exception e)
+                                {
+                                    DebugLogger.LogException(e);
+
+                                    PatcherLogManager logManager = PatcherLogManager.Instance;
+                                    PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
+                                    RavenClient ravenClient = sentryRegistry.RavenClient;
+
+                                    var sentryEvent = new SentryEvent(e);
+                                    PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent,
+                                        logManager.Storage.Guid.ToString());
+                                    ravenClient.Capture(sentryEvent);
+
+                                    throw;
+                                }
                             }
                         }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception e)
-                        {
-                            DebugLogger.LogException(e);
-
-                            PatcherLogManager logManager = PatcherLogManager.Instance;
-                            PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
-                            RavenClient ravenClient = sentryRegistry.RavenClient;
-
-                            var sentryEvent = new SentryEvent(e);
-                            PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
-                            ravenClient.Capture(sentryEvent);
-
-                            throw;
-                        }
-
                     }
                 }
             }
