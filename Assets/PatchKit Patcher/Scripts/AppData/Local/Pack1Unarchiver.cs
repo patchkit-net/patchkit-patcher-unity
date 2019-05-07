@@ -287,17 +287,17 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (var bufferedCryptoStream = new ThreadBufferedStream(cryptoStream, 8 * 1024 * 1024))
+                using (var bufferedCryptoStream = new ThreadBufferedStream(cryptoStream, 2 * 1024 * 1024))
                 {
                     //using (var wrapperStream = new GZipReadWrapperStream(bufferedCryptoStream))
                     {
                         using (Stream decompressionStream = createDecompressor(bufferedCryptoStream))
                         {
-                            using (var bufferedDecompressionStream = new ThreadBufferedStream(decompressionStream, 8 * 1024 * 1024))
+                            using (var bufferedDecompressionStream = new ThreadBufferedStream(decompressionStream, 4 * 1024 * 1024))
                             {
                                 try
                                 {
-                                    const int bufferSize = 8 * 1024 * 1024;
+                                    const int bufferSize = 2 * 1024 * 1024;
                                     var buffer = new byte[bufferSize];
                                     int count;
 

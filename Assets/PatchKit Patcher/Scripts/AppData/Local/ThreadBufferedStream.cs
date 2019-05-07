@@ -14,7 +14,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private volatile bool _abort;
 
-        private readonly Semaphore _semaphore = new Semaphore(1, int.MaxValue);
+        private readonly Semaphore _semaphore = new Semaphore(1, 1);
 
         // Accessed only in lock (_buffer)
         private bool _eof;
@@ -91,7 +91,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                         _semaphore.Release();
                     }
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(1);
                 }
             })
             {
