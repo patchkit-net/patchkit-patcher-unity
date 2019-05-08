@@ -239,7 +239,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             {
                 fs.Seek(file.Offset.Value - _range.Start, SeekOrigin.Begin);
 
-                using (var limitedStream = new LimitedStream(fs, file.Size.Value))
+                using (var limitedStream = new BufferedStream(new LimitedStream(fs, file.Size.Value), 2 * 1024 * 1024))
                 {
                     //using (var bufferedLimitedStream = new ThreadBufferedStream(limitedStream, 8 * 1024 * 1024))
                     {
@@ -287,7 +287,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (var bufferedCryptoStream = new ThreadBufferedStream(cryptoStream, 2 * 1024 * 1024))
+                using (var bufferedCryptoStream = new BufferedStream(new ThreadBufferedStream(cryptoStream, 2 * 1024 * 1024), 2 * 1024 * 1024))
                 {
                     //using (var wrapperStream = new GZipReadWrapperStream(bufferedCryptoStream))
                     {
