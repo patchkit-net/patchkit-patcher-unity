@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Unity 2017 and newer compilation issues (#1243)
 - Cancelling update (#1242)
 - Displaying transparent banner images (#1249)
+- Patcher would always uninstall an old version of the game for repairs, event if it wasn't broken (#1273)
 
 ## [3.12.0]
 ### Added

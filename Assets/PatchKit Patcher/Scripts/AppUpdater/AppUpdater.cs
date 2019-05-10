@@ -51,49 +51,34 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             int latestVersionId = Context.App.GetLatestVersionId(true, cancellationToken);
             int lowestVersionWithContentId = Context.App.GetLowestVersionWithContentId(cancellationToken);
 
-            if (lowestVersionWithContentId > installedVersionId)
-            {
-                DebugLogger.Log(
-                    "Repair is impossible because lowest version with content id is " 
-                    + lowestVersionWithContentId + 
-                    " and currently installed version id is "
-                    + installedVersionId +
-                    ". Uninstalling to prepare for content strategy.");
-
-                IUninstallCommand uninstall = commandFactory.CreateUninstallCommand(Context);
-                uninstall.Prepare(_status, cancellationToken);
-                uninstall.Execute(cancellationToken);
-                return;
-            }
-
-            AppContentSummary installedVersionContentSummary 
+            AppContentSummary installedVersionContentSummary
                 = Context.App.RemoteMetaData.GetContentSummary(installedVersionId, cancellationToken);
-                
-            AppContentSummary latestVersionContentSummary 
+
+            AppContentSummary latestVersionContentSummary
                 = Context.App.RemoteMetaData.GetContentSummary(latestVersionId, cancellationToken);
-            
+
             bool isNewVersionAvailable = installedVersionId < latestVersionId;
 
             long contentSize = isNewVersionAvailable
                 ? latestVersionContentSummary.Size
                 : installedVersionContentSummary.Size;
-            
+
             ICheckVersionIntegrityCommand checkIntegrity = commandFactory
                 .CreateCheckVersionIntegrityCommand(
-                    versionId: installedVersionId, 
-                    context: Context, 
-                    isCheckingHash: false, 
+                    versionId: installedVersionId,
+                    context: Context,
+                    isCheckingHash: false,
                     isCheckingSize: true,
                     cancellationToken: cancellationToken);
-            
+
             checkIntegrity.Prepare(_status, cancellationToken);
             checkIntegrity.Execute(cancellationToken);
-            
+
             var missingFiles = checkIntegrity.Results.Files
                 .Where(f => f.Status == FileIntegrityStatus.MissingData);
 
             int missingFilesCount = missingFiles.Count();
-            
+
             var invalidSizeFiles = checkIntegrity.Results.Files
                 .Where(f => f.Status == FileIntegrityStatus.InvalidSize);
 
@@ -104,10 +89,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 DebugLogger.Log("No missing or invalid size files.");
                 return;
             }
-            
+
             double repairCost = CalculateRepairCost(installedVersionContentSummary, missingFiles.Concat(invalidSizeFiles));
 
-            if (repairCost < contentSize)
+            if (lowestVersionWithContentId > installedVersionId)
+            {
+                DebugLogger.Log(
+                    "Repair is impossible because lowest version with content id is "
+                    + lowestVersionWithContentId +
+                    " and currently installed version id is "
+                    + installedVersionId +
+                    ". Uninstalling to prepare for content strategy.");
+
+                IUninstallCommand uninstall = commandFactory.CreateUninstallCommand(Context);
+                uninstall.Prepare(_status, cancellationToken);
+                uninstall.Execute(cancellationToken);
+            }
+            else if (repairCost < contentSize)
             {
                 DebugLogger.Log(string.Format("Repair cost {0} is smaller than content cost {1}, repairing...", repairCost, contentSize));
                 IAppUpdaterStrategy repairStrategy = _strategyResolver.Create(StrategyType.Repair, Context);
