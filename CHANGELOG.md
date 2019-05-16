@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.13.0]
+## [3.14.0]
 ### Added
 - Dynamic url testing for faster nodes (#1226)
 - Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer (#1241)
@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Unity 2017 and newer compilation issues (#1243)
 - Cancelling update (#1222)
 - Displaying transparent banner images (#1249)
+
+## [3.13.0]
+### Added
+- Speed up unpacking app data with multithreading (#1270)
 
 ## [3.12.0]
 ### Added

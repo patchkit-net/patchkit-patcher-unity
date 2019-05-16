@@ -8,6 +8,15 @@ In this repository you can find PatchKit Patcher Unity project.
 
 It's pretty important to use a stable and tester patcher version. You will find stable releases in [here](https://github.com/patchkit-net/patchkit-patcher-unity/releases). Be careful, **pre-releases** are not suitable for production usage. **Master** branch is also not suitable for production usage. Always look for tags if you want to do an upgrade.
 
+## Executing without the Launcher
+Sometimes, usually for the purpose of testing, we might want to start the Patcher without using the Launcher. It's possible through the use of 2 command line options `--secret` and `--installdir`, and most of the time also `--readable` which forces the Patcher to interpret given secret without decoding it.
+
+Example:
+```
+> Patcher.exe --readable --secret 123 --installdir "directory/to/install/the/app/in"
+```
+
+
 ## getdiskspaceosx
 The native library is already precompiled.
 
