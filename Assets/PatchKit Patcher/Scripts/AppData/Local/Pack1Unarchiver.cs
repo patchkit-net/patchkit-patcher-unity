@@ -223,18 +223,30 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 KeySize = 256
             };
 
-            ICryptoTransform decryptor = rijn.CreateDecryptor(_key, _iv);
+            var aesAlg = new AesCryptoServiceProvider
+            {
+                IV = _iv,
+                Key = _key
+            };
+
+            ICryptoTransform decryptor = aesAlg.CreateDecryptor(
+                aesAlg.Key,
+                aesAlg.IV);
+
             DecompressorCreator decompressorCreator = ResolveDecompressor(_metaData);
 
             using (var fs = new FileStream(_packagePath, FileMode.Open))
             {
                 fs.Seek(file.Offset.Value - _range.Start, SeekOrigin.Begin);
 
-                using (var limitedStream = new LimitedStream(fs, file.Size.Value))
+                using (var limitedStream = new BufferedStream(new LimitedStream(fs, file.Size.Value), 2 * 1024 * 1024))
                 {
-                    using (var target = new FileStream(destPath, FileMode.Create))
+                    //using (var bufferedLimitedStream = new ThreadBufferedStream(limitedStream, 8 * 1024 * 1024))
                     {
-                        ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
+                        using (var target = new FileStream(destPath, FileMode.Create))
+                        {
+                            ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
+                        }
                     }
 
                     if (Platform.IsPosix())
@@ -265,7 +277,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         }
 
         private void ExtractFileFromStream(
-            LimitedStream sourceStream,
+            Stream sourceStream,
             Stream targetStream,
             long fileSize,
             ICryptoTransform decryptor,
@@ -275,44 +287,50 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
             {
-                using (var wrapperStream = new GZipReadWrapperStream(cryptoStream))
+                using (var bufferedCryptoStream = new BufferedStream(new ThreadBufferedStream(cryptoStream, 2 * 1024 * 1024), 2 * 1024 * 1024))
                 {
-                    using (Stream decompressionStream = createDecompressor(wrapperStream))
+                    //using (var wrapperStream = new GZipReadWrapperStream(bufferedCryptoStream))
                     {
-                        try
+                        using (Stream decompressionStream = createDecompressor(bufferedCryptoStream))
                         {
-                            const int bufferSize = 128 * 1024;
-                            var buffer = new byte[bufferSize];
-                            int count;
-
-                            while ((count = decompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                            using (var bufferedDecompressionStream = new ThreadBufferedStream(decompressionStream, 4 * 1024 * 1024))
                             {
-                                cancellationToken.ThrowIfCancellationRequested();
-                                targetStream.Write(buffer, 0, count);
+                                try
+                                {
+                                    const int bufferSize = 2 * 1024 * 1024;
+                                    var buffer = new byte[bufferSize];
+                                    int count;
 
-                                long bytesProcessed = sourceStream.Limit - sourceStream.BytesLeft;
-                                onProgress(bytesProcessed / (double) fileSize);
+                                    while ((count = bufferedDecompressionStream.Read(buffer, 0, buffer.Length)) > 0)
+                                    {
+                                        cancellationToken.ThrowIfCancellationRequested();
+                                        targetStream.Write(buffer, 0, count);
+
+                                        long bytesProcessed = sourceStream.Position;
+                                        onProgress(bytesProcessed / (double) fileSize);
+                                    }
+                                }
+                                catch (OperationCanceledException)
+                                {
+                                    throw;
+                                }
+                                catch (Exception e)
+                                {
+                                    DebugLogger.LogException(e);
+
+                                    PatcherLogManager logManager = PatcherLogManager.Instance;
+                                    PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
+                                    RavenClient ravenClient = sentryRegistry.RavenClient;
+
+                                    var sentryEvent = new SentryEvent(e);
+                                    PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent,
+                                        logManager.Storage.Guid.ToString());
+                                    ravenClient.Capture(sentryEvent);
+
+                                    throw;
+                                }
                             }
                         }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception e)
-                        {
-                            DebugLogger.LogException(e);
-
-                            PatcherLogManager logManager = PatcherLogManager.Instance;
-                            PatcherLogSentryRegistry sentryRegistry = logManager.SentryRegistry;
-                            RavenClient ravenClient = sentryRegistry.RavenClient;
-
-                            var sentryEvent = new SentryEvent(e);
-                            PatcherLogSentryRegistry.AddDataToSentryEvent(sentryEvent, logManager.Storage.Guid.ToString());
-                            ravenClient.Capture(sentryEvent);
-
-                            throw;
-                        }
-
                     }
                 }
             }

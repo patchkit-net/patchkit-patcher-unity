@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.13.0]
+### Added
+- Speed up unpacking app data with multithreading (#1270)
+
 ## [3.12.0]
 ### Added
 - Support for newer versions of Unity (#1191)

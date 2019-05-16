@@ -13,22 +13,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private long _bytesLeft;
 
-        public long BytesLeft
-        {
-            get
-            {
-                return _bytesLeft;
-            }
-        }
-
-        public long Limit
-        {
-            get
-            {
-                return _bytesLimit;
-            }
-        }
-
         public LimitedStream(Stream orig, long bytesLimit)
         {
             _orig = orig;
@@ -38,17 +22,17 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public override void Flush()
         {
-            _orig.Flush();
+            throw new InvalidOperationException();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            return _orig.Seek(offset, origin);
+            throw new InvalidOperationException();
         }
 
         public override void SetLength(long value)
         {
-            _orig.SetLength(value);
+            throw new InvalidOperationException();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -65,33 +49,36 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            _orig.Write(buffer, offset, count);
+            throw new InvalidOperationException();
         }
 
         public override bool CanRead
         {
-            get { return _orig.CanRead; }
+            get { return true; }
         }
 
         public override bool CanSeek
         {
-            get { return _orig.CanSeek; }
+            get { return false; }
         }
 
         public override bool CanWrite
         {
-            get { return _orig.CanWrite; }
+            get { return false; }
         }
 
         public override long Length
         {
-            get { return _orig.Length; }
+            get { return _bytesLimit; }
         }
 
         public override long Position
         {
-            get { return _orig.Position; }
-            set { _orig.Position = value; }
+            get { return _bytesLimit - _bytesLeft; }
+            set
+            {
+                throw new InvalidOperationException();
+            }
 
         }
     }
