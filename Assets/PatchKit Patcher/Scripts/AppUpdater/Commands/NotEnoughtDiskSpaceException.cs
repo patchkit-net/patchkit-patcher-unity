@@ -2,8 +2,13 @@
 {
     public class NotEnoughtDiskSpaceException : InstallerException
     {
-        public NotEnoughtDiskSpaceException(string message) : base(message)
+        public long AvailableSpace { get; private set; }
+        public long RequiredSpace { get; private set; }
+
+        public NotEnoughtDiskSpaceException(string message, long availableSpace, long requiredSpace) : base(message)
         {
+            AvailableSpace = availableSpace;
+            RequiredSpace = requiredSpace;
         }
     }
 }

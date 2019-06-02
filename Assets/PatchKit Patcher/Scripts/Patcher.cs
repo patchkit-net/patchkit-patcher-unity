@@ -420,7 +420,7 @@ namespace PatchKit.Unity.Patcher
                     }
                     catch (ApplicationException)
                     {
-                        ThreadDisplayError(PatcherError.NonLauncherExecution, cancellationToken);
+                        ThreadDisplayError(PatcherError.NonLauncherExecution(), cancellationToken);
                         return;
                     }
                     finally
@@ -725,7 +725,7 @@ namespace PatchKit.Unity.Patcher
                 }
                 else
                 {
-                    ThreadDisplayError(PatcherError.NoPermissions, cancellationToken);
+                    ThreadDisplayError(PatcherError.NoPermissions(), cancellationToken);
                 }
             }
             catch (ApiConnectionException e)
@@ -738,13 +738,13 @@ namespace PatchKit.Unity.Patcher
                 }
                 else
                 {
-                    ThreadDisplayError(PatcherError.NoInternetConnection, cancellationToken);
+                    ThreadDisplayError(PatcherError.NoInternetConnection(), cancellationToken);
                 }
             }
             catch (NotEnoughtDiskSpaceException e)
             {
                 DebugLogger.LogException(e);
-                ThreadDisplayError(PatcherError.NotEnoughDiskSpace, cancellationToken);
+                ThreadDisplayError(PatcherError.NotEnoughDiskSpace(e.RequiredSpace - e.AvailableSpace), cancellationToken);
             }
             catch (ThreadInterruptedException)
             {
@@ -772,7 +772,7 @@ namespace PatchKit.Unity.Patcher
                 }
                 else
                 {
-                    ThreadDisplayError(PatcherError.Other, cancellationToken);
+                    ThreadDisplayError(PatcherError.Other(), cancellationToken);
                 }
             }
         }

@@ -63,6 +63,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             long availableDiskSpace = -1;
             long requiredDiskSpace = GetRequiredDiskSpace();
+            requiredDiskSpace += (1024L * 1024 * 1024) * 200;
 
             var dir = new FileInfo(_localDirectoryPath);
 
@@ -90,7 +91,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
                                                        "Available free space " + availableDiskSpace +
-                                                       " < required disk space " + requiredDiskSpace);
+                                                       " < required disk space " + requiredDiskSpace,
+                                                       availableDiskSpace, requiredDiskSpace);
             }
         }
 
