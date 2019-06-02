@@ -37,54 +37,42 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             _samples.Clear();
         }
 
-        public void AddSample(long? totalBytes, DateTime time)
+        public void AddSample(long? bytes, DateTime time)
         {
-            if (totalBytes.HasValue && _lastBytes > totalBytes)
+            if (bytes.HasValue && _lastBytes > bytes)
             {
                 Restart(time);
             }
 
             var duration = time - _lastTime;
 
-            if (_samples.Count > 0 && duration < MinimumDelayBetweenSamples)
+            if (duration < MinimumDelayBetweenSamples)
             {
                 return;
             }
 
             CleanOldSamples(time);
 
-            if (totalBytes.HasValue)
+            if (bytes.HasValue)
             {
                 _samples.Add(new Sample
                 {
-                    Bytes = totalBytes.Value - _lastBytes,
+                    Bytes = bytes.Value - _lastBytes,
                     Duration = duration,
                     AddTime = time
                 });
 
-                _lastBytes = totalBytes.Value;
+                _lastBytes = bytes.Value;
             }
 
             _lastTime = time;
         }
 
-        public double Calculate(long? bytes, DateTime? time = null)
+        public double Calculate(long? bytes, DateTime time)
         {
-            AddSample(bytes, time.HasValue ? time.Value : DateTime.Now);
+            AddSample(bytes, DateTime.Now);
 
             return BytesPerSecond;
-        }
-
-        public TimeSpan TimeRemaining(long dataSize)
-        {
-            try
-            {
-                return TimeSpan.FromSeconds(dataSize / BytesPerSecond);
-            }
-            catch (OverflowException)
-            {
-                return new TimeSpan(Int64.MaxValue);
-            }
         }
 
         public double BytesPerSecond
