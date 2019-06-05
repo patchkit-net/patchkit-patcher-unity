@@ -140,7 +140,7 @@ namespace PatchKit.Unity.Patcher
         public static IEnumerator SendEvent(Event ev, string appSecret, OptionalParams? parameters = null)
         {
             string senderId = PatcherSenderId.Get();
-            string caller = string.Format("patcher_unity:{0}.{1}.{2}", Version.Major, Version.Minor, Version.Release);
+            string caller = string.Format("patcher_unity:{0}.{1}.{2}.{3}", Version.Major, Version.Minor, Version.Patch, Version.Hotfix);
             string operatingSystemFamily;
 
             string eventName = EventName(ev);
