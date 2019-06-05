@@ -10,8 +10,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly Stream _innerStream;
         private readonly byte[] _buffer;
 
-        private Thread _readerThread;
-
         private volatile bool _abort;
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
@@ -64,7 +62,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void SpawnReaderThread()
         {
-            _readerThread = new Thread(() =>
+            ThreadPool.QueueUserWorkItem((x) =>
             {
                 while (!_abort)
                 {
@@ -93,12 +91,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                     Thread.Sleep(1);
                 }
-            })
-            {
-                IsBackground = true
-            };
-
-            _readerThread.Start();
+            });
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -205,7 +198,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             base.Close();
             _abort = true;
-            if(_readerThread != null) _readerThread.Join();
         }
     }
 }

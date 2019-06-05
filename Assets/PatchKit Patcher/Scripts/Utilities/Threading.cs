@@ -31,7 +31,10 @@ namespace PatchKit.Unity.Utilities
                 {
                     exception = e;
                 }
-            });
+            })
+            {
+                IsBackground = true
+            };
 
             try
             {
