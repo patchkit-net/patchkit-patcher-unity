@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Disabled automated update when in offline mode (#1217)
+- More descriptive error messages (#1313)
+- Disk space error message now tells how much of additional space is needed (#1314)
 
 ### Fixed
 - Unity 2017 and newer compilation issues (#1243)
