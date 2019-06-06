@@ -11,5 +11,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         IReadOnlyReactiveProperty<bool> IsActive { get; }
 
         IReadOnlyReactiveProperty<string> Description { get; }
+
+        IReadOnlyReactiveProperty<bool> IsIdle { get; }
     }
 }
