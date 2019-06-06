@@ -201,7 +201,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             // do nothing
             _status = new OperationStatus
             {
-                Weight = {Value = 0.00001}
+                Weight = {Value = 0.00001},
+                Description = {Value = "Allocating disk space..."}
             };
             status.RegisterOperation(_status);
         }
