@@ -18,6 +18,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly AppDiffSummary? _diffSummary;
         private readonly string _localDirectoryPath;
         private readonly long _bigestFileSize;
+        private OperationStatus _status;
 
         public CheckDiskSpaceCommand(AppContentSummary contentSummary, string localDirectoryPath)
         {
@@ -62,49 +63,59 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public void Execute(CancellationToken cancellationToken)
         {
-            long availableDiskSpace = -1;
-            long requiredDiskSpace = GetRequiredDiskSpace();
+            _status.IsActive.Value = true;
+            _status.IsIdle.Value = true;
 
-            var dir = new FileInfo(_localDirectoryPath);
-
-#if UNITY_STANDALONE_WIN
-            ulong freeBytes, totalBytes, totalFreeBytes;
-            GetDiskFreeSpaceEx(dir.Directory.FullName, out freeBytes, out totalBytes, out totalFreeBytes);
-
-            availableDiskSpace = (long) freeBytes;
-
-#else
-
-            long freeBytes = 0;
-            getAvailableDiskSpace(dir.Directory.FullName, out freeBytes);
-
-            availableDiskSpace = freeBytes;
-
-#endif
-
-            DebugLogger.Log("Available free space " + availableDiskSpace + " >= required disk space " +
-                                requiredDiskSpace);
-
-            if (availableDiskSpace >= requiredDiskSpace)
+            try
             {
-                return;
-            }
-            else
-            {
-#if UNITY_STANDALONE_OSX
-                // On OSX available space is not always how much of data we can write on disk.
-                // OSX classifies some files as 'purgeable'. There's no easy way to find those
-                // files, but these are deleted on attempt of filling the disk space.
-                // https://support.apple.com/en-us/HT202867
-                
-                if (TryAllocateDiskSpace(dir.Directory.FullName, requiredDiskSpace)) {
-                    // TODO: change bar status
-                    return
+                long availableDiskSpace = -1;
+                long requiredDiskSpace = GetRequiredDiskSpace();
+
+                var dir = new FileInfo(_localDirectoryPath);
+
+    #if UNITY_STANDALONE_WIN
+                ulong freeBytes, totalBytes, totalFreeBytes;
+                GetDiskFreeSpaceEx(dir.Directory.FullName, out freeBytes, out totalBytes, out totalFreeBytes);
+
+                availableDiskSpace = (long) freeBytes;
+
+    #else
+
+                long freeBytes = 0;
+                getAvailableDiskSpace(dir.Directory.FullName, out freeBytes);
+
+                availableDiskSpace = freeBytes;
+
+    #endif
+
+                DebugLogger.Log("Available free space " + availableDiskSpace + " >= required disk space " +
+                                    requiredDiskSpace);
+
+                if (availableDiskSpace >= requiredDiskSpace)
+                {
+                    return;
                 }
-#endif
-                throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
-                                                       "Available free space " + availableDiskSpace +
-                                                       " < required disk space " + requiredDiskSpace);
+                else
+                {
+    #if UNITY_STANDALONE_OSX
+                    // On OSX available space is not always how much of data we can write on disk.
+                    // OSX classifies some files as 'purgeable'. There's no easy way to find those
+                    // files, but these are deleted on attempt of filling the disk space.
+                    // https://support.apple.com/en-us/HT202867
+                    
+                    if (TryAllocateDiskSpace(dir.Directory.FullName, requiredDiskSpace)) {
+                        // TODO: change bar status
+                        return
+                    }
+    #endif
+                    throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
+                                                           "Available free space " + availableDiskSpace +
+                                                           " < required disk space " + requiredDiskSpace);
+                }
+            }
+            finally
+            {
+                _status.IsActive.Value = false;
             }
         }
 
@@ -188,6 +199,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public void Prepare(UpdaterStatus status)
         {
             // do nothing
+            _status = new OperationStatus
+            {
+                Weight = {Value = 0.00001}
+            };
+            status.RegisterOperation(_status);
         }
     }
 }
