@@ -105,7 +105,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     
                     if (TryAllocateDiskSpace(dir.Directory.FullName, requiredDiskSpace)) {
                         // TODO: change bar status
-                        return
+                        return;
                     }
     #endif
                     throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
@@ -130,7 +130,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 var buffer = new byte[1024 * 1024];
 
-                using (var file = new FileStream(testFileName, FileMode.Open, FileAccess.Read))
+                using (var file = new FileStream(testFileName, FileMode.Create, FileAccess.Write))
                 {
                     for (long remaining = space; remaining > 0; remaining -= buffer.Length)
                     {

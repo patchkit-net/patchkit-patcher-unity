@@ -75,15 +75,15 @@ namespace PatchKit.Unity.Patcher.UI
                     return;
 
                 case PatcherState.UpdatingApp:
-                    if (data.Progress <= 0)
-                    {
-                        SetIdle("Connecting...");
-                        return;
-                    }
-
                     if (data.IsIdle)
                     {
                         SetIdle(string.Empty);
+                        return;
+                    }
+
+                    if (data.Progress <= 0)
+                    {
+                        SetIdle("Connecting...");
                         return;
                     }
 
