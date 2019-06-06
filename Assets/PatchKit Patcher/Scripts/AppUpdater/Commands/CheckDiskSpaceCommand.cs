@@ -4,6 +4,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -81,16 +82,63 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
 #endif
 
+            DebugLogger.Log("Available free space " + availableDiskSpace + " >= required disk space " +
+                                requiredDiskSpace);
+
             if (availableDiskSpace >= requiredDiskSpace)
             {
-                DebugLogger.Log("Available free space " + availableDiskSpace + " >= required disk space " +
-                                requiredDiskSpace);
+                return;
             }
             else
             {
+#if UNITY_STANDALONE_OSX
+                // On OSX available space is not always how much of data we can write on disk.
+                // OSX classifies some files as 'purgeable'. There's no easy way to find those
+                // files, but these are deleted on attempt of filling the disk space.
+                // https://support.apple.com/en-us/HT202867
+                
+                if (TryAllocateDiskSpace(dir.Directory.FullName, requiredDiskSpace)) {
+                    // TODO: change bar status
+                    return
+                }
+#endif
                 throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
                                                        "Available free space " + availableDiskSpace +
                                                        " < required disk space " + requiredDiskSpace);
+            }
+        }
+
+        private bool TryAllocateDiskSpace(string directory, long space)
+        {
+            string testFileName = Path.Combine(directory, "_disk_space_tester");
+
+            try
+            {
+                DebugLogger.Log("Trying to allocate " + space + " with " + testFileName +
+                    " to ensure that there's enough space available.");
+
+                var buffer = new byte[1024 * 1024];
+
+                using (var file = new FileStream(testFileName, FileMode.Open, FileAccess.Read))
+                {
+                    for (long remaining = space; remaining > 0; remaining -= buffer.Length)
+                    {
+                        file.Write(buffer, 0, (int) Mathf.Min(buffer.Length, remaining));
+                    }
+                }
+
+                return true;
+            }
+            catch (IOException e)
+            {
+                DebugLogger.LogWarning("Cannot allocate required space: " + e.Message);
+                return false;
+            }
+            finally
+            {
+                DebugLogger.Log("Removing allocation file " + testFileName + ".");
+                File.Delete(testFileName);
+                DebugLogger.Log("Removed successfully.");
             }
         }
 
