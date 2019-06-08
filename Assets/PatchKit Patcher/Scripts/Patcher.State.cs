@@ -8,7 +8,6 @@ public partial class Patcher
     private bool _hasApp = false;
     private string _appPath = null;
     private string _appSecret = null;
-    private string _appName = null;
     private PatchKit.Api.Models.App? _appInfo = null;
     private PatchKit.Api.Models.AppVersion[] _appVersions = null;
     private string _appLicenseKey = null;

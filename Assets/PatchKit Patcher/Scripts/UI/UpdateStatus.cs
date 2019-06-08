@@ -10,30 +10,28 @@ public class UpdateStatus : MonoBehaviour
 
     private void Awake()
     {
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnStateChanged += state =>
         {
-            Assert.IsNotNull(value: state);
             Assert.IsNotNull(value: Text);
 
-            if (state.Kind != PatcherStateKind.UpdatingApp)
+            if (state.App == null ||
+                state.App.Value.UpdateTask == null)
             {
                 Text.text = string.Empty;
                 return;
             }
 
-            Assert.IsNotNull(value: state.AppState);
-
-            if (state.AppState.UpdateState.IsConnecting)
+            if (state.App.Value.UpdateTask.Value.IsConnecting)
             {
                 Text.text = string.Empty;
                 return;
             }
 
             string installedBytesText =
-                $"{state.AppState.UpdateState.InstalledBytes / 1024.0 / 1024.0:0.0} MB";
+                $"{state.App.Value.UpdateTask.Value.InstalledBytes / 1024.0 / 1024.0:0.0} MB";
 
             string totalBytesText =
-                $"{state.AppState.UpdateState.TotalBytes / 1024.0 / 1024.0:0.0} MB";
+                $"{state.App.Value.UpdateTask.Value.TotalBytes / 1024.0 / 1024.0:0.0} MB";
 
 
             Text.text = $"{installedBytesText} of {totalBytesText}";

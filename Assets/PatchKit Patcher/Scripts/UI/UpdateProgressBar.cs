@@ -18,10 +18,8 @@ public class UpdateProgressBar : MonoBehaviour
 
     private void Awake()
     {
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnStateChanged += state =>
         {
-            Assert.IsNotNull(value: state);
-
             switch (state.Kind)
             {
                 case PatcherStateKind.Idle:

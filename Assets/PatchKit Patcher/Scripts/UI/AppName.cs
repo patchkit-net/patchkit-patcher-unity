@@ -12,11 +12,9 @@ public class AppName : MonoBehaviour
     {
         Assert.IsNotNull(value: Text);
 
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnStateChanged += state =>
         {
-            Assert.IsNotNull(value: state);
-
-            Text.text = state.AppState?.Info?.DisplayName ?? "APPLICATION";
+            Text.text = state.App?.Info?.DisplayName ?? "APPLICATION";
         };
     }
 }

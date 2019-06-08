@@ -10,28 +10,36 @@ public class Status : MonoBehaviour
 
     private void Awake()
     {
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnStateChanged += state =>
         {
-            Assert.IsNotNull(value: state);
             Assert.IsNotNull(value: Text);
 
-            switch (state.Kind)
+            if (state.IsInitializing)
             {
-                case PatcherStateKind.Initializing:
-                    Text.text = "Initializing...";
-                    break;
-                case PatcherStateKind.UpdatingApp:
+                Text.text = "Initializing...";
+            }
+            else if (state.IsQuitting)
+            {
+                Text.text = "Quitting...";
+            }
+            else if (state.App.HasValue)
+            {
+                if (state.App.Value.UpdateTask.HasValue)
+                {
                     Text.text = "Updating...";
-                    break;
-                case PatcherStateKind.StartingApp:
+                }
+                else if (state.App.Value.IsStarting)
+                {
                     Text.text = "Starting...";
-                    break;
-                case PatcherStateKind.Quitting:
-                    Text.text = "Quitting...";
-                    break;
-                default:
+                }
+                else
+                {
                     Text.text = string.Empty;
-                    break;
+                }
+            }
+            else
+            {
+                Text.text = string.Empty;
             }
         };
     }

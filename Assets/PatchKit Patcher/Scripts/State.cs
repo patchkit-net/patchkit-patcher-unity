@@ -36,8 +36,6 @@ public struct AppState
 {
     public string Secret { get; }
 
-    public string Name { get; }
-
     public PatchKit.Api.Models.App? Info { get; }
 
     public PatchKit.Api.Models.AppVersion[] Versions { get; }
@@ -52,19 +50,20 @@ public struct AppState
 
     public AppUpdateTaskState? UpdateTask { get; }
 
+    public bool IsStarting { get; }
+
     public AppState(
         string secret,
-        string name,
         PatchKit.Api.Models.App? info,
         PatchKit.Api.Models.AppVersion[] versions,
         int? installedVersionId,
         string installedVersionLabel,
         int? latestVersionId,
         string latestVersionLabel,
-        AppUpdateTaskState? updateTask)
+        AppUpdateTaskState? updateTask,
+        bool isStarting)
     {
         Secret = secret;
-        Name = name;
         Info = info;
         Versions = versions;
         InstalledVersionId = installedVersionId;
@@ -72,38 +71,49 @@ public struct AppState
         LatestVersionId = latestVersionId;
         LatestVersionLabel = latestVersionLabel;
         UpdateTask = updateTask;
+        IsStarting = isStarting;
     }
 
     public override string ToString()
     {
-        return $"{{ \"Name\": {Name?.SurroundWithQuotes() ?? "null"}, " +
-            $"\"Info\": {Info?.ToString() ?? "null"}, " +
+        return $"{{ \"Info\": {Info?.ToString() ?? "null"}, " +
             $"\"Versions\": {Versions?.ToString() ?? "null"}, " +
             $"\"InstalledVersionId\": {InstalledVersionId?.ToString() ?? "null"}, " +
             $"\"InstalledVersionLabel\": {InstalledVersionLabel?.SurroundWithQuotes() ?? "null"}, " +
             $"\"LatestVersionId\": {LatestVersionId?.ToString() ?? "null"}, " +
             $"\"LatestVersionLabel\": {LatestVersionLabel?.SurroundWithQuotes() ?? "null"}, " +
-            $"\"UpdateTask\": {UpdateTask?.ToString() ?? "null"} }}";
+            $"\"UpdateTask\": {UpdateTask?.ToString() ?? "null"}, " +
+            $"\"IsStarting\": {IsStarting.ToString().ToLower()} }}";
     }
 }
 
 public struct State
 {
     public State(
+        bool isInitializing,
         AppState? app,
-        bool isOnline)
+        bool isOnline,
+        bool isQuitting)
     {
+        IsInitializing = isInitializing;
         App = app;
         IsOnline = isOnline;
+        IsQuitting = isQuitting;
     }
+
+    public bool IsInitializing { get; }
 
     public AppState? App { get; }
 
     public bool IsOnline { get; }
 
+    public bool IsQuitting { get; }
+
     public override string ToString()
     {
-        return $"{{ \"App\": {App?.ToString() ?? "null"}, " +
-            $"\"IsOnline\": {IsOnline.ToString().ToLower()} }}";
+        return $"{{ \"IsInitializing\": {IsInitializing.ToString().ToLower()}, " +
+            $"\"App\": {App?.ToString() ?? "null"}, " +
+            $"\"IsOnline\": {IsOnline.ToString().ToLower()}, " +
+            $"\"IsQuitting\": {IsQuitting.ToString().ToLower()} }}";
     }
 }

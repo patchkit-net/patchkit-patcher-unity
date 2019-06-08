@@ -93,11 +93,11 @@ public partial class Patcher
     private void SendStateChanged()
     {
         var state = new State(
+            isInitializing: _hasInitializeTask,
             app: !_hasApp
                 ? null
                 : (AppState?) new AppState(
                     secret: _appSecret,
-                    name: _appName,
                     info: _appInfo,
                     versions: _appVersions,
                     installedVersionId: _appInstalledVersionId,
@@ -111,8 +111,10 @@ public partial class Patcher
                             installedBytes: _appUpdateTaskInstalledBytes,
                             bytesPerSecond: _appUpdateTaskBytesPerSecond,
                             progress: AppUpdateTaskProgress,
-                            isConnecting: false)),
-            isOnline: _isOnline);
+                            isConnecting: false),
+                    isStarting: _hasAppStartTask),
+            isOnline: _isOnline,
+            isQuitting: _hasQuitTask);
 
         Debug.Log($"Sending: OnStateChanged(state: {state})");
 

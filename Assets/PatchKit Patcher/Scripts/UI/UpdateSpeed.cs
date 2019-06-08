@@ -12,37 +12,35 @@ public class UpdateSpeed : MonoBehaviour
 
     private void Awake()
     {
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnStateChanged += state =>
         {
-            Assert.IsNotNull(value: state);
             Assert.IsNotNull(value: Text);
 
-            if (state.Kind != PatcherStateKind.UpdatingApp)
+            if (state.App == null ||
+                state.App.Value.UpdateTask == null)
             {
                 Text.text = string.Empty;
                 return;
             }
 
-            Assert.IsNotNull(value: state.AppState);
-
-            if (state.AppState.UpdateState.IsConnecting)
+            if (state.App.Value.UpdateTask.Value.IsConnecting)
             {
                 Text.text = string.Empty;
                 return;
             }
 
             var remainingTime = GetRemainingTime(
-                bytes: state.AppState.UpdateState.InstalledBytes,
-                totalBytes: state.AppState.UpdateState.TotalBytes,
-                bytesPerSecond: state.AppState.UpdateState.BytesPerSecond);
+                bytes: state.App.Value.UpdateTask.Value.InstalledBytes,
+                totalBytes: state.App.Value.UpdateTask.Value.TotalBytes,
+                bytesPerSecond: state.App.Value.UpdateTask.Value.BytesPerSecond);
 
             string formattedRemainingTime =
                 GetFormattedRemainingTime(remainingTime: remainingTime);
 
             string formattedDownloadSpeed = GetFormattedDownloadSpeed(
-                bytesPerSecond: state.AppState.UpdateState.BytesPerSecond,
+                bytesPerSecond: state.App.Value.UpdateTask.Value.BytesPerSecond,
                 downloadSpeedUnit:
-                state.AppState.Info?.PatcherDownloadSpeedUnit);
+                state.App.Value.Info?.PatcherDownloadSpeedUnit);
 
             Text.text = GetStatusText(
                 formattedDownloadSpeed: formattedDownloadSpeed,
