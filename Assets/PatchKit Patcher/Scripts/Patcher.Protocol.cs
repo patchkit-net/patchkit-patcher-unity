@@ -80,6 +80,13 @@ public partial class Patcher
         await RestartWithHigherPermissionsAsync();
     }
 
+    public async void RequestRestartWithLauncher()
+    {
+        Debug.Log(message: "Request: RestartWithLauncher()");
+
+        await RestartWithLauncherAsync();
+    }
+
     private double AppUpdateTaskProgress =>
         _appUpdateTaskInstalledBytes / (double) _appUpdateTaskTotalBytes;
 
