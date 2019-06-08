@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -9,20 +10,22 @@ public partial class Patcher
     {
         if (!CanPerformNewTask() ||
             !_hasApp ||
-            _hasAppFetchAppVersionsTask)
+            _hasAppFetchVersionsTask)
         {
             return false;
         }
 
         Debug.Log(message: "Fetching app versions...");
 
-        _hasAppFetchAppVersionsTask = true;
+        _hasAppFetchVersionsTask = true;
         SendStateChanged();
 
         try
         {
-            var versions = await LibPatchKitApps.GetAppVersionsAsync(
-                secret: State.AppState.Secret,
+            Assert.IsNotNull(value: _appSecret);
+
+            var versions = await LibPatchKitApps.GetAppVersionListAsync(
+                secret: _appSecret,
                 cancellationToken: CancellationToken.None);
 
             _appVersions = versions;
@@ -44,16 +47,17 @@ public partial class Patcher
 
             return false;
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            Debug.LogError(message: "Failed to fetch app versions: unknown error.");
+            Debug.LogError(
+                message: "Failed to fetch app versions: unknown error.");
             Debug.LogException(exception: e);
 
             return false;
         }
         finally
         {
-            _hasAppFetchAppVersionsTask = false;
+            _hasAppFetchVersionsTask = false;
             SendStateChanged();
         }
 

@@ -1,7 +1,3 @@
-using System;
-using JetBrains.Annotations;
-using UnityEngine;
-using UnityEngine.Assertions;
 using System.Threading;
 
 public partial class Patcher
@@ -37,7 +33,7 @@ public partial class Patcher
     private bool _hasAppFetchLatestVersionIdTask = false;
 
     private bool _isOnline = true;
-    
+
     private bool _hasQuitTask = false;
     private bool _hasQuit = false;
 

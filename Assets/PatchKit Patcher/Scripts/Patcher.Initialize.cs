@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Debugging;
@@ -47,35 +49,38 @@ public partial class Patcher
         public override string ToString()
         {
             return $"{{ \"AppSecret\": {AppSecret}, " +
-            $"\"AppPath\": {AppPath}, ";
-            $"\"LockFilePath\": {LockFilePath?.SurroundWithQuotes() ?? "null"}, ";
-            $"\"AppOverrideLatestVersionId\": {AppOverrideLatestVersionId?.ToString() ?? "null"}, ";
-            $"\"IsOnline\": {IsOnline?.ToString() ?? "null"}, ";
-            $"\"AutomaticallyUpdateApp\": {AutomaticallyUpdateApp}, ";
-            $"\"AutomaticallyStartApp\": {AutomaticallyStartApp} }}";
+                $"\"AppPath\": {AppPath}, " +
+                $"\"LockFilePath\": {LockFilePath?.SurroundWithQuotes() ?? "null"}, " +
+                $"\"AppOverrideLatestVersionId\": {AppOverrideLatestVersionId?.ToString() ?? "null"}, " +
+                $"\"IsOnline\": {IsOnline?.ToString() ?? "null"}, " +
+                $"\"AutomaticallyUpdateApp\": {AutomaticallyUpdateApp}, " +
+                $"\"AutomaticallyStartApp\": {AutomaticallyStartApp} }}";
         }
     }
 
     private async void Initialize()
     {
-        if (_hasInitializeTask ||
-            _isInitialized)
+        if (_hasInitializeTask || _isInitialized)
         {
             return;
         }
 
-        Debug.Log(message: "Initializing...");    
+        Debug.Log(message: "Initializing...");
 
         _hasInitializeTask = true;
         SendStateChanged();
+
+        InitializationData? data;
 
         try
         {
             Debug.Log(message: $"Version: {Version.Text}");
             Debug.Log(
-                message: $"Runtime version: {EnvironmentInfo.GetRuntimeVersion()}");
+                message:
+                $"Runtime version: {EnvironmentInfo.GetRuntimeVersion()}");
             Debug.Log(
-                message: $"System version: {EnvironmentInfo.GetSystemVersion()}");
+                message:
+                $"System version: {EnvironmentInfo.GetSystemVersion()}");
             Debug.Log(
                 message:
                 $"System information: {EnvironmentInfo.GetSystemInformation()}");
@@ -85,16 +90,17 @@ public partial class Patcher
 
             InitializeLibPatchKitApps();
 
-    #if UNITY_EDITOR
-            var data = LoadEditorInitializationData();
-    #else
-            var data = LoadCommandLineInitializationData();
-    #endif
+#if UNITY_EDITOR
+            data = LoadEditorInitializationData();
+#else
+            data = LoadCommandLineInitializationData();
+#endif
 
             if (!data.HasValue)
             {
                 Debug.LogWarning(
-                    message: "Initialization failed: data wasn't loaded. Most probably it means that patcher has been started without launcher.");
+                    message:
+                    "Initialization failed: data wasn't loaded. Most probably it means that patcher has been started without launcher.");
 
                 SendError(Error.StartedWithoutLauncher);
 
@@ -108,7 +114,7 @@ public partial class Patcher
             _appPath = data.Value.AppPath;
             _lockFilePath = data.Value.LockFilePath;
             _appOverrideLatestVersionId = data.Value.AppOverrideLatestVersionId;
-            _isOnline = data.Value.IsOnline?.Value ?? true;
+            _isOnline = data.Value.IsOnline ?? true;
             SendStateChanged();
 
             if (_lockFilePath != null)
@@ -130,7 +136,8 @@ public partial class Patcher
                 catch (OperationCanceledException)
                 {
                     Debug.Log(
-                        message: "Failed to get file lock: operation cancelled.");
+                        message:
+                        "Failed to get file lock: operation cancelled.");
                 }
                 catch (LibPatchKitAppsInternalErrorException)
                 {
@@ -139,7 +146,8 @@ public partial class Patcher
                 }
                 catch (LibPatchKitAppsFileAlreadyInUseException)
                 {
-                    Debug.LogError(message: "Failed to get file lock: already in use.");
+                    Debug.LogError(
+                        message: "Failed to get file lock: already in use.");
 
                     SendError(Error.MultipleInstances);
 
@@ -148,7 +156,8 @@ public partial class Patcher
                 catch (LibPatchKitAppsNotExistingFileException)
                 {
                     Debug.Log(
-                        message: "Failed to get file lock: file doesn't exist.");
+                        message:
+                        "Failed to get file lock: file doesn't exist.");
                 }
             }
 
@@ -157,7 +166,7 @@ public partial class Patcher
             _isInitialized = true;
             SendStateChanged();
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError(message: "Failed to initialize: unknown error.");
             Debug.LogException(exception: e);
@@ -173,10 +182,10 @@ public partial class Patcher
         }
 
         var fetchTasks = Task.WhenAll(
-            FetchAppInfoAsync,
-            FetchAppVersionsAsync,
-            FetchAppLatestVersionIdAsync,
-            FetchAppInstalledVersionIdAsync);
+            FetchAppInfoAsync(),
+            FetchAppVersionsAsync(),
+            FetchAppLatestVersionIdAsync(),
+            FetchAppInstalledVersionIdAsync());
 
         if (data.Value.AutomaticallyUpdateApp)
         {
@@ -187,7 +196,7 @@ public partial class Patcher
 
         if (data.Value.AutomaticallyStartApp)
         {
-            Debug.Log(message: "Autuomatically starting app...");
+            Debug.Log(message: "Automatically starting app...");
 
             await StartAppAsync();
         }
@@ -229,11 +238,17 @@ public partial class Patcher
         Debug.Log(message: "libpkapps initialized.");
     }
 
+    // ReSharper disable once InconsistentNaming
     public bool AutomaticallyStartApp;
+
+    // ReSharper disable once InconsistentNaming
     public bool AutomaticallyUpdateApp = true;
 
 #if UNITY_EDITOR
+    // ReSharper disable once InconsistentNaming
     public string EditorAppSecret;
+
+    // ReSharper disable once InconsistentNaming
     public int EditorOverrideAppLatestVersionId;
 
     private InitializationData? LoadEditorInitializationData()
@@ -243,18 +258,18 @@ public partial class Patcher
         Assert.IsNotNull(value: Application.dataPath);
         Assert.IsNotNull(value: EditorAppSecret);
 
-        var result = new InitializationData
-        {
-            AppPath = Application.dataPath.Replace(
+        var result = new InitializationData(
+            appPath: Application.dataPath.Replace(
                 oldValue: "/Assets",
                 newValue: $"/Temp/PatcherApp{EditorAppSecret}"),
-            AppSecret = EditorAppSecret,
-            LockFilePath = null,
-            OverrideAppLatestVersionId = EditorOverrideAppLatestVersionId > 0
+            appSecret: EditorAppSecret,
+            lockFilePath: null,
+            appOverrideLatestVersionId: EditorOverrideAppLatestVersionId > 0
                 ? (int?) EditorOverrideAppLatestVersionId
                 : null,
-            IsOnline = null
-        };
+            isOnline: null,
+            automaticallyStartApp: AutomaticallyStartApp,
+            automaticallyUpdateApp: AutomaticallyUpdateApp);
 
         Debug.Log(message: "Initialization data loaded.");
 
@@ -262,7 +277,7 @@ public partial class Patcher
     }
 #endif
 
-    private async InitializationData? LoadCommandLineInitializationData()
+    private InitializationData? LoadCommandLineInitializationData()
     {
         Debug.Log(message: "Loading initialization data from command line...");
 
@@ -359,7 +374,7 @@ public partial class Patcher
             Debug.LogWarning(
                 message:
                 "Failed to load command line initialization data: app secret is null.");
-        
+
             return null;
         }
 
@@ -368,22 +383,21 @@ public partial class Patcher
             Debug.LogWarning(
                 message:
                 "Failed to load command line initialization data: app path is null.");
-        
+
             return null;
         }
 
-        var result = new InitializationData
-        {
-            AppPath = appPath,
-            AppSecret = appSecret,
-            IsOnline = isOnline,
-            LockFilePath = lockFilePath,
-            OverrideAppLatestVersionId = overrideAppLatestVersionId
-        };
+        var result = new InitializationData(
+            appPath: appPath,
+            appSecret: appSecret,
+            lockFilePath: lockFilePath,
+            appOverrideLatestVersionId: overrideAppLatestVersionId,
+            isOnline: isOnline,
+            automaticallyStartApp: AutomaticallyStartApp,
+            automaticallyUpdateApp: AutomaticallyUpdateApp);
 
         Debug.Log(
-            message: 
-            "Successfully loaded command line initialization data.");
+            message: "Successfully loaded command line initialization data.");
 
         return result;
     }
@@ -401,6 +415,8 @@ public partial class Patcher
         {
             path = Path.GetDirectoryName(path: path);
         }
+
+        Assert.IsNotNull(path);
 
         return Path.Combine(
             path1: path,

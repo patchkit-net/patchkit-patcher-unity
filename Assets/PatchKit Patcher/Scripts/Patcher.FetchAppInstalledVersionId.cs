@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -9,18 +10,20 @@ public partial class Patcher
     {
         if (!CanPerformNewTask() ||
             !_hasApp ||
-            _hasAppFetchInstalledVersionTask)
+            _hasAppFetchInstalledVersionIdTask)
         {
             return false;
         }
 
         Debug.Log(message: "Fetching app installed version id...");
 
-        _hasAppFetchInstalledVersionTask = true;
+        _hasAppFetchInstalledVersionIdTask = true;
         SendStateChanged();
 
         try
         {
+            Assert.IsNotNull(value: _appPath);
+
             int? installedVersionId =
                 await LibPatchKitApps.GetAppInstalledVersionIdAsync(
                     path: _appPath,
@@ -35,13 +38,12 @@ public partial class Patcher
             SendStateChanged();
 
             Debug.Log(
-                message:
-                $"Successfully fetched app installed version id.");
+                message: "Successfully fetched app installed version id.");
         }
         catch (OperationCanceledException)
         {
             Debug.Log(
-                message: 
+                message:
                 "Failed to fetch app installed version id: operation cancelled.");
 
             return false;
@@ -49,7 +51,7 @@ public partial class Patcher
         catch (LibPatchKitAppsInternalErrorException)
         {
             Debug.LogWarning(
-                message: 
+                message:
                 "Failed to fetch app installed version id: internal error.");
 
             return false;
@@ -57,15 +59,15 @@ public partial class Patcher
         catch (LibPatchKitAppsUnauthorizedAccessException)
         {
             Debug.Log(
-                message: 
+                message:
                 "Failed to fetch app installed version id: unauthroized access.");
 
             return false;
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError(
-                message: 
+                message:
                 "Failed to fetch app installed version id: unknown error.");
             Debug.LogException(exception: e);
 
@@ -73,7 +75,7 @@ public partial class Patcher
         }
         finally
         {
-            _hasAppFetchInstalledVersionTask = false;
+            _hasAppFetchInstalledVersionIdTask = false;
             SendStateChanged();
         }
 

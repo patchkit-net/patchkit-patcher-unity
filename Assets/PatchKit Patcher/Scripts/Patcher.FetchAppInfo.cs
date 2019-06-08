@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -9,20 +10,22 @@ public partial class Patcher
     {
         if (!CanPerformNewTask() ||
             !_hasApp ||
-            _hasAppFetchAppInfoTask)
+            _hasAppFetchInfoTask)
         {
             return false;
         }
 
         Debug.Log(message: "Fetching app info...");
 
-        _hasAppFetchAppInfoTask = true;
+        _hasAppFetchInfoTask = true;
         SendStateChanged();
 
         try
         {
+            Assert.IsNotNull(value: _appSecret);
+
             var info = await LibPatchKitApps.GetAppInfoAsync(
-                secret: State.AppState.Secret,
+                secret: _appSecret,
                 cancellationToken: CancellationToken.None);
 
             _appInfo = info;
@@ -44,7 +47,7 @@ public partial class Patcher
 
             return false;
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError(message: "Failed to fetch app info: unknown error.");
             Debug.LogException(exception: e);
@@ -53,7 +56,7 @@ public partial class Patcher
         }
         finally
         {
-            _hasAppFetchAppInfoTask = false;
+            _hasAppFetchInfoTask = false;
             SendStateChanged();
         }
 

@@ -1,7 +1,3 @@
-using System.Threading.Tasks;
-using JetBrains.Annotations;
-using UnityEngine;
-
 public partial class Patcher
 {
     private bool CanPerformNewForegroundTask()

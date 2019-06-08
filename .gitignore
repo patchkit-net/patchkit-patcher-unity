@@ -1,3 +1,4 @@
+/.idea/
 /.vs/
 /Library/
 /Temp/
@@ -7,12 +8,7 @@
 /*.suo
 /*.csproj
 /*.csproj.user
-/_Resharper.src/
-/app/
-.idea
-*.DotSettings*
-*.CSharp.ruleset
-_ReSharper*
+*.DotSettings.user
 /*.sublime-project
 /*.sublime-workspace
 /Assets/Plugins/Editor/JetBrains/JetBrains.Rider.Unity.Editor.Plugin.Repacked.dll

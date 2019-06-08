@@ -1,7 +1,7 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public partial class Patcher
 {
@@ -27,7 +27,7 @@ public partial class Patcher
         }
         catch (OperationCanceledException)
         {
-            Debug.Log(message: "Failed to start app: operation cancelled.")
+            Debug.Log(message: "Failed to start app: operation cancelled.");
 
             return false;
         }
@@ -41,15 +41,15 @@ public partial class Patcher
         }
         catch (LibPatchKitAppsUnauthorizedAccessException)
         {
-            Debug.Log(message: "Failed to start app: unauthorized access.")
+            Debug.Log(message: "Failed to start app: unauthorized access.");
 
             SendError(error: Error.AppDataUnauthorizedAccess);
 
             return false;
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            Debug.LogError(message: "Failed to start app: unknown error.")
+            Debug.LogError(message: "Failed to start app: unknown error.");
             Debug.LogException(exception: e);
 
             SendError(error: Error.StartAppError);

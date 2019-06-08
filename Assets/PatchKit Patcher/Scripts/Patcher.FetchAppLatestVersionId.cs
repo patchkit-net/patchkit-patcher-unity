@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -9,34 +10,34 @@ public partial class Patcher
     {
         if (!CanPerformNewTask() ||
             !_hasApp ||
-            _hasAppFetchLatestVersionTask)
+            _hasAppFetchLatestVersionIdTask)
         {
             return false;
         }
 
         Debug.Log(message: "Fetching app latest version id...");
 
-        _hasAppFetchLatestVersionTask = true;
+        _hasAppFetchLatestVersionIdTask = true;
         SendStateChanged();
 
         try
         {
+            Assert.IsNotNull(_appSecret);
+
             int latestVersionId =
                 await LibPatchKitApps.GetAppLatestVersionIdAsync(
-                    path: _appPath,
+                    secret: _appSecret,
                     cancellationToken: CancellationToken.None);
 
             _appLatestVersionId = latestVersionId;
             SendStateChanged();
 
-            Debug.Log(
-                message:
-                $"Successfully fetched app latest version id.");
+            Debug.Log(message: "Successfully fetched app latest version id.");
         }
         catch (OperationCanceledException)
         {
             Debug.Log(
-                message: 
+                message:
                 "Failed to fetch app latest version id: operation cancelled.");
 
             return false;
@@ -44,15 +45,15 @@ public partial class Patcher
         catch (LibPatchKitAppsInternalErrorException)
         {
             Debug.LogWarning(
-                message: 
+                message:
                 "Failed to fetch app latest version id: internal error.");
 
             return false;
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError(
-                message: 
+                message:
                 "Failed to fetch app latest version id: unknown error.");
             Debug.LogException(exception: e);
 
@@ -60,7 +61,7 @@ public partial class Patcher
         }
         finally
         {
-            _hasAppFetchLatestVersionTask = false;
+            _hasAppFetchLatestVersionIdTask = false;
             SendStateChanged();
         }
 

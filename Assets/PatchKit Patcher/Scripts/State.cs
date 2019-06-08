@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 public struct AppUpdateTaskState
 {
     public long TotalBytes { get; }
@@ -29,7 +27,7 @@ public struct AppUpdateTaskState
     public override string ToString()
     {
         return $"{{ \"TotalBytes\": {TotalBytes}, " +
-            $"\"InstalledBytes\": {InstalledBytes}, ";
+            $"\"InstalledBytes\": {InstalledBytes}, " +
             $"\"BytesPerSecond\": {BytesPerSecond} }}";
     }
 }
@@ -70,6 +68,7 @@ public struct AppState
         Info = info;
         Versions = versions;
         InstalledVersionId = installedVersionId;
+        InstalledVersionLabel = installedVersionLabel;
         LatestVersionId = latestVersionId;
         LatestVersionLabel = latestVersionLabel;
         UpdateTask = updateTask;
@@ -80,9 +79,9 @@ public struct AppState
         return $"{{ \"Name\": {Name?.SurroundWithQuotes() ?? "null"}, " +
             $"\"Info\": {Info?.ToString() ?? "null"}, " +
             $"\"Versions\": {Versions?.ToString() ?? "null"}, " +
-            $"\"InstalledVersionId\": {InstalledVersionId.ToString() ?? "null"}, " +
+            $"\"InstalledVersionId\": {InstalledVersionId?.ToString() ?? "null"}, " +
             $"\"InstalledVersionLabel\": {InstalledVersionLabel?.SurroundWithQuotes() ?? "null"}, " +
-            $"\"LatestVersionId\": {LatestVersionId.ToString() ?? "null"}, " +
+            $"\"LatestVersionId\": {LatestVersionId?.ToString() ?? "null"}, " +
             $"\"LatestVersionLabel\": {LatestVersionLabel?.SurroundWithQuotes() ?? "null"}, " +
             $"\"UpdateTask\": {UpdateTask?.ToString() ?? "null"} }}";
     }
@@ -100,7 +99,7 @@ public struct State
 
     public AppState? App { get; }
 
-    public bool IsOnline { get; set; }
+    public bool IsOnline { get; }
 
     public override string ToString()
     {

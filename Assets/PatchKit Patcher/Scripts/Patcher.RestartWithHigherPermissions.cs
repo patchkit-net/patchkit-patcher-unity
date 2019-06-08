@@ -60,10 +60,10 @@ public partial class Patcher
             Debug.Log(
                 message: "Successfully restarted with higher permissions.");
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError(
-                message: 
+                message:
                 "Failed to restart with higher permissions: unknown error.");
             Debug.LogException(exception: e);
 

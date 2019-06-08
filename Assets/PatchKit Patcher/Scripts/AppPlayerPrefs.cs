@@ -21,11 +21,10 @@ public static class AppPlayerPrefs
     }
 
     [NotNull]
-    private static string GetFormattedKey([NotNull] string key)
+    private static string GetFormattedKey(
+        [NotNull] string appSecret,
+        [NotNull] string key)
     {
-        string appSecret =
-            Patcher.Instance.State.AppState?.Secret ?? "emptySecret";
-
         return $"{GetHashedAppSecret(appSecret: appSecret)}-{key}";
     }
 
@@ -35,7 +34,9 @@ public static class AppPlayerPrefs
         string value)
     {
         PlayerPrefs.SetString(
-            key: GetFormattedKey(key: key),
+            key: GetFormattedKey(
+                appSecret: appSecret,
+                key: key),
             value: value);
     }
 
@@ -44,7 +45,9 @@ public static class AppPlayerPrefs
         [NotNull] string key)
     {
         return PlayerPrefs.GetString(
-            key: GetFormattedKey(key: key),
+            key: GetFormattedKey(
+                appSecret: appSecret,
+                key: key),
             defaultValue: null);
     }
 }

@@ -135,7 +135,7 @@ public class PatcherLogManager : MonoBehaviour
                     dsn:
                     "https://4e111c71954d44f2a4decedc450c392d@sentry.io/1450096"),
                 Environment = "development",
-                Release = $"patchkit-patcher-unity@{PatcherVersion.Text}"
+                Release = $"patchkit-patcher-unity@{Version.Text}"
             });
     }
 
@@ -147,7 +147,7 @@ public class PatcherLogManager : MonoBehaviour
             path: _logPath,
             guid: _logGuid,
             appId: "patcher-unity",
-            appVersion: PatcherVersion.Text);
+            appVersion: Version.Text);
 
         try
         {

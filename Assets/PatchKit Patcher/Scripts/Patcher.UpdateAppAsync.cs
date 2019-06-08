@@ -1,9 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public partial class Patcher
 {
@@ -69,7 +67,7 @@ public partial class Patcher
                     licenseKey: _appLicenseKey,
                     targetVersionId: _appOverrideLatestVersionId.Value,
                     reportProgress: reportProgress,
-                    cancellationToken: _appUpdateTaskCts);
+                    cancellationToken: _appUpdateTaskCts.Token);
             }
             else
             {
@@ -77,9 +75,8 @@ public partial class Patcher
                     path: _appPath,
                     secret: _appSecret,
                     licenseKey: _appLicenseKey,
-                    targetVersionId: _appOverrideLatestVersionId.Value,
                     reportProgress: reportProgress,
-                    cancellationToken: _appUpdateTaskCts);
+                    cancellationToken: _appUpdateTaskCts.Token);
             }
 
             Debug.Log(message: "Successfully updated app.");
@@ -119,7 +116,7 @@ public partial class Patcher
             Debug.Log(
                 message: "Failed to update app: app license key required.");
 
-            SendAppLicenseKeyIssue(issue: AppLicenseKeyIssue.Required);
+            SendAppLicenseKeyIssue(issue: AppLicenseKeyIssue.None);
 
             return false;
         }
@@ -141,13 +138,13 @@ public partial class Patcher
 
             return false;
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            Debug.LogError(message: "Failed to update app: unknown error.")
+            Debug.LogError(message: "Failed to update app: unknown error.");
             Debug.LogException(e);
 
             SendError(error: Error.UpdateAppError);
-            
+
             return false;
         }
         finally

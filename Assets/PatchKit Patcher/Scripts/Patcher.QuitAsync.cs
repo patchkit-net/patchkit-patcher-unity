@@ -1,10 +1,10 @@
+using System.IO;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using UnityEngine;
 
 public partial class Patcher
 {
-    private Task<bool> QuitAsync()
+    private async Task<bool> QuitAsync()
     {
         if (!CanPerformNewForegroundTask())
         {
@@ -69,13 +69,14 @@ public partial class Patcher
             else
             {
                 Debug.Log(
-                    message: 
-                    "Failed to delete lock file: it already doesn't exist.");   
+                    message:
+                    "Failed to delete lock file: it already doesn't exist.");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError(message: "Failed to delete lock file: unknown error.");
+            Debug.LogError(
+                message: "Failed to delete lock file: unknown error.");
             Debug.LogException(exception: e);
         }
     }

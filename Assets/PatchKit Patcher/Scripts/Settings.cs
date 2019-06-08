@@ -11,8 +11,8 @@ public class Settings
         string url;
 
         if (EnvironmentInfo.TryReadEnvironmentVariable(
-            argumentName,
-            out url))
+            argumentName: argumentName,
+            value: out url))
         {
             var uri = new Uri(url);
 

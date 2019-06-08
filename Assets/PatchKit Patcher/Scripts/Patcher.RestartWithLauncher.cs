@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public partial class Patcher
 {
@@ -26,7 +27,7 @@ public partial class Patcher
             if (processStartInfo == null)
             {
                 Debug.LogWarning(
-                    message: 
+                    message:
                     "Failed to restart with launcher: can't resolve process start info.");
 
                 return false;
@@ -35,7 +36,7 @@ public partial class Patcher
             if (Process.Start(startInfo: processStartInfo) == null)
             {
                 Debug.LogWarning(
-                    message: 
+                    message:
                     "Failed to restart with launcher: process hasn't started.");
 
                 return false;
@@ -43,9 +44,10 @@ public partial class Patcher
 
             Debug.Log(message: "Successfully restarted with launcher.");
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            Debug.LogError(message: "Failed to restart with launcher: unknown error.");
+            Debug.LogError(
+                message: "Failed to restart with launcher: unknown error.");
             Debug.LogException(exception: e);
 
             return false;
@@ -63,6 +65,7 @@ public partial class Patcher
 
     private const string LauncherPathFileName = "launcher_path";
 
+    [NotNull]
     private string GetDefaultLauncherName()
     {
         switch (Application.platform)

@@ -1,7 +1,4 @@
-using System;
-using JetBrains.Annotations;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public enum AppLicenseKeyIssue
 {
@@ -16,7 +13,7 @@ public enum Error
     StartedWithoutLauncher,
     MultipleInstances,
     AppDataUnauthorizedAccess,
-    UpdateAppRunOutOfDiskSpace,
+    UpdateAppRunOutOfFreeDiskSpace,
     UpdateAppError,
     StartAppError
 }
@@ -24,7 +21,7 @@ public enum Error
 public delegate void OnStateChangedDelegate(State state);
 
 public delegate void OnAppLicenseKeyIssueDelegate(
-    string licenseKey, 
+    string licenseKey,
     AppLicenseKeyIssue issue);
 
 public delegate void OnErrorDelegate(Error error);
@@ -41,74 +38,73 @@ public partial class Patcher
 
     public async void RequestUpdateApp()
     {
-        Debug.Log($"Request: UpdateApp()")
+        Debug.Log(message: "Request: UpdateApp()");
 
         await UpdateAppAsync();
     }
 
-    public void RequestCancelUpdateApp()
+    public async void RequestCancelUpdateApp()
     {
-        Debug.Log($"Request: CancelUpdateApp()")
+        Debug.Log(message: "Request: CancelUpdateApp()");
 
-        CancelUpdateApp();
+        await CancelUpdateAppAsync();
     }
 
-    public void RequestStartAppAndQuit()
+    public async void RequestStartAppAndQuit()
     {
-        Debug.Log($"Request: StartAppAndQuit()")
+        Debug.Log(message: "Request: StartAppAndQuit()");
 
         await StartAppAndQuitAsync();
     }
 
-    public void RequestSetAppLicenseKeyAndUpdateApp(string licenseKey)
+    public async void RequestSetAppLicenseKeyAndUpdateApp(string licenseKey)
     {
-        Debug.Log($"Request: SetAppLicenseKeyAndUpdateApp(licenseKey: {licenseKey})")
+        Debug.Log(
+            message:
+            $"Request: SetAppLicenseKeyAndUpdateApp(licenseKey: {licenseKey})");
 
         await SetAppLicenseKeyAndUpdateAppAsync(licenseKey: licenseKey);
     }
 
     public async void RequestQuit()
     {
-        Debug.Log("Request: Quit()")
+        Debug.Log(message: "Request: Quit()");
 
         await QuitAsync();
     }
 
     public async void RequestRestartWithHigherPermissions()
     {
-        Debug.Log("Request: RestartWithHigherPermissions()")
+        Debug.Log(message: "Request: RestartWithHigherPermissions()");
 
-        await RestatWithHigherPermissions();
+        await RestartWithHigherPermissionsAsync();
     }
 
-    private double AppUpdateTaskProgress
-    {
-        get
-        {
-            return _appUpdateTaskInstalledBytes / 
-                (double) _appUpdateTaskTotalBytes;
-        }
-    }
+    private double AppUpdateTaskProgress =>
+        _appUpdateTaskInstalledBytes / (double) _appUpdateTaskTotalBytes;
 
     private void SendStateChanged()
     {
         var state = new State(
-            app: !_hasApp ? null : new AppState(
-                secret: _appSecret,
-                name: _appName,
-                path: _appPath,
-                info: _appInfo,
-                versions: _appVersions,
-                installedVersionId: _appInstalledVersionId,
-                installedVersionLabel: null,
-                latestVersionId: _appLatestVersionId,
-                latestVersionLabel: null,
-                updateTask: !_hasAppUpdateTask ? null : new AppUpdateTaskState(
-                    totalBytes: _appUpdateTaskTotalBytes,
-                    installedBytes: _appUpdateTaskInstalledBytes,
-                    bytesPerSecond: _appUpdateTaskBytesPerSecond,
-                    progress: AppUpdateTaskProgress,
-                    isConnecting: false)),
+            app: !_hasApp
+                ? null
+                : (AppState?) new AppState(
+                    secret: _appSecret,
+                    name: _appName,
+                    info: _appInfo,
+                    versions: _appVersions,
+                    installedVersionId: _appInstalledVersionId,
+                    installedVersionLabel: null,
+                    latestVersionId: _appLatestVersionId,
+                    latestVersionLabel: null,
+                    updateTask: !_hasAppUpdateTask
+                        ? null
+                        : (AppUpdateTaskState?) new AppUpdateTaskState(
+                            totalBytes: _appUpdateTaskTotalBytes,
+                            installedBytes: _appUpdateTaskInstalledBytes,
+                            bytesPerSecond: _appUpdateTaskBytesPerSecond,
+                            progress: AppUpdateTaskProgress,
+                            isConnecting: false)),
             isOnline: _isOnline);
 
         Debug.Log($"Sending: OnStateChanged(state: {state})");
@@ -129,7 +125,7 @@ public partial class Patcher
         Debug.Log($"Sending: OnAppLicenseKeyIssue(issue: {issue})");
 
         OnAppLicenseKeyIssue?.Invoke(
-            licenseKey:_appLicenseKey, 
+            licenseKey: _appLicenseKey,
             issue: issue);
     }
 }
