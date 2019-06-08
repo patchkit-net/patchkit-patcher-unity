@@ -2,48 +2,49 @@ using System;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
+using System.Threading;
 
 public partial class Patcher
 {
-    private PatcherState _state;
+    private bool _hasInitializeTask = false;
+    private bool _isInitialized = false;
 
-    [NotNull]
-    public PatcherState State
-    {
-        get
-        {
-            Assert.IsNotNull(value: _state);
-            return _state;
-        }
-    }
+    private bool _hasApp = false;
+    private string _appPath = null;
+    private string _appSecret = null;
+    private string _appName = null;
+    private PatchKit.Api.Models.App? _appInfo = null;
+    private PatchKit.Api.Models.AppVersion[] _appVersions = null;
+    private string _appLicenseKey = null;
+    private int? _appInstalledVersionId = null;
+    private int? _appLatestVersionId = null;
+    private int? _appOverrideLatestVersionId = null;
 
-    public delegate void OnPatcherStateChanged([NotNull] PatcherState state);
+    private bool _hasAppUpdateTask = false;
+    private long _appUpdateTaskInstalledBytes = 0;
+    private long _appUpdateTaskTotalBytes = 0;
+    private double _appUpdateTaskBytesPerSecond = 0.0;
+    private CancellationTokenSource _appUpdateTaskCts = null;
 
-    public event OnPatcherStateChanged StateChanged;
+    private bool _hasAppStartTask = false;
 
-    private void OnStateChanged()
-    {
-        // TODO: Manually invoke through invocation list, and surround with try
-        StateChanged?.Invoke(state: State);
-    }
+    private bool _hasAppFetchInfoTask = false;
 
-    private void ModifyState([NotNull] Action x)
-    {
-        lock (State)
-        {
-            x();
-            State.HasChanged = true;
+    private bool _hasAppFetchVersionsTask = false;
 
-            Debug.Log(message: $"State update: {State}");
-        }
-    }
+    private bool _hasAppFetchInstalledVersionIdTask = false;
 
-    private void UpdateState()
-    {
-        if (State.HasChanged)
-        {
-            State.HasChanged = false;
-            OnStateChanged();
-        }
-    }
+    private bool _hasAppFetchLatestVersionIdTask = false;
+
+    private bool _isOnline = true;
+    
+    private bool _hasQuitTask = false;
+    private bool _hasQuit = false;
+
+    private bool _hasRestartWithHigherPermissionsTask = false;
+
+    private bool _hasRestartWithLauncherTask = false;
+
+    private string _lockFilePath = null;
+    private LibPatchKitAppsFileLock _fileLock = null;
 }

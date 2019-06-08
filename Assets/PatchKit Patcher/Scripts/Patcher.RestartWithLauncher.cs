@@ -7,28 +7,63 @@ using UnityEngine;
 
 public partial class Patcher
 {
-    [NotNull]
-    private Task<bool> TryToRestartWithLauncher()
+    private async Task<bool> RestartWithLauncherAsync()
     {
-        var processStartInfo = GetLauncherProcessStartInfo();
-
-        if (processStartInfo == null)
+        if (!CanPerformNewForegroundTask())
         {
-            return Task.FromResult(result: false);
+            return false;
         }
 
-        if (Process.Start(startInfo: processStartInfo) == null)
+        Debug.Log(message: "Restarting with launcher...");
+
+        _hasRestartWithLauncherTask = true;
+        SendStateChanged();
+
+        try
         {
-            return Task.FromResult(result: false);
+            var processStartInfo = GetLauncherProcessStartInfo();
+
+            if (processStartInfo == null)
+            {
+                Debug.LogWarning(
+                    message: 
+                    "Failed to restart with launcher: can't resolve process start info.");
+
+                return false;
+            }
+
+            if (Process.Start(startInfo: processStartInfo) == null)
+            {
+                Debug.LogWarning(
+                    message: 
+                    "Failed to restart with launcher: process hasn't started.");
+
+                return false;
+            }
+
+            Debug.Log(message: "Successfully restarted with launcher.");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError(message: "Failed to restart with launcher: unknown error.");
+            Debug.LogException(exception: e);
+
+            return false;
+        }
+        finally
+        {
+            _hasRestartWithLauncherTask = false;
+            SendStateChanged();
         }
 
-        return Task.FromResult(result: true);
+        await QuitAsync();
+
+        return true;
     }
 
     private const string LauncherPathFileName = "launcher_path";
 
-    [NotNull]
-    private static string GetDefaultLauncherName()
+    private string GetDefaultLauncherName()
     {
         switch (Application.platform)
         {
@@ -43,7 +78,7 @@ public partial class Patcher
         }
     }
 
-    private static string GetLauncherPath()
+    private string GetLauncherPath()
     {
         if (File.Exists(path: LauncherPathFileName))
         {
@@ -65,7 +100,7 @@ public partial class Patcher
             : null;
     }
 
-    private static ProcessStartInfo GetLauncherProcessStartInfo()
+    private ProcessStartInfo GetLauncherProcessStartInfo()
     {
         string launcherPath = GetLauncherPath();
 

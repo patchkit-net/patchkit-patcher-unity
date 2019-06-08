@@ -5,34 +5,65 @@ using UnityEngine.Assertions;
 
 public partial class Patcher
 {
-    private async Task FetchAppLatestVersionId()
+    private async Task<bool> FetchAppLatestVersionIdAsync()
     {
+        if (!CanPerformNewTask() ||
+            !_hasApp ||
+            _hasAppFetchLatestVersionTask)
+        {
+            return false;
+        }
+
         Debug.Log(message: "Fetching app latest version id...");
 
-        Assert.IsNotNull(value: State.AppState);
+        _hasAppFetchLatestVersionTask = true;
+        SendStateChanged();
 
-        int latestVersionId;
-
-        if (State.AppState.OverrideLatestVersionId.HasValue)
+        try
         {
+            int latestVersionId =
+                await LibPatchKitApps.GetAppLatestVersionIdAsync(
+                    path: _appPath,
+                    cancellationToken: CancellationToken.None);
+
+            _appLatestVersionId = latestVersionId;
+            SendStateChanged();
+
             Debug.Log(
                 message:
-                "Using override value for fetching app latest version id.");
-
-            latestVersionId = State.AppState.OverrideLatestVersionId.Value;
+                $"Successfully fetched app latest version id.");
         }
-        else
+        catch (OperationCanceledException)
         {
-            // ReSharper disable once PossibleNullReferenceException
-            latestVersionId = await LibPatchKitApps.GetAppLatestVersionIdAsync(
-                secret: State.AppState.Secret,
-                cancellationToken: CancellationToken.None);
+            Debug.Log(
+                message: 
+                "Failed to fetch app latest version id: operation cancelled.");
+
+            return false;
+        }
+        catch (LibPatchKitAppsInternalErrorException)
+        {
+            Debug.LogWarning(
+                message: 
+                "Failed to fetch app latest version id: internal error.");
+
+            return false;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError(
+                message: 
+                "Failed to fetch app latest version id: unknown error.");
+            Debug.LogException(exception: e);
+
+            return false;
+        }
+        finally
+        {
+            _hasAppFetchLatestVersionTask = false;
+            SendStateChanged();
         }
 
-        ModifyState(x: () => State.AppState.LatestVersionId = latestVersionId);
-
-        Debug.Log(
-            message:
-            $"Successfully fetched app latest version id: {latestVersionId}.");
+        return true;
     }
 }

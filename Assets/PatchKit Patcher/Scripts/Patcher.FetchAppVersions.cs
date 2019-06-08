@@ -5,19 +5,58 @@ using UnityEngine.Assertions;
 
 public partial class Patcher
 {
-    private async Task FetchAppVersions()
+    private async Task<bool> FetchAppVersionsAsync()
     {
-        Debug.Log(message: "Fetching app latest version id...");
+        if (!CanPerformNewTask() ||
+            !_hasApp ||
+            _hasAppFetchAppVersionsTask)
+        {
+            return false;
+        }
 
-        Assert.IsNotNull(value: State.AppState);
+        Debug.Log(message: "Fetching app versions...");
 
-        // ReSharper disable once PossibleNullReferenceException
-        var versions = await LibPatchKitApps.GetAppVersionListAsync(
-            secret: State.AppState.Secret,
-            cancellationToken: CancellationToken.None);
+        _hasAppFetchAppVersionsTask = true;
+        SendStateChanged();
 
-        ModifyState(x: () => State.AppState.Versions = versions);
+        try
+        {
+            var versions = await LibPatchKitApps.GetAppVersionsAsync(
+                secret: State.AppState.Secret,
+                cancellationToken: CancellationToken.None);
 
-        Debug.Log(message: "Successfully fetched app versions.");
+            _appVersions = versions;
+            SendStateChanged();
+
+            Debug.Log(message: "Successfully fetched app versions.");
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.Log(
+                message: "Failed to fetch app versions: operation cancelled.");
+
+            return false;
+        }
+        catch (LibPatchKitAppsInternalErrorException)
+        {
+            Debug.LogWarning(
+                message: "Failed to fetch app versions: internal error.");
+
+            return false;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError(message: "Failed to fetch app versions: unknown error.");
+            Debug.LogException(exception: e);
+
+            return false;
+        }
+        finally
+        {
+            _hasAppFetchAppVersionsTask = false;
+            SendStateChanged();
+        }
+
+        return true;
     }
 }
