@@ -88,7 +88,9 @@ public partial class Patcher
     }
 
     private double AppUpdateTaskProgress =>
-        _appUpdateTaskInstalledBytes / (double) _appUpdateTaskTotalBytes;
+        _appUpdateTaskTotalBytes != 0
+            ? _appUpdateTaskInstalledBytes / (double) _appUpdateTaskTotalBytes :
+            0.0;
 
     private void SendStateChanged()
     {
@@ -113,7 +115,8 @@ public partial class Patcher
                             installedBytes: _appUpdateTaskInstalledBytes,
                             bytesPerSecond: _appUpdateTaskBytesPerSecond,
                             progress: AppUpdateTaskProgress,
-                            isConnecting: false),
+                            isConnecting: _appUpdateTaskTotalBytes == 0 ||
+                                _appUpdateTaskBytesPerSecond == 0.0),
                     isStarting: _hasAppStartTask),
             isOnline: _isOnline,
             isQuitting: _hasQuitTask);
