@@ -120,7 +120,7 @@ public partial class Patcher
 
         Debug.Log($"Sending: OnStateChanged(state: {state})");
 
-        OnStateChanged?.Invoke(state: state);
+        _dispatcher.Add(() => OnStateChanged?.Invoke(state: state));
     }
 
 
@@ -128,15 +128,16 @@ public partial class Patcher
     {
         Debug.Log($"Sending: OnError(error: {error})");
 
-        OnError?.Invoke(error: error);
+        _dispatcher.Add(() => OnError?.Invoke(error: error));
     }
 
     private void SendAppLicenseKeyIssue(AppLicenseKeyIssue issue)
     {
         Debug.Log($"Sending: OnAppLicenseKeyIssue(issue: {issue})");
 
-        OnAppLicenseKeyIssue?.Invoke(
-            licenseKey: _appLicenseKey,
-            issue: issue);
+        _dispatcher.Add(
+            () => OnAppLicenseKeyIssue?.Invoke(
+                licenseKey: _appLicenseKey,
+                issue: issue));
     }
 }

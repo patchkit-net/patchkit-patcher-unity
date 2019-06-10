@@ -238,17 +238,11 @@ public partial class Patcher
         Debug.Log(message: "libpkapps initialized.");
     }
 
-    // ReSharper disable once InconsistentNaming
     public bool AutomaticallyStartApp;
-
-    // ReSharper disable once InconsistentNaming
     public bool AutomaticallyUpdateApp = true;
 
 #if UNITY_EDITOR
-    // ReSharper disable once InconsistentNaming
     public string EditorAppSecret;
-
-    // ReSharper disable once InconsistentNaming
     public int EditorOverrideAppLatestVersionId;
 
     private InitializationData? LoadEditorInitializationData()

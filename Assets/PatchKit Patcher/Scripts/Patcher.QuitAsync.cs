@@ -4,7 +4,9 @@ using UnityEngine;
 
 public partial class Patcher
 {
+#pragma warning disable 1998
     private async Task<bool> QuitAsync()
+#pragma warning restore 1998
     {
         if (!CanPerformNewForegroundTask())
         {

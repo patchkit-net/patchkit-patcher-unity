@@ -8,6 +8,9 @@ public class ChangelogPanel : MonoBehaviour
 {
     private Animator _animator;
 
+    private static readonly int AnimatorIsOpened =
+        Animator.StringToHash("IsOpened");
+
     private void Awake()
     {
         _animator = GetComponent<Animator>();
@@ -31,7 +34,7 @@ public class ChangelogPanel : MonoBehaviour
         Assert.IsNotNull(value: _animator);
 
         _animator.SetBool(
-            name: "IsOpened",
+            id: AnimatorIsOpened,
             value: isOpened);
     }
 }

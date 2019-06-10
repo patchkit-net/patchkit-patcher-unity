@@ -4,7 +4,9 @@ using UnityEngine;
 
 public partial class Patcher
 {
+#pragma warning disable 1998
     private async Task<bool> SetAppLicenseKeyAsync([NotNull] string licenseKey)
+#pragma warning restore 1998
     {
         if (!CanPerformNewForegroundTask() ||
             !_hasApp)

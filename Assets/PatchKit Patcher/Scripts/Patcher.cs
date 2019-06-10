@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -5,6 +7,10 @@ using UnityEngine.Assertions;
 public partial class Patcher : MonoBehaviour
 {
     private static Patcher _instance;
+
+    [NotNull]
+    private readonly List<Action> _dispatcher =
+        new List<Action>();
 
     [NotNull]
     public static Patcher Instance
@@ -24,6 +30,15 @@ public partial class Patcher : MonoBehaviour
     private void Start()
     {
         Initialize();
+    }
+
+    private void Update()
+    {
+        while (_dispatcher.Count > 0)
+        {
+            _dispatcher[0]?.Invoke();
+            _dispatcher.RemoveAt(0);
+        }
     }
 
     //TODO: Remove after moving to Legacy

@@ -17,7 +17,8 @@ public class ChangelogList : MonoBehaviour
     {
         Patcher.Instance.OnStateChanged += state =>
         {
-            if (state.App?.Versions != null)
+            if (state.App != null &&
+                state.App.Value.Versions != null)
             {
                 Create(versions: state.App.Value.Versions);
             }

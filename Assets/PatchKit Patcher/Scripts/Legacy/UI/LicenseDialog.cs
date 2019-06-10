@@ -21,6 +21,7 @@ public class LicenseDialog : MonoBehaviour
     public string ServiceUnavailableMessageText;
 
     private Animator _animator;
+    private static readonly int AnimatorIsOpened = Animator.StringToHash("IsOpened");
 
     private void Awake()
     {
@@ -28,13 +29,15 @@ public class LicenseDialog : MonoBehaviour
 
         Assert.IsNotNull(value: _animator);
 
-        Patcher.Instance.OnAppLicenseKeyIssue += (licenseKey, issue) =>
+        Patcher.Instance.OnAppLicenseKeyIssue += (
+            licenseKey,
+            issue) =>
         {
             Assert.IsNotNull(value: KeyInputField);
             Assert.IsNotNull(value: ErrorMessageText);
 
             _animator.SetBool(
-                name: "IsOpened",
+                id: AnimatorIsOpened,
                 value: true);
 
             KeyInputField.text = licenseKey ?? string.Empty;
@@ -73,15 +76,14 @@ public class LicenseDialog : MonoBehaviour
             licenseKey: licenseKey);
 
         _animator.SetBool(
-            name: "IsOpened",
+            id: AnimatorIsOpened,
             value: false);
-
     }
 
     public void Abort()
     {
         _animator.SetBool(
-            name: "IsOpened",
+            id: AnimatorIsOpened,
             value: false);
     }
 }

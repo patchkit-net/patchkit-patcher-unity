@@ -12,6 +12,7 @@ public class ErrorDialog : MonoBehaviour
     private Error? _error;
 
     private Animator _animator;
+    private static readonly int AnimatorIsOpened = Animator.StringToHash("IsOpened");
 
     private void Awake()
     {
@@ -24,7 +25,7 @@ public class ErrorDialog : MonoBehaviour
             _error = error;
 
             _animator.SetBool(
-                name: "IsOpened",
+                id: AnimatorIsOpened,
                 value: true);
 
             //TODO: More descriptive messages, like:
@@ -71,7 +72,7 @@ public class ErrorDialog : MonoBehaviour
         }
 
         _animator.SetBool(
-            name: "IsOpened",
+            id: AnimatorIsOpened,
             value: false);
 
         switch (_error.Value)

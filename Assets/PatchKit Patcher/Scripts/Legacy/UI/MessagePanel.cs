@@ -11,6 +11,8 @@ public class MessagePanel : MonoBehaviour
     public Button CheckButton;
     public Text CheckButtonText;
 
+    private static readonly int AnimatorIsOpened = Animator.StringToHash("IsOpened");
+
     private void Awake()
     {
         var animator = GetComponent<Animator>();
@@ -63,7 +65,7 @@ public class MessagePanel : MonoBehaviour
             }
 
             animator.SetBool(
-                name: "IsOpened",
+                id: AnimatorIsOpened,
                 value: isOpened);
         };
     }
