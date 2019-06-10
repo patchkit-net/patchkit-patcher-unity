@@ -121,7 +121,7 @@ namespace PatchKit.Unity
                 var scene = EditorSceneManager.OpenScene(scenePath);
                 EditorSceneManager.SetActiveScene(scene);
 
-                patcher = global::Patcher.Instance;
+                patcher = UnityEngine.Object.FindObjectOfType<global::Patcher>();
 
                 if (patcher)
                 {
