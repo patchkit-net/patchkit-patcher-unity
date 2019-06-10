@@ -74,6 +74,10 @@ public partial class Patcher
 
         try
         {
+            Assert.raiseExceptions = true;
+            Application.runInBackground = true;
+            UnitySystemConsoleRedirector.Redirect();
+
             Debug.Log(message: $"Version: {Version.Text}");
             Debug.Log(
                 message:
@@ -84,9 +88,6 @@ public partial class Patcher
             Debug.Log(
                 message:
                 $"System information: {EnvironmentInfo.GetSystemInformation()}");
-
-            Assert.raiseExceptions = true;
-            Application.runInBackground = true;
 
             InitializeLibPatchKitApps();
 
