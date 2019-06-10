@@ -15,13 +15,8 @@ public class UpdateStatus : MonoBehaviour
             Assert.IsNotNull(value: Text);
 
             if (state.App == null ||
-                state.App.Value.UpdateTask == null)
-            {
-                Text.text = string.Empty;
-                return;
-            }
-
-            if (state.App.Value.UpdateTask.Value.IsConnecting)
+                state.App.Value.UpdateTask == null ||
+                state.App.Value.UpdateTask.Value.IsConnecting)
             {
                 Text.text = string.Empty;
                 return;

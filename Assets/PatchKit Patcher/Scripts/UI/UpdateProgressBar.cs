@@ -20,44 +20,43 @@ public class UpdateProgressBar : MonoBehaviour
     {
         Patcher.Instance.OnStateChanged += state =>
         {
-            switch (state.Kind)
+            if (state.IsInitializing)
             {
-                case PatcherStateKind.Idle:
-                    Assert.IsNotNull(value: state.AppState);
+                SetIdle(message: "Initializing...");
+            }
+            else if (state.IsQuitting)
+            {
+                SetIdle(message: "Quitting...");
+            }
+            else if (state.App != null)
+            {
+                var app = state.App.Value;
 
-                    SetValue(
-                        progress: state.AppState.InstalledVersionId.HasValue
-                            ? 1f
-                            : 0f);
-
-                    break;
-                case PatcherStateKind.UpdatingApp:
-                    Assert.IsNotNull(value: state.AppState);
-
-                    if (state.AppState.UpdateState.IsConnecting)
+                if (app.UpdateTask != null)
+                {
+                    var updateTask = app.UpdateTask.Value;
+                    
+                    if (updateTask.IsConnecting)
                     {
                         SetIdle(message: "Connecting...");
                     }
                     else
                     {
-                        SetValue(
-                            progress: (float) state.AppState.UpdateState
-                                .Progress);
+                        SetValue(progress: (float) updateTask.Progress);
                     }
-
-                    break;
-                case PatcherStateKind.Initializing:
-                    SetIdle(message: "Initializing...");
-                    break;
-                case PatcherStateKind.StartingApp:
+                }
+                else if (app.IsStarting)
+                {
                     SetIdle(message: "Starting...");
-                    break;
-                case PatcherStateKind.Quitting:
-                    SetIdle(message: "Quitting...");
-                    break;
-                default:
-                    SetIdle(message: string.Empty);
-                    break;
+                }
+                else
+                {
+                    SetValue(progress: app.IsInstalled ? 1f : 0f);
+                }
+            }
+            else
+            {
+                SetIdle(message: string.Empty);
             }
         };
     }

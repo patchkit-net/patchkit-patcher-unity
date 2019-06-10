@@ -97,6 +97,8 @@ public partial class Patcher
             app: !_hasApp
                 ? null
                 : (AppState?) new AppState(
+                    isInstalled: _appInstalledVersionId != null,
+                    path: _appPath,
                     secret: _appSecret,
                     info: _appInfo,
                     versions: _appVersions,

@@ -27,11 +27,9 @@ public class PatchKitLogo : MonoBehaviour
         button.enabled = false;
         image.enabled = false;
 
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnStateChanged += state =>
         {
-            Assert.IsNotNull(value: state);
-
-            bool isWhitelabel = state.AppState?.Info?.PatcherWhitelabel ?? true;
+            bool isWhitelabel = state.App?.Info?.PatcherWhitelabel ?? true;
 
             button.enabled = !isWhitelabel;
             image.enabled = !isWhitelabel;

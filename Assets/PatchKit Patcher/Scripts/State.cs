@@ -1,15 +1,5 @@
 public struct AppUpdateTaskState
 {
-    public long TotalBytes { get; }
-
-    public long InstalledBytes { get; }
-
-    public double BytesPerSecond { get; }
-
-    public double Progress { get; }
-
-    public bool IsConnecting { get; }
-
     public AppUpdateTaskState(
         long totalBytes,
         long installedBytes,
@@ -24,16 +14,58 @@ public struct AppUpdateTaskState
         IsConnecting = isConnecting;
     }
 
+    public long TotalBytes { get; }
+
+    public long InstalledBytes { get; }
+
+    public double BytesPerSecond { get; }
+
+    public double Progress { get; }
+
+    public bool IsConnecting { get; }
+
     public override string ToString()
     {
         return $"{{ \"TotalBytes\": {TotalBytes}, " +
             $"\"InstalledBytes\": {InstalledBytes}, " +
-            $"\"BytesPerSecond\": {BytesPerSecond} }}";
+            $"\"BytesPerSecond\": {BytesPerSecond}, " +
+            $"\"Progress\": {Progress}, " +
+            $"\"IsConnecting\": {IsConnecting.ToString().ToLower()} }}";
     }
 }
 
 public struct AppState
 {
+    public AppState(
+        bool isInstalled,
+        string path,
+        string secret,
+        PatchKit.Api.Models.App? info,
+        PatchKit.Api.Models.AppVersion[] versions,
+        int? installedVersionId,
+        string installedVersionLabel,
+        int? latestVersionId,
+        string latestVersionLabel,
+        AppUpdateTaskState? updateTask,
+        bool isStarting)
+    {
+        IsInstalled = isInstalled;
+        Path = path;
+        Secret = secret;
+        Info = info;
+        Versions = versions;
+        InstalledVersionId = installedVersionId;
+        InstalledVersionLabel = installedVersionLabel;
+        LatestVersionId = latestVersionId;
+        LatestVersionLabel = latestVersionLabel;
+        UpdateTask = updateTask;
+        IsStarting = isStarting;
+    }
+
+    public bool IsInstalled { get; }
+
+    public string Path { get; }
+
     public string Secret { get; }
 
     public PatchKit.Api.Models.App? Info { get; }
@@ -51,28 +83,6 @@ public struct AppState
     public AppUpdateTaskState? UpdateTask { get; }
 
     public bool IsStarting { get; }
-
-    public AppState(
-        string secret,
-        PatchKit.Api.Models.App? info,
-        PatchKit.Api.Models.AppVersion[] versions,
-        int? installedVersionId,
-        string installedVersionLabel,
-        int? latestVersionId,
-        string latestVersionLabel,
-        AppUpdateTaskState? updateTask,
-        bool isStarting)
-    {
-        Secret = secret;
-        Info = info;
-        Versions = versions;
-        InstalledVersionId = installedVersionId;
-        InstalledVersionLabel = installedVersionLabel;
-        LatestVersionId = latestVersionId;
-        LatestVersionLabel = latestVersionLabel;
-        UpdateTask = updateTask;
-        IsStarting = isStarting;
-    }
 
     public override string ToString()
     {

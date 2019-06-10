@@ -9,54 +9,53 @@ public class ErrorDialog : MonoBehaviour
 {
     public Text ErrorText;
 
+    private Error? _error;
+
+    private Animator _animator;
+
     private void Awake()
     {
-        var animator = GetComponent<Animator>();
+        _animator = GetComponent<Animator>();
 
-        Assert.IsNotNull(value: animator);
+        Assert.IsNotNull(value: _animator);
 
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnError += error =>
         {
-            Assert.IsNotNull(value: state);
-            Assert.IsNotNull(value: ErrorText);
+            _error = error;
 
-            bool isOpened = state.Kind == PatcherStateKind.DisplayingError;
-
-            if (!isOpened)
-            {
-                animator.SetBool(
-                    name: "IsOpened",
-                    value: false);
-
-                return;
-            }
-
-            animator.SetBool(
+            _animator.SetBool(
                 name: "IsOpened",
                 value: true);
 
-            Assert.IsTrue(condition: state.Error.HasValue);
-
-            switch (state.Error.Value)
+            //TODO: More descriptive messages, like:
+            // - if issue persists, please contact support
+            // - patcher will close, please start it again
+            switch (error)
             {
-                case PatcherError.NoLauncherError:
+                case Error.CriticalError:
+                    ErrorText.text = "Critical error.";
+                    break;
+                case Error.StartedWithoutLauncher:
                     ErrorText.text = "Patcher must be started with launcher.";
                     break;
-                case PatcherError.MultipleInstancesError:
+                case Error.MultipleInstances:
                     ErrorText.text =
                         "Another instance of patcher is already running.";
                     break;
-                case PatcherError.OutOfDiskSpaceError:
+                case Error.AppDataUnauthorizedAccess:
+                    ErrorText.text =
+                        "Patcher don't have enough permissions to install the application.";
+                    break;
+                case Error.UpdateAppRunOutOfFreeDiskSpace:
                     ErrorText.text =
                         "You don't have enough disk space to install the application.\n" +
                         "Please make some and restart the installation.";
                     break;
-                case PatcherError.InternalError:
-                    ErrorText.text = "Internal error.";
+                case Error.UpdateAppError:
+                    ErrorText.text = "Updating app has failed."; //TODO: Would you like to retry?
                     break;
-                case PatcherError.UnauthorizedAccessError:
-                    ErrorText.text =
-                        "Patcher don't have enough permissions to install the application.";
+                case Error.StartAppError:
+                    ErrorText.text = "Starting app has failed."; //TODO: Would you like to retry?
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -66,7 +65,38 @@ public class ErrorDialog : MonoBehaviour
 
     public void Confirm()
     {
-        Patcher.Instance.OnAcceptErrorRequested();
+        if (_error == null)
+        {
+            return;
+        }
+
+        _animator.SetBool(
+            name: "IsOpened",
+            value: false);
+
+        switch (_error.Value)
+        {
+            case Error.CriticalError:
+                Patcher.Instance.RequestQuit();
+                break;
+            case Error.StartedWithoutLauncher:
+                Patcher.Instance.RequestRestartWithLauncher();
+                break;
+            case Error.MultipleInstances:
+                Patcher.Instance.RequestQuit();
+                break;
+            case Error.AppDataUnauthorizedAccess:
+                Patcher.Instance.RequestRestartWithHigherPermissions();
+                break;
+            case Error.UpdateAppRunOutOfFreeDiskSpace:
+                break;
+            case Error.UpdateAppError:
+                break;
+            case Error.StartAppError:
+                break;
+        }
+
+        _error = null;
     }
 }
 }

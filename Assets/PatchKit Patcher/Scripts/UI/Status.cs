@@ -22,9 +22,9 @@ public class Status : MonoBehaviour
             {
                 Text.text = "Quitting...";
             }
-            else if (state.App.HasValue)
+            else if (state.App != null)
             {
-                if (state.App.Value.UpdateTask.HasValue)
+                if (state.App.Value.UpdateTask != null)
                 {
                     Text.text = "Updating...";
                 }

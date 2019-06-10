@@ -20,40 +20,34 @@ public class LicenseDialog : MonoBehaviour
     [Multiline]
     public string ServiceUnavailableMessageText;
 
+    private Animator _animator;
+
     private void Awake()
     {
-        var animator = GetComponent<Animator>();
+        _animator = GetComponent<Animator>();
 
-        Assert.IsNotNull(value: animator);
+        Assert.IsNotNull(value: _animator);
 
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnAppLicenseKeyIssue += (licenseKey, issue) =>
         {
-            Assert.IsNotNull(value: state);
+            Assert.IsNotNull(value: KeyInputField);
             Assert.IsNotNull(value: ErrorMessageText);
 
-            bool isAskingForLicenseKey =
-                state.Kind == PatcherStateKind.AskingForAppLicenseKey;
-
-            animator.SetBool(
+            _animator.SetBool(
                 name: "IsOpened",
-                value: isAskingForLicenseKey);
+                value: true);
 
-            if (!isAskingForLicenseKey)
+            KeyInputField.text = licenseKey ?? string.Empty;
+
+            switch (issue)
             {
-                return;
-            }
-
-            Assert.IsNotNull(value: state.AppState);
-
-            switch (state.AppState.LicenseKeyIssue)
-            {
-                case PatcherAppLicenseKeyIssue.None:
+                case AppLicenseKeyIssue.None:
                     ErrorMessageText.text = string.Empty;
                     break;
-                case PatcherAppLicenseKeyIssue.Invalid:
+                case AppLicenseKeyIssue.Invalid:
                     ErrorMessageText.text = InvalidLicenseMessageText;
                     break;
-                case PatcherAppLicenseKeyIssue.Blocked:
+                case AppLicenseKeyIssue.Blocked:
                     ErrorMessageText.text = BlockedLicenseMessageText;
                     break;
                 default:
@@ -75,13 +69,20 @@ public class LicenseDialog : MonoBehaviour
 
         licenseKey = licenseKey.ToUpper().Trim();
 
-        Patcher.Instance.OnSetLicenseKeyAndUpdateAppRequested(
+        Patcher.Instance.RequestSetAppLicenseKeyAndUpdateApp(
             licenseKey: licenseKey);
+
+        _animator.SetBool(
+            name: "IsOpened",
+            value: false);
+
     }
 
     public void Abort()
     {
-        Patcher.Instance.OnCancelSettingLicenseKeyRequested();
+        _animator.SetBool(
+            name: "IsOpened",
+            value: false);
     }
 }
 }

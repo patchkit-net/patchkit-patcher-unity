@@ -22,31 +22,49 @@ public class MessagePanel : MonoBehaviour
         Assert.IsNotNull(value: CheckButton.onClick);
 
         PlayButton.onClick.AddListener(
-            call: () => Patcher.Instance.OnStartAppRequested());
+            call: () => Patcher.Instance.RequestStartAppAndQuit());
 
         CheckButton.onClick.AddListener(
-            call: () => Patcher.Instance.OnUpdateAppRequested());
+            call: () => Patcher.Instance.RequestUpdateApp());
 
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnStateChanged += state =>
         {
-            Assert.IsNotNull(value: state);
-
             Assert.IsNotNull(value: PlayButton);
             Assert.IsNotNull(value: CheckButton);
             Assert.IsNotNull(value: CheckButtonText);
 
+            bool isOpened;
+
+            if (state.IsInitializing ||
+                state.IsQuitting ||
+                state.App == null)
+            {
+                isOpened = false;
+            }
+            else
+            {
+                var app = state.App.Value;
+
+                if (app.UpdateTask != null ||
+                    app.IsStarting)
+                {
+                    isOpened = false;
+                }
+                else
+                {
+                    isOpened = true;
+
+                    PlayButton.interactable = app.IsInstalled;
+
+                    CheckButtonText.text = app.IsInstalled
+                        ? "Check for updates"
+                        : "Install";
+                }
+            }
+
             animator.SetBool(
                 name: "IsOpened",
-                value: state.Kind == PatcherStateKind.Idle);
-
-            bool isInstalled =
-                state.AppState?.InstalledVersionId.HasValue ?? false;
-
-            PlayButton.interactable = isInstalled;
-
-            CheckButtonText.text = isInstalled
-                ? "Check for updates"
-                : "Install";
+                value: isOpened);
         };
     }
 }

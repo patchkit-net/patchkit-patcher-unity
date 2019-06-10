@@ -15,13 +15,11 @@ public class ChangelogList : MonoBehaviour
 
     private void Awake()
     {
-        Patcher.Instance.StateChanged += state =>
+        Patcher.Instance.OnStateChanged += state =>
         {
-            Assert.IsNotNull(value: state);
-
-            if (state.AppState?.Versions != null)
+            if (state.App?.Versions != null)
             {
-                Create(versions: state.AppState.Versions);
+                Create(versions: state.App.Value.Versions);
             }
         };
     }
