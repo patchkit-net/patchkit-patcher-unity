@@ -63,7 +63,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             long availableDiskSpace = -1;
             long requiredDiskSpace = GetRequiredDiskSpace();
-            requiredDiskSpace += (1024L * 1024 * 1024) * 200;
 
             var dir = new FileInfo(_localDirectoryPath);
 
