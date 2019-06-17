@@ -22,7 +22,7 @@
         public static PatcherError NotEnoughDiskSpace(long additionalBytesRequired) {
             return new PatcherError(
                 "Not enough disk space to install this application. Additional {0:0.00} GB of disk space is required.",
-                additionalBytesRequired / (1024 * 1024 * 1024)
+                additionalBytesRequired / (1024 * 1024 * 1024.0)
             );
         }
 
