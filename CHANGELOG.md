@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.14.0.0]
+### Added
+- Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer (#1241)
+- Automated Unity API compatiblity change from .NET 2.0 subset to .NET 2.0 (#1242)
+- Displaying proper message when in offline mode (#1217)
+- Support for Chinese, Japanese, Korean and all other regions characters (#1171)
+
+### Changed
+- Disabled automated update when in offline mode (#1217)
+- More descriptive error messages (#1313)
+- Disk space error message now tells how much of additional space is needed (#1314)
+
+### Fixed
+- Unity 2017 and newer compilation issues (#1243)
+- Cancelling update (#1222)
+- Displaying transparent banner images (#1249)
+- Patcher would always uninstall an old version of the game for repairs, event if it wasn't broken (#1273)
+- Patcher freeze after uninstalling app (#1276)
+
 ## [3.13.0]
 ### Added
 - Speed up unpacking app data with multithreading (#1270)

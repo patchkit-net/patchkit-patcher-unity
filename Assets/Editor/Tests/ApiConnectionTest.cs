@@ -6,6 +6,7 @@ using System.Text;
 using NSubstitute;
 using NUnit.Framework;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.Cancellation;
 
 namespace PatchKit.Api
 {
@@ -48,7 +49,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://main_server/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.GetResponse("/path", "query", CancellationToken.Empty);
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -64,7 +65,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "https://main_server/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.GetResponse("/path", "query", CancellationToken.Empty);
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -80,7 +81,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://main_server:81/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.GetResponse("/path", "query", CancellationToken.Empty);
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -101,7 +102,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://cache_server_1/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.GetResponse("/path", "query", CancellationToken.Empty);
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -122,7 +123,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://cache_server_1/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.GetResponse("/path", "query", CancellationToken.Empty);
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -141,7 +142,7 @@ namespace PatchKit.Api
 
             Assert.Throws(
                 Is.TypeOf<ApiResponseException>(),
-                () => apiConnection.GetResponse("/path", "query")
+                () => apiConnection.GetResponse("/path", "query", CancellationToken.Empty)
             );
         }
 
@@ -160,7 +161,7 @@ namespace PatchKit.Api
 
             var exception = (ApiConnectionException) Assert.Throws(
                 Is.TypeOf<ApiConnectionException>(),
-                () => apiConnection.GetResponse("/path", "query")
+                () => apiConnection.GetResponse("/path", "query", CancellationToken.Empty)
             );
             Assert.IsTrue(exception.MainServerExceptions.Any());
             Assert.IsTrue(exception.CacheServersExceptions.Any());
@@ -184,7 +185,7 @@ namespace PatchKit.Api
 
             var exception = (ApiConnectionException) Assert.Throws(
                 Is.TypeOf<ApiConnectionException>(),
-                () => apiConnection.GetResponse("/path", "query")
+                () => apiConnection.GetResponse("/path", "query", CancellationToken.Empty)
             );
             Assert.IsTrue(exception.MainServerExceptions.All(e => e.Message == "main-server"));
             Assert.IsTrue(exception.CacheServersExceptions.Any(e => e.Message == "cache-server-1"));
@@ -207,7 +208,7 @@ namespace PatchKit.Api
 
             var exception = (ApiConnectionException) Assert.Throws(
                 Is.TypeOf<ApiConnectionException>(),
-                () => apiConnection.GetResponse("/path", "query")
+                () => apiConnection.GetResponse("/path", "query", CancellationToken.Empty)
             );
             Assert.IsTrue(exception.MainServerExceptions.All(e => e.Message == "main-server"));
             Assert.IsTrue(exception.CacheServersExceptions.All(e =>
@@ -235,7 +236,7 @@ namespace PatchKit.Api
             AddResponseToClient(apiConnection.HttpClient, "http://cache_server_2/path?query",
                 CreateSimpleWebResponse("test"));
 
-            var apiResponse = apiConnection.GetResponse("/path", "query");
+            var apiResponse = apiConnection.GetResponse("/path", "query", CancellationToken.Empty);
             Assert.AreEqual("test", apiResponse.Body);
         }
 
@@ -252,7 +253,7 @@ namespace PatchKit.Api
                     "[{\"url\": \"http://first\", \"meta_url\": \"http://efg\", \"country\": \"PL\"}, " +
                     "{\"url\": \"http://second\", \"meta_url\": \"http://efg\"}]"));
 
-            var contentUrls = apiConnection.GetAppVersionContentUrls("secret", 13);
+            var contentUrls = apiConnection.GetAppVersionContentUrls("secret", 13, null, null, CancellationToken.Empty);
             Assert.AreEqual(2, contentUrls.Length);
             Assert.AreEqual("http://first", contentUrls[0].Url);
             Assert.AreEqual("PL", contentUrls[0].Country);
@@ -273,7 +274,7 @@ namespace PatchKit.Api
                     "[{\"url\": \"http://first\", \"meta_url\": \"http://efg\", \"country\": \"PL\"}, " +
                     "{\"url\": \"http://second\", \"meta_url\": \"http://efg\"}]"));
 
-            var contentUrls = apiConnection.GetAppVersionContentUrls("secret", 13, "PL");
+            var contentUrls = apiConnection.GetAppVersionContentUrls("secret", 13, "PL", null, CancellationToken.Empty);
 
             Assert.AreEqual(2, contentUrls.Length);
             Assert.AreEqual("http://first", contentUrls[0].Url);
@@ -294,7 +295,7 @@ namespace PatchKit.Api
                     "[{\"url\": \"http://first\", \"meta_url\": \"http://efg\", \"country\": \"PL\"}, " +
                     "{\"url\": \"http://second\", \"meta_url\": \"http://efg\"}]"));
 
-            var contentUrls = apiConnection.GetAppVersionDiffUrls("secret", 13);
+            var contentUrls = apiConnection.GetAppVersionDiffUrls("secret", 13, null, null, CancellationToken.Empty);
             Assert.AreEqual(2, contentUrls.Length);
             Assert.AreEqual("http://first", contentUrls[0].Url);
             Assert.AreEqual("PL", contentUrls[0].Country);
@@ -315,7 +316,7 @@ namespace PatchKit.Api
                     "[{\"url\": \"http://first\", \"meta_url\": \"http://efg\", \"country\": \"PL\"}, " +
                     "{\"url\": \"http://second\", \"meta_url\": \"http://efg\"}]"));
 
-            var contentUrls = apiConnection.GetAppVersionDiffUrls("secret", 13, "PL");
+            var contentUrls = apiConnection.GetAppVersionDiffUrls("secret", 13, "PL", null, CancellationToken.Empty);
 
             Assert.AreEqual(2, contentUrls.Length);
             Assert.AreEqual("http://first", contentUrls[0].Url);

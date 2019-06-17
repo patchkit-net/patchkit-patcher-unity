@@ -101,7 +101,8 @@ public class Background : MonoBehaviour
         if (IsCachedBannerAvailable())
         {
             _logger.LogDebug(string.Format("A cached banner image is available at {0}", CachedBannerPath));
-            LoadBannerImage(CachedBannerPath, OldImage);
+            LoadBannerImage(CachedBannerPath, NewImage);
+            MainAnimator.SetTrigger(AnimationSwitchTrigger);
         }
 
         var patcher = Patcher.Instance;

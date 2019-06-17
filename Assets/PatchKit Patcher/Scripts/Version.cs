@@ -3,15 +3,16 @@ namespace PatchKit.Unity.Patcher
     public static class Version
     {
         public const int Major = 3;
-        public const int Minor = 13;
-        public const int Release = 0;
+        public const int Minor = 14;
+        public const int Patch = 0;
+        public const int Hotfix = 0;
 
         public static string Value
         {
 #if PK_OFFICIAL
-            get { return string.Format("v{0}.{1}.{2}-official", Major, Minor, Release); }
+            get { return string.Format("v{0}.{1}.{2}.{3}-official", Major, Minor, Patch, Hotfix); }
 #else
-            get { return string.Format("v{0}.{1}.{2}", Major, Minor, Release); }
+            get { return string.Format("v{0}.{1}.{2}.{3}", Major, Minor, Patch, Hotfix); }
 #endif
         }
     }

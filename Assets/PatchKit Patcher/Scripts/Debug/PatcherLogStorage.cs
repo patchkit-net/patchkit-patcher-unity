@@ -71,7 +71,11 @@ namespace PatchKit.Unity.Patcher.Debug
 
             yield return putUrlRequest.Send();
 
+#if UNITY_2017_1_OR_NEWER
+            if (putUrlRequest.isNetworkError)
+#else
             if (putUrlRequest.isError)
+#endif
             {
                 DebugLogger.LogError("Error while requesting PUT URL: " + putUrlRequest.error);
                 IsLogBeingSent = false;
@@ -89,7 +93,11 @@ namespace PatchKit.Unity.Patcher.Debug
             UnityWebRequest putRequest = UnityWebRequest.Put(putUrl, GetCompressedLogFileData(logFilePath));
             yield return putRequest.Send();
 
+#if UNITY_2017_1_OR_NEWER
+            if (putRequest.isNetworkError)
+#else
             if (putRequest.isError)
+#endif
             {
                 DebugLogger.LogError("Error while sending log file: " + putRequest.error);
                 IsLogBeingSent = false;

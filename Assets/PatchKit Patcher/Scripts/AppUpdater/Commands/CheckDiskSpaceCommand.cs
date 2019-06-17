@@ -90,7 +90,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
                                                        "Available free space " + availableDiskSpace +
-                                                       " < required disk space " + requiredDiskSpace);
+                                                       " < required disk space " + requiredDiskSpace,
+                                                       availableDiskSpace, requiredDiskSpace);
             }
         }
 
@@ -137,7 +138,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return requiredDiskSpace;
         }
 
-        public void Prepare(UpdaterStatus status)
+        public void Prepare(UpdaterStatus status, CancellationToken cancellationToken)
         {
             // do nothing
         }

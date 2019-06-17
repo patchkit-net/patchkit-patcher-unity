@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using PatchKit.Network;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
@@ -10,13 +11,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly System.Net.HttpStatusCode _statusCode;
         private MemoryStream _contentStream;
 
-        public UnityHttpResponse(string data, System.Net.HttpStatusCode statusCode, string charset)
+        public UnityHttpResponse(string data, System.Net.HttpStatusCode statusCode)
         {
             if (data == null) throw new ArgumentNullException("data");
             
             _data = data;
             _statusCode = statusCode;
-            CharacterSet = charset;
+            CharacterSet = Encoding.UTF8.WebName;
         }
 
         public Stream ContentStream

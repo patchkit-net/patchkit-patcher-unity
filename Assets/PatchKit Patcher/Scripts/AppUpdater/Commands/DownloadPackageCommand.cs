@@ -5,6 +5,7 @@ using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using UniRx;
+using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -42,9 +43,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _destinationMetaPath = destinationMetaPath;
         }
 
-        public override void Prepare(UpdaterStatus status)
+        public override void Prepare(UpdaterStatus status, CancellationToken cancellationToken)
         {
-            base.Prepare(status);
+            base.Prepare(status, cancellationToken);
 
             if (status == null)
             {

@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using PatchKit.Api;
 using PatchKit.Api.Models.Main;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
@@ -54,53 +55,54 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             };
         }
 
-        public int GetLatestVersionId(bool retryRequests = true)
+        public int GetLatestVersionId(bool retryRequests, CancellationToken cancellationToken)
         {
             DebugLogger.Log("Getting latest version id.");
             DebugLogger.Log("retryRequests = " + retryRequests);
             var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
 #pragma warning disable 612
-            return m.GetAppLatestAppVersionId(_appSecret).Id;
+            return m.GetAppLatestAppVersionId(_appSecret, cancellationToken).Id;
 #pragma warning restore 612
         }
 
-        public Api.Models.Main.App GetAppInfo(bool retryRequests = true)
+        public Api.Models.Main.App GetAppInfo(bool retryRequests, CancellationToken cancellationToken)
         {
             DebugLogger.Log("Getting app info.");
             DebugLogger.Log("retryRequests = " + retryRequests);
             var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
-            return m.GetApplicationInfo(_appSecret);
+            return m.GetApplicationInfo(_appSecret, cancellationToken);
         }
 
-        public AppContentSummary GetContentSummary(int versionId)
+        public AppContentSummary GetContentSummary(int versionId, CancellationToken cancellationToken)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
             DebugLogger.Log(string.Format("Getting content summary of version with id {0}.", versionId));
 
-            return _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId);
+            return _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId, cancellationToken);
         }
 
-        public AppDiffSummary GetDiffSummary(int versionId)
+        public AppDiffSummary GetDiffSummary(int versionId, CancellationToken cancellationToken)
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
             DebugLogger.Log(string.Format("Getting diff summary of version with id {0}.", versionId));
 
-            return _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId);
+            return _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId, cancellationToken);
         }
 
-        public string GetKeySecret(string key, string cachedKeySecret)
+        public string GetKeySecret(string key, string cachedKeySecret, CancellationToken cancellationToken)
         {
             Checks.ArgumentNotNullOrEmpty(key, "key");
             DebugLogger.Log(string.Format("Getting key secret from key {0}.", key));
 
-            var keySecret = _keysApiConnection.GetKeyInfo(key, _appSecret, cachedKeySecret).KeySecret;
+            var keySecret = _keysApiConnection.GetKeyInfo(key, _appSecret, cachedKeySecret, cancellationToken).KeySecret;
 
             return keySecret;
         }
 
         public AppVersion GetAppVersionInfo(
             int versionId, 
-            bool retryRequests = true)
+            bool retryRequests,
+            CancellationToken cancellationToken)
         {
             if (versionId <= 0)
             {
@@ -111,7 +113,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
             var m = retryRequests ? _mainApiConnection : _mainApiConnectionWithoutRetry;
 
-            return m.GetAppVersion(_appSecret, versionId);
+            return m.GetAppVersion(_appSecret, versionId, null, cancellationToken);
         }
     }
 }

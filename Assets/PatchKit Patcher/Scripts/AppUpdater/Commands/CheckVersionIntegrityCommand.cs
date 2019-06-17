@@ -43,9 +43,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _isCheckingHash = isCheckingHash;
         }
 
-        public override void Prepare(UpdaterStatus status)
+        public override void Prepare(UpdaterStatus status, CancellationToken cancellationToken)
         {
-            base.Prepare(status);
+            base.Prepare(status, cancellationToken);
 
             Checks.ArgumentNotNull(status, "statusMonitor");
 

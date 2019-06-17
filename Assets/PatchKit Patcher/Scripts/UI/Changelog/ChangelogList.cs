@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Linq;
 using PatchKit.Api.Models.Main;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.Utilities;
 
@@ -20,7 +21,7 @@ namespace PatchKit.Unity.Patcher.UI
             }
 
             yield return
-                Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Data.Value.AppSecret),
+                Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(Patcher.Instance.Data.Value.AppSecret, null, CancellationToken.Empty),
                     response =>
                     {
                         foreach (var version in response.OrderByDescending(version => version.Id))

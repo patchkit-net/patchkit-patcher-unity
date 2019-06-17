@@ -5,6 +5,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using PatchKit.Logging;
 using PatchKit.Network;
+using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
 namespace PatchKit.Api
 {
@@ -94,11 +95,11 @@ namespace PatchKit.Api
             out IApiResponse response)
         {
             Logger.LogDebug(
-                string.Format("Trying to get response from server ({0}): '{1}:{2}' (uses HTTPS: {3})...", 
-                        serverType, 
-                        server.Host, 
-                        server.RealPort, 
-                        server.UseHttps));
+                string.Format("Trying to get response from server ({0}): '{1}:{2}' (uses HTTPS: {3})...",
+                    serverType,
+                    server.Host,
+                    server.RealPort,
+                    server.UseHttps));
 
             response = null;
 
@@ -220,7 +221,7 @@ namespace PatchKit.Api
         /// <param name="query">The query of the resource.</param>
         /// <returns>Response with resource result.</returns>
         /// <exception cref="ApiConnectionException">Could not connect to API.</exception>
-        public IApiResponse GetResponse(string path, string query)
+        public IApiResponse GetResponse(string path, string query, CancellationToken cancellationToken)
         {
             try
             {
@@ -240,6 +241,8 @@ namespace PatchKit.Api
 
                 do
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (!TryGetResponse(_connectionSettings.MainServer, request, ServerType.MainServer,
                         out apiResponse))
                     {
@@ -272,7 +275,8 @@ namespace PatchKit.Api
                         }
 
                         Logger.LogDebug(
-                            "Retry is possible. Waiting " + RequestRetryStrategy.DelayBeforeNextTry + "ms before next attempt...");
+                            "Retry is possible. Waiting " + RequestRetryStrategy.DelayBeforeNextTry +
+                            "ms before next attempt...");
 
                         Thread.Sleep(RequestRetryStrategy.DelayBeforeNextTry);
 

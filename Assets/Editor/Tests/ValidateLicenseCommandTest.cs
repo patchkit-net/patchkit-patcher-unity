@@ -35,11 +35,11 @@ class ValidateLicenseCommandTest
         const string keySecret = "this-key-secret-should-be-cached";
         
         var remoteMetaData = Substitute.For<IRemoteMetaData>();
-        remoteMetaData.GetAppInfo().Returns(new App()
+        remoteMetaData.GetAppInfo(true, CancellationToken.Empty).Returns(new App()
         {
             UseKeys = true
         });
-        remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(keySecret);
+        remoteMetaData.GetKeySecret(key, Arg.Any<string>(), CancellationToken.Empty).Returns(keySecret);
 
         var localMetaData = Substitute.For<ILocalMetaData>();
         
@@ -53,7 +53,7 @@ class ValidateLicenseCommandTest
             });
 
             var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
-            command.Prepare(_updaterStatus);
+            command.Prepare(_updaterStatus, CancellationToken.Empty);
             command.Execute(CancellationToken.Empty);
             
             if (i == 0)
@@ -79,7 +79,7 @@ class ValidateLicenseCommandTest
         var licenseDialog = Substitute.For<ILicenseDialog>();
         
         var remoteMetaData = Substitute.For<IRemoteMetaData>();
-        remoteMetaData.GetAppInfo().Returns(new App()
+        remoteMetaData.GetAppInfo(true, CancellationToken.Empty).Returns(new App()
         {
             UseKeys = false
         });
@@ -87,11 +87,11 @@ class ValidateLicenseCommandTest
         var localMetaData = Substitute.For<ILocalMetaData>();
         
         var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
-        command.Prepare(_updaterStatus);
+        command.Prepare(_updaterStatus, CancellationToken.Empty);
         command.Execute(CancellationToken.Empty);
 
         Assert.AreEqual(command.KeySecret, null);
-        remoteMetaData.DidNotReceive().GetKeySecret(Arg.Any<string>(), Arg.Any<string>());
+        remoteMetaData.DidNotReceive().GetKeySecret(Arg.Any<string>(), Arg.Any<string>(), CancellationToken.Empty);
         licenseDialog.DidNotReceive().Display(Arg.Any<LicenseDialogMessageType>());
     }
     
@@ -111,7 +111,7 @@ class ValidateLicenseCommandTest
         });
 
         var remoteMetaData = Substitute.For<IRemoteMetaData>();
-        remoteMetaData.GetAppInfo().Returns(new App()
+        remoteMetaData.GetAppInfo(true, CancellationToken.Empty).Returns(new App()
         {
             UseKeys = true
         });
@@ -120,7 +120,7 @@ class ValidateLicenseCommandTest
 
         bool firstAttempt = true;
         
-        remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(info =>
+        remoteMetaData.GetKeySecret(key, Arg.Any<string>(), CancellationToken.Empty).Returns(info =>
         {
             if (!firstAttempt)
             {
@@ -132,7 +132,7 @@ class ValidateLicenseCommandTest
         });
 
         var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
-        command.Prepare(_updaterStatus);
+        command.Prepare(_updaterStatus, CancellationToken.Empty);
         command.Execute(CancellationToken.Empty);
         
         licenseDialog.Received(1).Display(LicenseDialogMessageType.None);
@@ -155,14 +155,14 @@ class ValidateLicenseCommandTest
         });
 
         var remoteMetaData = Substitute.For<IRemoteMetaData>();
-        remoteMetaData.GetAppInfo().Returns(new App()
+        remoteMetaData.GetAppInfo(true, CancellationToken.Empty).Returns(new App()
         {
             UseKeys = true
         });
 
         bool firstAttempt = true;
         
-        remoteMetaData.GetKeySecret(key, Arg.Any<string>()).Returns(info =>
+        remoteMetaData.GetKeySecret(key, Arg.Any<string>(), CancellationToken.Empty).Returns(info =>
         {
             if (!firstAttempt)
             {
@@ -176,7 +176,7 @@ class ValidateLicenseCommandTest
         var localMetaData = Substitute.For<ILocalMetaData>();
         
         var command = new ValidateLicenseCommand(licenseDialog, remoteMetaData, localMetaData, _cache, _logger, _issueReporter);
-        command.Prepare(_updaterStatus);
+        command.Prepare(_updaterStatus, CancellationToken.Empty);
         command.Execute(CancellationToken.Empty);
         
         licenseDialog.Received(1).Display(LicenseDialogMessageType.None);

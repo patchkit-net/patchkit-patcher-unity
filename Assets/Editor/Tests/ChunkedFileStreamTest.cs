@@ -1,4 +1,4 @@
-#if UNITY_2018
+#if UNITY_2018 && PK_TESTS_FIX_TODO_2019_04_18
 using System;
 using System.IO;
 using NUnit.Framework;

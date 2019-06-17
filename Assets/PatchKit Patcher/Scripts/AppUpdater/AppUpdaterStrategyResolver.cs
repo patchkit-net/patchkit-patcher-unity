@@ -59,7 +59,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
         }
 
-        public StrategyType Resolve([NotNull] AppUpdaterContext context)
+        public StrategyType Resolve([NotNull] AppUpdaterContext context, CancellationToken cancellationToken)
         {
             if (context == null)
             {
@@ -77,7 +77,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     int installedVersionId = context.App.GetInstalledVersionId();
                     _logger.LogTrace("installedVersionId = " + installedVersionId);
 
-                    int latestVersionId = context.App.GetLatestVersionId();
+                    int latestVersionId = context.App.GetLatestVersionId(true, cancellationToken);
                     _logger.LogTrace("latestVersionId = " + latestVersionId);
 
                     if (installedVersionId == latestVersionId)
@@ -104,7 +104,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                     return StrategyType.Content;
 #else
-                        if (DoesVersionSupportDiffUpdates(context, installedVersionId))
+                        if (DoesVersionSupportDiffUpdates(context, installedVersionId, cancellationToken))
                         {
                             _logger.LogDebug("Installed version does not support diff updates. Using content strategy");
 
@@ -114,10 +114,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                         _logger.LogDebug(
                             "Checking whether cost of updating with diff is lower than cost of updating with content...");
 
-                        long contentSize = GetLatestVersionContentSize(context);
+                        long contentSize = GetLatestVersionContentSize(context, cancellationToken);
                         _logger.LogTrace("contentSize = " + contentSize);
 
-                        long sumDiffSize = GetLatestVersionDiffSizeSum(context);
+                        long sumDiffSize = GetLatestVersionDiffSizeSum(context, cancellationToken);
                         _logger.LogTrace("sumDiffSize = " + sumDiffSize);
 
                         if (sumDiffSize < contentSize)
@@ -129,9 +129,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                             {
                                 _logger.LogDebug("Checking consitency before allowing diff update...");
 
-                                if (!IsVersionIntegral(contentSize, context))
+                                if (!IsVersionIntegral(contentSize, context, cancellationToken))
                                 {
-                                    if (IsRepairPossible(context))
+                                    if (IsRepairPossible(context, cancellationToken))
                                     {
                                         _logger.LogDebug("Installed version is broken. Using repair&diff strategy.");
                                         return StrategyType.RepairAndDiff;
@@ -174,7 +174,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
         }
 
-        private bool IsRepairPossible(AppUpdaterContext context)
+        private bool IsRepairPossible(AppUpdaterContext context, CancellationToken cancellationToken)
         {
             if (!context.App.IsFullyInstalled() && !context.App.IsInstallationBroken())
             {
@@ -182,20 +182,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
 
             int installedVersionId = context.App.GetInstalledVersionId();
-            int lowestVersionWithContent = context.App.GetLowestVersionWithContentId();
+            int lowestVersionWithContent = context.App.GetLowestVersionWithContentId(cancellationToken);
 
             return installedVersionId >= lowestVersionWithContent;
         }
 
-        private bool DoesVersionSupportDiffUpdates(AppUpdaterContext context, int versionId)
+        private bool DoesVersionSupportDiffUpdates(AppUpdaterContext context, int versionId, CancellationToken cancellationToken)
         {
-            int lowestVersionWithDiffId = context.App.GetLowestVersionWithDiffId();
+            int lowestVersionWithDiffId = context.App.GetLowestVersionWithDiffId(cancellationToken);
             _logger.LogTrace("lowestVersionWithDiffId = " + lowestVersionWithDiffId);
 
             return versionId + 1 < lowestVersionWithDiffId;
         }
 
-        private bool IsVersionIntegral(long contentSize, AppUpdaterContext context)
+        private bool IsVersionIntegral(long contentSize, AppUpdaterContext context, CancellationToken cancellationToken)
         {
             var commandFactory = new AppUpdaterCommandFactory();
             int installedVersionId = context.App.GetInstalledVersionId();
@@ -206,9 +206,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             _logger.LogTrace("isCheckingHash = " + isCheckingHash);
 
             var checkVersionIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(
-                installedVersionId, context, isCheckingHash);
+                installedVersionId, context, isCheckingHash, true, cancellationToken);
 
-            checkVersionIntegrity.Prepare(_status);
+            checkVersionIntegrity.Prepare(_status, cancellationToken);
             checkVersionIntegrity.Execute(CancellationToken.Empty);
 
             bool isValid = checkVersionIntegrity.Results.Files.All(
@@ -236,23 +236,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             return isValid;
         }
 
-        private static long GetLatestVersionContentSize(AppUpdaterContext context)
+        private static long GetLatestVersionContentSize(AppUpdaterContext context, CancellationToken cancellationToken)
         {
-            int latestVersionId = context.App.GetLatestVersionId();
-            var contentSummary = context.App.RemoteMetaData.GetContentSummary(latestVersionId);
+            int latestVersionId = context.App.GetLatestVersionId(true, cancellationToken);
+            var contentSummary = context.App.RemoteMetaData.GetContentSummary(latestVersionId, cancellationToken);
             return contentSummary.Size;
         }
 
-        private static long GetLatestVersionDiffSizeSum(AppUpdaterContext context)
+        private static long GetLatestVersionDiffSizeSum(AppUpdaterContext context, CancellationToken cancellationToken)
         {
-            int latestVersionId = context.App.GetLatestVersionId();
+            int latestVersionId = context.App.GetLatestVersionId(true, cancellationToken);
             int currentLocalVersionId = context.App.GetInstalledVersionId();
 
             long cost = 0;
 
             for (int i = currentLocalVersionId + 1; i <= latestVersionId; i++)
             {
-                var diffSummary = context.App.RemoteMetaData.GetDiffSummary(i);
+                var diffSummary = context.App.RemoteMetaData.GetDiffSummary(i, cancellationToken);
                 cost += diffSummary.Size;
             }
 

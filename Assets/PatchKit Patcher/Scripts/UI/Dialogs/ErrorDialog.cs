@@ -22,24 +22,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         private void UpdateMessage(PatcherError error)
         {
-            switch (error)
-            {
-                case PatcherError.NoInternetConnection:
-                    ErrorText.text = "Please check your internet connection.";
-                    break;
-                case PatcherError.NoPermissions:
-                    ErrorText.text = "Please check write permissions in application directory.";
-                    break;
-                case PatcherError.NotEnoughDiskSpace:
-                    ErrorText.text = "Not enough disk space.";
-                    break;
-                case PatcherError.NonLauncherExecution:
-                    ErrorText.text = "Patcher has to be started using the launcher.";
-                    break;
-                case PatcherError.Other:
-                    ErrorText.text = "Unknown error. Please try again.";
-                    break;
-            }
+            ErrorText.text = error.ToString();
         }
     }
 }

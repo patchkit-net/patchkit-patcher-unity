@@ -47,17 +47,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var commandFactory = new AppUpdaterCommandFactory();
 
             var validateLicense = commandFactory.CreateValidateLicenseCommand(_context);
-            validateLicense.Prepare(_status);
+            validateLicense.Prepare(_status, cancellationToken);
             validateLicense.Execute(cancellationToken);
 
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
-            geolocateCommand.Prepare(_status);
+            geolocateCommand.Prepare(_status, cancellationToken);
             geolocateCommand.Execute(cancellationToken);
 
             var resource = _context.App.RemoteData.GetContentPackageResource(
                 installedVersionId,
                 validateLicense.KeySecret,
-                geolocateCommand.CountryCode);
+                geolocateCommand.CountryCode,
+                cancellationToken);
 
             if (!resource.HasMetaUrls())
             {
@@ -69,16 +70,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             downloader.Download(cancellationToken);
 
             ICheckVersionIntegrityCommand checkVersionIntegrityCommand
-                = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context);
+                = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context, true, true, cancellationToken);
 
-            checkVersionIntegrityCommand.Prepare(_status);
+            checkVersionIntegrityCommand.Prepare(_status, cancellationToken);
             checkVersionIntegrityCommand.Execute(cancellationToken);
 
             var meta = Pack1Meta.ParseFromFile(metaDestination);
 
             FileIntegrity[] filesIntegrity = checkVersionIntegrityCommand.Results.Files;
 
-            var contentSummary = _context.App.RemoteMetaData.GetContentSummary(installedVersionId);
+            var contentSummary = _context.App.RemoteMetaData.GetContentSummary(installedVersionId, cancellationToken);
 
             foreach (var invalidVersionIdFile in filesIntegrity.Where(x =>
                 x.Status == FileIntegrityStatus.InvalidVersion).ToArray())
@@ -127,7 +128,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 brokenFiles,
                 meta);
 
-            repairCommand.Prepare(_status);
+            repairCommand.Prepare(_status, cancellationToken);
             repairCommand.Execute(cancellationToken);
         }
     }
