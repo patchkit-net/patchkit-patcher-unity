@@ -6,9 +6,9 @@ public static class Version
     public const int Hotfix = 0;
 
 #if PK_OFFICIAL
-    public const string Suffix = "-rc3.official";
+    public const string Suffix = "-rc4.official";
 #else
-    public const string Suffix = "-rc3";
+    public const string Suffix = "-rc4";
 #endif
 
     public static string Text => $"v{Major}.{Minor}.{Patch}.{Hotfix}{Suffix}";
