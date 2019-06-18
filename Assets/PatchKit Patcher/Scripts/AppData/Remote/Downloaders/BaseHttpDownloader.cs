@@ -101,9 +101,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     if (_bytesRange.HasValue)
                     {
+                        var bytesRangeEndText = 
+                            _bytesRange.Value.End >= 0L ? _bytesRange.Value.End.ToString() : string.Empty;
+
                         request.SetRequestHeader(
                             "Range", 
-                            "bytes=" + _bytesRange.Value.Start + "-" + _bytesRange.Value.End);
+                            "bytes=" + _bytesRange.Value.Start + "-" + bytesRangeEndText);
                     }
 
                     request.downloadHandler = new Handler(OnDataAvailable);
