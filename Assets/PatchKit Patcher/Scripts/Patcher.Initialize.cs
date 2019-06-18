@@ -225,8 +225,8 @@ public partial class Patcher
         {
             LibPatchKitApps.SetPlatformType(
                 platformType: is64Bit
-                    ? LibPatchKitAppsPlatformType.Win32
-                    : LibPatchKitAppsPlatformType.Win64);
+                    ? LibPatchKitAppsPlatformType.Win64
+                    : LibPatchKitAppsPlatformType.Win32);
         }
 
         if (Application.platform == RuntimePlatform.OSXEditor ||
