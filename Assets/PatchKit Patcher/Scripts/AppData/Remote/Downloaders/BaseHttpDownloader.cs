@@ -107,8 +107,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     {
                         var op = request.SendWebRequest();
 
-                        cancellationToken.ThrowIfCancellationRequested();
+                        while (request.responseCode == -1)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
 
+                            System.Threading.Thread.Sleep(100);
+                        }
+                        
                         _logger.LogDebug("Received response from server.");
                         _logger.LogTrace("statusCode = " + request.responseCode);
 
