@@ -131,7 +131,7 @@ namespace PatchKit.Api
                 var httpRequest = new HttpGetRequest
                 {
                     Address = uri,
-                    Timeout = RequestTimeoutCalculator.Timeout
+                    Timeout = 30000
                 };
 
                 Logger.LogTrace("timeout = " + httpRequest.Timeout + "ms");
