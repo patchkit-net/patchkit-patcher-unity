@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.14.0.0]
 ### Added
+- Dynamic url testing for faster nodes (#1226)
 - Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer (#1241)
 - Automated Unity API compatiblity change from .NET 2.0 subset to .NET 2.0 (#1242)
 - Displaying proper message when in offline mode (#1217)

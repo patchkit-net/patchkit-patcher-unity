@@ -121,7 +121,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 var stopwatch = Stopwatch.StartNew();
 
                 var baseHttpDownloader = new BaseHttpDownloader(url, _requestTimeoutCalculator.Timeout);
-                baseHttpDownloader.DataAvailable += (bytes, length) =>
+                baseHttpDownloader.Download(cancellationToken, (bytes, length) =>
                 {
                     fileStream.Write(bytes, 0, length);
 
@@ -135,9 +135,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     downloadedBytes += length;
                     OnDownloadProgressChanged(downloadedBytes);
-                };
-
-                baseHttpDownloader.Download(cancellationToken);
+                });
 
                 _logger.LogDebug(string.Format("Download from {0} has been successful.", url));
 
