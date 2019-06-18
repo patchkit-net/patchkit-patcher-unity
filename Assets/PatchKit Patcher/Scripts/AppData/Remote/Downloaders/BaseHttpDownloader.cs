@@ -91,8 +91,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                using (var request = new UnityWebRequest())
+                UnityWebRequest request = null;
+
+                UnityDispatcher.Invoke(() => 
                 {
+                    request = new UnityWebRequest();
                     request.uri = new Uri(_url);
                     request.timeout = 30;
 
@@ -103,26 +106,51 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             "bytes=" + _bytesRange.Value.Start + "-" + _bytesRange.Value.End);
                     }
 
-                    using(request.downloadHandler = new Handler(OnDataAvailable))
-                    {
-                        var op = request.SendWebRequest();
+                    request.downloadHandler = new Handler(OnDataAvailable);
 
-                        while (request.responseCode == -1)
+                }).WaitOne();
+
+                using (request)
+                {
+                    using(request.downloadHandler)
+                    {
+                        UnityWebRequestAsyncOperation op = null;
+
+                        UnityDispatcher.Invoke(() => 
                         {
+                            op = request.SendWebRequest();
+                        }).WaitOne();
+
+                        long requestResponseCode = -1;
+
+                        while (requestResponseCode <= 0)
+                        {
+                            UnityDispatcher.Invoke(() => 
+                            {
+                                requestResponseCode = request.responseCode;
+                            }).WaitOne();
+
                             cancellationToken.ThrowIfCancellationRequested();
 
                             System.Threading.Thread.Sleep(100);
                         }
                         
                         _logger.LogDebug("Received response from server.");
-                        _logger.LogTrace("statusCode = " + request.responseCode);
+                        _logger.LogTrace("statusCode = " + requestResponseCode);
 
-                        if (Is2XXStatus((HttpStatusCode) request.responseCode))
+                        if (Is2XXStatus((HttpStatusCode) requestResponseCode))
                         {
                             _logger.LogDebug("Successful response. Reading response stream...");
 
-                            while (!op.isDone)
+                            bool opIsDone = false;
+
+                            while (!opIsDone)
                             {
+                                UnityDispatcher.Invoke(() => 
+                                {
+                                    opIsDone = op.isDone;
+                                }).WaitOne();
+
                                 cancellationToken.ThrowIfCancellationRequested();
 
                                 System.Threading.Thread.Sleep(100);
@@ -130,7 +158,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                             _logger.LogDebug("Stream has been read.");
                         }
-                        else if (Is4XXStatus((HttpStatusCode) request.responseCode))
+                        else if (Is4XXStatus((HttpStatusCode) requestResponseCode))
                         {
                             throw new DataNotAvailableException(string.Format(
                                 "Request data for {0} is not available (status: {1})", _url, (HttpStatusCode) request.responseCode));
@@ -139,7 +167,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                         {
                             throw new ServerErrorException(string.Format(
                                 "Server has experienced some issues with request for {0} which resulted in {1} status code.",
-                                _url, (HttpStatusCode) request.responseCode));
+                                _url, (HttpStatusCode) requestResponseCode));
                         }
                     }
                 }
