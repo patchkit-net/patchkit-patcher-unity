@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
@@ -196,14 +195,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             try
             {
                 _logger.LogDebug(string.Format("Downloading from {0}", url));
+                fileStream.ClearUnverified();
                 if (!secondaryUrl.HasValue)
                 {
                     _logger.LogDebug("Secondary url is null");
                 }
 
-                NodeTester secondaryNodeTester = null;
-                var nodeTestingStopwatch = new Stopwatch();
-                nodeTestingStopwatch.Start();
+                var nodeTester = secondaryUrl.HasValue ? new NodeTester(secondaryUrl.Value) : null;
 
                 var downloadLogIntervalStopwatch = new Stopwatch();
 
@@ -226,30 +224,23 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     foreach (var dataPacket in baseHttpDownloader.ReadPackets(cancellationToken))
                     {
-                        if (!_hasCheckedAnotherNode
-                         && calculator.TimeRemaining(_size) > TimeSpan.FromMinutes(2.0)
-                         && secondaryUrl.HasValue
-                         && secondaryNodeTester == null
-                         && nodeTestingStopwatch.IsRunning
-                         && nodeTestingStopwatch.Elapsed > TimeSpan.FromSeconds(15.0))
+                        if (!_hasCheckedAnotherNode 
+                            && nodeTester != null 
+                            && nodeTester.CanStart(_size, calculator))
                         {
                             _logger.LogDebug("Testing secondary url");
-                            secondaryNodeTester = new NodeTester(secondaryUrl.Value.Url);
-                            secondaryNodeTester.Start(cancellationToken);
-
-                            nodeTestingStopwatch.Stop();
+                            nodeTester.Start(cancellationToken);
                         }
 
-                        if (secondaryNodeTester != null && secondaryNodeTester.IsReady)
+                        if (nodeTester != null && nodeTester.IsReady)
                         {
                             _logger.LogDebug("Secondary url test finished.");
                             _logger.LogTrace(string.Format("Current download speed {0} bps", calculator.BytesPerSecond));
-                            _logger.LogTrace(string.Format("Secondary node download speed {0} bps", secondaryNodeTester.BytesPerSecond));
+                            _logger.LogTrace(string.Format("Secondary node download speed {0} bps", nodeTester.BytesPerSecond));
 
-                            if (secondaryNodeTester.BytesPerSecond > 2 * calculator.BytesPerSecond)
+                            if (nodeTester.BytesPerSecond > 2 * calculator.BytesPerSecond)
                             {
                                 _logger.LogDebug("Secondary url download speed is 2 times faster, switching.");
-                                fileStream.ClearUnverified();
                                 _hasCheckedAnotherNode = true;
                                 return false;
                             }
@@ -257,9 +248,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             {
                                 _logger.LogDebug("Secondary node download speed was not 2 times faster, not switching.");
                                 _hasCheckedAnotherNode = true;
-                                secondaryNodeTester = null;
+                                nodeTester = null;
                             }
-
                         }
 
                         int length = dataPacket.Length;
