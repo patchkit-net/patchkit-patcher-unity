@@ -232,7 +232,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             Exception exception = nodeTester.TryStart(cancellationToken);
                             if (exception != null)
                             {
-                                _logger.LogWarning(string.Format("Node tester failed to start: {}", exception));
+                                _logger.LogWarning(string.Format("Node tester failed to start: {}", exception), exception);
                             }
                         }
 

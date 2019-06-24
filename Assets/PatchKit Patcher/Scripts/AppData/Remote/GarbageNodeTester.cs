@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using PatchKit.Logging;
+using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
@@ -88,7 +90,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         {
             get
             {
+                if (!_isDone)
+                {
+                    PatcherLogManager.DefaultLogger.LogError("Reading BPS from an unfinished GarbageNodeTester.");
+                }
                 lock (_calculator)
+
                 {
                     return _calculator.BytesPerSecond;
                 }
