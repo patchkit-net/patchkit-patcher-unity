@@ -23,6 +23,19 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _testingStopwatch.Start();
         }
 
+        public Exception TryStart(CancellationToken cancellationToken)
+        {
+            try
+            {
+                Start(cancellationToken);
+                return null;
+            }
+            catch (ArgumentException e)
+            {
+                return e;
+            }
+        }
+
         public void Start(CancellationToken cancellationToken)
         {
             _garbageNodeTester = new GarbageNodeTester(_resourceUrl.Url);

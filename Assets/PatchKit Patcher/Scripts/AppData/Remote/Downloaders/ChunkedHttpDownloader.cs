@@ -229,7 +229,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             && nodeTester.CanStart(_size, calculator))
                         {
                             _logger.LogDebug("Testing secondary url");
-                            nodeTester.Start(cancellationToken);
+                            Exception exception = nodeTester.TryStart(cancellationToken);
+                            if (exception != null)
+                            {
+                                _logger.LogWarning(string.Format("Node tester failed to start: {}", exception));
+                            }
                         }
 
                         if (nodeTester != null && nodeTester.IsDone)

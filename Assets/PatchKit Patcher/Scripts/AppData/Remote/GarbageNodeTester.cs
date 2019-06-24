@@ -16,7 +16,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         bool WasSuccess { get; }
 
-        double? BytesPerSecond { get; }
+        double BytesPerSecond { get; }
     }
 
     public class GarbageNodeTester : IGarbageNodeTester
@@ -58,6 +58,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 throw new ArgumentException("url cannot be null or empty", "url");
             }
 
+            if (size == 0) 
+            {
+                throw new ArgumentException("size must be a positive value", "size");
+            }
+
             _url = url;
             _size = size;
             _seed = seed;
@@ -79,15 +84,10 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             }
         }
 
-        public double? BytesPerSecond
+        public double BytesPerSecond
         {
             get
             {
-                if (!_isDone || !_wasSuccess)
-                {
-                    return null;
-                }
-
                 lock (_calculator)
                 {
                     return _calculator.BytesPerSecond;
