@@ -12,11 +12,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
     {
         void Start(CancellationToken cancellationToken);
 
-        bool IsReady { get; }
+        bool IsDone { get; }
 
         bool WasSuccess { get; }
 
-        double BytesPerSecond { get; }
+        double? BytesPerSecond { get; }
     }
 
     public class GarbageNodeTester : IGarbageNodeTester
@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
 
         private static readonly TimeSpan MaxTestDuration = TimeSpan.FromSeconds(15.0);
 
-        public static string PruneUrl(string url, ulong size, double seed)
+        private static string PruneUrl(string url, ulong size, double seed)
         {
             var uri = new Uri(url);
             return string.Format("{3}://{0}:8888/garbage.php?r={1}&ckSize={2}", uri.Host, seed, size, uri.Scheme);
@@ -63,7 +63,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _seed = seed;
         }
 
-        public bool IsReady
+        public bool IsDone
         {
             get
             {
@@ -79,13 +79,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             }
         }
 
-        public double BytesPerSecond
+        public double? BytesPerSecond
         {
             get
             {
                 if (!_isDone || !_wasSuccess)
                 {
-                    return -1.0;
+                    return null;
                 }
 
                 lock (_calculator)
@@ -100,7 +100,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             _wasSuccess = false;
             _isDone = false;
 
-            _thread = new Thread(obj => {
+            _thread = new Thread(() =>
+            {
                 CancellationTokenSource cancellationSource = new CancellationTokenSource();
                 cancellationToken.Register(cancellationSource.Cancel);
 
@@ -129,9 +130,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
                 _wasSuccess = true;
             });
 
-            _thread.Start(1);
+            _thread.Start();
         }
-
-
     }
 }

@@ -232,17 +232,23 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             nodeTester.Start(cancellationToken);
                         }
 
-                        if (nodeTester != null && nodeTester.IsReady)
+                        if (nodeTester != null && nodeTester.IsDone)
                         {
                             _logger.LogDebug("Secondary url test finished.");
                             _logger.LogTrace(string.Format("Current download speed {0} bps", calculator.BytesPerSecond));
                             _logger.LogTrace(string.Format("Secondary node download speed {0} bps", nodeTester.BytesPerSecond));
 
-                            if (nodeTester.BytesPerSecond > 2 * calculator.BytesPerSecond)
+                            if (nodeTester.BytesPerSecond.HasValue && nodeTester.BytesPerSecond.Value > 2 * calculator.BytesPerSecond)
                             {
                                 _logger.LogDebug("Secondary url download speed is 2 times faster, switching.");
                                 _hasCheckedAnotherNode = true;
                                 return false;
+                            }
+                            else if(!nodeTester.BytesPerSecond.HasValue) 
+                            {
+                                _logger.LogWarning("Secondary node download speed was null. An error probably occured during testing, not switching.");
+                                _hasCheckedAnotherNode = true;
+                                nodeTester = null;
                             }
                             else
                             {
