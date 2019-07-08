@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.x.x.x]
 ### Added 
-- Skipping unchanged files while install patch (#994)
+- Skip unchanged files while patching (#994)
 
 ## [3.14.0.0]
 ### Added
