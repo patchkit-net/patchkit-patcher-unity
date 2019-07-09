@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.x.x.x]
 ### Fixed
-- Repairing files placed at long path
+- Repairing files placed at long path (#1369)
 
 ## [3.14.0.0]
 ### Added
