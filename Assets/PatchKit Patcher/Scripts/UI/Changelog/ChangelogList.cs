@@ -73,12 +73,18 @@ namespace PatchKit.Unity.Patcher.UI
             CreateChangelog(versions);
         }
 
-        private void CreateChangelog(AppVersion[] versions)
+        private void DestroyOldChangelog()
         {
             while(transform.childCount > 0)
             {
                 DestroyImmediate(transform.GetChild(0).gameObject);
             }
+
+        }
+
+        private void CreateChangelog(AppVersion[] versions)
+        {
+            DestroyOldChangelog();
 
             foreach (var version in versions.OrderByDescending(version => version.Id))
             {
