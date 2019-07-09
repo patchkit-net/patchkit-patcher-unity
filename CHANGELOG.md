@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.x.x.x]
 ### Added
-- Caching application display name so it can be displayed in offline mode (#1361)
+- Caching application changelog so it can be displayed in offline mode (#1361)
 
 ## [3.14.0.0]
 ### Added
