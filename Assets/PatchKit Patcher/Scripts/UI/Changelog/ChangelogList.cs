@@ -65,9 +65,9 @@ namespace PatchKit.Unity.Patcher.UI
 
                 new UnityCache(appSecret).SetValue("app-changelog", cacheValue);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                // ignore
+                UnityEngine.Debug.Log(e.ToString());
             }
 
             CreateChangelog(versions);
@@ -86,7 +86,7 @@ namespace PatchKit.Unity.Patcher.UI
         {
             DestroyOldChangelog();
 
-            foreach (var version in versions.OrderByDescending(version => version.Id))
+            foreach (AppVersion version in versions.OrderByDescending(version => version.Id))
             {
                 CreateVersionChangelog(version);
             }
