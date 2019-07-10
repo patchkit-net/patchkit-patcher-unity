@@ -9,7 +9,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
     {
         public static double GetUnarchivePackageWeight(long size)
         {
-            return BytesToWeight(size)*0.1;
+            return BytesToWeight(size)*0.5;
         }
 
         public static double GetUninstallWeight()
@@ -19,12 +19,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
 
         public static double GetCheckVersionIntegrityWeight(AppContentSummary summary)
         {
-            return BytesToWeight(summary.Size)*0.05;
+            return BytesToWeight(summary.Size) * 0.05;
         }
 
         public static double GetCopyContentFilesWeight(AppContentSummary summary)
         {
-            return BytesToWeight(summary.Size) *0.01;
+            return BytesToWeight(summary.Size) * 0.5;
         }
 
         public static double GetRepairFilesWeight(Pack1Meta.FileEntry[] files)
@@ -35,12 +35,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
 
         public static double GetAddDiffFilesWeight(AppDiffSummary summary)
         {
-            return BytesToWeight(summary.Size) * 0.01;
+            return BytesToWeight(summary.Size) * 0.5;
         }
 
         public static double GetModifyDiffFilesWeight(AppDiffSummary summary)
         {
-            return BytesToWeight(summary.Size) * 0.2;
+            return BytesToWeight(summary.Size) * 0.5;
         }
 
         public static double GetRemoveDiffFilesWeight(AppDiffSummary summary)
@@ -50,7 +50,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
 
         public static double GetResourceDownloadWeight(RemoteResource resource)
         {
-            return BytesToWeight(resource.Size)*1;
+            return BytesToWeight(resource.Size);
         }
 
         public static double GetDownloadWeight(long bytes)

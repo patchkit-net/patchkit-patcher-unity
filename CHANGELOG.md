@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Set process priority to Low (#1375)
+- Adjust wages of installation steps (#1379)
 
 ### Fixed
 - Repairing files placed at long path (#1369)
