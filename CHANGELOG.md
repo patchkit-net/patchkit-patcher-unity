@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.x.x.x]
+### Added 
+- Skip unchanged files while patching (#994)
+
 ### Fixed
 - Repairing files placed at long path (#1369)
 

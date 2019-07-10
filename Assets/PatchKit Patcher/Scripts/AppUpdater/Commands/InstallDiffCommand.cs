@@ -486,15 +486,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     string.Format("Couldn't patch file {0} because it doesn't exists in local data.", fileName));
             }
 
-            var sourceDeltaFilePath = Path.Combine(packageDirPath, fileName + suffix);
-            _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
-
-            if (!File.Exists(sourceDeltaFilePath))
-            {
-                throw new MissingFileFromPackageException(string.Format("Cannot find delta file {0} in diff package.",
-                    fileName));
-            }
-
             var fileVersion = _localMetaData.GetEntryVersionId(fileName);
             _logger.LogTrace("fileVersion = " + fileVersion);
 
@@ -509,6 +500,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             if (IsPatchingFileContentNecessary(fileName))
             {
                 _logger.LogDebug("Patching is necessary. Generating new file with patched content...");
+
+                var sourceDeltaFilePath = Path.Combine(packageDirPath, fileName + suffix);
+                _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
+
+                if (!File.Exists(sourceDeltaFilePath))
+                {
+                    throw new MissingFileFromPackageException(string.Format("Cannot find delta file {0} in diff package.",
+                        fileName));
+                }
 
                 var newFilePath = tempDiffDir.GetUniquePath();
                 _logger.LogTrace("newFilePath = " + newFilePath);
@@ -536,6 +536,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private bool IsPatchingFileContentNecessary(string fileName)
         {
+            if (_diffSummary.UnchangedFiles.Contains(fileName))
+            {
+                return false;
+            }
+
             //TODO: Throw exceptions if file is not present in any of both content summaries
             var fileHash = _contentSummary.Files.First(x => x.Path == fileName).Hash;
             var previousFileHash = _previousContentSummary.Files.First(x => x.Path == fileName).Hash;
