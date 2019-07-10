@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added 
 - Skip unchanged files while patching (#994)
 
+### Changed
+- Set process priority to Low (#1375)
+
 ### Fixed
 - Repairing files placed at long path (#1369)
 
