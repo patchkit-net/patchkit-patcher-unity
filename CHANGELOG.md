@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.x.x.x]
-### Added 
+### Added
+- Caching application changelog so it can be displayed in offline mode (#1361)
 - Skip unchanged files while patching (#994)
 
 ### Changed
