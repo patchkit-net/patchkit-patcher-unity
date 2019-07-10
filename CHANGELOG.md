@@ -5,8 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.x.x.x]
+### Added 
+- Skip unchanged files while patching (#994)
+
 ### Changed
 - Set process priority to Low (#1375)
+
+### Fixed
+- Repairing files placed at long path (#1369)
 
 ## [3.14.0.0]
 ### Added
