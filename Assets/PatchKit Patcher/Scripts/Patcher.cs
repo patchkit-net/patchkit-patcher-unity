@@ -249,6 +249,11 @@ namespace PatchKit.Unity.Patcher
             DebugLogger.LogFormat("System version: {0}", EnvironmentInfo.GetSystemVersion());
             DebugLogger.LogFormat("Runtime version: {0}", EnvironmentInfo.GetSystemVersion());
 
+            // In .NET API ProcessPriorityClass.Idle is really 'Low' process priority
+            Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
+
+            DebugLogger.LogFormat("Process priority has been set to Low");
+
             CheckEditorAppSecretSecure();
 
             if (_canStartThread)
