@@ -8,6 +8,8 @@ namespace PatchKit.Unity
 {
     public class GameTitle : MonoBehaviour
     {
+        private const string TitleCacheKey = "app-display-name";
+
         public Text Text;
 
         private bool _hasBeenSet;
@@ -21,8 +23,8 @@ namespace PatchKit.Unity
 
             patcher.Data
                 .ObserveOnMainThread()
-                .SkipWhile(data => string.IsNullOrEmpty(data.AppSecret))
                 .Select(x => x.AppSecret)
+                .SkipWhile(string.IsNullOrEmpty)
                 .First()
                 .Subscribe(UseCachedText)
                 .AddTo(this);
@@ -36,13 +38,13 @@ namespace PatchKit.Unity
 
         private void UseCachedText(string appSecret)
         {
-            if(_hasBeenSet)
+            if (_hasBeenSet)
             {
                 return;
             }
 
             var cachedDisplayName = GetCache(appSecret)
-                .GetValue("app-display-name", null);
+                .GetValue(TitleCacheKey, null);
 
             if (string.IsNullOrEmpty(cachedDisplayName))
             {
@@ -56,7 +58,7 @@ namespace PatchKit.Unity
         {
             string displayName = app.DisplayName;
 
-            GetCache(app.Secret).SetValue("app-display-name", displayName);
+            GetCache(app.Secret).SetValue(TitleCacheKey, displayName);
             Text.text = displayName;
 
             _hasBeenSet = true;
