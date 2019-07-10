@@ -68,12 +68,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             foreach (var entry in _entries)
             {
-                var tempDirName = _packagePath + string.Format("{0}_{1}_{2}", entry.Name, entry.Offset, entry.Size);
+                var tempDirName = _packagePath + "_repair";
                 TemporaryDirectory.ExecuteIn(tempDirName, (tempDir) =>
                 {
                     _logger.LogDebug(string.Format("Repairing the file {0}", entry.Name));
-                    string packagePath = Path.Combine(tempDir.Path, ".pack" + Path.GetRandomFileName());
-                    string unarchivePath = Path.Combine(tempDir.Path, Path.GetRandomFileName());
+                    string packagePath = Path.Combine(tempDir.Path, "p_" + Path.GetRandomFileName());
+                    string unarchivePath = Path.Combine(tempDir.Path, "u_" + Path.GetRandomFileName());
 
                     if (!Directory.Exists(unarchivePath))
                     {

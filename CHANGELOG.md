@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added 
 - Skip unchanged files while patching (#994)
 
+### Fixed
+- Repairing files placed at long path (#1369)
+
 ## [3.14.0.0]
 ### Added
 - Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer (#1241)
