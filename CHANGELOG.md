@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.x.x.x]
+## [3.15.0.0]
 ### Added
 - Caching application display name so it can be displayed in offline mode (#1350)
 - Caching application changelog so it can be displayed in offline mode (#1361)
