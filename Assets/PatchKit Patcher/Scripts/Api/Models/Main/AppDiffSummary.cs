@@ -51,6 +51,9 @@ namespace PatchKit.Api.Models.Main
         /// </summary>
         [JsonProperty("removed_files")]
         public string[] RemovedFiles;
+
+        [JsonProperty("unchanged_files")]
+        public string[] UnchangedFiles;
         
         [JsonProperty("hash_code")]
         public string HashCode;
