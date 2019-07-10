@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Repairing files placed at long path (#1369)
+- Fix download directory recreation after removing it during patcher execution (#1360)
 
 ## [3.14.0.0]
 ### Added
