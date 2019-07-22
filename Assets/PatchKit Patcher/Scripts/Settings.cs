@@ -50,7 +50,7 @@ public class Settings
                 cacheServers: new[]
                 {
                     overrideMainCache.Value
-                }.ToImmutableArray());
+                }.AsImmutable());
         }
 
         return settings;
