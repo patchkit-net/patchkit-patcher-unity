@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 using JetBrains.Annotations;
+using UnityEngine.Networking;
 
 namespace Legacy.UI
 {
@@ -107,7 +108,8 @@ public class Background : MonoBehaviour
             LoadBannerImage(
                 app.Secret,
                 path,
-                OldImage);
+                NewImage);
+            MainAnimator.SetTrigger(AnimationSwitchTrigger);
         }
 
         var info = app.Info.Value;
@@ -139,11 +141,11 @@ public class Background : MonoBehaviour
 
         if (IsLocalBannerMissing(appSecret, data))
         {
-            AquireRemoteBanner(data);
+            AquireRemoteBanner(appSecret, data);
         }
         else if (IsNewBannerAvailable(appSecret, data))
         {
-            AquireRemoteBanner(data);
+            AquireRemoteBanner(appSecret, data);
         }
         else if (HasBannerBeenRemoved(appSecret, data))
         {
@@ -228,44 +230,29 @@ public class Background : MonoBehaviour
         SetCachedBannerPath(appSecret: appSecret, value: "");
     }
 
-    private void AquireRemoteBanner(Data data)
+    private void AquireRemoteBanner(string appSecret, Data data)
     {
-        //TODO:
-        /*
-        _logger.LogDebug(string.Format("Aquiring the remote banner image from {0}", data.BannerData.ImageUrl));
-        var coroutine = Threading.StartThreadCoroutine(() => {
-            CancellationTokenSource source = new CancellationTokenSource();
+        Debug.Log($"Aquiring the remote banner image from {data.BannerData.ImageUrl}");
+        
+        var request = UnityWebRequest.Get(data.BannerData.ImageUrl);
 
-            var downloader = new HttpDownloader(data.BannerFilePath, new string[]{data.BannerData.ImageUrl});
-
-            try
+        request.SendWebRequest().completed += _ => {
+            if (request.isNetworkError || request.isHttpError)
             {
-                UnityDispatcher.Invoke(() => {
-                    MainAnimator.SetBool(AnimationLoadingParameter, true);
-                });
-
-                downloader.Download(source.Token);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
+                Debug.Log("Failed to acquire banner image.");
             }
 
-        }, (bool result) => {
-            if (result)
-            {
-                CachedBannerPath = data.BannerFilePath;
-                CachedBannerModificationDate = data.BannerData.ModificationDate;
+            Directory.CreateDirectory(Path.GetDirectoryName(data.BannerFilePath));
+            File.WriteAllBytes(data.BannerFilePath, request.downloadHandler.data);
+        
+            SetCachedBannerPath(appSecret, data.BannerFilePath);
+            SetCachedBannerModificationDate(appSecret, data.BannerData.ModificationDate);
 
-                MainAnimator.SetBool(AnimationLoadingParameter, false);
-                MainAnimator.SetTrigger(AnimationSwitchTrigger);
+            MainAnimator.SetBool(AnimationLoadingParameter, false);
+            MainAnimator.SetTrigger(AnimationSwitchTrigger);
 
-                LoadBannerImage(data.BannerFilePath, NewImage);
-            }
-        });
-
-        StartCoroutine(coroutine);*/
+            LoadBannerImage(appSecret, data.BannerFilePath, NewImage);
+        };
     }
 
     private void LoadBannerImage(
