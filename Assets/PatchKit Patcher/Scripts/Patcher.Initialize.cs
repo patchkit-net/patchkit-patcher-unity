@@ -215,6 +215,8 @@ public partial class Patcher
     {
         Debug.Log(message: "Initializing libpkapps...");
 
+        LibPatchKitApps.SetApiCallerId($"patcher-unity:{Version.Text}");
+
         bool is64Bit = IntPtr.Size == 8;
 
         if (Application.platform == RuntimePlatform.LinuxEditor ||
