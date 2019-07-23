@@ -8,8 +8,7 @@ public partial class Patcher
 {
     private async Task<bool> FetchAppInstalledVersionIdAsync()
     {
-        if (!CanPerformNewTask() ||
-            !_hasApp ||
+        if (!CanAppPerformNewTask() ||
             _hasAppFetchInstalledVersionIdTask)
         {
             return false;

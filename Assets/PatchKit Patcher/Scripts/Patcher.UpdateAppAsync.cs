@@ -7,8 +7,7 @@ public partial class Patcher
 {
     private async Task<bool> UpdateAppAsync()
     {
-        if (!CanPerformNewForegroundTask() ||
-            !_hasApp)
+        if (!CanAppPerformNewForegroundTask())
         {
             return false;
         }
@@ -154,6 +153,9 @@ public partial class Patcher
         }
 
         await FetchAppInstalledVersionIdAsync();
+        await FetchAppLatestVersionIdAsync();
+        await FetchAppVersionsAsync();
+        await FetchAppInfoAsync();
 
         return true;
     }

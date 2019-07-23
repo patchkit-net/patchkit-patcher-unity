@@ -104,6 +104,8 @@ public partial class Patcher
                     "Initialization failed: data wasn't loaded. Most probably it means that patcher has been started without launcher.");
 
                 SendError(Error.StartedWithoutLauncher);
+                _isInitialized = true;
+                SendStateChanged();
 
                 return;
             }
@@ -151,6 +153,8 @@ public partial class Patcher
                         message: "Failed to get file lock: already in use.");
 
                     SendError(Error.MultipleInstances);
+                    _isInitialized = true;
+                    SendStateChanged();
 
                     return;
                 }
@@ -173,6 +177,8 @@ public partial class Patcher
             Debug.LogException(exception: e);
 
             SendError(Error.CriticalError);
+            _isInitialized = true;
+            SendStateChanged();
 
             return;
         }

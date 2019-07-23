@@ -3,10 +3,6 @@ public partial class Patcher
     private bool CanPerformNewForegroundTask()
     {
         return CanPerformNewTask() &&
-            !_hasInitializeTask &&
-            !_hasAppUpdateTask &&
-            !_hasAppStartTask &&
-            !_hasRestartWithHigherPermissionsTask &&
-            !_hasRestartWithLauncherTask;
+            (!_hasApp || (!_hasAppStartTask && !_hasAppUpdateTask));
     }
 }

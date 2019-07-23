@@ -8,8 +8,7 @@ public partial class Patcher
     private async Task<bool> SetAppLicenseKeyAsync([NotNull] string licenseKey)
 #pragma warning restore 1998
     {
-        if (!CanPerformNewForegroundTask() ||
-            !_hasApp)
+        if (!CanAppPerformNewForegroundTask())
         {
             return false;
         }

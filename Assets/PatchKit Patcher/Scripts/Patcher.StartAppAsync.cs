@@ -7,8 +7,7 @@ public partial class Patcher
 {
     private async Task<bool> StartAppAsync()
     {
-        if (!CanPerformNewForegroundTask() ||
-            !_hasApp)
+        if (!CanAppPerformNewForegroundTask())
         {
             return false;
         }

@@ -8,8 +8,7 @@ public partial class Patcher
 {
     private async Task<bool> FetchAppInfoAsync()
     {
-        if (!CanPerformNewTask() ||
-            !_hasApp ||
+        if (!CanAppPerformNewTask() ||
             _hasAppFetchInfoTask)
         {
             return false;
