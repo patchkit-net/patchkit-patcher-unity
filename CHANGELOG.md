@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [4.0.0]
+### Added
+- Setting api caller id (#805)
+
 ### Changed
 - Move to usage of libpkapps
 - Upgrade to Unity 2018.3.11f1
