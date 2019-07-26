@@ -51,14 +51,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             DebugLogger.Log("Preparing directory for writing.");
 
-            if (!_hasWriteAccess)
-            {
-                DebugLogger.Log("Creating directory.");
+            DirectoryOperations.CreateDirectory(_path, CancellationToken.Empty);
 
-                DirectoryOperations.CreateDirectory(_path, CancellationToken.Empty);
+            _hasWriteAccess = true;
 
-                _hasWriteAccess = true;
-            }
+            DebugLogger.Log("Directory prepared for writing.");
         }
 
         ~BaseWritableDirectory()

@@ -27,7 +27,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public void SetValue(string key, string value)
         {
-            UnityDispatcher.Invoke(() => PlayerPrefs.SetString(FormatKey(key), value)).WaitOne();
+            UnityDispatcher.Invoke(() =>
+            {
+                PlayerPrefs.SetString(FormatKey(key), value);
+                PlayerPrefs.Save();
+            }).WaitOne();
         }
 
         public string GetValue(string key, string defaultValue = null)

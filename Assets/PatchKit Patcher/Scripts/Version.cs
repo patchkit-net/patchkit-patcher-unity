@@ -3,7 +3,7 @@ namespace PatchKit.Unity.Patcher
     public static class Version
     {
         public const int Major = 3;
-        public const int Minor = 14;
+        public const int Minor = 15;
         public const int Patch = 0;
         public const int Hotfix = 0;
 

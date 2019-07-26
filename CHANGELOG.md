@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.15.0.0]
+### Added
+- Caching application display name so it can be displayed in offline mode (#1350)
+- Caching application changelog so it can be displayed in offline mode (#1361)
+- Skip unchanged files while patching (#994)
+
+### Changed
+- Set process priority to Low (#1375)
+- Adjust wages of installation steps (#1379)
+
+### Fixed
+- Repairing files placed at long path (#1369)
+- Fix download directory recreation after removing it during patcher execution (#1360)
+
 ## [3.14.0.0]
 ### Added
 - Automated scripting runtime changing to .NET 3.5 on Unity 2017 or newer (#1241)
