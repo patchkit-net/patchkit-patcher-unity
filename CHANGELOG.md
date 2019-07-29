@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.16.0.0]
 ### Changed
 - Improved stability of downloading (#1422)
+- Improved stability of saving app meta data file (#1423)
 
 ## [3.15.0.0]
 ### Added
