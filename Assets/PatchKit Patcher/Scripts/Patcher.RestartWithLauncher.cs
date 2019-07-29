@@ -83,20 +83,37 @@ public partial class Patcher
 
     private string GetLauncherPath()
     {
-        if (File.Exists(path: LauncherPathFileName))
+        string patcherRootPath = Path.GetDirectoryName(path: Application.dataPath);
+
+        string launcherPathFilePath = Path.Combine(
+            path1: patcherRootPath,
+            path2: LauncherPathFileName);
+
+        Debug.Log(message: $"Retrieving launcher path from file {launcherPathFilePath} ...");
+
+        if (File.Exists(path: launcherPathFilePath))
         {
-            string launcherPath = File.ReadAllText(path: LauncherPathFileName);
+            string launcherPath = File.ReadAllText(path: launcherPathFilePath);
+
+            Debug.Log(message: $"Got launcher path {launcherPath} from file.");
+
             if (File.Exists(path: launcherPath))
             {
                 return launcherPath;
             }
         }
+        else
+        {
+            Debug.Log("Cannot reterive launcher path from file - file doesn't exist.");
+        }
 
         string defaultLauncherPath = Path.Combine(
-            path1: "..",
+            path1: Path.GetDirectoryName(patcherRootPath),
             path2: GetDefaultLauncherName());
 
         defaultLauncherPath = Path.GetFullPath(path: defaultLauncherPath);
+
+        Debug.Log(message: $"Using default launcher path {defaultLauncherPath}");
 
         return File.Exists(path: defaultLauncherPath)
             ? defaultLauncherPath
