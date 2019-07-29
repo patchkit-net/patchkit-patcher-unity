@@ -9,6 +9,7 @@ using PatchKit.Logging;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -188,7 +189,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             _logger.LogDebug(string.Format("Saving data to {0}", _filePath));
 
             CreateDataDir();
-            File.WriteAllText(_filePath, JsonConvert.SerializeObject(_data, Formatting.None));
+            Files.WriteAllText(_filePath, JsonConvert.SerializeObject(_data, Formatting.None));
 
             _logger.LogDebug("Data saved.");
         }

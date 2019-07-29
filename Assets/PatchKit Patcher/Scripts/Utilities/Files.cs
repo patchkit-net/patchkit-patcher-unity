@@ -32,5 +32,11 @@ namespace PatchKit.Unity.Utilities
                     throw new ArgumentOutOfRangeException("platformType", platformType, null);
             }
         }
+
+        public static void WriteAllText(string fileName, string text) {
+            new Retry().Times(10).IntervalSeconds(0.5f).Run(() => {
+                File.WriteAllText(fileName, text);
+            });
+        }
     }
 }
