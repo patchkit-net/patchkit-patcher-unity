@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Improved stability of downloading (#1422)
 - Improved stability of saving app meta data file (#1423)
 
+### Fixed
+- Checking available disk space on OSX (#1424)
+
 ## [3.15.0.0]
 ### Added
 - Caching application display name so it can be displayed in offline mode (#1350)
