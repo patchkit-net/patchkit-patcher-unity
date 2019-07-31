@@ -53,6 +53,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
 #elif UNITY_STANDALONE_LINUX
 
+        // NOTE: libgetdiskspace doesn't work on Linux (Manjaro x86_64) in Editor (2017 LTS), has to be changed to getdiskspace
         [DllImport("libgetdiskspace", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
@@ -180,7 +181,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 // estimate the size
                 uncompressedSize = (long) (_contentSummary.Value.Size * 1.4);
             }
-            
+
             long requiredDiskSpace = _contentSummary.Value.Size + uncompressedSize + Reserve;
             return requiredDiskSpace;
         }
@@ -193,7 +194,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 // estimate the size
                 uncompressedSize = (long) (_diffSummary.Value.Size * 1.4);
             }
-            
+
             long requiredDiskSpace = _diffSummary.Value.Size + uncompressedSize + _bigestFileSize + Reserve;
             return requiredDiskSpace;
         }

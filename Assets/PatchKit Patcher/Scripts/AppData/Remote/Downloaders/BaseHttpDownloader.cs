@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Collections.Generic;
+using System.Threading;
 using JetBrains.Annotations;
 using PatchKit.Logging;
 using PatchKit.Network;
@@ -15,9 +17,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         private class Handler : DownloadHandlerScript
         {
-            Action<byte[], int> _receiveData;
+            DataAvailableHandler _receiveData;
 
-            public Handler(Action<byte[], int> receiveData)
+            public Handler(DataAvailableHandler receiveData)
             {
                 _receiveData = receiveData;
             }
@@ -32,25 +34,29 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
         private readonly ILogger _logger;
 
-        private static readonly int BufferSize = 5 * (int) Units.MB;
+        private static readonly ulong DefaultBufferSize = 5 * (ulong)Units.MB;
 
         private readonly string _url;
         private readonly int _timeout;
 
+        private readonly ulong _bufferSize;
         private readonly byte[] _buffer;
 
         private bool _downloadHasBeenCalled;
         private BytesRange? _bytesRange;
 
-        public event DataAvailableHandler DataAvailable;
-
         public BaseHttpDownloader(string url, int timeout) :
-            this(url, timeout, PatcherLogManager.DefaultLogger)
+            this(url, timeout, PatcherLogManager.DefaultLogger, DefaultBufferSize)
+        {
+        }
+
+        public BaseHttpDownloader([NotNull] string url, int timeout, ulong bufferSize)
+            : this(url, timeout, PatcherLogManager.DefaultLogger, bufferSize)
         {
         }
 
         public BaseHttpDownloader([NotNull] string url, int timeout,
-            [NotNull] ILogger logger)
+            [NotNull] ILogger logger, ulong bufferSize)
         {
             if (string.IsNullOrEmpty(url)) throw new ArgumentException("Value cannot be null or empty.", "url");
             if (timeout <= 0) throw new ArgumentOutOfRangeException("timeout");
@@ -60,7 +66,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             _timeout = timeout;
             _logger = logger;
 
-            _buffer = new byte[BufferSize];
+            _bufferSize = bufferSize;
+            _buffer = new byte[_bufferSize];
 
             ServicePointManager.ServerCertificateValidationCallback =
                 (sender, certificate, chain, errors) => true;
@@ -77,13 +84,101 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        public void Download(CancellationToken cancellationToken)
+        public IEnumerable<DataPacket> ReadPackets(CancellationToken cancellationToken)
         {
+            CancellationTokenSource localCancel = new CancellationTokenSource();
+            cancellationToken.Register(() => localCancel.Cancel());
+
+            var packetQueue = new Queue<DataPacket>();
+            bool isDone = false;
+
+            Exception threadException = null;
+
+            var threadHandle = new Thread(_ =>
+            {
+                try
+                {
+                    Download(localCancel.Token, (data, length) =>
+                    {
+                        lock (packetQueue)
+                        {
+                            packetQueue.Enqueue(new DataPacket
+                            {
+                                Data = data,
+                                Length = length,
+                            });
+                        }
+                    });
+                }
+                catch (OperationCanceledException e)
+                {
+                    if (cancellationToken.IsCancelled)
+                    {
+                        threadException = e;
+                    }
+                }
+                catch (Exception e)
+                {
+                    threadException = e;
+                }
+
+                isDone = true;
+            });
+
+            Func<int> safeCount = () => {
+                lock (packetQueue)
+                {
+                    return packetQueue.Count;
+                }
+            };
+
+            try
+            {
+                threadHandle.Start();
+                do
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (safeCount() > 0)
+                    {
+                        lock (packetQueue)
+                        {
+                            foreach (var packet in packetQueue)
+                            {
+                                yield return packet;
+                            }
+                            packetQueue.Clear();
+                        }
+                    }
+                    else
+                    {
+                        Thread.Sleep(100);
+                    }
+                } while (!isDone);
+            }
+            finally
+            {
+                localCancel.Cancel();
+                threadHandle.Join();
+
+                if (threadException != null)
+                {
+                    throw threadException;
+                }
+            }
+        }
+
+        public void Download(CancellationToken cancellationToken, [NotNull] DataAvailableHandler onDataAvailable)
+        {
+            if (onDataAvailable == null)
+            {
+                throw new ArgumentNullException("onDataAvailable");
+            }
+
             try
             {
                 _logger.LogDebug("Downloading...");
                 _logger.LogTrace("url = " + _url);
-                _logger.LogTrace("bufferSize = " + BufferSize);
+                _logger.LogTrace("bufferSize = " + _bufferSize);
                 _logger.LogTrace("bytesRange = " + (_bytesRange.HasValue
                                      ? _bytesRange.Value.Start + "-" + _bytesRange.Value.End
                                      : "(none)"));
@@ -93,7 +188,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 UnityWebRequest request = null;
 
-                UnityDispatcher.Invoke(() => 
+                UnityDispatcher.Invoke(() =>
                 {
                     request = new UnityWebRequest();
                     request.uri = new Uri(_url);
@@ -101,25 +196,24 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     if (_bytesRange.HasValue)
                     {
-                        var bytesRangeEndText = 
+                        var bytesRangeEndText =
                             _bytesRange.Value.End >= 0L ? _bytesRange.Value.End.ToString() : string.Empty;
 
                         request.SetRequestHeader(
-                            "Range", 
+                            "Range",
                             "bytes=" + _bytesRange.Value.Start + "-" + bytesRangeEndText);
                     }
 
-                    request.downloadHandler = new Handler(OnDataAvailable);
-
+                    request.downloadHandler = new Handler(onDataAvailable);
                 }).WaitOne();
 
                 using (request)
                 {
-                    using(request.downloadHandler)
+                    using (request.downloadHandler)
                     {
                         UnityWebRequestAsyncOperation op = null;
 
-                        UnityDispatcher.Invoke(() => 
+                        UnityDispatcher.Invoke(() =>
                         {
                             op = request.SendWebRequest();
                         }).WaitOne();
@@ -128,7 +222,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                         while (requestResponseCode <= 0)
                         {
-                            UnityDispatcher.Invoke(() => 
+                            UnityDispatcher.Invoke(() =>
                             {
                                 requestResponseCode = request.responseCode;
                             }).WaitOne();
@@ -137,11 +231,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                             System.Threading.Thread.Sleep(100);
                         }
-                        
+
                         _logger.LogDebug("Received response from server.");
                         _logger.LogTrace("statusCode = " + requestResponseCode);
 
-                        if (Is2XXStatus((HttpStatusCode) requestResponseCode))
+                        if (Is2XXStatus((HttpStatusCode)requestResponseCode))
                         {
                             _logger.LogDebug("Successful response. Reading response stream...");
 
@@ -149,7 +243,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                             while (!opIsDone)
                             {
-                                UnityDispatcher.Invoke(() => 
+                                UnityDispatcher.Invoke(() =>
                                 {
                                     opIsDone = op.isDone;
                                 }).WaitOne();
@@ -161,16 +255,16 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                             _logger.LogDebug("Stream has been read.");
                         }
-                        else if (Is4XXStatus((HttpStatusCode) requestResponseCode))
+                        else if (Is4XXStatus((HttpStatusCode)requestResponseCode))
                         {
                             throw new DataNotAvailableException(string.Format(
-                                "Request data for {0} is not available (status: {1})", _url, (HttpStatusCode) request.responseCode));
+                                "Request data for {0} is not available (status: {1})", _url, (HttpStatusCode)request.responseCode));
                         }
                         else
                         {
                             throw new ServerErrorException(string.Format(
                                 "Server has experienced some issues with request for {0} which resulted in {1} status code.",
-                                _url, (HttpStatusCode) requestResponseCode));
+                                _url, (HttpStatusCode)requestResponseCode));
                         }
                     }
                 }
@@ -190,22 +284,15 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        // ReSharper disable once InconsistentNaming
         private static bool Is2XXStatus(HttpStatusCode statusCode)
         {
-            return (int) statusCode >= 200 && (int) statusCode <= 299;
+            return (int)statusCode >= 200 && (int)statusCode <= 299;
         }
 
         // ReSharper disable once InconsistentNaming
         private static bool Is4XXStatus(HttpStatusCode statusCode)
         {
-            return (int) statusCode >= 400 && (int) statusCode <= 499;
-        }
-
-        private void OnDataAvailable(byte[] data, int length)
-        {
-            var handler = DataAvailable;
-            if (handler != null) handler(data, length);
+            return (int)statusCode >= 400 && (int)statusCode <= 499;
         }
     }
 }

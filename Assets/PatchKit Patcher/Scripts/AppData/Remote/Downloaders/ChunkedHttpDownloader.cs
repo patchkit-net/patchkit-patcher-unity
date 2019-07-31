@@ -8,6 +8,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
@@ -34,6 +35,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             public BytesRange Range;
         }
 
+        public struct UrlPair
+        {
+            public UrlPair(ResourceUrl primary, ResourceUrl? secondary = null)
+            {
+                Primary = primary;
+                Secondary = secondary;
+            }
+
+            public readonly ResourceUrl Primary;
+            public readonly ResourceUrl? Secondary;
+        }
+
         private readonly ILogger _logger;
 
         private readonly IRequestTimeoutCalculator _timeoutCalculator = new SimpleRequestTimeoutCalculator();
@@ -49,6 +62,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private readonly long _size;
 
         private bool _downloadHasBeenCalled;
+
+        private bool _hasCheckedAnotherNode = false;
 
         private BytesRange _range = new BytesRange(0, -1);
 
@@ -92,7 +107,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
 
             _logger.LogTrace(string.Format("Opening chunked file stream for chunks {0}-{1}", startChunk, endChunk));
-            return new ChunkedFileStream(_destinationFilePath, _size, _chunksData,
+            return ChunkedFileStream.CreateChunkedFileStream(_destinationFilePath, _size, _chunksData,
                 HashFunction, ChunkedFileStream.WorkFlags.PreservePreviousFile, startChunk, endChunk);
         }
 
@@ -125,8 +140,22 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     do
                     {
+                        var urlsWithBackup = Enumerable.Range(0, _urls.Length)
+                            // .Select(idx => _urls.Length - (idx + 1)) // Reverse, only for testing purposes
+                            .Select(idx => {
+                                    var nextIdx = idx + 1;
+                                    if (nextIdx >= _urls.Length)
+                                    {
+                                        return new UrlPair(_urls[idx]);
+                                    }
+                                    else
+                                    {
+                                        return new UrlPair(_urls[idx], _urls[nextIdx]);
+                                    }
+                                });
+
                         bool success =
-                            _urls.Any(url => TryDownload(url, fileStream, cancellationToken));
+                            urlsWithBackup.Any(urlPair => TryDownload(urlPair.Primary, urlPair.Secondary, fileStream, cancellationToken));
 
                         if (success)
                         {
@@ -161,62 +190,113 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private bool TryDownload(ResourceUrl url, ChunkedFileStream fileStream, CancellationToken cancellationToken)
+        private bool TryDownload(ResourceUrl url, ResourceUrl? secondaryUrl, ChunkedFileStream fileStream, CancellationToken cancellationToken)
         {
             try
             {
-                _logger.LogDebug(string.Format("Trying to download from {0}", url.Url));
-                _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+                _logger.LogDebug(string.Format("Downloading from {0}", url));
+                fileStream.ClearUnverified();
+                if (!secondaryUrl.HasValue)
+                {
+                    _logger.LogDebug("Secondary url is null");
+                }
 
-                var downloadJobQueue = BuildDownloadJobQueue(url, fileStream.VerifiedLength);
+                var nodeTester = secondaryUrl.HasValue ? new NodeTester(secondaryUrl.Value) : null;
+
+                var downloadLogIntervalStopwatch = new Stopwatch();
+
+                var calculator = new DownloadSpeedCalculator();
+                IEnumerable<DownloadJob> downloadJobQueue = BuildDownloadJobQueue(url, fileStream.VerifiedLength);
+
                 foreach (var downloadJob in downloadJobQueue)
                 {
-                    _logger.LogDebug(string.Format("Executing download job {0} with offest {1}", downloadJob.Url,
-                        downloadJob.Range.Start));
+                    _logger.LogDebug(string.Format("Executing download job {0} with offest {1}",
+                        downloadJob.Url, downloadJob.Range.Start));
                     _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
                     _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
 
                     var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, 30000);
                     baseHttpDownloader.SetBytesRange(downloadJob.Range);
 
-                    const long downloadStatusLogInterval = 5000L;
-                    var stopwatch = Stopwatch.StartNew();
+                    downloadLogIntervalStopwatch.Start();
 
-                    long downloadedBytes = 0;
+                    ulong totalBytesDownloaded = 0;
 
-                    var job = downloadJob;
-                    baseHttpDownloader.DataAvailable += (bytes, length) =>
+                    foreach (var dataPacket in baseHttpDownloader.ReadPackets(cancellationToken))
                     {
-                        fileStream.Write(bytes, 0, length);
-
-                        downloadedBytes += length;
-
-                        if (stopwatch.ElapsedMilliseconds > downloadStatusLogInterval)
+                        if (!_hasCheckedAnotherNode 
+                            && nodeTester != null 
+                            && nodeTester.CanStart(_size, calculator))
                         {
-                            stopwatch.Reset();
-                            stopwatch.Start();
+                            _logger.LogDebug("Testing secondary url");
+                            Exception exception = nodeTester.TryStart(cancellationToken);
+                            if (exception != null)
+                            {
+                                _logger.LogWarning(string.Format("Node tester failed to start: {}", exception), exception);
+                            }
+                        }
 
-                            _logger.LogDebug(string.Format("Downloaded {0} from {1}", downloadedBytes, job.Url));
+                        if (nodeTester != null && nodeTester.IsDone)
+                        {
+                            _logger.LogDebug("Secondary url test finished.");
+                            _logger.LogTrace(string.Format("Current download speed {0} bps", calculator.BytesPerSecond));
+                            _logger.LogTrace(string.Format("Secondary node download speed {0} bps", nodeTester.BytesPerSecond));
+
+                            if (nodeTester.BytesPerSecond.HasValue && nodeTester.BytesPerSecond.Value > 2 * calculator.BytesPerSecond)
+                            {
+                                _logger.LogDebug("Secondary url download speed is 2 times faster, switching.");
+                                _hasCheckedAnotherNode = true;
+                                return false;
+                            }
+                            else if(!nodeTester.BytesPerSecond.HasValue) 
+                            {
+                                _logger.LogWarning("Secondary node download speed was null. An error probably occured during testing, not switching.");
+                                _hasCheckedAnotherNode = true;
+                                nodeTester = null;
+                            }
+                            else
+                            {
+                                _logger.LogDebug("Secondary node download speed was not 2 times faster, not switching.");
+                                _hasCheckedAnotherNode = true;
+                                nodeTester = null;
+                            }
+                        }
+
+                        int length = dataPacket.Length;
+
+                        totalBytesDownloaded += (ulong) length;
+
+                        fileStream.Write(dataPacket.Data, 0, length);
+
+                        if (downloadLogIntervalStopwatch.Elapsed > TimeSpan.FromSeconds(5))
+                        {
+                            downloadLogIntervalStopwatch.Reset();
+                            downloadLogIntervalStopwatch.Start();
+
+                            _logger.LogDebug(string.Format("Downloaded {0} from {1}", totalBytesDownloaded, downloadJob.Url));
                             _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
                             _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+                            _logger.LogTrace("calculator.BytesPerSecond = " + calculator.BytesPerSecond);
+                        }
+
+                        if (!_hasCheckedAnotherNode)
+                        {
+                            calculator.AddSample((long) totalBytesDownloaded, DateTime.Now);
                         }
 
                         OnDownloadProgressChanged(fileStream.VerifiedLength);
-                    };
-
-                    baseHttpDownloader.Download(cancellationToken);
-
-                    _logger.LogDebug("Download job execution success.");
-                    _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
-                    _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
+                    }
                 }
+
+                _logger.LogDebug("Download job execution success.");
+                _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
+                _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
 
                 if (fileStream.RemainingLength != 0)
                 {
                     throw new IncompleteDataException("Chunks downloading must finish downloading whole file");
                 }
 
-                _logger.LogDebug(string.Format("Download from {0} has been successful.", url.Url));
                 return true;
             }
             catch (IncompleteDataException e)
@@ -261,7 +341,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             // The effective range is the original range contained within multiples of chunk size
             BytesRange effectiveRange = range.Chunkify(chunksData);
             var dataBounds = new BytesRange(currentOffset, -1);
-            
+
             BytesRange bounds = effectiveRange.ContainIn(dataBounds);
 
             // An uncommon edge case might occur, in which bounds.Start is equal to dataSize,
@@ -298,7 +378,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     lastPart += 1;
                 }
             }
-            
+
             long lastByte = dataSize - 1;
 
             for (int i = firstPart; i < lastPart; i++)
