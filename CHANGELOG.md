@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.16.0.0]
+### Changed
+- Improved stability of downloading (#1422)
+- Improved stability of saving app meta data file (#1423)
+
+### Fixed
+- Checking available disk space on OSX (#1424)
+
+## [3.15.0.0]
+### Added
+- Caching application display name so it can be displayed in offline mode (#1350)
+- Caching application changelog so it can be displayed in offline mode (#1361)
+- Skip unchanged files while patching (#994)
+
+### Changed
+- Set process priority to Low (#1375)
+- Adjust wages of installation steps (#1379)
+
+### Fixed
+- Repairing files placed at long path (#1369)
+- Fix download directory recreation after removing it during patcher execution (#1360)
+
 ## [3.14.0.0]
 ### Added
 - Dynamic url testing for faster nodes (#1226)

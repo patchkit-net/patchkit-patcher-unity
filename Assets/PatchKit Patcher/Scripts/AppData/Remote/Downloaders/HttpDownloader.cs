@@ -120,7 +120,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 const long downloadStatusLogInterval = 5000L;
                 var stopwatch = Stopwatch.StartNew();
 
-                var baseHttpDownloader = new BaseHttpDownloader(url, _requestTimeoutCalculator.Timeout);
+                var baseHttpDownloader = new BaseHttpDownloader(url, 30000);
                 baseHttpDownloader.Download(cancellationToken, (bytes, length) =>
                 {
                     fileStream.Write(bytes, 0, length);

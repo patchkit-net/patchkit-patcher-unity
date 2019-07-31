@@ -215,7 +215,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                     _logger.LogTrace("fileStream.VerifiedLength = " + fileStream.VerifiedLength);
                     _logger.LogTrace("fileStream.SavedLength = " + fileStream.SavedLength);
 
-                    var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, _timeoutCalculator.Timeout);
+                    var baseHttpDownloader = new BaseHttpDownloader(downloadJob.Url, 30000);
                     baseHttpDownloader.SetBytesRange(downloadJob.Range);
 
                     downloadLogIntervalStopwatch.Start();
