@@ -56,11 +56,14 @@ namespace PatchKit.Api.Models.Main
         public int CurrentVersion;
         
         /// <summary>
-        /// The number of lowest version that has a diff file available. For instance if player has version 3 and lowest_version_with_diff=4 then the player can upgrade from version 3 to 4 using diff file. But when lowest_version_with_diff=5 then it's not possible to apply a diff file and player has to re-download the game instead.
+        /// The number of lowest version that has a diff file available (continuous). For instance if player has version 3 and lowest_version_with_diff=4 then the player can upgrade from version 3 to 4 using diff file. But when lowest_version_with_diff=5 then it's not possible to apply a diff file and player has to re-download the game instead.
         /// </summary>
         [JsonProperty("lowest_version_with_diff")]
         public int LowestVersionWithDiff;
         
+        /// <summary>
+        /// The number of lowest version that has a content file available.
+        /// </summary>
         [JsonProperty("lowest_version_with_content")]
         public int LowestVersionWithContent;
         
@@ -111,6 +114,9 @@ namespace PatchKit.Api.Models.Main
         /// </summary>
         [JsonProperty("children_channels")]
         public AppRef[] ChildrenChannels;
+        
+        [JsonProperty("external_auth")]
+        public ExternalAuthConfig ExternalAuth;
         
     }
 }

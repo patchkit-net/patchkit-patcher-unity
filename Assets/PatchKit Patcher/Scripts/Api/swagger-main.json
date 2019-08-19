@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "180903",
+    "version": "190819",
     "title": "PatchKit API",
     "contact": {
       "name": "API Support",
@@ -117,6 +117,41 @@
         "tags": [
           "App",
           "Public"
+        ],
+        "parameters": [
+          {
+            "name": "app_secret",
+            "in": "path",
+            "description": "Secret of an application.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/App"
+            }
+          },
+          "404": {
+            "description": "Application not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "Unknown error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes application",
+        "tags": [
+          "App"
         ],
         "parameters": [
           {
@@ -1942,12 +1977,13 @@
           "type": "integer",
           "format": "integer",
           "minimum": 0,
-          "description": "The number of lowest version that has a diff file available. For instance if player has version 3 and lowest_version_with_diff=4 then the player can upgrade from version 3 to 4 using diff file. But when lowest_version_with_diff=5 then it's not possible to apply a diff file and player has to re-download the game instead."
+          "description": "The number of lowest version that has a diff file available (continuous). For instance if player has version 3 and lowest_version_with_diff=4 then the player can upgrade from version 3 to 4 using diff file. But when lowest_version_with_diff=5 then it's not possible to apply a diff file and player has to re-download the game instead."
         },
         "lowest_version_with_content": {
           "type": "integer",
           "format": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "The number of lowest version that has a content file available."
         },
         "patcher_banner_image": {
           "type": "string",
@@ -1991,6 +2027,9 @@
           "items": {
             "$ref": "#/definitions/AppRef"
           }
+        },
+        "external_auth": {
+          "$ref": "#/definitions/ExternalAuthConfig"
         }
       }
     },
@@ -2346,6 +2385,72 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "ExternalAuthConfig": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "include_refresh_token": {
+          "type": "string"
+        },
+        "refresh_token_endpoint_url": {
+          "type": "string",
+          "format": "url"
+        },
+        "refresh_token_endpoint_unauthorized_response": {
+          "type": "integer"
+        },
+        "refresh_token_endpoint_ok_response": {
+          "type": "integer"
+        },
+        "refresh_token_path": {
+          "type": "string"
+        },
+        "login_page_url": {
+          "type": "string",
+          "format": "url"
+        },
+        "request_id_param": {
+          "type": "string"
+        },
+        "endpoint_url": {
+          "type": "string",
+          "format": "url"
+        },
+        "endpoint_not_recognized_response": {
+          "type": "integer"
+        },
+        "endpoint_wait_response": {
+          "type": "integer"
+        },
+        "endpoint_forbidden_response": {
+          "type": "integer"
+        },
+        "endpoint_ok_response": {
+          "type": "integer"
+        },
+        "endpoint_query_interval_seconds": {
+          "type": "integer"
+        },
+        "endpoint_query_timeout_seconds": {
+          "type": "integer"
+        },
+        "execution_args_path": {
+          "type": "string"
+        },
+        "message_path": {
+          "type": "string"
+        },
+        "patcher_wait_behavior": {
+          "type": "string",
+          "enum": [
+            "continue",
+            "wait"
+          ]
         }
       }
     }
