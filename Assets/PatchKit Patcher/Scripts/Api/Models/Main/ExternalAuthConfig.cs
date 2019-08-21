@@ -8,7 +8,10 @@ namespace PatchKit.Api.Models.Main
         public string Id;
         
         [JsonProperty("include_refresh_token")]
-        public string IncludeRefreshToken;
+        public bool IncludeRefreshToken;
+
+        [JsonProperty("refresh_token_param")]
+        public string RefreshTokenParam;
         
         [JsonProperty("refresh_token_endpoint_url")]
         public string RefreshTokenEndpointUrl;
