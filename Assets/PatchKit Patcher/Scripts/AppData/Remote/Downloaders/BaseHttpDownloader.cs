@@ -92,6 +92,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
                 UnityWebRequest request = null;
+                Exception dataAvailableException = null;
 
                 UnityDispatcher.Invoke(() => 
                 {
@@ -109,7 +110,20 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             "bytes=" + _bytesRange.Value.Start + "-" + bytesRangeEndText);
                     }
 
-                    request.downloadHandler = new Handler(OnDataAvailable);
+                    request.downloadHandler = new Handler((data, length) => {
+
+                        if (DataAvailable != null && dataAvailableException == null)
+                        {
+                            try
+                            {
+                                DataAvailable.Invoke(data, length);
+                            }
+                            catch (Exception e)
+                            {
+                                dataAvailableException = e;
+                            }
+                        }
+                    });
 
                 }).WaitOne();
 
@@ -149,6 +163,11 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                             while (!opIsDone)
                             {
+                                if (dataAvailableException != null)
+                                {
+                                    throw dataAvailableException;
+                                }
+
                                 UnityDispatcher.Invoke(() => 
                                 {
                                     opIsDone = op.isDone;
@@ -200,12 +219,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private static bool Is4XXStatus(HttpStatusCode statusCode)
         {
             return (int) statusCode >= 400 && (int) statusCode <= 499;
-        }
-
-        private void OnDataAvailable(byte[] data, int length)
-        {
-            var handler = DataAvailable;
-            if (handler != null) handler(data, length);
         }
     }
 }
