@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         private class Handler : DownloadHandlerScript
         {
-            Action<byte[], int> _receiveData;
+            private Action<byte[], int> _receiveData;
 
             public Handler(Action<byte[], int> receiveData)
             {
@@ -93,12 +93,13 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 UnityWebRequest request = null;
                 Exception dataAvailableException = null;
+                DateTime lastDataAvailable = DateTime.Now;
 
                 UnityDispatcher.Invoke(() => 
                 {
                     request = new UnityWebRequest();
                     request.uri = new Uri(_url);
-                    request.timeout = 30;
+                    request.timeout = 0;
 
                     if (_bytesRange.HasValue)
                     {
@@ -112,6 +113,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                     request.downloadHandler = new Handler((data, length) => {
 
+                        lastDataAvailable = DateTime.Now;
+
                         if (DataAvailable != null && dataAvailableException == null)
                         {
                             try
@@ -124,7 +127,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             }
                         }
                     });
-
                 }).WaitOne();
 
                 using (request)
@@ -138,59 +140,71 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                             op = request.SendWebRequest();
                         }).WaitOne();
 
-                        long requestResponseCode = -1;
+                        bool requestIsDone = false;
+                        bool responseCodeHandled = false;
 
-                        while (requestResponseCode <= 0)
+                        while (!requestIsDone)
                         {
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if ((DateTime.Now - lastDataAvailable).TotalMilliseconds > _timeout)
+                            {
+                                throw new ConnectionFailureException("Timeout.");
+                            }
+
+                            long requestResponseCode = 0;
+                            string requestError = null;
+
                             UnityDispatcher.Invoke(() => 
                             {
+                                requestIsDone = request.isDone;
                                 requestResponseCode = request.responseCode;
+                                requestError = request.error;
                             }).WaitOne();
 
-                            cancellationToken.ThrowIfCancellationRequested();
+                            if (requestError != null)
+                            {
+                                throw new ConnectionFailureException(requestError);
+                            }
+
+                            if (requestResponseCode > 0 && !responseCodeHandled)
+                            {
+                                _logger.LogDebug("Received response from server.");
+                                _logger.LogTrace("statusCode = " + requestResponseCode);
+
+                                if (Is2XXStatus((HttpStatusCode) requestResponseCode))
+                                {
+                                    _logger.LogDebug("Successful response. Reading response stream...");                             
+                                }
+                                else if (Is4XXStatus((HttpStatusCode) requestResponseCode))
+                                {
+                                    throw new DataNotAvailableException(string.Format(
+                                        "Request data for {0} is not available (status: {1})", _url, (HttpStatusCode) request.responseCode));
+                                }
+                                else
+                                {
+                                    throw new ServerErrorException(string.Format(
+                                        "Server has experienced some issues with request for {0} which resulted in {1} status code.",
+                                        _url, (HttpStatusCode) requestResponseCode));
+                                }
+
+                                responseCodeHandled = true;
+                            }
+
+                            if (dataAvailableException != null)
+                            {
+                                throw dataAvailableException;
+                            }
 
                             System.Threading.Thread.Sleep(100);
                         }
-                        
-                        _logger.LogDebug("Received response from server.");
-                        _logger.LogTrace("statusCode = " + requestResponseCode);
 
-                        if (Is2XXStatus((HttpStatusCode) requestResponseCode))
+                        if (dataAvailableException != null)
                         {
-                            _logger.LogDebug("Successful response. Reading response stream...");
-
-                            bool opIsDone = false;
-
-                            while (!opIsDone)
-                            {
-                                if (dataAvailableException != null)
-                                {
-                                    throw dataAvailableException;
-                                }
-
-                                UnityDispatcher.Invoke(() => 
-                                {
-                                    opIsDone = op.isDone;
-                                }).WaitOne();
-
-                                cancellationToken.ThrowIfCancellationRequested();
-
-                                System.Threading.Thread.Sleep(100);
-                            }
-
-                            _logger.LogDebug("Stream has been read.");
+                            throw dataAvailableException;
                         }
-                        else if (Is4XXStatus((HttpStatusCode) requestResponseCode))
-                        {
-                            throw new DataNotAvailableException(string.Format(
-                                "Request data for {0} is not available (status: {1})", _url, (HttpStatusCode) request.responseCode));
-                        }
-                        else
-                        {
-                            throw new ServerErrorException(string.Format(
-                                "Server has experienced some issues with request for {0} which resulted in {1} status code.",
-                                _url, (HttpStatusCode) requestResponseCode));
-                        }
+
+                        _logger.LogDebug("Stream has been read.");
                     }
                 }
 
