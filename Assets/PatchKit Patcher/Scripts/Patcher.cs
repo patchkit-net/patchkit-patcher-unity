@@ -95,7 +95,7 @@ namespace PatchKit.Unity.Patcher
 
         public PatcherConfiguration DefaultConfiguration;
 
-        public string StartAppCustomArgs;
+        public string StartAppCustomArgs { get; set; }
 
         private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
 
