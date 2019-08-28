@@ -8,6 +8,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         public ReactiveProperty<double> Weight { get; private set; }
         public ReactiveProperty<bool> IsActive { get; private set; }
         public ReactiveProperty<string> Description { get; private set; }
+        public ReactiveProperty<bool> IsIdle { get; private set; }
 
         public OperationStatus()
         {
@@ -15,6 +16,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             Weight = new ReactiveProperty<double>();
             IsActive = new ReactiveProperty<bool>();
             Description = new ReactiveProperty<string>();
+            IsIdle = new ReactiveProperty<bool>();
         }
 
         IReadOnlyReactiveProperty<double> IReadOnlyOperationStatus.Progress
@@ -35,6 +37,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         IReadOnlyReactiveProperty<string> IReadOnlyOperationStatus.Description
         {
             get { return Description; }
+        }
+
+        IReadOnlyReactiveProperty<bool> IReadOnlyOperationStatus.IsIdle
+        {
+            get { return IsIdle; }
         }
     }
 }

@@ -7,18 +7,35 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
+using UnityEngine.Networking;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
     public sealed class BaseHttpDownloader : IBaseHttpDownloader
     {
+        private class Handler : DownloadHandlerScript
+        {
+            private Action<byte[], int> _receiveData;
+
+            public Handler(Action<byte[], int> receiveData)
+            {
+                _receiveData = receiveData;
+            }
+
+            protected override bool ReceiveData(byte[] data, int dataLength)
+            {
+                _receiveData(data, dataLength);
+
+                return true;
+            }
+        }
+
         private readonly ILogger _logger;
 
         private static readonly int BufferSize = 5 * (int) Units.MB;
 
         private readonly string _url;
         private readonly int _timeout;
-        private readonly IHttpClient _httpClient;
 
         private readonly byte[] _buffer;
 
@@ -28,21 +45,19 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         public event DataAvailableHandler DataAvailable;
 
         public BaseHttpDownloader(string url, int timeout) :
-            this(url, timeout, new DefaultHttpClient(), PatcherLogManager.DefaultLogger)
+            this(url, timeout, PatcherLogManager.DefaultLogger)
         {
         }
 
-        public BaseHttpDownloader([NotNull] string url, int timeout, [NotNull] IHttpClient httpClient,
+        public BaseHttpDownloader([NotNull] string url, int timeout,
             [NotNull] ILogger logger)
         {
             if (string.IsNullOrEmpty(url)) throw new ArgumentException("Value cannot be null or empty.", "url");
             if (timeout <= 0) throw new ArgumentOutOfRangeException("timeout");
-            if (httpClient == null) throw new ArgumentNullException("httpClient");
             if (logger == null) throw new ArgumentNullException("logger");
 
             _url = url;
             _timeout = timeout;
-            _httpClient = httpClient;
             _logger = logger;
 
             _buffer = new byte[BufferSize];
@@ -76,41 +91,120 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 Assert.MethodCalledOnlyOnce(ref _downloadHasBeenCalled, "Download");
 
-                var request = new HttpGetRequest
+                UnityWebRequest request = null;
+                Exception dataAvailableException = null;
+                DateTime lastDataAvailable = DateTime.Now;
+
+                UnityDispatcher.Invoke(() => 
                 {
-                    Address = new Uri(_url),
-                    Range = _bytesRange,
-                    Timeout = _timeout,
-                    ReadWriteTimeout = _timeout,
-                };
+                    request = new UnityWebRequest();
+                    request.uri = new Uri(_url);
+                    request.timeout = 0;
 
-                using (var response = _httpClient.Get(request))
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    _logger.LogDebug("Received response from server.");
-                    _logger.LogTrace("statusCode = " + response.StatusCode);
-
-                    if (Is2XXStatus(response.StatusCode))
+                    if (_bytesRange.HasValue)
                     {
-                        _logger.LogDebug("Successful response. Reading response stream...");
+                        var bytesRangeEndText = 
+                            _bytesRange.Value.End >= 0L ? _bytesRange.Value.End.ToString() : string.Empty;
 
-                        //TODO: Could response.ContentStream be null? Need to check it.
+                        request.SetRequestHeader(
+                            "Range", 
+                            "bytes=" + _bytesRange.Value.Start + "-" + bytesRangeEndText);
+                    }
 
-                        ReadResponseStream(response.ContentStream, cancellationToken);
+                    request.downloadHandler = new Handler((data, length) => {
+
+                        lastDataAvailable = DateTime.Now;
+
+                        if (DataAvailable != null && dataAvailableException == null)
+                        {
+                            try
+                            {
+                                DataAvailable.Invoke(data, length);
+                            }
+                            catch (Exception e)
+                            {
+                                dataAvailableException = e;
+                            }
+                        }
+                    });
+                }).WaitOne();
+
+                using (request)
+                {
+                    using(request.downloadHandler)
+                    {
+                        UnityWebRequestAsyncOperation op = null;
+
+                        UnityDispatcher.Invoke(() => 
+                        {
+                            op = request.SendWebRequest();
+                        }).WaitOne();
+
+                        bool requestIsDone = false;
+                        bool responseCodeHandled = false;
+
+                        while (!requestIsDone)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if ((DateTime.Now - lastDataAvailable).TotalMilliseconds > _timeout)
+                            {
+                                throw new ConnectionFailureException("Timeout.");
+                            }
+
+                            long requestResponseCode = 0;
+                            string requestError = null;
+
+                            UnityDispatcher.Invoke(() => 
+                            {
+                                requestIsDone = request.isDone;
+                                requestResponseCode = request.responseCode;
+                                requestError = request.error;
+                            }).WaitOne();
+
+                            if (requestError != null)
+                            {
+                                throw new ConnectionFailureException(requestError);
+                            }
+
+                            if (requestResponseCode > 0 && !responseCodeHandled)
+                            {
+                                _logger.LogDebug("Received response from server.");
+                                _logger.LogTrace("statusCode = " + requestResponseCode);
+
+                                if (Is2XXStatus((HttpStatusCode) requestResponseCode))
+                                {
+                                    _logger.LogDebug("Successful response. Reading response stream...");                             
+                                }
+                                else if (Is4XXStatus((HttpStatusCode) requestResponseCode))
+                                {
+                                    throw new DataNotAvailableException(string.Format(
+                                        "Request data for {0} is not available (status: {1})", _url, (HttpStatusCode) request.responseCode));
+                                }
+                                else
+                                {
+                                    throw new ServerErrorException(string.Format(
+                                        "Server has experienced some issues with request for {0} which resulted in {1} status code.",
+                                        _url, (HttpStatusCode) requestResponseCode));
+                                }
+
+                                responseCodeHandled = true;
+                            }
+
+                            if (dataAvailableException != null)
+                            {
+                                throw dataAvailableException;
+                            }
+
+                            System.Threading.Thread.Sleep(100);
+                        }
+
+                        if (dataAvailableException != null)
+                        {
+                            throw dataAvailableException;
+                        }
 
                         _logger.LogDebug("Stream has been read.");
-                    }
-                    else if (Is4XXStatus(response.StatusCode))
-                    {
-                        throw new DataNotAvailableException(string.Format(
-                            "Request data for {0} is not available (status: {1})", _url, response.StatusCode));
-                    }
-                    else
-                    {
-                        throw new ServerErrorException(string.Format(
-                            "Server has experienced some issues with request for {0} which resulted in {1} status code.",
-                            _url, response.StatusCode));
                     }
                 }
 
@@ -129,17 +223,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             }
         }
 
-        private void ReadResponseStream(Stream responseStream, CancellationToken cancellationToken)
-        {
-            int bufferRead;
-            while ((bufferRead = responseStream.Read(_buffer, 0, BufferSize)) > 0)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                OnDataAvailable(_buffer, bufferRead);
-            }
-        }
-
         // ReSharper disable once InconsistentNaming
         private static bool Is2XXStatus(HttpStatusCode statusCode)
         {
@@ -150,12 +233,6 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private static bool Is4XXStatus(HttpStatusCode statusCode)
         {
             return (int) statusCode >= 400 && (int) statusCode <= 499;
-        }
-
-        private void OnDataAvailable(byte[] data, int length)
-        {
-            var handler = DataAvailable;
-            if (handler != null) handler(data, length);
         }
     }
 }

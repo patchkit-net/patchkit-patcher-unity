@@ -95,6 +95,8 @@ namespace PatchKit.Unity.Patcher
 
         public PatcherConfiguration DefaultConfiguration;
 
+        public string StartAppCustomArgs { get; set; }
+
         private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
 
         public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus
@@ -840,7 +842,7 @@ namespace PatchKit.Unity.Patcher
 
             var appStarter = new AppStarter(_app);
 
-            appStarter.Start();
+            appStarter.Start(StartAppCustomArgs);
 
             PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededGameStarted);
             _hasGameBeenStarted = true;
