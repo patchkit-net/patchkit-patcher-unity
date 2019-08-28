@@ -97,12 +97,16 @@ namespace PatchKit.Unity.Patcher
 
         public string StartAppCustomArgs { get; set; }
 
+        public GameObject ExternalAuthWaitPopupPrefab;
+
         private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
 
         public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus
         {
             get { return _updaterStatus; }
         }
+
+        public BoolReactiveProperty HasOngoingExternalAuth = new BoolReactiveProperty();
 
         private readonly BoolReactiveProperty _canRepairApp = new BoolReactiveProperty(false);
 
@@ -236,6 +240,17 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (ExternalAuthWaitPopupPrefab == null)
+            {
+                ExternalAuthWaitPopupPrefab = 
+                    ((Transform) UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/PatchKit Patcher/Prefabs/External Auth Popup.prefab", typeof(Transform))).gameObject;
+            }
+        }
+#endif
+
         private void Awake()
         {
             UnityEngine.Assertions.Assert.raiseExceptions = true;
@@ -261,6 +276,14 @@ namespace PatchKit.Unity.Patcher
             if (_canStartThread)
             {
                 StartThread();
+            }
+
+            if (ExternalAuthWaitPopupPrefab != null)
+            {
+                var canvas = ErrorDialog.transform.parent;
+
+                var externalAuthWaitPopup = Instantiate(ExternalAuthWaitPopupPrefab);
+                externalAuthWaitPopup.transform.SetParent(canvas, false);
             }
         }
 
@@ -842,12 +865,17 @@ namespace PatchKit.Unity.Patcher
 
             var appStarter = new AppStarter(_app);
 
-            appStarter.Start(StartAppCustomArgs);
+            if (appStarter.Start(StartAppCustomArgs))
+            {
+                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededGameStarted);
+                _hasGameBeenStarted = true;
 
-            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededGameStarted);
-            _hasGameBeenStarted = true;
-
-            UnityDispatcher.Invoke(Quit);
+                UnityDispatcher.Invoke(Quit);
+            }
+            else
+            {
+                _state.Value = PatcherState.None;
+            }
         }
 
         private void ThreadUpdateApp(bool automatically, CancellationToken cancellationToken)

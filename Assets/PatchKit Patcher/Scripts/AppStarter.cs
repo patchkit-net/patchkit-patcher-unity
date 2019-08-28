@@ -1,12 +1,14 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Generic;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
+using PatchKit.Unity.Patcher.AppData.Remote;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -57,15 +59,16 @@ namespace PatchKit.Unity.Patcher
                 {
                     DebugLogger.LogException(e);
                 }
-
             }
 
             return AppFinder.FindExecutable(_app.LocalDirectory.Path, platformType);
         }
 
-        public void Start(string customArgs)
+        public bool Start(string customArgs)
         {
             AppVersion? appVersion = null;
+
+            Dictionary<string, string> executionArgs;
 
             try
             {
@@ -73,18 +76,84 @@ namespace PatchKit.Unity.Patcher
                     _app.GetInstalledVersionId(),
                     false,
                     CancellationToken.Empty);
+
+                var appInfo = _app.RemoteMetaData.GetAppInfo(
+                    false, 
+                    CancellationToken.Empty);
+                
+                if (appInfo.ExternalAuth.Id != null)
+                {
+                    const string externalAuthRefreshTokenCacheKey = "external-auth-refresh-token";
+
+                    var unityCache = new PatchKit.Unity.Patcher.AppData.Local.UnityCache(appInfo.Secret);
+
+                    var previousRefreshToken = unityCache.GetValue(externalAuthRefreshTokenCacheKey);
+
+                    ExternalAuth.AuthResult authResult;
+
+                    authResult = ExternalAuth.TryRefreshToken(
+                        previousRefreshToken,
+                        appInfo.ExternalAuth,
+                        CancellationToken.Empty);
+
+                    if (authResult == null)
+                    {
+                        var ongoingAuth = ExternalAuth.BeginAuth(appInfo.ExternalAuth);
+
+                        if (ongoingAuth == null)
+                        {
+                            DebugLogger.Log("Stopping starting app because auth failed.");
+
+                            return false;
+                        }
+
+                        Patcher.Instance.HasOngoingExternalAuth.Value = true;
+
+                        try
+                        {
+                            authResult = ExternalAuth.WaitForAuth(
+                                ongoingAuth, 
+                                appInfo.ExternalAuth, 
+                                CancellationToken.Empty);
+                        }
+                        finally
+                        {
+                            Patcher.Instance.HasOngoingExternalAuth.Value = false;
+                        }
+                    }         
+                    
+                    if (authResult == null)
+                    {
+                        DebugLogger.Log("Stopping starting app because auth failed.");
+
+                        return false;
+                    }
+
+                    unityCache.SetValue(
+                        externalAuthRefreshTokenCacheKey,
+                        authResult.RefreshToken);
+
+                    executionArgs = authResult.ExecutionArgs;
+                }
+                else
+                {
+                    executionArgs = new Dictionary<string, string>();
+                }
             }
             catch (Exception e)
             {
+                executionArgs = new Dictionary<string, string>();
                 DebugLogger.LogException(e);
                 DebugLogger.LogWarning(
                     "Failed to retrieve app version info. Will try to detect exectuable manually.");
             }
         
-            StartAppVersion(appVersion, customArgs);
+            StartAppVersion(appVersion, customArgs, executionArgs);
+
+            return true;
         }
 
-        private void StartAppVersion(AppVersion? appVersion, string customArgs)
+        private void StartAppVersion(AppVersion? appVersion, string customArgs, Dictionary<string, string> executionArgs)
         {
             DebugLogger.Log("Starting application.");
 
@@ -95,7 +164,15 @@ namespace PatchKit.Unity.Patcher
             if (appVersion != null &&
                 appVersion.Value.MainExecutableArgs != null)
             {
-                appArgs += " " + appVersion.Value.MainExecutableArgs;
+                var mainExecutableArgs = appVersion.Value.MainExecutableArgs;
+
+                foreach(var executionArg in executionArgs)
+                {
+                    mainExecutableArgs = mainExecutableArgs
+                        .Replace("${" + executionArg.Key + "}", executionArg.Value);
+                }
+
+                appArgs += " " + mainExecutableArgs;
             }
 
             if (appFilePath == null)

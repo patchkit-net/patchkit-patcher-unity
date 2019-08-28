@@ -2,299 +2,572 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using PatchKit.Api;
 using PatchKit.Api.Models.Main;
-using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote
 {
-    class ExternalAuth
+class ExternalAuth
+{
+    public class OngoingAuth
     {
-        private static ILogger Logger {
-            get {
-                return Debug.PatcherLogManager.DefaultLogger;
-            }
-        }
+        public string LoginRequestId;
+    }
 
-        // how long allow the endpoint to fail
-        private static readonly int GracePeriodSeconds = 30;
+    public class AuthResult
+    {
+        public string RefreshToken { get; }
 
-        private static readonly int LoginRequestIdLength = 32;
-        
+        public Dictionary<string, string> ExecutionArgs { get; }
 
-        public static EndpointResponse TryRefreshToken(
+        public AuthResult(
             string refreshToken,
-            ExternalAuthConfig config,
-            CancellationToken cancellationToken)
+            Dictionary<string, string> executionArgs)
         {
-            if (!config.IncludeRefreshToken || string.IsNullOrEmpty(refreshToken))
+            RefreshToken = refreshToken;
+            ExecutionArgs = executionArgs;
+        }
+    }
+
+    public class EndpointConnectionFailureException : Exception
+    {
+        public EndpointConnectionFailureException(
+            string message, 
+            Exception inner = null) : base(message, inner)
+        {
+        }
+    }
+
+    public class EndpointInvalidConfigurationException : Exception
+    {
+        public EndpointInvalidConfigurationException(
+            string message, 
+            Exception inner = null) : base(message, inner)
+        {
+        }
+    }
+
+    public class InternalErrorException : Exception
+    {
+        public InternalErrorException(
+            string message, 
+            Exception inner = null) : base(message, inner)
+        {
+        }
+    }   
+
+    private static readonly DebugLogger DebugLogger = 
+        new DebugLogger(typeof(ExternalAuth));
+
+    private enum EndpointResponseStatus 
+    {
+        Wait,
+        Continue,
+        Forbidden,
+        NotRecognized
+    }
+
+    private class EndpointResponse
+    {
+        public EndpointResponseStatus Status { get; }
+
+        public string RefreshToken { get; }
+
+        public Dictionary<string, string> ExecutionArgs { get; }
+
+        public EndpointResponse(
+            EndpointResponseStatus status, 
+            string refreshToken,
+            Dictionary<string, string> executionArgs)
+        {
+            Status = status;
+            RefreshToken = refreshToken;
+            ExecutionArgs = executionArgs;
+        }
+    }
+
+    private static readonly int LoginRequestIdLength = 32;
+
+    private static readonly int EndpointRecognitionTimoutSeconds = 30;
+
+    private static readonly int EndpointRequestTimeoutSeconds = 60;
+
+    private static readonly int RefreshTokenEndpointRequestTimeoutSeconds = 60;
+    
+    public static AuthResult TryRefreshToken(
+        string refreshToken,
+        ExternalAuthConfig config,
+        CancellationToken cancellationToken)
+    {
+        DebugLogger.Log("Trying to refresh token for external auth with id" + config.Id);
+        DebugLogger.Log("Refresh token: " + refreshToken);
+
+        try
+        {
+            bool isRefreshingTokenSupported = config.IncludeRefreshToken;
+
+            if (!isRefreshingTokenSupported)
             {
-                // refresh token not supported by config
+                DebugLogger.Log("Failed to refresh token -> refreshing token is not supported for " + config.Id);
+
                 return null;
             }
 
-            try
+            bool canTokenBeRefreshed = !string.IsNullOrEmpty(refreshToken);
+
+            if (!canTokenBeRefreshed)
             {
-                return QueryRefreshTokenEndpoint(refreshToken, config, cancellationToken);
-            } catch (WebException e)
-            {
-                UnityEngine.Debug.LogWarning("Error while talking to the refresh endpoint, ignoring...");
-                UnityEngine.Debug.LogException(e);
-            } catch (SocketException e)
-            {
-                UnityEngine.Debug.LogWarning("Error while talking to the refresh endpoint, ignoring...");
-                UnityEngine.Debug.LogException(e);
+                DebugLogger.Log("Failed to refresh token -> cannot refresh empty or null token.");
+
+                return null;
             }
 
+            var response =  QueryRefreshTokenEndpoint(
+                refreshToken, 
+                config, 
+                cancellationToken);
+            
+            if (response == null)
+            {
+                DebugLogger.Log("Failed to refresh token -> response is null.");
+                return null;
+            }
+
+            DebugLogger.Log("Successfully refreshed token.");
+
+            return new AuthResult(
+                refreshToken: response.RefreshToken,
+                executionArgs: response.ExecutionArgs);
+        }
+        catch (EndpointConnectionFailureException e)
+        {
+            DebugLogger.Log("Failed to refresh token -> endpoint connection failure.");
+            DebugLogger.LogException(e);
             return null;
         }
-
-        // Opens the login page
-        // Returns loginRequestId string to use in `WaitForEndpoint()`
-        public static string OpenLoginPage(ExternalAuthConfig config)
+        catch (EndpointInvalidConfigurationException e)
         {
-            string loginRequestId = GenerateLoginRequestHash();
-            OpenURL(config.LoginPageUrl + "?" + config.RequestIdParam + "=" + loginRequestId);
-            return loginRequestId;
+            DebugLogger.Log("Failed to refresh token -> endpoint invalid configuration.");
+            DebugLogger.LogException(e);
+            return null;
         }
-
-        // Waits on endpoint to return a valid response.
-        // Returns null of failed authentication.
-        public static EndpointResponse WaitForEndpoint(
-            string loginRequestId,
-            ExternalAuthConfig config,
-            CancellationToken cancellationToken)
+        catch (InternalErrorException e)
         {
-            UnityEngine.Debug.Log("ExternalAuth: Waiting for endpoint.");
-            
-            long startTime = CurrentTimeSeconds();
-            while (startTime + config.EndpointQueryTimeoutSeconds > CurrentTimeSeconds())
+            DebugLogger.Log("Failed to refresh token -> internal error.");
+            DebugLogger.LogException(e);
+            return null;
+        }
+        catch (Exception e)
+        {
+            DebugLogger.Log("Failed to refresh token -> unpredicted exception.");
+            DebugLogger.LogException(e);
+            return null;
+        }
+    }
+
+    public static OngoingAuth BeginAuth(ExternalAuthConfig config)
+    {
+        DebugLogger.Log("Beginning auth for external auth with id " + config.Id);
+
+        try
+        {
+            string loginRequestId = GenerateNewLoginRequestId();
+
+            string urlArgs = config.RequestIdParam + "=" + loginRequestId;
+            string url = config.LoginPageUrl + "?" + urlArgs;
+
+            DebugLogger.Log("Opening auth page at " + url);
+
+            OpenUrl(url);
+
+            DebugLogger.Log("Auth began successfully with login request id: " + loginRequestId);
+
+            return new OngoingAuth
             {
-                System.Threading.Thread.Sleep(config.EndpointQueryIntervalSeconds * 1000);
+                LoginRequestId = loginRequestId
+            };
+        }
+        catch (InternalErrorException e)
+        {
+            DebugLogger.Log("Failed to begin auth -> internal error.");
+            DebugLogger.LogException(e);
+            return null;
+        }
+        catch (Exception e)
+        {
+            DebugLogger.Log("Failed to begin auth -> unpredicted exception.");
+            DebugLogger.LogException(e);
+            return null;
+        }
+    }
+
+    public static AuthResult WaitForAuth(
+        OngoingAuth ongoingAuth,
+        ExternalAuthConfig config,
+        CancellationToken cancellationToken)
+    {
+        DebugLogger.Log("Waiting for auth for " + ongoingAuth.LoginRequestId);
+
+        try
+        {
+            var startTime = DateTime.Now;
+
+            while ((DateTime.Now - startTime).TotalSeconds < 
+                config.EndpointQueryTimeoutSeconds)
+            {
+                System.Threading.Thread.Sleep(
+                    config.EndpointQueryIntervalSeconds * 1000);
 
                 try
                 {
-                    bool allowToFail = CurrentTimeSeconds() - startTime <= GracePeriodSeconds;
-                    EndpointResponse response =
-                        QueryEndpoint(loginRequestId, allowToFail, config, cancellationToken);
+                    bool hasRecognitionTimedOut = 
+                        (DateTime.Now - startTime).TotalSeconds <= 
+                            EndpointRecognitionTimoutSeconds;
                     
-                    switch(response.EndpointResponseStatus) {
+                    EndpointResponse response = QueryEndpoint(
+                        ongoingAuth.LoginRequestId, 
+                        config,
+                        cancellationToken);
+                    
+                    switch(response.Status) 
+                    {
                         case EndpointResponseStatus.Continue:
-                            return response;
-                        case EndpointResponseStatus.Terminate:
+                            DebugLogger.Log("Successfuly waited for auth.");
+
+                            return new AuthResult(
+                                refreshToken: response.RefreshToken,
+                                executionArgs: response.ExecutionArgs);
+                        case EndpointResponseStatus.Forbidden:
+                            DebugLogger.Log("Failed to wait for auth -> endpoint returned failed response.");
+
                             return null;
                         case EndpointResponseStatus.Wait:
-                            break; // wait for another iteration
+                            DebugLogger.Log("Still waiting for auth -> endpoint returned wait response.");
+
+                            break;
+                        case EndpointResponseStatus.NotRecognized:
+                            if (hasRecognitionTimedOut)
+                            {
+                                DebugLogger.Log("Failed to wait for auth -> recognition has timed out.");
+                                return null;
+                            }
+                            
+                            DebugLogger.Log("Still waiting for auth -> auth is not recognized yet.");
+
+                            break;                    
                         default:
-                            Debug.Assert.IsTrue(false, "Unknown response: " + response);
-                            return null;
+                            throw new InternalErrorException("Unknown response status: " + response.Status);
                     }
-                } catch (WebException e)
+                }
+                catch (EndpointConnectionFailureException e)
                 {
-                    UnityEngine.Debug.LogWarning("Error while talking to the endpoint, ignoring...");
-                    UnityEngine.Debug.LogException(e);
-                } catch (SocketException e)
-                {
-                    UnityEngine.Debug.LogWarning("Error while talking to the endpoint, ignoring...");
-                    UnityEngine.Debug.LogException(e);
+                    DebugLogger.Log("Still waiting for auth -> failed to connect to endpoint.");
+                    DebugLogger.LogException(e);
                 }
             }
 
-            UnityEngine.Debug.LogWarning("ExternalAuth: Timeout while waiting for endpoint");
+            DebugLogger.Log("Failed to wait for auth -> waiting has timed out.");
             return null;
         }
-
-        private static void OpenURL(string url)
+        catch (EndpointInvalidConfigurationException e)
         {
-#if UNITY_STANDALONE
-            UnityEngine.Application.OpenURL(url);
-#else
-#error Not implemented
-#endif
-        }
-
-        private static long CurrentTimeSeconds()
-        {
-            return DateTime.Now.Ticks / TimeSpan.TicksPerSecond;
-        }
-
-        private static EndpointResponse QueryRefreshTokenEndpoint(
-            string refreshToken,
-            ExternalAuthConfig config,
-            CancellationToken cancellationToken
-        ) {
-            IHttpResponse httpResponse =
-                PostURL(config.EndpointUrl,
-                    new Dictionary<string, string> {
-                        { config.RefreshTokenParam, refreshToken }
-                    },
-                    cancellationToken);
-
-            if ((int) httpResponse.StatusCode == 200)
-            {
-                StreamReader reader = new StreamReader(httpResponse.ContentStream);
-                string httpBody = reader.ReadToEnd();
-                JObject obj = JObject.Parse(httpBody);
-
-                EndpointResponse response = CreateOKEndpointResponse(config, obj);
-                return response;
-            }
-
+            DebugLogger.Log("Failed to wait for auth -> endpoint invalid configuration.");
+            DebugLogger.LogException(e);
             return null;
         }
-
-        private static EndpointResponse QueryEndpoint(
-            string loginRequestId,
-            bool ignoreNotRecognized,
-            ExternalAuthConfig config,
-            CancellationToken cancellationToken
-        ) {
-            IHttpResponse httpResponse =
-                FetchURL(config.EndpointUrl, config.RequestIdParam + "=" + loginRequestId, cancellationToken);
-
-            StreamReader reader = new StreamReader(httpResponse.ContentStream);
-            string httpBody = reader.ReadToEnd();
-            
-            int statusCode = (int) httpResponse.StatusCode;
-            UnityEngine.Debug.Log(statusCode.ToString());
-
-            if (statusCode == config.EndpointOkResponse)
-            {
-                UnityEngine.Debug.Log(httpBody);
-                JObject obj = JObject.Parse(httpBody);
-
-                EndpointResponse response = CreateOKEndpointResponse(config, obj);
-                return response;
-            }
-            else if (statusCode == config.EndpointWaitResponse)
-            {
-                return new EndpointResponse(EndpointResponseStatus.Wait);
-            } else if (statusCode == config.EndpointForbiddenResponse)
-            {
-                return new EndpointResponse(EndpointResponseStatus.Terminate);
-            } else if (statusCode == config.EndpointNotRecognizedResponse)
-            {
-                // We may need to wait a while for the endpoint to recognize our login attempt
-                if (ignoreNotRecognized) {
-                    return new EndpointResponse(EndpointResponseStatus.Wait);
-                } else {
-                    return new EndpointResponse(EndpointResponseStatus.Terminate);
-                }
-            } else {
-                UnityEngine.Debug.LogError("ExternalAuth: Unknown response from the endpoint: " +
-                    httpResponse.StatusCode + ", " + httpBody);
-                return new EndpointResponse(EndpointResponseStatus.Wait);
-            }
-        }
-
-        private static EndpointResponse CreateOKEndpointResponse(ExternalAuthConfig config, JObject obj)
+        catch (InternalErrorException e)
         {
-            string refreshToken = null;
+            DebugLogger.Log("Failed to wait for auth -> internal error.");
+            DebugLogger.LogException(e);
+            return null;
+        }
+        catch (Exception e)
+        {
+            DebugLogger.Log("Failed to wait for auth -> unpredicted exception.");
+            DebugLogger.LogException(e);
+            return null;
+        }
+    }
 
-            if (config.IncludeRefreshToken)
+    private static EndpointResponse QueryRefreshTokenEndpoint(
+        string refreshToken,
+        ExternalAuthConfig config,
+        CancellationToken cancellationToken)
+    {
+        var httpClient = new DefaultHttpClient();
+
+        var httpAddress = GetRefreshTokenEndpointAddress(
+            config: config,
+            refreshToken: refreshToken);
+        
+        DebugLogger.Log("Quering " + httpAddress);
+        
+        var httpRequest = new HttpGetRequest
+        {
+            Address = httpAddress,
+            Timeout = RefreshTokenEndpointRequestTimeoutSeconds
+        };
+
+        IHttpResponse httpResponse;
+
+        try
+        {
+            httpResponse = httpClient.Get(getRequest: httpRequest);
+        }
+        catch (Exception e)
+        {
+            DebugLogger.LogException(e);
+            throw new EndpointConnectionFailureException(
+                "Failed to connect to refresh token endpoint.",
+                e);
+        }
+
+        using (httpResponse)
+        {
+            var httpStatusCode = (int) httpResponse.StatusCode;
+
+            if (httpStatusCode == config.RefreshTokenEndpointOkResponse)
             {
-                refreshToken = (string)obj.SelectToken(config.RefreshTokenPath);
+                var httpJsonBody = ReadEndpointResponseJsonBody(response: httpResponse);
+
+                return GetEndpointContinueResponse(
+                    jsonBody: httpJsonBody,
+                    config: config);
             }
+        }
 
-            var response = new EndpointResponse(EndpointResponseStatus.Continue, refreshToken);
+        return null;
+    }
 
-            JToken executionArgs = obj.SelectToken(config.ExecutionArgsPath);
-            foreach (JToken item in executionArgs)
+    private static EndpointResponse QueryEndpoint(
+        string loginRequestId,
+        ExternalAuthConfig config,
+        CancellationToken cancellationToken)
+    {
+        var httpClient = new DefaultHttpClient();
+
+        var httpAddress = GetEndpointAddress(
+            config: config,
+            loginRequestId: loginRequestId);
+
+        DebugLogger.Log("Quering " + httpAddress);
+
+        var httpRequest = new HttpGetRequest
+        {
+            Address = httpAddress,
+            Timeout = EndpointRequestTimeoutSeconds
+        };
+
+        IHttpResponse httpResponse;
+
+        try
+        {
+            httpResponse = httpClient.Get(getRequest: httpRequest);
+        }
+        catch (Exception e)
+        {
+            DebugLogger.LogException(e);
+            throw new EndpointConnectionFailureException(
+                "Failed to connect to endpoint.",
+                e);
+        }
+
+        using (httpResponse)
+        {
+            var httpStatusCode = (int) httpResponse.StatusCode;
+
+            var httpTextBody = ReadEndpointResponseTextBody(
+                response: httpResponse);
+
+            if (httpStatusCode == config.EndpointOkResponse)
             {
-                var key = (string)item.SelectToken("key");
-                var value = (string)item.SelectToken("value");
+                var httpJsonBody = ParseEndpointResponseTextBody(
+                    textBody: httpTextBody);
 
-                response.ExecutionArgs.Add(key, value);
+                return GetEndpointContinueResponse(
+                    jsonBody: httpJsonBody,
+                    config: config);
             }
-
-            return response;
-        }
-
-        private static IHttpResponse FetchURL(string url, string query, CancellationToken cancellationToken)
-        {
-            var uri = new Uri(url);
-            
-            var uriWithQuery = new UriBuilder
+            else if (httpStatusCode == config.EndpointWaitResponse)
             {
-                Scheme = uri.Scheme,
-                Host = uri.Host,
-                Path = uri.AbsolutePath,
-                Query = query,
-                Port = uri.Port
-            }.Uri;
-
-            // UnityEngine.Debug.Log(uriWithQuery.ToString());
-            // Logger.LogDebug(uriWithQuery.ToString());
-
-            var httpRequest = new HttpGetRequest
-            {
-                Address = uriWithQuery,
-                Timeout = 60
-            };
-
-            var httpClient = new DefaultHttpClient();
-            return httpClient.Get(httpRequest);
-        }
-
-        private static IHttpResponse PostURL(string url, Dictionary<string, string> values, CancellationToken cancellationToken)
-        {
-            var sb = new StringBuilder();
-            foreach (var pair in values)
-            {
-                if (sb.Length > 0) {
-                    sb.Append("&");
-                }
-                sb.Append(Uri.EscapeUriString(pair.Key));
-                sb.Append('=');
-                sb.Append(Uri.EscapeUriString(pair.Value));
+                return new EndpointResponse(
+                    status: EndpointResponseStatus.Wait,
+                    refreshToken: null,
+                    executionArgs: null);
             }
-            
-            var httpRequest = new HttpPostRequest
+            else if (httpStatusCode == config.EndpointForbiddenResponse)
             {
-                Address = new Uri(url),
-                Timeout = 60,
-                Body = sb.ToString()
-            };
-            var httpClient = new DefaultHttpClient();
-            UnityEngine.Debug.Log("a");
-            return httpClient.Post(httpRequest);
-        }
-
-        private static string GenerateLoginRequestHash()
-        {
-            var random = new Random();
-            
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, LoginRequestIdLength)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
-
-        public enum EndpointResponseStatus {
-            Wait,
-            Continue,
-            Terminate
-        }
-
-        public class EndpointResponse
-        {
-            public EndpointResponseStatus EndpointResponseStatus { get; set; }
-
-            public string RefreshToken { get; set; }
-
-            public Dictionary<string, string> ExecutionArgs { get; set; }
-
-            public EndpointResponse(EndpointResponseStatus status, string refreshToken = null)
+                return new EndpointResponse(
+                    status: EndpointResponseStatus.Forbidden,
+                    refreshToken: null,
+                    executionArgs: null);
+            } 
+            else if (httpStatusCode == config.EndpointNotRecognizedResponse)
             {
-                EndpointResponseStatus = status;
-                RefreshToken = refreshToken;
-                ExecutionArgs = new Dictionary<string, string>();
+                return new EndpointResponse(
+                    status: EndpointResponseStatus.NotRecognized,
+                    refreshToken: null,
+                    executionArgs: null);
+            } 
+            else 
+            {
+                DebugLogger.LogWarning(
+                    "Unknown endpoint response status code (" + httpStatusCode + "), treating it as WaitResponse. Body: " + httpTextBody);
+                
+                return new EndpointResponse(
+                    status: EndpointResponseStatus.Wait,
+                    refreshToken: null,
+                    executionArgs: null);
             }
         }
     }
+
+    private static EndpointResponse GetEndpointContinueResponse(
+        JObject jsonBody,
+        ExternalAuthConfig config)
+    {
+        var newRefreshToken = RetrieveEndpointResponseRefreshToken(
+            jsonBody: jsonBody,
+            config: config);
+
+        var executionArgs = RetrieveEndpointResponseExecutionArgs(
+            jsonBody: jsonBody,
+            config: config);
+        
+        DebugLogger.Log("Refresh Token: " + newRefreshToken);
+
+        return new EndpointResponse(
+            status: EndpointResponseStatus.Continue,
+            refreshToken: newRefreshToken,
+            executionArgs: executionArgs);
+    }
+
+    private static string RetrieveEndpointResponseRefreshToken(
+        JObject jsonBody,
+        ExternalAuthConfig config)
+    {
+        try
+        {
+            if (config.IncludeRefreshToken)
+            {
+                return (string) jsonBody.SelectToken(config.RefreshTokenPath);
+            }
+
+            return null;
+        }
+        catch (Exception e)
+        {
+            throw new EndpointInvalidConfigurationException(
+                "Failed to retrieve endpoint response refresh token.",
+                e);
+        }
+    }
+
+    private static Dictionary<string, string> RetrieveEndpointResponseExecutionArgs(
+        JObject jsonBody,
+        ExternalAuthConfig config)
+    {
+        try
+        {
+            var executionArgs = new Dictionary<string, string>();
+            var executionArgsToken = jsonBody.SelectToken(config.ExecutionArgsPath);
+
+            foreach (var item in executionArgsToken)
+            {
+                var key = (string) item.SelectToken("key");
+                var value = (string) item.SelectToken("value");
+
+                executionArgs.Add(key, value);
+            }
+
+            return executionArgs;
+        }
+        catch (Exception e)
+        {
+            throw new EndpointInvalidConfigurationException(
+                "Failed to retrieve endpoint response execution args.",
+                e);
+        }
+    }
+
+    private static Uri GetRefreshTokenEndpointAddress(
+        ExternalAuthConfig config,
+        string refreshToken)
+    {
+        string query = "?" + config.RefreshTokenParam + "=" + refreshToken;
+
+        return new Uri(config.RefreshTokenEndpointUrl + query);
+    }
+
+    private static Uri GetEndpointAddress(
+        ExternalAuthConfig config,
+        string loginRequestId)
+    {
+        string query = "?" + config.RequestIdParam + "=" + loginRequestId;
+
+        return new Uri(config.EndpointUrl + query);
+    }
+
+    private static string ReadEndpointResponseTextBody(IHttpResponse response)
+    {
+        try
+        {
+            using(var reader = new StreamReader(response.ContentStream))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+        catch (Exception e)
+        {
+            throw new EndpointConnectionFailureException(
+                "Failed to read endpoint response text body.",
+                e);
+        }
+    }
+
+    private static JObject ParseEndpointResponseTextBody(string textBody)
+    {
+        try
+        {
+            return JObject.Parse(json: textBody);
+        }
+        catch (Exception e)
+        {
+            throw new EndpointInvalidConfigurationException(
+                "Failed to parse endpoint response text body: " + textBody,
+                e);
+        }
+    }
+
+    private static JObject ReadEndpointResponseJsonBody(IHttpResponse response)
+    {
+        var textBody = ReadEndpointResponseTextBody(response: response);
+
+        return ParseEndpointResponseTextBody(textBody: textBody);
+    }
+
+    private static string GenerateNewLoginRequestId()
+    {
+        var random = new Random();
+    
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        return new string(Enumerable.Repeat(chars, LoginRequestIdLength)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    private static void OpenUrl(string url)
+    {
+#if UNITY_STANDALONE
+        PatchKit.Unity.Utilities.UnityDispatcher.Invoke(() =>
+        {
+            UnityEngine.Application.OpenURL(url);
+        }).WaitOne();
+#else
+#error Not implemented
+#endif
+    }
+}
 }
