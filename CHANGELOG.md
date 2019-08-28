@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.17.0.0]
 ### Added
-- Support for custom arguments for starting apps
+- Support for custom start app arguments (#1486)
 
 ## [3.16.0.0]
 ### Changed
