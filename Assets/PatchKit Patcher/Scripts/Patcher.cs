@@ -826,7 +826,11 @@ namespace PatchKit.Unity.Patcher
 
         private void ThreadDisplayError(PatcherError error, CancellationToken cancellationToken)
         {
-            PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
+            PatcherStatistics.DispatchSendEvent(
+                PatcherStatistics.Event.PatcherFailed,
+                new PatcherStatistics.OptionalParams() {
+                    Reason = error.GetCode()
+                });
             
             try
             {
@@ -859,6 +863,14 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
+        private IEnumerator SendGameStartedEventAndQuitCoroutine()
+        {
+            yield return PatcherStatistics.SendEvent(
+                PatcherStatistics.Event.PatcherSucceededGameStarted);
+
+            Quit();
+        }
+
         private void ThreadStartApp()
         {
             _state.Value = PatcherState.StartingApp;
@@ -867,10 +879,10 @@ namespace PatchKit.Unity.Patcher
 
             if (appStarter.Start(StartAppCustomArgs))
             {
-                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherSucceededGameStarted);
                 _hasGameBeenStarted = true;
 
-                UnityDispatcher.Invoke(Quit);
+                UnityDispatcher.InvokeCoroutine(
+                    SendGameStartedEventAndQuitCoroutine());
             }
             else
             {

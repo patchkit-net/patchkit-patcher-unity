@@ -42,8 +42,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             try
             {
-                PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationStarted);
-
                 _logger.LogDebug("Validating license...");
 
                 base.Execute(cancellationToken);
@@ -57,6 +55,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     _logger.LogDebug("Validating license is not required - application is not using license keys.");
                     return;
                 }
+
+                PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.LicenseKeyVerificationStarted);
 
                 var messageType = LicenseDialogMessageType.None;
 

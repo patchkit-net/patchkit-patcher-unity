@@ -74,6 +74,7 @@ namespace PatchKit.Unity.Patcher
             public string FileName;
             public long? Size;
             public long? Time;
+            public string Reason;
         }
 
         public static bool TryDispatchSendEvent(Event ev, OptionalParams? parameters = null)
@@ -136,6 +137,7 @@ namespace PatchKit.Unity.Patcher
         private const string TimeKey = "time";
         private const string SizeKey = "size";
         private const string FileNameKey = "file_name";
+        private const string ReasonKey = "reason";
 
         public static IEnumerator SendEvent(Event ev, string appSecret, OptionalParams? parameters = null)
         {
@@ -192,6 +194,11 @@ namespace PatchKit.Unity.Patcher
                 if (!string.IsNullOrEmpty(v.FileName))
                 {
                     json[FileNameKey] = v.FileName;
+                }
+
+                if (!string.IsNullOrEmpty(v.Reason))
+                {
+                    json[ReasonKey] = v.Reason;
                 }
             }
 

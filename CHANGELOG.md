@@ -4,9 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.19.0.0]
+
+
 ## [3.18.0.0]
 ### Added
 - Support for external authentication (#1492)
+
+### Fixed
+- Sending statistic events (#1625)
 
 ## [3.17.0.0]
 ### Added
