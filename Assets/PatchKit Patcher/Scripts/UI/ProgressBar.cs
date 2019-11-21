@@ -125,7 +125,7 @@ namespace PatchKit.Unity.Patcher.UI
         {
             var progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
             var isUpdatingIdle = Patcher.Instance.UpdaterStatus
-                .SelectSwitchOrDefault(p => (IObservable<IReadOnlyOperationStatus>) p.LatestActiveOperation, (IReadOnlyOperationStatus) null)
+                .SelectSwitchOrDefault(p => (UniRx.IObservable<IReadOnlyOperationStatus>) p.LatestActiveOperation, (IReadOnlyOperationStatus) null)
                 .SelectSwitchOrDefault(p => p.IsIdle, false);
 
             Patcher.Instance.State
