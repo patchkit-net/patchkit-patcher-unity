@@ -14,6 +14,8 @@ using SharpCompress.Compressors.Xz;
 using SharpRaven;
 using SharpRaven.Data;
 using SharpRaven.Utilities;
+using System.Data.HashFunction;
+using System.Linq;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -84,35 +86,59 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             _iv = Convert.FromBase64String(_metaData.Iv);
         }
 
+        private void DebugHashFile()
+        {
+            DebugLogger.Log("Calculating hash of " + _packagePath + "...");
+
+            using (var stream = new FileStream(_packagePath, FileMode.Open))
+            {
+                var xxHash = new xxHash(42UL);
+                byte[] hash = xxHash.ComputeHash(stream);
+                string str = string.Concat(hash.Select(b => b.ToString("X2")).Reverse().ToArray());
+
+                DebugLogger.Log("Hash: " + str);
+            }
+        }
+
         public void Unarchive(CancellationToken cancellationToken)
         {
             int entry = 1;
 
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
-            foreach (var file in _metaData.Files)
+            try
             {
-                OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 0.0);
-
-                var currentFile = file;
-                var currentEntry = entry;
-
-                if (CanUnpack(file))
+                foreach (var file in _metaData.Files)
                 {
-                    Unpack(file, progress =>
+                    OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 0.0);
+
+                    var currentFile = file;
+                    var currentEntry = entry;
+
+                    if (CanUnpack(file))
                     {
-                        OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == Pack1Meta.RegularFileType, currentEntry, _metaData.Files.Length, progress);
-                    }, cancellationToken);
-                }
-                else
-                {
-                    DebugLogger.LogWarning(string.Format("The file {0} couldn't be unpacked.", file.Name));
-                }
+                        Unpack(file, progress =>
+                        {
+                            OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == Pack1Meta.RegularFileType, currentEntry, _metaData.Files.Length, progress);
+                        }, cancellationToken);
+                    }
+                    else
+                    {
+                        DebugLogger.LogWarning(string.Format("The file {0} couldn't be unpacked.", file.Name));
+                    }
 
-                OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 1.0);
+                    OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, entry, _metaData.Files.Length, 1.0);
 
-                entry++;
+                    entry++;
+                }
+                DebugLogger.Log("Unpacking finished succesfully!");
             }
-            DebugLogger.Log("Unpacking finished succesfully!");
+            catch (ZlibException)
+            {
+                DebugHashFile();
+                throw;
+            }
+
+            
         }
 
         public void UnarchiveSingleFile(Pack1Meta.FileEntry file, CancellationToken cancellationToken, string destinationDirPath = null)
