@@ -163,8 +163,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     UnarchivePackage(packageDir.Path, out usedSuffix, cancellationToken);
 
-                    ProcessAddedFiles(packageDir.Path, usedSuffix, cancellationToken);
                     ProcessRemovedFiles(cancellationToken);
+                    ProcessAddedFiles(packageDir.Path, usedSuffix, cancellationToken);
 
                     TemporaryDirectory.ExecuteIn(_packagePath + ".temp_diff_" + Path.GetRandomFileName(), (tempDiffDir) =>
                     {

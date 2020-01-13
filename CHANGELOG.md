@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.1.0]
+### Fixed
+- Installing diff which contains the same entry in added_files & removed_files
+
 ## [3.17.0.0]
 ### Added
 - Support for custom start app arguments (#1486)
