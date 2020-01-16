@@ -163,8 +163,29 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     UnarchivePackage(packageDir.Path, out usedSuffix, cancellationToken);
 
-                    ProcessRemovedFiles(cancellationToken);
-                    ProcessAddedFiles(packageDir.Path, usedSuffix, cancellationToken);
+                    // To correctly install diff, we need to first remove the
+                    // files & dirs, and later add a new ones.
+                    //
+                    // Otherwise we could encounter a situation when we try to
+                    // add a file/dir, which is already present in the data
+                    // (but should be removed becuase it's in the removed_files)
+                    //
+                    // But only with diff summary 2.6 we can be sure that
+                    // removed_files field contains directories as well.
+                    //
+                    // That's why we're keeping the "wrong" behaviour for diffs
+                    // with version lower than 2.6.
+
+                    if (IsDiffSummaryVersionAtLeast2_6())
+                    {
+                        ProcessRemovedFiles(cancellationToken);
+                        ProcessAddedFiles(packageDir.Path, usedSuffix, cancellationToken);
+                    }
+                    else
+                    {
+                        ProcessAddedFiles(packageDir.Path, usedSuffix, cancellationToken);
+                        ProcessRemovedFiles(cancellationToken);
+                    }
 
                     TemporaryDirectory.ExecuteIn(_packagePath + ".temp_diff_" + Path.GetRandomFileName(), (tempDiffDir) =>
                     {
@@ -182,6 +203,33 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 _logger.LogError("Diff installation failed", e);
                 throw;
+            }
+        }
+
+        private bool IsDiffSummaryVersionAtLeast2_6()
+        {
+            try
+            {
+                var versionSplit = _diffSummary.Version.Split('.');
+
+                int major = int.Parse(versionSplit[0]);
+                int minor = int.Parse(versionSplit[1]);
+
+                if (major > 2)
+                {
+                    return true;
+                }
+
+                if (major == 2 && minor >= 6)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
             }
         }
 
