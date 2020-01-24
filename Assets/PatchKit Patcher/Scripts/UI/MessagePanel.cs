@@ -7,6 +7,8 @@ namespace PatchKit.Unity.Patcher.UI
     [RequireComponent(typeof(Animator))]
     public class MessagePanel : MonoBehaviour
     {
+        public string StartAppCustomArgs;
+
         public Button PlayButton;
 
         public Button CheckButton;
@@ -67,6 +69,7 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void OnPlayButtonClicked()
         {
+            Patcher.Instance.StartAppCustomArgs = StartAppCustomArgs;
             Patcher.Instance.SetUserDecision(Patcher.UserDecision.StartApp);
         }
 

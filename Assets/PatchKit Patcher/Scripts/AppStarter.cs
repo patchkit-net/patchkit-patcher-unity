@@ -63,7 +63,7 @@ namespace PatchKit.Unity.Patcher
             return AppFinder.FindExecutable(_app.LocalDirectory.Path, platformType);
         }
 
-        public void Start()
+        public void Start(string customArgs)
         {
             AppVersion? appVersion = null;
 
@@ -81,20 +81,21 @@ namespace PatchKit.Unity.Patcher
                     "Failed to retrieve app version info. Will try to detect exectuable manually.");
             }
         
-            StartAppVersion(appVersion);
+            StartAppVersion(appVersion, customArgs);
         }
 
-        private void StartAppVersion(AppVersion? appVersion)
+        private void StartAppVersion(AppVersion? appVersion, string customArgs)
         {
             DebugLogger.Log("Starting application.");
 
             PlatformType platformType = Platform.GetPlatformType();
             string appFilePath = ResolveExecutablePath(appVersion);
-            string appArgs = null;
+            string appArgs = customArgs ?? string.Empty;
 
-            if (appVersion != null)
+            if (appVersion != null &&
+                appVersion.Value.MainExecutableArgs != null)
             {
-                appArgs = appVersion.Value.MainExecutableArgs;
+                appArgs += " " + appVersion.Value.MainExecutableArgs;
             }
 
             if (appFilePath == null)
