@@ -34,6 +34,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly string _suffix;
         private readonly byte[] _key;
         private readonly byte[] _iv;
+        private int _processedFiles = 0; // debugging
 
         /// <summary>
         /// The range (in bytes) of the partial pack1 source file
@@ -41,6 +42,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly BytesRange _range;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
+
+        // set to true to continue unpacking on error. Check HasErrors later to see if there are any
+        public bool ContinueOnError { private get; set; }
+
+        // After Unarchive() if set to true, there were unpacking errors.
+        public bool HasErrors { get; private set; }
 
         public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key, string suffix = "")
             : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key), suffix, new BytesRange(0, -1))
@@ -87,6 +94,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public void Unarchive(CancellationToken cancellationToken)
         {
             int entry = 1;
+            HasErrors = false;
 
             DebugLogger.Log("Unpacking " + _metaData.Files.Length + " files...");
             foreach (var file in _metaData.Files)
@@ -149,7 +157,24 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             switch (file.Type)
             {
                 case Pack1Meta.RegularFileType:
-                    UnpackRegularFile(file, progress, cancellationToken, destinationDirPath);
+                    try
+                    {
+                        UnpackRegularFile(file, progress, cancellationToken, destinationDirPath);
+                    } catch(Ionic.Zlib.ZlibException e)
+                    {
+                        if (ContinueOnError)
+                        {
+                            DebugLogger.LogWarning("ZlibException caught. The process will continue, but I will try to repair it later.");
+                            DebugLogger.LogException(e);
+                            HasErrors = true;
+                        } else
+                        {
+                            throw;
+                        }
+                    } finally {
+                        _processedFiles += 1;
+                    }
+                    
                     break;
                 case Pack1Meta.DirectoryFileType:
                     progress(0.0);
@@ -246,6 +271,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                         using (var target = new FileStream(destPath, FileMode.Create))
                         {
                             ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
+                            DebugTestCorruption(target);
                         }
                     }
 
@@ -257,6 +283,30 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
 
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
+        }
+
+        // allows to test corruption if valid environment variable is set
+        private void DebugTestCorruption(FileStream target)
+        {
+            if (_processedFiles == 0)
+            {
+                // do not corrupt the first file
+                return;
+            }
+
+            if (
+                _processedFiles % 10 == 0 && EnvironmentInfo.GetEnvironmentVariable(EnvironmentVariables.CorruptFilesOnUnpack10, "") == "1"
+                ||
+                _processedFiles % 50 == 0 && EnvironmentInfo.GetEnvironmentVariable(EnvironmentVariables.CorruptFilesOnUnpack50, "") == "1"
+                ||
+                _processedFiles % 300 == 0 && EnvironmentInfo.GetEnvironmentVariable(EnvironmentVariables.CorruptFilesOnUnpack300, "") == "1"
+                )
+            {
+                DebugLogger.LogWarning("DEBUG: Writing extra byte and triggering zlibexception");
+
+                target.Write(new byte[] { 1 }, 0, 1);
+                throw new Ionic.Zlib.ZlibException();
+            }
         }
 
         private Stream CreateXzDecompressor(Stream source)

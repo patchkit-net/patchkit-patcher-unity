@@ -103,6 +103,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             installContent.Execute(cancellationToken);
 
+            if (installContent.NeedRepair)
+            {
+                DebugLogger.Log("Content installed with errors, requesting repair");
+
+                var appRepairer = new AppRepairer(_context, _status);
+                appRepairer.CheckHashes = true;
+
+                if (!appRepairer.Perform(cancellationToken))
+                {
+                    throw new CannotRepairDiskFilesException("Failed to validate/repair disk files");
+                }
+            }
+
             _context.App.DownloadDirectory.Clear();
         }
     }

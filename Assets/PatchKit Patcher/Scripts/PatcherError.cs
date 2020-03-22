@@ -30,6 +30,11 @@
             return new PatcherError("Patcher has to be started using the launcher.");
         }
 
+        public static PatcherError CannotRepairDiskFilesException()
+        {
+            return new PatcherError("Couldn't validate local files, please try again. If the issue remains, it could mean a disk issue.");
+        }
+
         public static PatcherError Other() {
             return new PatcherError("Unknown error, please try again. If the issue remains, please contact the support.");
         }
