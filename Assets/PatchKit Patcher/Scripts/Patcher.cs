@@ -770,6 +770,11 @@ namespace PatchKit.Unity.Patcher
                 DebugLogger.LogException(e);
                 ThreadDisplayError(PatcherError.NotEnoughDiskSpace(e.RequiredSpace - e.AvailableSpace), cancellationToken);
             }
+            catch (CannotRepairDiskFilesException e)
+            {
+                DebugLogger.LogException(e);
+                ThreadDisplayError(PatcherError.CannotRepairDiskFilesException(), cancellationToken);
+            }
             catch (ThreadInterruptedException)
             {
                 DebugLogger.Log(string.Format(

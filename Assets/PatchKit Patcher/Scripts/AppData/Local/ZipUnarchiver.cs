@@ -19,6 +19,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
+        // not used
+        public bool ContinueOnError { private get; set; }
+
+        // not used
+        public bool HasErrors { get; private set; }
+
         public ZipUnarchiver(string packagePath, string destinationDirPath, string password = null)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");

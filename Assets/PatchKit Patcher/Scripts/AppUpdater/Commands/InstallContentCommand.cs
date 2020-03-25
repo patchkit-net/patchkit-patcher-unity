@@ -117,12 +117,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     _unarchivePackageStatus.Description.Value = string.Format("Unarchiving package ({0}/{1})...", entry, amount);
                 };
 
+                // Allow to unpack with errors. This allows to install content even on corrupted hard drives, and attempt to fix these later
+                unarchiver.ContinueOnError = true;
+
                 unarchiver.Unarchive(cancellationToken);
+                NeedRepair = unarchiver.HasErrors;
 
                 _unarchivePackageStatus.Progress.Value = 1.0;
                 _unarchivePackageStatus.IsActive.Value = false;
 
-                DebugLogger.Log("Copying files.");
+                DebugLogger.Log("Moving files.");
 
                 _copyFilesStatus.IsActive.Value = true;
                 _copyFilesStatus.Description.Value = "Installing...";
@@ -131,8 +135,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+                    var sourceFile = new SourceFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
 
-                    InstallFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix, cancellationToken);
+                    if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
+                    {
+                        DebugLogger.LogWarning("Skipping unexisting file because I've been expecting unpacking errors: " + sourceFile.Name);
+                    } else
+                    {
+                        InstallFile(sourceFile, cancellationToken);
+                    }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
                     _copyFilesStatus.Description.Value = string.Format("Installing ({0}/{1})...", i + 1, _versionContentSummary.Files.Length);
@@ -159,18 +170,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private void InstallFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken)
+        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken)
         {
-            DebugLogger.Log(string.Format("Installing file {0}", fileName+suffix));
+            DebugLogger.Log(string.Format("Installing file {0}", sourceFile.Name));
 
-            string sourceFilePath = Path.Combine(packageDirPath, fileName+suffix);
-
-            if (!File.Exists(sourceFilePath))
+            if (!sourceFile.Exists())
             {
-                throw new InstallerException(string.Format("Cannot find file {0} in content package.", fileName));
+                throw new InstallerException(string.Format("Cannot find file {0} in content package.", sourceFile.Name));
             }
 
-            string destinationFilePath = _localData.Path.PathCombine(fileName);
+            string destinationFilePath = _localData.Path.PathCombine(sourceFile.Name);
             DirectoryOperations.CreateParentDirectory(destinationFilePath, cancellationToken);
 
             if (File.Exists(destinationFilePath))
@@ -179,8 +188,29 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 FileOperations.Delete(destinationFilePath, cancellationToken);
             }
 
-            FileOperations.Move(sourceFilePath, destinationFilePath, cancellationToken);
-            _localMetaData.RegisterEntry(fileName, _versionId);
+            FileOperations.Move(sourceFile.FullPath, destinationFilePath, cancellationToken);
+            _localMetaData.RegisterEntry(sourceFile.Name, _versionId);
+        }
+
+        struct SourceFile
+        {
+            public string Name { get; private set; }
+            private string _suffix;
+            private string _root;
+
+            public string FullPath { get { return Path.Combine(_root, Name + _suffix); } }
+
+            public SourceFile(string name, string root, string suffix)
+            {
+                Name = name;
+                _root = root;
+                _suffix = suffix;
+            }
+
+            public bool Exists()
+            {
+                return File.Exists(FullPath);
+            }
         }
     }
 }
