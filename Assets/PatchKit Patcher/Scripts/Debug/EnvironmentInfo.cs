@@ -25,5 +25,16 @@ namespace PatchKit.Unity.Patcher.Debug
 
             return value != null;
         }
+
+        public static string GetEnvironmentVariable(string name, string @default)
+        {
+            string value;
+            if (TryReadEnvironmentVariable(name, out value))
+            {
+                return value;
+            }
+
+            return @default;
+        }
     }
 }

@@ -9,6 +9,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private bool _executeHasBeenCalled;
         private bool _prepareHasBeenCalled;
 
+        public bool NeedRepair { get; protected set; }
+
         public virtual void Execute(CancellationToken cancellationToken)
         {
             Assert.MethodCalledOnlyOnce(ref _executeHasBeenCalled, "Execute");
