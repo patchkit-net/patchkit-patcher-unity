@@ -26,7 +26,7 @@ namespace PatchKit.Unity.Patcher
     // - this component is destroyed only when application quits
     public class Patcher : MonoBehaviour
     {
-        public const string EditorAllowedSecret = "ac20fc855b75a7ea5f3e936dfd38ccd8";
+        public const string EditorAllowedSecret = "94987833c3b51565ce7bf85e9a747571";
 
         public enum UserDecision
         {
@@ -792,6 +792,11 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.LogException(e);
                 ThreadDisplayError(PatcherError.NotEnoughDiskSpace(e.RequiredSpace - e.AvailableSpace), cancellationToken);
+            }
+            catch (CannotRepairDiskFilesException e)
+            {
+                DebugLogger.LogException(e);
+                ThreadDisplayError(PatcherError.CannotRepairDiskFilesException(), cancellationToken);
             }
             catch (ThreadInterruptedException)
             {

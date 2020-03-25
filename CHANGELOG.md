@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Sending statistic events (#1625)
 
+## [3.17.2.0]
+### Added
+- Attempting to repair content on failed installation
+
+### Fixed
+- Ability to test patcher in the editor
+
 ## [3.17.1.0]
 ### Fixed
 - Installing diff which contains the same entry in added_files & removed_files
