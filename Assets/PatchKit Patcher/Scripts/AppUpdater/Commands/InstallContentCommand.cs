@@ -176,7 +176,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             if (!sourceFile.Exists())
             {
-                throw new InstallerException(string.Format("Cannot find file {0} in content package.", sourceFile.Exists()));
+                throw new InstallerException(string.Format("Cannot find file {0} in content package.", sourceFile.Name));
             }
 
             string destinationFilePath = _localData.Path.PathCombine(sourceFile.Name);
@@ -207,7 +207,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _suffix = suffix;
             }
 
-            public bool Exists() {
+            public bool Exists()
+            {
                 return File.Exists(FullPath);
             }
         }

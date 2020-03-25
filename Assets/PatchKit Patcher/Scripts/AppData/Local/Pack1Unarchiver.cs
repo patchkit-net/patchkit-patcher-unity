@@ -46,7 +46,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         // set to true to continue unpacking on error. Check HasErrors later to see if there are any
         public bool ContinueOnError { private get; set; }
 
-        // After Unarchive() if set to true, there were unpacking errors.
+        // After Unarchive() finishes if this set to true, there were unpacking errors.
         public bool HasErrors { get; private set; }
 
         public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key, string suffix = "")
@@ -160,18 +160,22 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     try
                     {
                         UnpackRegularFile(file, progress, cancellationToken, destinationDirPath);
-                    } catch(Ionic.Zlib.ZlibException e)
+                    }
+                    catch (Ionic.Zlib.ZlibException e)
                     {
                         if (ContinueOnError)
                         {
                             DebugLogger.LogWarning("ZlibException caught. The process will continue, but I will try to repair it later.");
                             DebugLogger.LogException(e);
                             HasErrors = true;
-                        } else
+                        }
+                        else
                         {
                             throw;
                         }
-                    } finally {
+                    }
+                    finally
+                    {
                         _processedFiles += 1;
                     }
                     
