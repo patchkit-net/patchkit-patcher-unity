@@ -8,6 +8,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(AppUpdaterStrategyResolver));
 
+        // not used
+        public bool RepairOnError { get; set; }
+
         public StrategyType GetStrategyType()
         {
             return StrategyType.Empty;
