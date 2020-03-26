@@ -17,6 +17,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private readonly IAppUpdaterStrategy _repairStrategy;
         private readonly IAppUpdaterStrategy _diffStrategy;
 
+        // not used
+        public bool RepairOnError { get; set; }
+
         public AppUpdaterRepairAndDiffStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
             Assert.IsNotNull(context, "Context is null");

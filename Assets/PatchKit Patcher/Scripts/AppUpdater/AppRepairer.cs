@@ -104,8 +104,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             bool isNewVersionAvailable = installedVersionId < latestVersionId;
 
             long contentSize = isNewVersionAvailable
-                ? latestVersionContentSummary.Size
-                : installedVersionContentSummary.Size;
+                ? (latestVersionContentSummary.UncompressedSize != 0 ? latestVersionContentSummary.UncompressedSize : latestVersionContentSummary.Size)
+                : (installedVersionContentSummary.UncompressedSize != 0 ? installedVersionContentSummary.UncompressedSize : installedVersionContentSummary.Size);
 
             double repairCost = CalculateRepairCost(installedVersionContentSummary, filesNeedFixing);
 
@@ -131,10 +131,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
             else
             {
-                DebugLogger.Log("Content cost is smaller than repair. Uninstalling to prepare for content strategy.");
+                DebugLogger.Log(string.Format("Content cost {0} is smaller than repair {1}. Uninstalling to prepare for content strategy.", contentSize, repairCost));
                 IUninstallCommand uninstall = _commandFactory.CreateUninstallCommand(Context);
                 uninstall.Prepare(_status, cancellationToken);
                 uninstall.Execute(cancellationToken);
+
+                // not catching any exceptions here, because exception during content installation in this place should be fatal
+                var contentStrategy = new AppUpdaterContentStrategy(Context, _status);
+                contentStrategy.RepairOnError = false; // do not attempt to repair content to not cause a loop
+                contentStrategy.Update(cancellationToken);
             }
 
             return false;

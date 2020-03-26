@@ -17,6 +17,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private bool _updateHasBeenCalled;
 
+        public bool RepairOnError { get; set; }
+
         public AppUpdaterContentStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
             Checks.ArgumentNotNull(context, "context");
@@ -25,6 +27,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             _context = context;
             _status = status;
+
+            // defaults
+            RepairOnError = true;
         }
 
         public StrategyType GetStrategyType()
