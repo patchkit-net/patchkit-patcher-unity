@@ -108,7 +108,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             installContent.Execute(cancellationToken);
 
-            if (installContent.NeedRepair)
+            if (installContent.NeedRepair && RepairOnError)
             {
                 DebugLogger.Log("Content installed with errors, requesting repair");
 
