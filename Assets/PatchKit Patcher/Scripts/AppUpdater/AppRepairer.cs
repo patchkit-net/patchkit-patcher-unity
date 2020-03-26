@@ -117,11 +117,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     + _lowestVersionWithContentId +
                     " and currently installed version id is "
                     + installedVersionId +
-                    ". Uninstalling to prepare for content strategy.");
+                    ". Reinstalling.");
 
-                IUninstallCommand uninstall = _commandFactory.CreateUninstallCommand(Context);
-                uninstall.Prepare(_status, cancellationToken);
-                uninstall.Execute(cancellationToken);
+                ReinstallContent(cancellationToken);
             }
             else if (repairCost < contentSize)
             {
@@ -131,15 +129,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
             else
             {
-                DebugLogger.Log(string.Format("Content cost {0} is smaller than repair {1}. Uninstalling to prepare for content strategy.", contentSize, repairCost));
-                IUninstallCommand uninstall = _commandFactory.CreateUninstallCommand(Context);
-                uninstall.Prepare(_status, cancellationToken);
-                uninstall.Execute(cancellationToken);
-
-                // not catching any exceptions here, because exception during content installation in this place should be fatal
-                var contentStrategy = new AppUpdaterContentStrategy(Context, _status);
-                contentStrategy.RepairOnError = false; // do not attempt to repair content to not cause a loop
-                contentStrategy.Update(cancellationToken);
+                DebugLogger.Log(string.Format("Content cost {0} is smaller than repair {1}. Reinstalling.", contentSize, repairCost));
+                ReinstallContent(cancellationToken);
             }
 
             return false;
@@ -177,6 +168,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             return filesToRepair
                 .Select(f => contentSummary.Files.FirstOrDefault(e => e.Path == f.FileName))
                 .Sum(f => f.Size);
+        }
+
+        private void ReinstallContent(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
+        {
+            IUninstallCommand uninstall = _commandFactory.CreateUninstallCommand(Context);
+            uninstall.Prepare(_status, cancellationToken);
+            uninstall.Execute(cancellationToken);
+
+            // not catching any exceptions here, because exception during content installation in this place should be fatal
+            var contentStrategy = new AppUpdaterContentStrategy(Context, _status);
+            contentStrategy.RepairOnError = false; // do not attempt to repair content to not cause a loop
+            contentStrategy.Update(cancellationToken);
         }
     }
 }
