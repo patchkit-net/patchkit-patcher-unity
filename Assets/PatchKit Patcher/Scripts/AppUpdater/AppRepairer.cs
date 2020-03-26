@@ -104,8 +104,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             bool isNewVersionAvailable = installedVersionId < latestVersionId;
 
             long contentSize = isNewVersionAvailable
-                ? (latestVersionContentSummary.UncompressedSize != 0 ? latestVersionContentSummary.UncompressedSize : latestVersionContentSummary.Size)
-                : (installedVersionContentSummary.UncompressedSize != 0 ? installedVersionContentSummary.UncompressedSize : installedVersionContentSummary.Size);
+                ? latestVersionContentSummary.Files.Sum(f => f.Size)
+                : installedVersionContentSummary.Files.Sum(f => f.Size);
 
             double repairCost = CalculateRepairCost(installedVersionContentSummary, filesNeedFixing);
 
