@@ -32,6 +32,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private int _lowestVersionWithContentId;
 
+        private const double IncreaseRepairCost = 1.5d;
+
 
         public AppRepairer(AppUpdaterContext context, UpdaterStatus status)
         {
@@ -108,6 +110,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 : installedVersionContentSummary.Files.Sum(f => f.Size);
 
             double repairCost = CalculateRepairCost(installedVersionContentSummary, filesNeedFixing);
+            
+            // increasing repair costs that reinstallation will be done for 1/3 of the content size
+            repairCost *= IncreaseRepairCost;
 
 
             if (_lowestVersionWithContentId > installedVersionId)
