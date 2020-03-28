@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.2.0]
+### Added
+- Attempting to repair content on failed installation
+
+### Fixed
+- Ability to test patcher in the editor
+
 ## [3.17.1.0]
 ### Fixed
 - Installing diff which contains the same entry in added_files & removed_files

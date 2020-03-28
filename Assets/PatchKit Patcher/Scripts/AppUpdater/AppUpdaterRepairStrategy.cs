@@ -22,6 +22,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly ILogger _logger;
 
+        // not used
+        public bool RepairOnError { get; set; }
+
         public AppUpdaterRepairStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
             Assert.IsNotNull(context, "Context is null");
