@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
+using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
@@ -69,7 +71,11 @@ namespace PatchKit.Unity.Patcher
             {
                 throw new ApplicationException("Unable to parse app data path from command line.");
             }
-            data.AppDataPath = MakeAppDataPathAbsolute(relativeAppDataPath);
+
+            string appDataPathElectron = GetApplicationPathFormPatcherElectron(data.AppSecret);
+            appDataPathElectron = string.IsNullOrEmpty(appDataPathElectron) ? relativeAppDataPath : appDataPathElectron;
+            data.AppDataPath  = MakeAppDataPathAbsolute(appDataPathElectron);
+            DebugLogger.LogFormat("Using Application path: {0}", appDataPathElectron);
 
             string lockFilePath;
             if (TryReadArgument("--lockfile", out lockFilePath))
@@ -96,6 +102,25 @@ namespace PatchKit.Unity.Patcher
             }
 
             return data;
+        }
+
+        private static string GetApplicationPathFormPatcherElectron(string appSecret)
+        {
+            var roaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var patcherElctron = roaming + "/patchkit-patcher/";
+            var aplicationDataPath = patcherElctron + appSecret;
+            var pkSettings = aplicationDataPath + "/pk_settings";
+
+            if (!File.Exists(pkSettings))
+                return null;
+            
+            using (StreamReader file = new StreamReader(pkSettings))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                PatchkitElectronSettings patchkitElectronSettings =
+                    (PatchkitElectronSettings) serializer.Deserialize(file, typeof(PatchkitElectronSettings));
+                return patchkitElectronSettings.appPath;
+            }
         }
 
         private static string MakeAppDataPathAbsolute(string relativeAppDataPath)
