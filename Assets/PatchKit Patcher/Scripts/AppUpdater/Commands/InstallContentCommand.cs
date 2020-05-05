@@ -135,14 +135,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var sourceFile = new SourceFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
+                    var sourceFile = new SourceFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix, 
+                        _versionContentSummary.Files[i].Size);
 
                     if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
                     {
                         DebugLogger.LogWarning("Skipping unexisting file because I've been expecting unpacking errors: " + sourceFile.Name);
                     } else
                     {
-                        InstallFile(sourceFile, cancellationToken);
+                        InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
@@ -170,7 +171,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken)
+        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken, bool lastEntry)
         {
             DebugLogger.Log(string.Format("Installing file {0}", sourceFile.Name));
 
@@ -189,20 +190,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 
             FileOperations.Move(sourceFile.FullPath, destinationFilePath, cancellationToken);
-            _localMetaData.RegisterEntry(sourceFile.Name, _versionId);
+            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size, lastEntry);
         }
 
         struct SourceFile
         {
             public string Name { get; private set; }
+            public long Size { get; private set; }
             private string _suffix;
             private string _root;
 
             public string FullPath { get { return Path.Combine(_root, Name + _suffix); } }
 
-            public SourceFile(string name, string root, string suffix)
+            public SourceFile(string name, string root, string suffix, long size)
             {
                 Name = name;
+                Size = size;
                 _root = root;
                 _suffix = suffix;
             }

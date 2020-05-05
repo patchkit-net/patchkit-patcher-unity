@@ -20,7 +20,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     public class LocalMetaData : ILocalMetaData
     {
         private readonly ILogger _logger;
+        private long _globalEntriesSize = 0;
+        private long _numberOfEntries = 0;
         private const string DeprecatedCachePatchKitKey = "patchkit-key";
+        private const long MakeEntryEverySize = 13107200; //100MiB
 
         /// <summary>
         /// Data structure stored in file.
@@ -73,7 +76,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
-        public void RegisterEntry([NotNull] string entryName, int versionId)
+        public void RegisterEntry([NotNull] string entryName, int versionId, long entrySize, bool lastEntry)
         {
             if (entryName == null)
             {
@@ -97,7 +100,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 _data.FileVersionIds[entryName] = versionId;
 
-                SaveData();
+                if (ShouldSaveEntry(entrySize, lastEntry))
+                {
+                    SaveData();
+                }
 
                 _logger.LogDebug("Entry registered.");
             }
@@ -106,6 +112,22 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 _logger.LogError("Failed to register entry.", e);
                 throw;
             }
+        }
+
+        private bool ShouldSaveEntry(long entrySize, bool lastEntry)
+        {
+            if (lastEntry)
+            {
+                return true;
+            }
+
+            _globalEntriesSize += entrySize;
+            if ((_globalEntriesSize / MakeEntryEverySize) > _numberOfEntries)
+            {
+                _numberOfEntries++;
+                return true;
+            }
+            return false;
         }
 
         public void UnregisterEntry([NotNull] string entryName)

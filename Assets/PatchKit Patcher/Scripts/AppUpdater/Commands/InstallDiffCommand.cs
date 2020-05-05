@@ -484,7 +484,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
             _logger.LogDebug("File copied to local data.");
 
-            _localMetaData.RegisterEntry(fileName, _versionId);
+            _localMetaData.RegisterEntry(fileName, _versionId, 
+                _contentSummary.Files.First(x => x.Path == fileName).Size, 
+                fileName == _contentSummary.Files[_contentSummary.Files.Length-1].Path);
 
             _logger.LogDebug("Add file entry processed.");
         }
@@ -577,7 +579,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _logger.LogDebug("Patching is not necessary. File content is the same as in previous version.");
             }
 
-            _localMetaData.RegisterEntry(fileName, _versionId);
+            _localMetaData.RegisterEntry(fileName, _versionId, 
+                _contentSummary.Files.First(x => x.Path == fileName).Size, 
+                fileName == _contentSummary.Files[_contentSummary.Files.Length-1].Path);
 
             _logger.LogDebug("Patch file entry processed.");
         }

@@ -16,7 +16,9 @@
         /// </summary>
         /// <param name="entryName">Name of the entry.</param>
         /// <param name="versionId">The version id.</param>
-        void RegisterEntry(string entryName, int versionId);
+        /// <param name="entrySize">Size of entry.</param>
+        /// <param name="lastEntry">If set to true, it is last entry.</param>
+        void RegisterEntry(string entryName, int versionId, long entrySize, bool lastEntry);
 
         /// <summary>
         /// Unregisters the entry.
