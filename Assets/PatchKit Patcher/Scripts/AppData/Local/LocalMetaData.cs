@@ -20,10 +20,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     public class LocalMetaData : ILocalMetaData
     {
         private readonly ILogger _logger;
-        private long _globalEntriesSize = 0;
-        private long _numberOfEntries = 0;
+        private long _unsavedEntriesSize = 0;
         private const string DeprecatedCachePatchKitKey = "patchkit-key";
-        private const long MakeEntryEverySize = 13107200; //100MiB
+        private const long UnsavedEntriesSizeLimit = 104857600; //100MiB
 
         /// <summary>
         /// Data structure stored in file.
@@ -121,10 +120,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 return true;
             }
 
-            _globalEntriesSize += entrySize;
-            if ((_globalEntriesSize / MakeEntryEverySize) > _numberOfEntries)
+            _unsavedEntriesSize += entrySize;
+            if (_unsavedEntriesSize > UnsavedEntriesSizeLimit)
             {
-                _numberOfEntries++;
+                _unsavedEntriesSize = 0;
                 return true;
             }
             return false;
