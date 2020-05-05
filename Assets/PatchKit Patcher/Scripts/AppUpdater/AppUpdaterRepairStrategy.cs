@@ -98,13 +98,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 {
                     FileOperations.Delete(localPath, cancellationToken);
                     _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size, 
-                        fileName == filesIntegrityWithInvalidVersion[filesIntegrityWithInvalidVersion.Length -1].FileName);
+                        fileName == filesIntegrityWithInvalidVersion.Last().FileName);
                     invalidVersionIdFile.Status = FileIntegrityStatus.MissingData;
                 }
                 else
                 {
                     _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size, 
-                        fileName == filesIntegrityWithInvalidVersion[filesIntegrityWithInvalidVersion.Length -1].FileName);
+                        fileName == filesIntegrityWithInvalidVersion.Last().FileName);
                     invalidVersionIdFile.Status = FileIntegrityStatus.Ok;
                 }
             }
