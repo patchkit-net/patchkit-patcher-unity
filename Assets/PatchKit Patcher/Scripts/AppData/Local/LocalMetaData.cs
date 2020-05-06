@@ -75,7 +75,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
-        public void RegisterEntry([NotNull] string entryName, int versionId, long entrySize, bool lastEntry)
+        public void RegisterEntry([NotNull] string entryName, int versionId, long entrySize, bool isLastEntry)
         {
             if (entryName == null)
             {
@@ -99,7 +99,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 _data.FileVersionIds[entryName] = versionId;
 
-                if (ShouldSaveEntry(entrySize, lastEntry))
+                if (ShouldSaveEntry(entrySize, isLastEntry))
                 {
                     SaveData();
                 }
@@ -113,9 +113,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
         }
 
-        private bool ShouldSaveEntry(long entrySize, bool lastEntry)
+        private bool ShouldSaveEntry(long entrySize, bool isLastEntry)
         {
-            if (lastEntry)
+            if (isLastEntry)
             {
                 return true;
             }

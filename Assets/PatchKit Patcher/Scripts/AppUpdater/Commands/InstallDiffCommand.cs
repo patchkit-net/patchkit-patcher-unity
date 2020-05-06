@@ -458,7 +458,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         }
 
         private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken,
-            int index)
+            int fileIndex)
         {
             _logger.LogDebug(string.Format("Processing add file entry {0}", fileName));
 
@@ -487,7 +487,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             
             _localMetaData.RegisterEntry(fileName, _versionId, 
                 _contentSummary.Files.First(x => x.Path == fileName).Size, 
-                index == _diffSummary.AddedFiles.Length - 1);
+                fileIndex == _diffSummary.AddedFiles.Length - 1);
 
             _logger.LogDebug("Add file entry processed.");
         }
@@ -524,7 +524,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private void PatchFile(
             string fileName, string packageDirPath, string suffix,
-            TemporaryDirectory tempDiffDir, CancellationToken cancellationToken, int index)
+            TemporaryDirectory tempDiffDir, CancellationToken cancellationToken, int fileIndex)
         {
             _logger.LogDebug(string.Format("Processing patch file entry {0}", fileName));
 
@@ -582,7 +582,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             
             _localMetaData.RegisterEntry(fileName, _versionId, 
                 _contentSummary.Files.First(x => x.Path == fileName).Size, 
-                index == _diffSummary.ModifiedFiles.Length - 1);
+                fileIndex == _diffSummary.ModifiedFiles.Length - 1);
 
             _logger.LogDebug("Patch file entry processed.");
         }
