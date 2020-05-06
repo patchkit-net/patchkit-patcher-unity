@@ -86,9 +86,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var filesIntegrityWithInvalidVersion = filesIntegrity.Where(x =>
                 x.Status == FileIntegrityStatus.InvalidVersion).ToArray();
-            foreach (var invalidVersionIdFile in filesIntegrityWithInvalidVersion)
+            for (int i = 0; i < filesIntegrityWithInvalidVersion.Length; i++)
             {
-                var fileName = invalidVersionIdFile.FileName;
+                var fileName = filesIntegrityWithInvalidVersion[i].FileName;
                 var file = contentSummary.Files.First(x => x.Path == fileName);
 
                 var localPath = _context.App.LocalDirectory.Path.PathCombine(file.Path);
@@ -98,14 +98,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 {
                     FileOperations.Delete(localPath, cancellationToken);
                     _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size, 
-                        fileName == filesIntegrityWithInvalidVersion.Last().FileName);
-                    invalidVersionIdFile.Status = FileIntegrityStatus.MissingData;
+                        i == filesIntegrityWithInvalidVersion.Length - 1);
+                    filesIntegrityWithInvalidVersion[i].Status = FileIntegrityStatus.MissingData;
                 }
                 else
                 {
                     _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size, 
-                        fileName == filesIntegrityWithInvalidVersion.Last().FileName);
-                    invalidVersionIdFile.Status = FileIntegrityStatus.Ok;
+                        i == filesIntegrityWithInvalidVersion.Length - 1);
+                    filesIntegrityWithInvalidVersion[i].Status = FileIntegrityStatus.Ok;
                 }
             }
 

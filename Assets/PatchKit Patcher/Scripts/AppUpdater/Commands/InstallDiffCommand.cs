@@ -430,7 +430,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 }
                 else
                 {
-                    AddFile(entryName, packageDirPath, suffix, cancellationToken);
+                    AddFile(entryName, packageDirPath, suffix, cancellationToken, i);
                 }
 
                 _addFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.AddedFiles.Length;
@@ -457,7 +457,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Add directory entry processed.");
         }
 
-        private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken)
+        private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken,
+            int index)
         {
             _logger.LogDebug(string.Format("Processing add file entry {0}", fileName));
 
@@ -483,10 +484,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Copying file to local data (overwriting if needed)...");
             FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
             _logger.LogDebug("File copied to local data.");
-
-            string lastFilePath = _contentSummary.Files[_contentSummary.Files.Length - 1].Path;
+            
             _localMetaData.RegisterEntry(fileName, _versionId, 
-                _contentSummary.Files.First(x => x.Path == fileName).Size, fileName == lastFilePath);
+                _contentSummary.Files.First(x => x.Path == fileName).Size, 
+                index == _diffSummary.AddedFiles.Length - 1);
 
             _logger.LogDebug("Add file entry processed.");
         }
@@ -507,7 +508,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 if (!entryName.EndsWith("/"))
                 {
-                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken);
+                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken, i);
                 }
 
                 _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.ModifiedFiles.Length;
@@ -523,7 +524,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private void PatchFile(
             string fileName, string packageDirPath, string suffix,
-            TemporaryDirectory tempDiffDir, CancellationToken cancellationToken)
+            TemporaryDirectory tempDiffDir, CancellationToken cancellationToken, int index)
         {
             _logger.LogDebug(string.Format("Processing patch file entry {0}", fileName));
 
@@ -578,10 +579,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 _logger.LogDebug("Patching is not necessary. File content is the same as in previous version.");
             }
-
-            string lastFilePath = _contentSummary.Files[_contentSummary.Files.Length - 1].Path;
+            
             _localMetaData.RegisterEntry(fileName, _versionId, 
-                _contentSummary.Files.First(x => x.Path == fileName).Size, fileName == lastFilePath);
+                _contentSummary.Files.First(x => x.Path == fileName).Size, 
+                index == _diffSummary.ModifiedFiles.Length - 1);
 
             _logger.LogDebug("Patch file entry processed.");
         }

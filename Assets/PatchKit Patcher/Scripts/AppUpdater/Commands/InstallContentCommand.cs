@@ -135,8 +135,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var file = _versionContentSummary.Files[i];
-                    var sourceFile = new SourceFile(file.Path, packageDir.Path, usedSuffix, file.Size);
+                    var versionContentSummaryFile = _versionContentSummary.Files[i];
+                    var sourceFile = new SourceFile(versionContentSummaryFile.Path, packageDir.Path, usedSuffix, versionContentSummaryFile.Size);
 
                     if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
                     {
