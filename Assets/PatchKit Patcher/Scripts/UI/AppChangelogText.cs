@@ -10,7 +10,7 @@ namespace PatchKit.Unity.UI
 {
     public class AppChangelogText : AppCompontent
     {
-        [Multiline] public string Format = "<b>{label}</b>  Publish data: {publishdate}\n{changelog}\n\n";
+        [Multiline] public string Format = "<b>{label}</b>  Published at: {publishdate}\n{changelog}\n\n";
 
         public Text Text;
 
