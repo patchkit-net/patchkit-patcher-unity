@@ -10,22 +10,22 @@ namespace PatchKit.Unity.UI
 {
     public class AppChangelogText : AppCompontent
     {
-        [Multiline] public string Format = "<b>{label}</b>\n{changelog}\n\n";
+        [Multiline] public string Format = "<b>{label}</b>  Publish data: {publishdate}\n{changelog}\n\n";
 
         public Text Text;
 
         protected override IEnumerator LoadCoroutine()
         {
-            yield return Threading.StartThreadCoroutine(() => MainApiConnection.GetAppVersionList(AppSecret, null, CancellationToken.Empty), response =>
+            yield return Threading.StartThreadCoroutine(() => MainApiConnection.GetAppChangelog(AppSecret, CancellationToken.Empty), response =>
             {
                 Text.text = string.Join("\n",
-                    response.OrderByDescending(version => version.Id).Select(version =>
+                    response.versions.Select(version =>
                     {
                         string changelog = Format;
 
-                        changelog = changelog.Replace("{label}", version.Label);
-                        changelog = changelog.Replace("{changelog}", version.Changelog);
-                        string publishDate = UnixTimeConvert.FromUnixTimeStamp(version.PublishDate).ToString("g");
+                        changelog = changelog.Replace("{label}", version.VersionLabel);
+                        changelog = changelog.Replace("{changelog}", version.Changes);
+                        string publishDate = UnixTimeConvert.FromUnixTimeStamp(version.PublishTime).ToString("g");
                         changelog = changelog.Replace("{publishdate}", publishDate);
 
                         return changelog;
