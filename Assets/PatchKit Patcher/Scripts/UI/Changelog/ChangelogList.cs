@@ -32,11 +32,10 @@ namespace PatchKit.Unity.Patcher.UI
 
             yield return
                 Threading.StartThreadCoroutine(() =>
-                        MainApiConnection.GetAppVersionList(
+                        MainApiConnection.GetAppChangelog(
                             Patcher.Instance.Data.Value.AppSecret,
-                            null,
                             CancellationToken.Empty),
-                    versions => CreateAndCacheChangelog(appSecret, versions));
+                    changelog => CreateAndCacheChangelog(appSecret, changelog.versions));
         }
 
         private void LoadChangelogFromCache(string appSecret)
@@ -50,7 +49,7 @@ namespace PatchKit.Unity.Patcher.UI
                     return;
                 }
 
-                var versions = JsonConvert.DeserializeObject<AppVersion[]>(cacheValue);
+                var versions = JsonConvert.DeserializeObject<Changelog>(cacheValue).versions;
 
                 CreateChangelog(versions);
             }
@@ -60,7 +59,7 @@ namespace PatchKit.Unity.Patcher.UI
             }
         }
 
-        private void CreateAndCacheChangelog(string appSecret, AppVersion[] versions)
+        private void CreateAndCacheChangelog(string appSecret, Versions[] versions)
         {
             try
             {
@@ -85,20 +84,20 @@ namespace PatchKit.Unity.Patcher.UI
 
         }
 
-        private void CreateChangelog(AppVersion[] versions)
+        private void CreateChangelog(Versions[] versions)
         {
             DestroyOldChangelog();
 
-            foreach (AppVersion version in versions.OrderByDescending(version => version.Id))
+            foreach (Versions version in versions)
             {
                 CreateVersionChangelog(version);
             }
         }
 
-        private void CreateVersionChangelog(AppVersion version)
+        private void CreateVersionChangelog(Versions version)
         {
-            CreateVersionTitle(version.Label);
-            CreateVersionChangeList(version.Changelog);
+            CreateVersionTitle(version.VersionLabel);
+            CreateVersionChangeList(version.Changes);
         }
 
         private void CreateVersionTitle(string label)
