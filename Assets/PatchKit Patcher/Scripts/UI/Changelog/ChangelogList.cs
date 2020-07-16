@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using Newtonsoft.Json;
 using PatchKit.Api.Models.Main;
+using PatchKit.Api.Utilities;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
@@ -96,14 +97,15 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void CreateVersionChangelog(Versions version)
         {
-            CreateVersionTitle(version.VersionLabel);
+            CreateVersionTitleWithPublishData(version.VersionLabel, version.PublishTime);
             CreateVersionChangeList(version.Changes);
         }
 
-        private void CreateVersionTitle(string label)
+        private void CreateVersionTitleWithPublishData(string label, long publishTime)
         {
             var title = Instantiate(TitlePrefab);
-            title.Text.text = string.Format("Changelog {0}", label);
+            string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime).ToString("g");
+            title.Text.text = string.Format("Changelog {0}\nPublish data: {1}", label, publishDate);
             title.transform.SetParent(transform, false);
             title.transform.SetAsLastSibling();
         }
