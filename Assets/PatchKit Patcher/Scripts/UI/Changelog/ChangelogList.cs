@@ -8,6 +8,8 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.Utilities;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
@@ -101,10 +103,12 @@ namespace PatchKit.Unity.Patcher.UI
         private void CreateVersionTitleWithPublishData(string label, long publishTime)
         {
             var title = Instantiate(TitlePrefab);
+            title.Texts[0].text = string.Format("Changelog {0}", label);
             string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime).ToString("g");
-            title.Text.text = string.Format("Changelog {0}\nPublish data: {1}", label, publishDate);
+            title.Texts[1].text = string.Format("Published at: {0}", publishDate);
             title.transform.SetParent(transform, false);
             title.transform.SetAsLastSibling();
+
         }
 
         private void CreateVersionChangeList(string changelog)
@@ -121,7 +125,7 @@ namespace PatchKit.Unity.Patcher.UI
         private void CreateVersionChange(string changeText)
         {
             var change = Instantiate(ChangePrefab);
-            change.Text.text = changeText;
+            change.Texts[0].text = changeText;
             change.transform.SetParent(transform, false);
             change.transform.SetAsLastSibling();
         }
