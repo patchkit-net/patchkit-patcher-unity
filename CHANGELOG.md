@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.3.0]
+### Added
+- Filtering the secret in the patcher logs (#2040)
+
 ## [3.17.2.0]
 ### Added
 - Attempting to repair content on failed installation

@@ -87,6 +87,10 @@ namespace PatchKit.Unity.Patcher
 
         private PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _updateAppCancellationTokenSource;
 
+        public string TraceableAppSecret { get; private set; }
+        
+        public string AppSecret { get; private set; }
+        
         public ErrorDialog ErrorDialog;
 
         public string EditorAppSecret;
@@ -512,7 +516,9 @@ namespace PatchKit.Unity.Patcher
                 var inputArgumentsPatcherDataReader = new InputArgumentsPatcherDataReader();
                 _data.Value = inputArgumentsPatcherDataReader.Read();
 #endif
-                DebugLogger.LogVariable(_data.Value.AppSecret, "Data.AppSecret");
+                AppSecret = _data.Value.AppSecret;
+                BuildTraceableAppSecret(AppSecret);
+                DebugLogger.LogVariable(AppSecret, "Data.AppSecret");
                 DebugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");
                 DebugLogger.LogVariable(_data.Value.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
                 DebugLogger.LogVariable(_data.Value.LockFilePath, "Data.LockFilePath");
@@ -952,6 +958,12 @@ namespace PatchKit.Unity.Patcher
 
                 return false;
             }
+        }
+        
+        private void BuildTraceableAppSecret(string appSecret)
+        {
+            TraceableAppSecret = string.Format("{0}...{1}", appSecret.Substring(0, 6),
+                appSecret.Substring(appSecret.Length - 6));
         }
     }
 }
