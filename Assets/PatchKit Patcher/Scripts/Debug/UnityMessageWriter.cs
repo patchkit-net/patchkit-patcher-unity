@@ -18,7 +18,9 @@ namespace PatchKit.Unity.Patcher.Debug
 
         public void Write(Message message, MessageContext messageContext)
         {
-            var text = _formatter.Format(message, messageContext);
+            var patcher = Patcher.Instance;
+            var text = _formatter.Format(message, messageContext)
+                .Replace(patcher.AppSecret, patcher.TraceableAppSecret);
 
             switch (message.Type)
             {

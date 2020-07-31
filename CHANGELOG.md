@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Sending statistic events (#1625)
 
+## [3.17.3.0]
+### Added
+- Filtering the secret in the patcher logs (#2040)
+
 ## [3.17.2.0]
 ### Added
 - Attempting to repair content on failed installation
