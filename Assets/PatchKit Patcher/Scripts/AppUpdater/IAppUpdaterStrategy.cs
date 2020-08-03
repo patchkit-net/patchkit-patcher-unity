@@ -15,6 +15,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
     public interface IAppUpdaterStrategy
     {
+        // if set to true, attempt to repair by using AppRepairer on error.
+        // Makes sense to set it to false from ongoing repair process.
+        // default: true
+        bool RepairOnError { get; set; }
+
         void Update(CancellationToken cancellationToken);
 
         StrategyType GetStrategyType();
