@@ -31,6 +31,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private bool _updateHasBeenCalled;
 
+        // not used
+        public bool RepairOnError { get; set; }
+
         public AppUpdaterDiffStrategy(AppUpdaterContext context, UpdaterStatus status)
         {
 
