@@ -87,7 +87,20 @@ namespace PatchKit.Unity.Patcher
 
         private PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _updateAppCancellationTokenSource;
 
-        public string TraceableAppSecret { get; private set; }
+        public string TraceableAppSecret     
+        {
+            get
+            {
+                if (_traceableAppSecret == null)
+                {
+                    _traceableAppSecret = BuildTraceableAppSecret();
+                }
+
+                return _traceableAppSecret;
+            }
+        }
+
+        private string _traceableAppSecret;
         
         public string AppSecret { get; private set; }
         
@@ -540,8 +553,8 @@ namespace PatchKit.Unity.Patcher
                 _data.Value = inputArgumentsPatcherDataReader.Read();
 #endif
                 AppSecret = _data.Value.AppSecret;
-                BuildTraceableAppSecret(AppSecret);
-                DebugLogger.LogVariable(AppSecret, "Data.AppSecret");
+
+                DebugLogger.LogVariable(_data.Value.AppSecret, "Data.AppSecret");
                 DebugLogger.LogVariable(_data.Value.AppDataPath, "Data.AppDataPath");
                 DebugLogger.LogVariable(_data.Value.OverrideLatestVersionId, "Data.OverrideLatestVersionId");
                 DebugLogger.LogVariable(_data.Value.LockFilePath, "Data.LockFilePath");
@@ -1000,10 +1013,10 @@ namespace PatchKit.Unity.Patcher
             }
         }
         
-        private void BuildTraceableAppSecret(string appSecret)
+        private string BuildTraceableAppSecret()
         {
-            TraceableAppSecret = string.Format("{0}...{1}", appSecret.Substring(0, 6),
-                appSecret.Substring(appSecret.Length - 6));
+            return string.Format("{0}...{1}", AppSecret.Substring(0, 6),
+                AppSecret.Substring(AppSecret.Length - 6));
         }
     }
 }
