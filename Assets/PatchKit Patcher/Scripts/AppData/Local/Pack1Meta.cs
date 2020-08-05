@@ -1,10 +1,13 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
     public class Pack1Meta
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Pack1Meta));
+
         #region Fields
 
         public string Version { get; set; }
@@ -30,7 +33,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public static Pack1Meta Parse(string content)
         {
-            UnityEngine.Debug.Log(content);
+            DebugLogger.Log(content);
             return JsonConvert.DeserializeObject<Pack1Meta>(content);
         }
 

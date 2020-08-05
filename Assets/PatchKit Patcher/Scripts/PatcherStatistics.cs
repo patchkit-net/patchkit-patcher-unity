@@ -17,6 +17,8 @@ namespace PatchKit.Unity.Patcher
 {
     public class PatcherStatistics
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherStatistics));
+        
         public enum Event
         {
             [Description("content_download_started")]
@@ -208,7 +210,7 @@ namespace PatchKit.Unity.Patcher
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
 
-            UnityEngine.Debug.Log("Sending event:\n" + json.ToString(Formatting.Indented));
+            DebugLogger.Log("Sending event:\n" + json.ToString(Formatting.Indented));
 
             yield return request.Send();
 
@@ -218,11 +220,11 @@ namespace PatchKit.Unity.Patcher
             if (request.isError || request.responseCode != 201)
 #endif
             {
-                UnityEngine.Debug.LogError("Failed to send event " + eventName + " (" + request.responseCode + "):\n" + request.error);
+                DebugLogger.LogError("Failed to send event " + eventName + " (" + request.responseCode + "):\n" + request.error);
             }
             else
             {
-                UnityEngine.Debug.Log("Event " + eventName + " has been sent!");
+                DebugLogger.Log("Event " + eventName + " has been sent!");
             }
         }
     }
