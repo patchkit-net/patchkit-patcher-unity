@@ -59,7 +59,7 @@ namespace PatchKit.Unity.Patcher.UI
             }
         }
 
-        private void CreateAndCacheChangelog(string appSecret, Versions[] versions)
+        private void CreateAndCacheChangelog(string appSecret, ChangelogEntry[] versions)
         {
             try
             {
@@ -84,20 +84,20 @@ namespace PatchKit.Unity.Patcher.UI
 
         }
 
-        private void CreateChangelog(Versions[] versions)
+        private void CreateChangelog(ChangelogEntry[] versions)
         {
             DestroyOldChangelog();
 
-            foreach (Versions version in versions)
+            foreach (ChangelogEntry version in versions)
             {
                 CreateVersionChangelog(version);
             }
         }
 
-        private void CreateVersionChangelog(Versions version)
+        private void CreateVersionChangelog(ChangelogEntry changelogEntry)
         {
-            CreateVersionTitleWithPublishData(version.VersionLabel, version.PublishTime);
-            CreateVersionChangeList(version.Changes);
+            CreateVersionTitleWithPublishData(changelogEntry.VersionLabel, changelogEntry.PublishTime);
+            CreateVersionChangeList(changelogEntry.Changes);
         }
 
         private void CreateVersionTitleWithPublishData(string label, long publishTime)

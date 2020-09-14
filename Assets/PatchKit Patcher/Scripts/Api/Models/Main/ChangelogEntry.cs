@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace PatchKit.Api.Models.Main
 {
-    public struct Versions
+    public struct ChangelogEntry
     {
         /// <summary>
         /// Version id.
