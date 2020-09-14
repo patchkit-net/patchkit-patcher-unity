@@ -8,6 +8,6 @@ namespace PatchKit.Api.Models.Main
         /// Structure Versions.
         /// </summary>
         [JsonProperty("versions")]
-        public Versions[] versions;
+        public ChangelogEntry[] versions;
     }
 }
