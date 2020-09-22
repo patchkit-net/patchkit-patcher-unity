@@ -3,11 +3,14 @@ using System.Collections;
 using System.Linq;
 using Newtonsoft.Json;
 using PatchKit.Api.Models.Main;
+using PatchKit.Api.Utilities;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.Utilities;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
@@ -32,11 +35,10 @@ namespace PatchKit.Unity.Patcher.UI
 
             yield return
                 Threading.StartThreadCoroutine(() =>
-                        MainApiConnection.GetAppVersionList(
+                        MainApiConnection.GetAppChangelog(
                             Patcher.Instance.Data.Value.AppSecret,
-                            null,
                             CancellationToken.Empty),
-                    versions => CreateAndCacheChangelog(appSecret, versions));
+                    changelog => CreateAndCacheChangelog(appSecret, changelog.versions));
         }
 
         private void LoadChangelogFromCache(string appSecret)
@@ -50,7 +52,7 @@ namespace PatchKit.Unity.Patcher.UI
                     return;
                 }
 
-                var versions = JsonConvert.DeserializeObject<AppVersion[]>(cacheValue);
+                var versions = JsonConvert.DeserializeObject<Changelog>(cacheValue).versions;
 
                 CreateChangelog(versions);
             }
@@ -60,7 +62,7 @@ namespace PatchKit.Unity.Patcher.UI
             }
         }
 
-        private void CreateAndCacheChangelog(string appSecret, AppVersion[] versions)
+        private void CreateAndCacheChangelog(string appSecret, ChangelogEntry[] versions)
         {
             try
             {
@@ -85,28 +87,31 @@ namespace PatchKit.Unity.Patcher.UI
 
         }
 
-        private void CreateChangelog(AppVersion[] versions)
+        private void CreateChangelog(ChangelogEntry[] versions)
         {
             DestroyOldChangelog();
 
-            foreach (AppVersion version in versions.OrderByDescending(version => version.Id))
+            foreach (ChangelogEntry version in versions)
             {
                 CreateVersionChangelog(version);
             }
         }
 
-        private void CreateVersionChangelog(AppVersion version)
+        private void CreateVersionChangelog(ChangelogEntry changelogEntry)
         {
-            CreateVersionTitle(version.Label);
-            CreateVersionChangeList(version.Changelog);
+            CreateVersionTitleWithPublishData(changelogEntry.VersionLabel, changelogEntry.PublishTime);
+            CreateVersionChangeList(changelogEntry.Changes);
         }
 
-        private void CreateVersionTitle(string label)
+        private void CreateVersionTitleWithPublishData(string label, long publishTime)
         {
             var title = Instantiate(TitlePrefab);
-            title.Text.text = string.Format("Changelog {0}", label);
+            title.Texts[0].text = string.Format("Changelog {0}", label);
+            string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime).ToString("g", CurrentCultureInfo.GetCurrentCultureInfo());
+            title.Texts[1].text = string.Format("Published at: {0}", publishDate);
             title.transform.SetParent(transform, false);
             title.transform.SetAsLastSibling();
+
         }
 
         private void CreateVersionChangeList(string changelog)
@@ -123,7 +128,7 @@ namespace PatchKit.Unity.Patcher.UI
         private void CreateVersionChange(string changeText)
         {
             var change = Instantiate(ChangePrefab);
-            change.Text.text = changeText;
+            change.Texts[0].text = changeText;
             change.transform.SetParent(transform, false);
             change.transform.SetAsLastSibling();
         }

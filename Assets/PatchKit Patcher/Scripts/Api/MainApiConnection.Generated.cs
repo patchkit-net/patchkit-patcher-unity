@@ -35,13 +35,13 @@ namespace PatchKit.Api
         /// Gets a complete changelog of an application.
         /// </summary>
         /// <param name="appSecret">Secret of an application.</param>
-        public Changelog[] GetAppChangelog(string appSecret, CancellationToken cancellationToken)
+        public Changelog GetAppChangelog(string appSecret, CancellationToken cancellationToken)
         {
             string path = "/1/apps/{app_secret}/changelog";
             path = path.Replace("{app_secret}", appSecret.ToString());
             string query = string.Empty;
             var response = GetResponse(path, query, cancellationToken);
-            return ParseResponse<Changelog[]>(response);
+            return ParseResponse<Changelog>(response);
         }
         
         /// <summary>

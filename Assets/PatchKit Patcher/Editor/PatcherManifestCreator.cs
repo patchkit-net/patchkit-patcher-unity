@@ -80,7 +80,8 @@ namespace PatchKit.Unity.Editor
                 "pack1_compression_lzma2",
                 "security_fix_944",
                 "preselected_executable",
-                "execution_arguments"
+                "execution_arguments",
+                "changelog_endpoint_2033"
             };
         }
 
