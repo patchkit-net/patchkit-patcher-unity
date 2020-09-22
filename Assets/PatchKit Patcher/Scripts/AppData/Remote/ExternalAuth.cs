@@ -92,10 +92,6 @@ class ExternalAuth
     private static readonly int LoginRequestIdLength = 32;
 
     private static readonly int EndpointRecognitionTimoutSeconds = 30;
-
-    private static readonly int EndpointRequestTimeoutSeconds = 60;
-
-    private static readonly int RefreshTokenEndpointRequestTimeoutSeconds = 60;
     
     public static AuthResult TryRefreshToken(
         string refreshToken,
@@ -308,7 +304,7 @@ class ExternalAuth
         var httpRequest = new HttpGetRequest
         {
             Address = httpAddress,
-            Timeout = RefreshTokenEndpointRequestTimeoutSeconds
+            Timeout = config.EndpointQueryTimeoutSeconds * 1000
         };
 
         IHttpResponse httpResponse;
@@ -358,7 +354,7 @@ class ExternalAuth
         var httpRequest = new HttpGetRequest
         {
             Address = httpAddress,
-            Timeout = EndpointRequestTimeoutSeconds
+            Timeout = config.EndpointQueryTimeoutSeconds * 1000
         };
 
         IHttpResponse httpResponse;
@@ -551,11 +547,7 @@ class ExternalAuth
 
     private static string GenerateNewLoginRequestId()
     {
-        var random = new Random();
-    
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        return new string(Enumerable.Repeat(chars, LoginRequestIdLength)
-            .Select(s => s[random.Next(s.Length)]).ToArray());
+        return System.Guid.NewGuid().ToString();
     }
 
     private static void OpenUrl(string url)

@@ -46,7 +46,9 @@
 
         public static PatcherError CannotRepairDiskFilesException()
         {
-            return new PatcherError("other","Couldn't validate local files, please try again. If the issue remains, it could mean a disk issue.");
+            return new PatcherError(
+                "other",
+                "Couldn't validate local files, please try again. If the issue remains, it could mean a disk issue.");
         }
 
         public static PatcherError Other() {

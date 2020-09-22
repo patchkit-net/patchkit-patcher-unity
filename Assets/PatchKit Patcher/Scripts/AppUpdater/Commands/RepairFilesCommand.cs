@@ -116,6 +116,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     _logger.LogDebug("Unarchiving the package.");
                     var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, _unpackingSuffix, effectiveRange);
+                    // allow repair to continue on errors, because after the repair process, all the files must be validated again
+                    unarchiver.ContinueOnError = true;
+
                     unarchiver.UnarchiveProgressChanged += (name, isFile, unarchiveEntry, amount,  entryProgress) =>
                     {
                         repairStatus.Progress.Value = entryProgress;

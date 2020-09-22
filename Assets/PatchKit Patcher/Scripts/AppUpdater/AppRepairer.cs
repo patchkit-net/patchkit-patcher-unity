@@ -32,6 +32,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private int _lowestVersionWithContentId;
 
+        private const double IncreaseRepairCost = 1.5d;
+
 
         public AppRepairer(AppUpdaterContext context, UpdaterStatus status)
         {
@@ -104,10 +106,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             bool isNewVersionAvailable = installedVersionId < latestVersionId;
 
             long contentSize = isNewVersionAvailable
-                ? latestVersionContentSummary.Size
-                : installedVersionContentSummary.Size;
+                ? latestVersionContentSummary.Files.Sum(f => f.Size)
+                : installedVersionContentSummary.Files.Sum(f => f.Size);
 
             double repairCost = CalculateRepairCost(installedVersionContentSummary, filesNeedFixing);
+            
+            // increasing repair costs that reinstallation will be done for 1/3 of the content size
+            repairCost *= IncreaseRepairCost;
 
 
             if (_lowestVersionWithContentId > installedVersionId)
@@ -117,11 +122,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     + _lowestVersionWithContentId +
                     " and currently installed version id is "
                     + installedVersionId +
-                    ". Uninstalling to prepare for content strategy.");
+                    ". Reinstalling.");
 
-                IUninstallCommand uninstall = _commandFactory.CreateUninstallCommand(Context);
-                uninstall.Prepare(_status, cancellationToken);
-                uninstall.Execute(cancellationToken);
+                ReinstallContent(cancellationToken);
             }
             else if (repairCost < contentSize)
             {
@@ -131,10 +134,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
             else
             {
-                DebugLogger.Log("Content cost is smaller than repair. Uninstalling to prepare for content strategy.");
-                IUninstallCommand uninstall = _commandFactory.CreateUninstallCommand(Context);
-                uninstall.Prepare(_status, cancellationToken);
-                uninstall.Execute(cancellationToken);
+                DebugLogger.Log(string.Format("Content cost {0} is smaller than repair {1}. Reinstalling.", contentSize, repairCost));
+                ReinstallContent(cancellationToken);
             }
 
             return false;
@@ -172,6 +173,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             return filesToRepair
                 .Select(f => contentSummary.Files.FirstOrDefault(e => e.Path == f.FileName))
                 .Sum(f => f.Size);
+        }
+
+        private void ReinstallContent(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
+        {
+            IUninstallCommand uninstall = _commandFactory.CreateUninstallCommand(Context);
+            uninstall.Prepare(_status, cancellationToken);
+            uninstall.Execute(cancellationToken);
+
+            // not catching any exceptions here, because exception during content installation in this place should be fatal
+            var contentStrategy = new AppUpdaterContentStrategy(Context, _status);
+            contentStrategy.RepairOnError = false; // do not attempt to repair content to not cause a loop
+            contentStrategy.Update(cancellationToken);
         }
     }
 }

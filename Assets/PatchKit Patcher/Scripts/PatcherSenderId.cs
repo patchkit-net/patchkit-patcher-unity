@@ -3,12 +3,15 @@ using System.IO;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher
 {
     public class PatcherSenderId
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherSenderId));
+
         private static string _senderId;
 
         public static string Get()
@@ -25,7 +28,7 @@ namespace PatchKit.Unity.Patcher
                 string savedSenderId = File.ReadAllText(filePath);
                 if (!string.IsNullOrEmpty(savedSenderId))
                 {
-                    UnityEngine.Debug.Log("SenderId: " + savedSenderId + " (loaded from " + filePath + ")");
+                    DebugLogger.Log("SenderId: " + savedSenderId + " (loaded from " + filePath + ")");
 
                     return savedSenderId;
                 }
@@ -41,7 +44,7 @@ namespace PatchKit.Unity.Patcher
 
             File.WriteAllText(filePath, senderId);
 
-            UnityEngine.Debug.Log("SenderId: " + senderId + " (saved in " + filePath + ")");
+            DebugLogger.Log("SenderId: " + senderId + " (saved in " + filePath + ")");
 
             return senderId;
         }

@@ -6,6 +6,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Api.Utilities;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
@@ -15,6 +16,8 @@ namespace PatchKit.Unity.Patcher.UI
 {
     public class ChangelogList : UIApiComponent
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ChangelogList));
+
         public ChangelogElement TitlePrefab;
 
         public ChangelogElement ChangePrefab;
@@ -69,7 +72,7 @@ namespace PatchKit.Unity.Patcher.UI
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.Log(e.ToString());
+                DebugLogger.Log(e.ToString());
             }
 
             CreateChangelog(versions);

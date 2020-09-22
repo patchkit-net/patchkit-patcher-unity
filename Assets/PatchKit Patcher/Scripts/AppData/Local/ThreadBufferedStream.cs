@@ -2,11 +2,14 @@ using System;
 using System.IO;
 using System.Threading;
 using JetBrains.Annotations;
+using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
     public class ThreadBufferedStream : Stream
     {
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ThreadBufferedStream));
+
         private readonly Stream _innerStream;
         private readonly byte[] _buffer;
 
@@ -68,12 +71,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     try
                     {
-                        //UnityEngine.Debug.Log("Entering semaphore from thread...");
+                        //DebugLogger.Log("Entering semaphore from thread...");
                         _semaphore.WaitOne();
                         {
                             if (_eof)
                             {
-                                //UnityEngine.Debug.Log("BREAKING semaphore from thread...");
+                                //DebugLogger.Log("BREAKING semaphore from thread...");
                                 break;
                             }
 
@@ -85,7 +88,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     }
                     finally
                     {
-                        //UnityEngine.Debug.Log("Leaving semaphore from thread.");
+                        //DebugLogger.Log("Leaving semaphore from thread.");
                         _semaphore.Release();
                     }
 
@@ -100,7 +103,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             try
             {
-                //UnityEngine.Debug.Log("Entering semaphore from Read..." + count);
+                //DebugLogger.Log("Entering semaphore from Read..." + count);
                 _semaphore.WaitOne();
                 {
                     // repeat while there's something to read
@@ -131,7 +134,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                         if (copied == count)
                         {
                             // all bytes has been copied
-                            //UnityEngine.Debug.Log("BREAK semaphore from Read.");
+                            //DebugLogger.Log("BREAK semaphore from Read.");
                             break;
                         }
                     }
@@ -139,13 +142,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
             finally
             {
-                //UnityEngine.Debug.Log("Leaving semaphore from Read.");
+                //DebugLogger.Log("Leaving semaphore from Read.");
                 _semaphore.Release();
             }
 
             _position += copied;
 
-            //UnityEngine.Debug.Log("Returning " + copied);
+            //DebugLogger.Log("Returning " + copied);
 
             return copied;
         }
@@ -153,14 +156,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private void ReadToBuffer()
         {
             int size = _buffer.Length - _bufferedBytes;
-            //UnityEngine.Debug.Log("Reading into buffer " + size);
+            //DebugLogger.Log("Reading into buffer " + size);
 
             int read = _innerStream.Read(_buffer, _bufferedBytes, size);
             _bufferedBytes += read;
 
             if (read == 0)
             {
-                //UnityEngine.Debug.Log("End of file");
+                //DebugLogger.Debug.Log("End of file");
                 _eof = true;
             }
         }
