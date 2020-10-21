@@ -12,31 +12,30 @@
 
 
         public static PatcherError NoInternetConnection() {
-            return new PatcherError("Please check your internet connection.");
+            return new PatcherError(PatcherLanguages.GetTraduction("no_internet_connection"));
         }
 
         public static PatcherError NoPermissions() {
-            return new PatcherError("Please check write permissions in application's directory.");
+            return new PatcherError(PatcherLanguages.GetTraduction("no_permissions"));
         }
 
         public static PatcherError NotEnoughDiskSpace(long additionalBytesRequired) {
-            return new PatcherError(
-                "Not enough disk space to install this application. Additional {0:0.00} GB of disk space is required.",
+            return new PatcherError(PatcherLanguages.GetTraduction("not_enough_disk_space"),
                 additionalBytesRequired / (1024 * 1024 * 1024.0)
             );
         }
 
         public static PatcherError NonLauncherExecution() {
-            return new PatcherError("Patcher has to be started using the launcher.");
+            return new PatcherError(PatcherLanguages.GetTraduction("non_launcher_execution"));
         }
 
         public static PatcherError CannotRepairDiskFilesException()
         {
-            return new PatcherError("Couldn't validate local files, please try again. If the issue remains, it could mean a disk issue.");
+            return new PatcherError(PatcherLanguages.GetTraduction("other_error_repiar"));
         }
 
         public static PatcherError Other() {
-            return new PatcherError("Unknown error, please try again. If the issue remains, please contact the support.");
+            return new PatcherError(PatcherLanguages.GetTraduction("other_error"));
         }
 
 

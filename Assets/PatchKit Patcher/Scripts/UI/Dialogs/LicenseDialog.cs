@@ -14,15 +14,6 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         public InputField KeyInputField;
 
-        [Multiline]
-        public string InvalidLicenseMessageText;
-
-        [Multiline]
-        public string BlockedLicenseMessageText;
-
-        [Multiline]
-        public string ServiceUnavailableMessageText;
-
         public void Confirm()
         {
             string key = KeyInputField.text;
@@ -75,13 +66,13 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                     ErrorMessageText.text = string.Empty;
                     break;
                 case LicenseDialogMessageType.InvalidLicense:
-                    ErrorMessageText.text = InvalidLicenseMessageText;
+                    ErrorMessageText.text = PatcherLanguages.GetTraduction("license_invalid");
                     break;
                 case LicenseDialogMessageType.BlockedLicense:
-                    ErrorMessageText.text = BlockedLicenseMessageText;
+                    ErrorMessageText.text = PatcherLanguages.GetTraduction("license_blocked");
                     break;
                 case LicenseDialogMessageType.ServiceUnavailable:
-                    ErrorMessageText.text = ServiceUnavailableMessageText;
+                    ErrorMessageText.text = PatcherLanguages.GetTraduction("license_service");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);

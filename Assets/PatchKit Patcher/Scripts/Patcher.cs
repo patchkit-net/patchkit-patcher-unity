@@ -777,7 +777,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (displayWarningInsteadOfError)
                 {
-                    _warning.Value = "Unable to check for updates. Please check your internet connection.";
+                    _warning.Value = PatcherLanguages.GetTraduction("warrning_internet");
                 }
                 else
                 {
@@ -816,7 +816,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (displayWarningInsteadOfError)
                 {
-                    _warning.Value = "Unable to check for updates. Please check your internet connection.";
+                    _warning.Value = PatcherLanguages.GetTraduction("warrning_internet");
                 }
                 else
                 {

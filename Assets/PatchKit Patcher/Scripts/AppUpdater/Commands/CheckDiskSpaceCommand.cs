@@ -204,7 +204,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new OperationStatus
             {
                 Weight = {Value = 0.00001},
-                Description = {Value = "Allocating disk space..."}
+                Description = {Value = PatcherLanguages.GetTraduction("allocating_disk_space")}
             };
             status.RegisterOperation(_status);
         }

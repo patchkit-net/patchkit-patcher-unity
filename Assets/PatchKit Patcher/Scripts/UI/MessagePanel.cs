@@ -43,7 +43,7 @@ namespace PatchKit.Unity.Patcher.UI
                 _canInstallApp = canInstallApp;
                 if (_canInstallApp)
                 {
-                    CheckButtonText.text = "Install";
+                    CheckButtonText.text = PatcherLanguages.GetTraduction("install");
                 }
                 CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
             }).AddTo(this);
@@ -53,7 +53,7 @@ namespace PatchKit.Unity.Patcher.UI
                 _canCheckForAppUpdates = canCheckForAppUpdates;
                 if (_canCheckForAppUpdates)
                 {
-                    CheckButtonText.text = "Check for updates";
+                    CheckButtonText.text = PatcherLanguages.GetTraduction("check_for_updates");
                 }
                 CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
             }).AddTo(this);
@@ -64,7 +64,7 @@ namespace PatchKit.Unity.Patcher.UI
             _animator.SetBool("IsOpened", false);
             PlayButton.interactable = false;
             CheckButton.interactable = false;
-            CheckButtonText.text = "Check for updates";
+            CheckButtonText.text = PatcherLanguages.GetTraduction("check_for_updates");
         }
 
         private void OnPlayButtonClicked()

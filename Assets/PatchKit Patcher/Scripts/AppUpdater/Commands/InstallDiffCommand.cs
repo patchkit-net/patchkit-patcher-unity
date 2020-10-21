@@ -262,7 +262,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("usedSuffix = " + usedSuffix);
 
             _unarchivePackageStatusReporter.IsActive.Value = true;
-            _unarchivePackageStatusReporter.Description.Value = "Unarchiving package...";
+            _unarchivePackageStatusReporter.Description.Value = PatcherLanguages.GetTraduction("unarchiving_package_0");
 
             int lastEntry = 0;
 
@@ -272,7 +272,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 {
                     lastEntry = entry;
 
-                    _logger.LogDebug(string.Format("Unarchiving entry ({0}/{1})...", entry, amount));
+                    _logger.LogDebug(string.Format(PatcherLanguages.GetTraduction("unarchiving_package_1"), entry, amount));
                     _logger.LogTrace("entry = " + entry);
                 }
 
@@ -281,7 +281,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 _unarchivePackageStatusReporter.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
 
-                _unarchivePackageStatusReporter.Description.Value = string.Format("Unarchiving package ({0}/{1})...", entry, amount);
+                _unarchivePackageStatusReporter.Description.Value = string.Format(PatcherLanguages.GetTraduction("unarchiving_package_1"), entry, amount);
             };
 
             unarchiver.Unarchive(cancellationToken);
@@ -318,7 +318,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             int counter = 0;
 
             _removeFilesStatusReporter.IsActive.Value = true;
-            _removeFilesStatusReporter.Description.Value = "Removing old files...";
+            _removeFilesStatusReporter.Description.Value = PatcherLanguages.GetTraduction("removing_old_files_0");
 
             foreach (var fileName in fileNames)
             {
@@ -328,7 +328,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 counter++;
                 _removeFilesStatusReporter.Progress.Value = counter / (double) _diffSummary.RemovedFiles.Length;
-                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter, _diffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.Description.Value = string.Format(PatcherLanguages.GetTraduction("removing_old_files_1"), counter, _diffSummary.RemovedFiles.Length);
             }
 
             foreach (var dirName in dirNames)
@@ -416,7 +416,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Processing diff added files...");
 
             _addFilesStatusReporter.IsActive.Value = true;
-            _addFilesStatusReporter.Description.Value = "Adding new files...";
+            _addFilesStatusReporter.Description.Value = PatcherLanguages.GetTraduction("adding_new_files_0");
 
             for (int i = 0; i < _diffSummary.AddedFiles.Length; i++)
             {
@@ -434,7 +434,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 }
 
                 _addFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.AddedFiles.Length;
-                _addFilesStatusReporter.Description.Value = string.Format("Adding new files ({0}/{1})...", i + 1, _diffSummary.AddedFiles.Length);
+                _addFilesStatusReporter.Description.Value = string.Format(PatcherLanguages.GetTraduction("adding_new_files_1"), i + 1, _diffSummary.AddedFiles.Length);
             }
 
             _addFilesStatusReporter.Progress.Value = 1.0;
@@ -495,7 +495,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Processing diff modified files...");
 
             _modifiedFilesStatusReporter.IsActive.Value = true;
-            _modifiedFilesStatusReporter.Description.Value = "Applying diffs...";
+            _modifiedFilesStatusReporter.Description.Value = PatcherLanguages.GetTraduction("applying_diffs_0");
 
             for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
             {
@@ -509,7 +509,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 }
 
                 _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.ModifiedFiles.Length;
-                _modifiedFilesStatusReporter.Description.Value = string.Format("Applying diffs ({0}/{1})...", i + 1, _diffSummary.ModifiedFiles.Length);
+                _modifiedFilesStatusReporter.Description.Value = string.Format(PatcherLanguages.GetTraduction("applying_diffs_1"), i + 1, _diffSummary.ModifiedFiles.Length);
             }
 
             _modifiedFilesStatusReporter.Progress.Value = 1.0;

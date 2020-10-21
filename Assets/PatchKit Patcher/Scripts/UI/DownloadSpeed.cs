@@ -67,12 +67,12 @@ namespace PatchKit.Unity.Patcher.UI
 
         private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + " MB/sec.";
+            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + PatcherLanguages.GetTraduction("dowload_speed_mb");
         }
 
         private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + " KB/sec.";
+            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + PatcherLanguages.GetTraduction("dowload_speed_kb");
         }
 
         private static string FormatDownloadSpeed(double s)
@@ -91,25 +91,25 @@ namespace PatchKit.Unity.Patcher.UI
 
             if (span.TotalDays > 1.0)
             {
-                return FormatPlural("{0:0} day", span.TotalDays);
+                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTraduction("dowload_speed_d")), span.TotalDays);
             }
 
             if (span.TotalHours > 1.0)
             {
-                return FormatPlural("{0:0} hour", span.TotalHours);
+                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTraduction("dowload_speed_h")), span.TotalHours);
             }
 
             if (span.TotalMinutes > 1.0)
             {
-                return FormatPlural("{0:0} minute", span.TotalMinutes);
+                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTraduction("dowload_speed_m")), span.TotalMinutes);
             }
 
             if (span.TotalSeconds > 1.0)
             {
-                return FormatPlural("{0:0} second", span.TotalSeconds);
+                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTraduction("dowload_speed_s")), span.TotalSeconds);
             }
 
-            return "a moment";
+            return PatcherLanguages.GetTraduction("dowload_speed_moment");
         }
 
         private static double? GetRemainingTime(long bytes, long totalBytes, double bytesPerSecond)

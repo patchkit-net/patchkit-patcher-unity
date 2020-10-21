@@ -97,7 +97,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     downloadStatus.IsActive.Value = true;
                     downloadStatus.TotalBytes.Value = totalData;
-                    downloadStatus.Description.Value = "Downloading fixes...";
+                    downloadStatus.Description.Value = PatcherLanguages.GetTraduction("downloading_fixes");
                     downloadStatus.Bytes.Value = 0;
 
                     downloader.DownloadProgressChanged += downloadedBytes =>
@@ -111,7 +111,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     downloadStatus.IsActive.Value = false;
 
                     repairStatus.IsActive.Value = true;
-                    repairStatus.Description.Value = "Applying fixes...";
+                    repairStatus.Description.Value = PatcherLanguages.GetTraduction("applying_fixes");
                     repairStatus.Progress.Value = 0.0;
 
                     _logger.LogDebug("Unarchiving the package.");

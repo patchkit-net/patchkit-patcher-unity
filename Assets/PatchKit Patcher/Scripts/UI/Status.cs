@@ -23,13 +23,13 @@ namespace PatchKit.Unity.Patcher.UI
                     case PatcherState.None:
                         return string.Empty;
                     case PatcherState.LoadingPatcherData:
-                        return "Loading data...";
+                        return PatcherLanguages.GetTraduction("status_0");
                     case PatcherState.LoadingPatcherConfiguration:
-                        return "Loading configuration...";
+                        return PatcherLanguages.GetTraduction("status_1");
                     case PatcherState.WaitingForUserDecision:
                         return string.Empty;
                     case PatcherState.StartingApp:
-                        return "Starting application...";
+                        return PatcherLanguages.GetTraduction("status_2");
                     case PatcherState.UpdatingApp:
                         return description;
                 }

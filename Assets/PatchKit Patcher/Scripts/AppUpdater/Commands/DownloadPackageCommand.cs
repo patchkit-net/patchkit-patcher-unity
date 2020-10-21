@@ -57,7 +57,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new DownloadStatus
             {
                 Weight = {Value = StatusWeightHelper.GetResourceDownloadWeight(_resource)},
-                Description = {Value = "Downloading package..."}
+                Description = {Value = PatcherLanguages.GetTraduction("dowload_status_0")}
             };
             status.RegisterOperation(_status);
         }
@@ -80,7 +80,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             var stalledTimeout = TimeSpan.FromSeconds(10);
             
             using (_status.BytesPerSecond.Subscribe(bps =>
-                _status.Description.Value = bps > 0.01 || DateTime.Now - downloadStartTime < stalledTimeout ? "Downloading package..." : "Stalled..."))
+                _status.Description.Value = bps > 0.01 || DateTime.Now - downloadStartTime < stalledTimeout ? PatcherLanguages.GetTraduction("dowload_status_0"): PatcherLanguages.GetTraduction("dowload_status_1")))
             {
                 downloader.Download(cancellationToken);
             }

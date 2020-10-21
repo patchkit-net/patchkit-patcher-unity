@@ -108,7 +108,7 @@ namespace PatchKit.Unity.Patcher.UI
             var title = Instantiate(TitlePrefab);
             title.Texts[0].text = string.Format("Changelog {0}", label);
             string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime).ToString("g", CurrentCultureInfo.GetCurrentCultureInfo());
-            title.Texts[1].text = string.Format("Published at: {0}", publishDate);
+            title.Texts[1].text = string.Format("{0} {1}", PatcherLanguages.GetTraduction("published_at"), publishDate);
             title.transform.SetParent(transform, false);
             title.transform.SetAsLastSibling();
 
