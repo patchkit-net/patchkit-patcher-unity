@@ -279,6 +279,8 @@ namespace PatchKit.Unity.Patcher
             {
                 StartThread();
             }
+
+            gameObject.AddComponent<DebugMenu>();
         }
 
         /// <summary>
