@@ -18,6 +18,7 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit_Patcher.Scripts.UI.Dialogs;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -105,6 +106,8 @@ namespace PatchKit.Unity.Patcher
         public string AppSecret { get; private set; }
         
         public ErrorDialog ErrorDialog;
+
+        public SendReport SendReport;
 
         public string EditorAppSecret;
 
@@ -275,6 +278,8 @@ namespace PatchKit.Unity.Patcher
 
             CheckEditorAppSecretSecure();
 
+            SendReport = gameObject.AddComponent<SendReport>();
+            
             if (_canStartThread)
             {
                 StartThread();
@@ -828,6 +833,7 @@ namespace PatchKit.Unity.Patcher
         private void ThreadDisplayError(PatcherError error, CancellationToken cancellationToken)
         {
             PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherFailed);
+            SendReport.ShowReport();
             
             try
             {
