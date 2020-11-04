@@ -2,6 +2,7 @@
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 using UnityEngine.Experimental.UIElements.StyleEnums;
+using UnityEngine.UI;
 
 namespace PatchKit_Patcher.Scripts.UI.Dialogs
 {
@@ -9,15 +10,19 @@ namespace PatchKit_Patcher.Scripts.UI.Dialogs
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(SendReport));
 
-        private Rect _popUp, _debugMenu;
-        private bool _show = true;
-        private bool _showPopUp = false;
+        private Rect _popUp, _sendReportMenu;
+        private bool _show;
+        private bool _showPopUp;
         private string _message;
-        private bool _isSended = false;
+        private readonly bool _isSended = false;
         private bool _sending = true;
         int tmp = 0; //test
         private bool _wait;
+        private GraphicRaycaster _graphicRaycaster;
 
+        private new string name;
+        private string _email;
+        private string _description;
 
         void Start()
         {
@@ -26,16 +31,17 @@ namespace PatchKit_Patcher.Scripts.UI.Dialogs
             int x = (Screen.width - windowWidth) / 2;
             int y = (Screen.height - windowHeight) / 2;
             int yPopUp = (Screen.height - 120) / 2;
-            _debugMenu = new Rect(x, y, windowWidth, windowHeight);
+            _sendReportMenu = new Rect(x, y, windowWidth, windowHeight);
             _popUp = new Rect(x, yPopUp, windowWidth, 120);
+            _graphicRaycaster = FindObjectOfType<GraphicRaycaster>();
         }
 
         void OnGUI()
         {
             if (_show)
             {
-                GUI.DrawTexture(_debugMenu, Texture2D.whiteTexture);
-                GUI.Window(0, _debugMenu, Menu, "Send report");
+                GUI.DrawTexture(_sendReportMenu, Texture2D.whiteTexture);
+                GUI.Window(0, _sendReportMenu, Menu, "Send report");
             }
             else if (_showPopUp)
             {
@@ -48,15 +54,15 @@ namespace PatchKit_Patcher.Scripts.UI.Dialogs
         {
             GUILayout.Label("Your Name:");
 
-            string name = GUILayout.TextField("");
+            name = GUILayout.TextField(name);
 
             GUILayout.Label("Contact e-mail address:");
 
-            string email = GUILayout.TextField("");
+            _email = GUILayout.TextField(_email);
 
             GUILayout.Label("Please describe in details what actions did you take:");
 
-            string description = GUILayout.TextField("", GUILayout.Height(100));
+            _description = GUILayout.TextField(_description, GUILayout.Height(100));
 
             GUILayout.BeginHorizontal("box");
             if (GUILayout.Button("Send Report"))
@@ -68,6 +74,7 @@ namespace PatchKit_Patcher.Scripts.UI.Dialogs
             if (GUILayout.Button("Cancel"))
             {
                 _show = false;
+                _graphicRaycaster.enabled = true;
             }
 
             GUILayout.EndHorizontal();
@@ -93,8 +100,7 @@ namespace PatchKit_Patcher.Scripts.UI.Dialogs
                 else
                     _message = "The report could not be sent";
             }
-
-            Debug.Log(tmp);
+            
             tmp++;
         }
 
@@ -115,6 +121,7 @@ namespace PatchKit_Patcher.Scripts.UI.Dialogs
                     if (GUILayout.Button("Ok"))
                     {
                         _showPopUp = false;
+                        _graphicRaycaster.enabled = true;
                     }
                 }
                 else
@@ -130,6 +137,7 @@ namespace PatchKit_Patcher.Scripts.UI.Dialogs
                     if (GUILayout.Button("Cancel"))
                     {
                         _showPopUp = false;
+                        _graphicRaycaster.enabled = true;
                     }
 
                     GUILayout.EndHorizontal();
@@ -140,6 +148,7 @@ namespace PatchKit_Patcher.Scripts.UI.Dialogs
         public void ShowReport()
         {
             _show = true;
+            _graphicRaycaster.enabled = false;
         }
     }
 }
