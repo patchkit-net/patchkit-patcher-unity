@@ -1,104 +1,124 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Threading;
 using PatchKit.Unity.Patcher;
-using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class DebugMenu : MonoBehaviour
+namespace PatchKit_Patcher.Scripts.Debug
 {
-    private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(App));
-    
-    private Rect _popUp, _debugMenu;
-    private bool _show = false;
-    private bool _showPopUp = false;
-    private string _message;
-
-    void Start () {
-        int windowWidth = 250;
-        int windowHeight = 180;
-        int x = (Screen.width - windowWidth) / 2;
-        int y = (Screen.height - windowHeight) / 2;
-        int yPopUp = (Screen.height - 120) / 2;
-        _debugMenu = new Rect(x,y,windowWidth,windowHeight);
-        _popUp = new Rect(x,yPopUp,windowWidth,120);
-    }
-
-    void OnGUI ()
+    public class DebugMenu : MonoBehaviour
     {
-        if (Event.current.Equals(Event.KeyboardEvent(KeyCode.D.ToString())))
-            _show = !_show;
-        if (_show)
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DebugMenu));
+
+        private Rect _popUp, _debugMenu;
+        private bool _show;
+        private bool _showPopUp;
+        private string _message;
+        private GraphicRaycaster _graphicRaycaster;
+
+        void Start()
         {
-            GUI.Window(0, _debugMenu, Menu, "Debug Menu");
+            int windowWidth = 250;
+            int windowHeight = 180;
+            int x = (Screen.width - windowWidth) / 2;
+            int y = (Screen.height - windowHeight) / 2;
+            int yPopUp = (Screen.height - 120) / 2;
+            _debugMenu = new Rect(x, y, windowWidth, windowHeight);
+            _popUp = new Rect(x, yPopUp, windowWidth, 120);
+            _graphicRaycaster = FindObjectOfType<GraphicRaycaster>();
         }
-        else if(_showPopUp)
+
+        void OnGUI()
         {
-            GUI.Window(1,_popUp, PopUp, "Information");
+            if (Event.current.Equals(Event.KeyboardEvent(KeyCode.D.ToString())))
+            {
+                _show = !_show;
+                _graphicRaycaster.enabled = !_graphicRaycaster.enabled;
+            }
+
+            if (_show)
+            {
+                GUI.DrawTexture(_debugMenu, Texture2D.whiteTexture);
+                GUI.Window(0, _debugMenu, Menu, "Debug Menu");
+            }
+            else if (_showPopUp)
+            {
+                GUI.DrawTexture(_popUp, Texture2D.whiteTexture);
+                GUI.Window(1, _popUp, PopUp, "Information");
+            }
         }
-    }
-        void Menu(int i) {
-            if(GUILayout.Button("Open Patcher log file")) {
+
+        void Menu(int i)
+        {
+            if (GUILayout.Button("Open Patcher log file"))
+            {
                 OpenPatcherLogFile();
             }
-            
-            if(GUILayout.Button("Open Patcher log file location")){
+
+            if (GUILayout.Button("Open Patcher log file location"))
+            {
                 OpenPatcherLogFileLocation();
             }
-            
-            if(GUILayout.Button("Open Launcher log file")){
+
+            if (GUILayout.Button("Open Launcher log file"))
+            {
                 OpenLauncherLogFile();
             }
 
-            if (GUILayout.Button("Open Launcher log file location")){
+            if (GUILayout.Button("Open Launcher log file location"))
+            {
                 OpenLauncherLogFileLocation();
             }
-            
-            if (GUILayout.Button("Verify all app files")){
-                VerifyAllAppFiles();
-            }
-            
-            if (GUILayout.Button("Remove all app files")){
-                RemoveAllAppFiles();
+
+            if (Patcher.Instance.IsAppInstalled.Value)
+            {
+                if (GUILayout.Button("Verify all app files"))
+                {
+                    VerifyAllAppFiles();
+                }
+
+                if (GUILayout.Button("Remove all app files"))
+                {
+                    RemoveAllAppFiles();
+                }
             }
         }
 
         private void VerifyAllAppFiles()
         {
-            Patcher.Instance.CancelUpdateApp();
-            Thread thread = new Thread(() => {
-                while (Patcher.Instance.State.Value != PatcherState.WaitingForUserDecision) { }
-
-                Patcher.Instance.SetUserDecision(Patcher.UserDecision.InstallApp);})
-            {
-                IsBackground = true
-            };
-            thread.Start();
-
-            _message = "Verifying all application files";
-            _show = false;
-            _showPopUp = true;
+            SetUserDecision(Patcher.UserDecision.VerifyFiles);
         }
 
         private void RemoveAllAppFiles()
         {
-            string appDataPath = Patcher.Instance.Data.Value.AppDataPath;
-            Patcher.Instance.CancelUpdateApp();
+            SetUserDecision(Patcher.UserDecision.UninstallApp);
+        }
+
+        private void SetUserDecision(Patcher.UserDecision userDecision)
+        {
+            while (Patcher.Instance.State.Value != PatcherState.WaitingForUserDecision)
+            {
+            }
+
+            Patcher.Instance.SetUserDecision(userDecision);
+
+            _show = false;
+            _graphicRaycaster.enabled = true;
+        }
+
+        void Open(string path)
+        {
+            _show = false;
             try
             {
-                Directory.Delete(appDataPath, true);
-                DebugLogger.Log("Application directory deleted.");
-                _message = "Application directory has been removed";
-                _show = false;
-                _showPopUp = true;
+                Process.Start(path);
+                _graphicRaycaster.enabled = true;
             }
             catch (Exception e)
             {
-                _message = string.Format("The directory cannot be found: {0}", appDataPath);
+                _message = string.Format("The directory/file cannot be found: {0}", path);
                 DebugLogger.LogError(_message);
-                _show = false;
                 _showPopUp = true;
             }
         }
@@ -111,18 +131,7 @@ public class DebugMenu : MonoBehaviour
             _showPopUp = true;
 #else
             string logDirectoryPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","");
-            _show = false;
-            try
-            {
-                Process.Start(logDirectoryPath);
-            }
-            catch (Exception e)
-            {
-                _message = string.Format("The directory cannot be found: {0}", logDirectoryPath);
-                DebugLogger.LogError(_message);
-                _showPopUp = true;
-            }
-        }
+            Open(logDirectoryPath);
 #endif
         }
 
@@ -134,24 +143,14 @@ public class DebugMenu : MonoBehaviour
             _showPopUp = true;
 #else
             string logPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","launcher-log.txt");
-            _show = false;
-            try
-            {
-                Process.Start(logPath);
-            }
-            catch (Exception e)
-            {
-                _message = string.Format("The file cannot be found: {0}", logPath);
-                DebugLogger.LogError(_message);
-                _showPopUp = true;
-            }
+            Open(logPath);
 #endif
         }
 
         private void OpenPatcherLogFileLocation()
         {
 #if UNITY_EDITOR
-            var logDirectoryPath = Application.consoleLogPath.Replace("Editor.log","");
+            var logDirectoryPath = Application.consoleLogPath.Replace("Editor.log", "");
 #else
 #if UNITY_STANDALONE_WIN
                 var logDirectoryPath = string.Format("{0}",
@@ -170,17 +169,7 @@ public class DebugMenu : MonoBehaviour
     #endif
 #endif
 #endif
-            _show = false;
-            try
-            {
-                Process.Start(logDirectoryPath);
-            }
-            catch (Exception e)
-            {
-                _message = string.Format("The directory cannot be found: {0}", logDirectoryPath);
-                DebugLogger.LogError(_message);
-                _showPopUp = true;
-            }
+            Open(logDirectoryPath);
         }
 
         private void OpenPatcherLogFile()
@@ -211,28 +200,17 @@ public class DebugMenu : MonoBehaviour
 #endif
 #endif
 #endif
-            _show = false;
-            try
-            {
-                Process.Start(logPath);
-            }
-            catch (Exception e)
-            {
-                _message = string.Format("The file cannot be found: {0}", logPath);
-                DebugLogger.LogError(_message);
-                _showPopUp = true;
-            }
+            Open(logPath);
         }
 
         void PopUp(int i)
         {
-            GUI.Label(
-                new Rect(10, 20, 230, 88),
-                _message);
-
-            if (GUI.Button(new Rect(62, 90, 125, 20), "OK"))
+            GUILayout.Label(_message);
+            if (GUILayout.Button("OK"))
             {
                 _showPopUp = false;
+                _graphicRaycaster.enabled = true;
             }
         }
+    }
 }

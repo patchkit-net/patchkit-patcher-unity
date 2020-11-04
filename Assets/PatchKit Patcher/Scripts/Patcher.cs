@@ -18,6 +18,7 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit_Patcher.Scripts.Debug;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -37,7 +38,9 @@ namespace PatchKit.Unity.Patcher
             InstallApp,
             InstallAppAutomatically,
             CheckForAppUpdates,
-            CheckForAppUpdatesAutomatically
+            CheckForAppUpdatesAutomatically,
+            UninstallApp,
+            VerifyFiles
         }
 
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(Patcher));
@@ -750,6 +753,12 @@ namespace PatchKit.Unity.Patcher
                     case UserDecision.CheckForAppUpdates:
                         ThreadUpdateApp(false, cancellationToken);
                         break;
+                    case UserDecision.UninstallApp:
+                        ThreadUninstallApp(cancellationToken);
+                        break;
+                    case UserDecision.VerifyFiles:
+                        ThreadVerifyAllAppFiles(cancellationToken);
+                        break;
                 }
 
                 DebugLogger.Log(string.Format("User decision {0} execution done.", _userDecision));
@@ -901,6 +910,80 @@ namespace PatchKit.Unity.Patcher
                     {
                         appUpdater.Update(_updateAppCancellationTokenSource.Token);
                         _wasUpdateSuccessfulOrNotNecessary = true;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherCanceled);
+
+                    throw;
+                }
+                finally
+                {
+                    _state.Value = PatcherState.None;
+
+                    _updaterStatus.Value = null;
+                    _updateAppCancellationTokenSource = null;
+                }
+            }
+        }
+        
+        private void ThreadVerifyAllAppFiles(CancellationToken cancellationToken)
+        {
+            _state.Value = PatcherState.UpdatingApp;
+
+            _updateAppCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
+   
+            using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
+            {
+                _isAppInstalled.Value = false;
+                
+                var appUpdater = new AppUpdater.AppUpdater(new AppUpdaterContext(_app, _configuration.AppUpdaterConfiguration));
+
+                try
+                {
+                    _updaterStatus.Value = appUpdater.Status;
+
+                    using (_updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
+                    {
+                        appUpdater.VerifyFiles(cancellationToken);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatcherCanceled);
+
+                    throw;
+                }
+                finally
+                {
+                    _state.Value = PatcherState.None;
+
+                    _updaterStatus.Value = null;
+                    _updateAppCancellationTokenSource = null;
+                }
+            }
+        }
+        
+        private void ThreadUninstallApp(CancellationToken cancellationToken)
+        {
+            _state.Value = PatcherState.UpdatingApp;
+
+            _updateAppCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
+   
+            using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
+            {
+                _isAppInstalled.Value = false;
+                
+                var appUpdater = new AppUpdater.AppUpdater(new AppUpdaterContext(_app, _configuration.AppUpdaterConfiguration));
+
+                try
+                {
+                    _updaterStatus.Value = appUpdater.Status;
+
+                    using (_updaterStatus.Take(1).Subscribe((status) => _state.Value = PatcherState.UpdatingApp))
+                    {
+                        appUpdater.Uninstall(cancellationToken);
                     }
                 }
                 catch (OperationCanceledException)

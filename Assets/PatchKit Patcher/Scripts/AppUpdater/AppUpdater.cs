@@ -88,6 +88,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
         }
 
+        public void Uninstall(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
+        {
+            Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Uninstall");
+
+            var commandFactory = new AppUpdaterCommandFactory();
+            IUninstallCommand uninstall = commandFactory.CreateUninstallCommand(Context);
+
+
+            DebugLogger.Log("Uninstall.");
+
+            uninstall.Prepare(_status, cancellationToken);
+            uninstall.Execute(cancellationToken);
+        }
+
         private bool TryHandleFallback(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
             var fallbackType = _strategyResolver.GetFallbackStrategy(_strategy.GetStrategyType());
@@ -102,6 +116,21 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             _strategy.Update(cancellationToken);
 
             return true;
+        }
+
+        public void VerifyFiles(CancellationToken cancellationToken)
+        {
+            Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "VerifyFiles");
+            
+            var appRepairer = new AppRepairer(Context, _status);
+            appRepairer.CheckHashes = true;
+
+            DebugLogger.Log("VerifyFiles.");
+            
+            if (!appRepairer.Perform(cancellationToken))
+            {
+                throw new CannotRepairDiskFilesException("Failed to validate/repair disk files");
+            }
         }
     }
 }
