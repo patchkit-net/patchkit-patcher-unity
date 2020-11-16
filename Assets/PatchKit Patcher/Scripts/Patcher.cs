@@ -18,7 +18,6 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit_Patcher.Scripts.Debug;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -930,6 +929,7 @@ namespace PatchKit.Unity.Patcher
         
         private void ThreadVerifyAllAppFiles(CancellationToken cancellationToken)
         {
+            // TODO: Introduce here a new state
             _state.Value = PatcherState.UpdatingApp;
 
             _updateAppCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
@@ -967,6 +967,7 @@ namespace PatchKit.Unity.Patcher
         
         private void ThreadUninstallApp(CancellationToken cancellationToken)
         {
+            // TODO: Introduce here a new state
             _state.Value = PatcherState.UpdatingApp;
 
             _updateAppCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();

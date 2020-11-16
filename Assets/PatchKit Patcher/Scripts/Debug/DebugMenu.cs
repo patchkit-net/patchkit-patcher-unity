@@ -1,20 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using PatchKit.Unity.Patcher;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace PatchKit_Patcher.Scripts.Debug
+namespace PatchKit.Unity.Patcher.Debug
 {
     public class DebugMenu : MonoBehaviour
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DebugMenu));
 
-        private Rect _popUp, _debugMenu;
-        private bool _show;
-        private bool _showPopUp;
-        private string _message;
+        private Rect _popupRect, _rect;
+        private bool _showDebugMenu;
+        private bool _showPopup;
+        private string _popupMessage;
         private GraphicRaycaster _graphicRaycaster;
 
         void Start()
@@ -23,9 +24,9 @@ namespace PatchKit_Patcher.Scripts.Debug
             int windowHeight = 180;
             int x = (Screen.width - windowWidth) / 2;
             int y = (Screen.height - windowHeight) / 2;
-            int yPopUp = (Screen.height - 120) / 2;
-            _debugMenu = new Rect(x, y, windowWidth, windowHeight);
-            _popUp = new Rect(x, yPopUp, windowWidth, 120);
+            int popupRectY = (Screen.height - 120) / 2;
+            _rect = new Rect(x, y, windowWidth, windowHeight);
+            _popupRect = new Rect(x, popupRectY, windowWidth, 120);
             _graphicRaycaster = FindObjectOfType<GraphicRaycaster>();
         }
 
@@ -33,23 +34,29 @@ namespace PatchKit_Patcher.Scripts.Debug
         {
             if (Event.current.Equals(Event.KeyboardEvent(KeyCode.D.ToString())))
             {
-                _show = !_show;
-                _graphicRaycaster.enabled = !_graphicRaycaster.enabled;
+                if (_showDebugMenu)
+                {
+                    Close();
+                }
+                else
+                {
+                    Open();
+                }
             }
 
-            if (_show)
+            if (_showDebugMenu)
             {
-                GUI.DrawTexture(_debugMenu, Texture2D.whiteTexture);
-                GUI.Window(0, _debugMenu, Menu, "Debug Menu");
+                GUI.DrawTexture(_rect, Texture2D.whiteTexture);
+                GUI.Window(0, _rect, Draw, "Debug Menu");
             }
-            else if (_showPopUp)
+            else if (_showPopup)
             {
-                GUI.DrawTexture(_popUp, Texture2D.whiteTexture);
-                GUI.Window(1, _popUp, PopUp, "Information");
+                GUI.DrawTexture(_popupRect, Texture2D.whiteTexture);
+                GUI.Window(1, _popupRect, DrawPopup, "Information");
             }
         }
 
-        void Menu(int i)
+        void Draw(int id)
         {
             if (GUILayout.Button("Open Patcher log file"))
             {
@@ -87,48 +94,52 @@ namespace PatchKit_Patcher.Scripts.Debug
 
         private void VerifyAllAppFiles()
         {
-            SetUserDecision(Patcher.UserDecision.VerifyFiles);
+            StartCoroutine(SetUserDecision(Patcher.UserDecision.VerifyFiles));
         }
 
         private void RemoveAllAppFiles()
         {
-            SetUserDecision(Patcher.UserDecision.UninstallApp);
+            StartCoroutine(SetUserDecision(Patcher.UserDecision.UninstallApp));
         }
 
-        private void SetUserDecision(Patcher.UserDecision userDecision)
+        private IEnumerator SetUserDecision(Patcher.UserDecision userDecision)
         {
             while (Patcher.Instance.State.Value != PatcherState.WaitingForUserDecision)
             {
+                yield return new WaitForSeconds(0.5f);
             }
 
             Patcher.Instance.SetUserDecision(userDecision);
 
-            _show = false;
-            _graphicRaycaster.enabled = true;
+            Close();
         }
 
-        void Open(string path)
+        void OpenFile(string path)
         {
-            _show = false;
+            Close();
             try
             {
                 Process.Start(path);
-                _graphicRaycaster.enabled = true;
             }
             catch (Exception e)
             {
-                _message = string.Format("The directory/file cannot be found: {0}", path);
-                DebugLogger.LogError(_message);
-                _showPopUp = true;
+                _graphicRaycaster.enabled = false;
+                OpenPopup(string.Format("The directory/file cannot be found: {0}", path));
             }
+        }
+
+        private void OpenPopup(string popupMessage)
+        {
+            _popupMessage = popupMessage;
+            DebugLogger.LogError(popupMessage);
+            _showDebugMenu = false;
+            _showPopup = true;
         }
 
         private void OpenLauncherLogFileLocation()
         {
 #if UNITY_EDITOR
-            _message = "Access to Launcher in the editor is not possible";
-            _show = false;
-            _showPopUp = true;
+            OpenPopup("Access to Launcher in the editor is not possible");
 #else
             string logDirectoryPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","");
             Open(logDirectoryPath);
@@ -138,9 +149,7 @@ namespace PatchKit_Patcher.Scripts.Debug
         private void OpenLauncherLogFile()
         {
 #if UNITY_EDITOR
-            _message = "Access to Launcher in the editor is not possible";
-            _show = false;
-            _showPopUp = true;
+            OpenPopup("Access to Launcher in the editor is not possible");
 #else
             string logPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","launcher-log.txt");
             Open(logPath);
@@ -169,7 +178,7 @@ namespace PatchKit_Patcher.Scripts.Debug
     #endif
 #endif
 #endif
-            Open(logDirectoryPath);
+            OpenFile(logDirectoryPath);
         }
 
         private void OpenPatcherLogFile()
@@ -200,17 +209,34 @@ namespace PatchKit_Patcher.Scripts.Debug
 #endif
 #endif
 #endif
-            Open(logPath);
+            OpenFile(logPath);
         }
 
-        void PopUp(int i)
+        void DrawPopup(int id)
         {
-            GUILayout.Label(_message);
+            GUILayout.Label(_popupMessage);
             if (GUILayout.Button("OK"))
             {
-                _showPopUp = false;
-                _graphicRaycaster.enabled = true;
+                ClosePopup();
             }
+        }
+
+        void Close()
+        {
+            _showDebugMenu = false;
+            _graphicRaycaster.enabled = true;
+        }
+
+        void ClosePopup()
+        {
+            _showPopup = false;
+            _graphicRaycaster.enabled = true;
+        }
+
+        void Open()
+        {
+            _showDebugMenu = true;
+            _graphicRaycaster.enabled = false;
         }
     }
 }

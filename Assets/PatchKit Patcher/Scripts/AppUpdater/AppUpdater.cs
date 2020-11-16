@@ -25,6 +25,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private IAppUpdaterStrategy _strategy;
 
         private bool _updateHasBeenCalled;
+        private bool _uninstallHasBeenCalled;
+        private bool _verifyFilesHasBeenCalled;
 
         public IReadOnlyUpdaterStatus Status
         {
@@ -90,7 +92,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public void Uninstall(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
         {
-            Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "Uninstall");
+            Assert.MethodCalledOnlyOnce(ref _uninstallHasBeenCalled, "Uninstall");
 
             var commandFactory = new AppUpdaterCommandFactory();
             IUninstallCommand uninstall = commandFactory.CreateUninstallCommand(Context);
@@ -120,7 +122,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public void VerifyFiles(CancellationToken cancellationToken)
         {
-            Assert.MethodCalledOnlyOnce(ref _updateHasBeenCalled, "VerifyFiles");
+            Assert.MethodCalledOnlyOnce(ref _verifyFilesHasBeenCalled, "VerifyFiles");
             
             var appRepairer = new AppRepairer(Context, _status);
             appRepairer.CheckHashes = true;
