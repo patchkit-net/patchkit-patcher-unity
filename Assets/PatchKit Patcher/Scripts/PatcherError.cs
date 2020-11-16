@@ -1,4 +1,6 @@
-﻿namespace PatchKit.Unity.Patcher
+﻿using PatchKit.Unity.UI.Languages;
+
+namespace PatchKit.Unity.Patcher
 {
     public class PatcherError
     {

@@ -13,6 +13,7 @@ using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
+using PatchKit.Unity.UI.Languages;
 using ILogger = PatchKit.Logging.ILogger;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands

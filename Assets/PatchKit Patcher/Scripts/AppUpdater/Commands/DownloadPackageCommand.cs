@@ -4,6 +4,7 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.UI.Languages;
 using UniRx;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 

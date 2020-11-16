@@ -2,6 +2,7 @@
 using System.Linq;
 using PatchKit.Api.Utilities;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,8 +11,6 @@ namespace PatchKit.Unity.UI
 {
     public class AppChangelogText : AppCompontent
     {
-        [Multiline] public string Format = string.Format("<b>{label}</b>  {0} {publishdate}\n{changelog}\n\n",PatcherLanguages.GetTraduction("published_at"));
-
         public Text Text;
 
         protected override IEnumerator LoadCoroutine()
@@ -21,7 +20,7 @@ namespace PatchKit.Unity.UI
                 Text.text = string.Join("\n",
                     response.versions.Select(version =>
                     {
-                        string changelog = Format;
+                        string changelog = string.Format("<b>{label}</b>  {0} {publishdate}\n{changelog}\n\n",PatcherLanguages.GetTraduction("published_at"));
 
                         changelog = changelog.Replace("{label}", version.VersionLabel);
                         changelog = changelog.Replace("{changelog}", version.Changes);

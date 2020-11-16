@@ -1,5 +1,6 @@
 ﻿using System;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;

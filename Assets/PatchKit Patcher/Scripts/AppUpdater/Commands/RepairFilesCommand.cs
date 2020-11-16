@@ -11,6 +11,7 @@ using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.UI.Languages;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {

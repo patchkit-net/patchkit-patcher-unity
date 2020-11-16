@@ -1,22 +1,22 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-//text component is required in this gameobject
-[RequireComponent (typeof(Text))]
-public class TextTranslator : MonoBehaviour
+namespace PatchKit.Unity.UI.Languages
 {
-    [Tooltip ("enter one of the keys that you specify in your (txt) file for all languages.\n\n# for example: [HOME=home]\n# the key here is [HOME]")]
-    [Header ("Enter your word key here.")]
-    public string Key;
+    [RequireComponent (typeof(Text))]
+    public class TextTranslator : MonoBehaviour
+    {
+        public string Key;
+        private Text _text;
 
-    void Start ()
-    {
-        GetComponent <Text> ().text = PatcherLanguages.GetTraduction (Key);
-    }
-    
-    public void ChangeText(string key)
-    {
-        Key = key;
-        GetComponent <Text> ().text = PatcherLanguages.GetTraduction (key);
+        void Awake ()
+        {
+            _text = GetComponent<Text>();
+        }
+        
+        void Start ()
+        {
+            _text.text = PatcherLanguages.GetTraduction (Key);
+        }
     }
 }
