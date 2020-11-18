@@ -12,8 +12,8 @@ namespace PatchKit.Unity.Patcher.Debug
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(DebugMenu));
 
-        private Rect _popupRect, _rect;
-        private bool _showDebugMenu;
+        private Rect _popupRect, _rect, _texturePopupRect;
+        private bool _show;
         private bool _showPopup;
         private string _popupMessage;
         private GraphicRaycaster _graphicRaycaster;
@@ -27,14 +27,16 @@ namespace PatchKit.Unity.Patcher.Debug
             int popupRectY = (Screen.height - 120) / 2;
             _rect = new Rect(x, y, windowWidth, windowHeight);
             _popupRect = new Rect(x, popupRectY, windowWidth, 120);
+            _texturePopupRect = new Rect(0, popupRectY - y, windowWidth, 120);
             _graphicRaycaster = FindObjectOfType<GraphicRaycaster>();
         }
 
         void OnGUI()
         {
-            if (Event.current.Equals(Event.KeyboardEvent(KeyCode.D.ToString())))
+            Event ec = Event.current;
+            if (ec.type == EventType.KeyDown && ec.keyCode == KeyCode.D && ec.control && ec.shift)
             {
-                if (_showDebugMenu)
+                if (_show)
                 {
                     Close();
                 }
@@ -44,20 +46,27 @@ namespace PatchKit.Unity.Patcher.Debug
                 }
             }
 
-            if (_showDebugMenu)
+            if (_show)
             {
                 GUI.DrawTexture(_rect, Texture2D.whiteTexture);
                 GUI.Window(0, _rect, Draw, "Debug Menu");
-            }
-            else if (_showPopup)
-            {
-                GUI.DrawTexture(_popupRect, Texture2D.whiteTexture);
-                GUI.Window(1, _popupRect, DrawPopup, "Information");
+                if (_showPopup)
+                {
+                    GUI.Window(1, _popupRect, DrawPopup, "Information");
+                }
             }
         }
 
         void Draw(int id)
         {
+            if (_showPopup)
+            {
+                GUI.enabled = false;
+                GUI.FocusControl(null);
+                GUI.FocusWindow(1);
+                GUI.BringWindowToFront(1);
+            }
+
             if (GUILayout.Button("Open Patcher log file"))
             {
                 OpenPatcherLogFile();
@@ -90,6 +99,11 @@ namespace PatchKit.Unity.Patcher.Debug
                     RemoveAllAppFiles();
                 }
             }
+
+            if (_showPopup)
+            {
+                GUI.DrawTexture(_texturePopupRect, Texture2D.whiteTexture);
+            }
         }
 
         private void VerifyAllAppFiles()
@@ -116,14 +130,13 @@ namespace PatchKit.Unity.Patcher.Debug
 
         void OpenFile(string path)
         {
-            Close();
             try
             {
                 Process.Start(path);
+                Close();
             }
             catch (Exception e)
             {
-                _graphicRaycaster.enabled = false;
                 OpenPopup(string.Format("The directory/file cannot be found: {0}", path));
             }
         }
@@ -132,7 +145,6 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             _popupMessage = popupMessage;
             DebugLogger.LogError(popupMessage);
-            _showDebugMenu = false;
             _showPopup = true;
         }
 
@@ -217,25 +229,20 @@ namespace PatchKit.Unity.Patcher.Debug
             GUILayout.Label(_popupMessage);
             if (GUILayout.Button("OK"))
             {
-                ClosePopup();
+                Close();
             }
         }
 
         void Close()
         {
-            _showDebugMenu = false;
-            _graphicRaycaster.enabled = true;
-        }
-
-        void ClosePopup()
-        {
+            _show = false;
             _showPopup = false;
             _graphicRaycaster.enabled = true;
         }
 
         void Open()
         {
-            _showDebugMenu = true;
+            _show = true;
             _graphicRaycaster.enabled = false;
         }
     }
