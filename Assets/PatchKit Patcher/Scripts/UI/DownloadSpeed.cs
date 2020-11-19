@@ -68,12 +68,12 @@ namespace PatchKit.Unity.Patcher.UI
 
         private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + PatcherLanguages.GetTraduction("dowload_speed_mb");
+            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + PatcherLanguages.GetTranslation("megabytes_sec");
         }
 
         private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + PatcherLanguages.GetTraduction("dowload_speed_kb");
+            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + PatcherLanguages.GetTranslation("kilobytes_sec");
         }
 
         private static string FormatDownloadSpeed(double s)
@@ -92,25 +92,25 @@ namespace PatchKit.Unity.Patcher.UI
 
             if (span.TotalDays > 1.0)
             {
-                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTraduction("dowload_speed_d")), span.TotalDays);
+                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTranslation("day")), span.TotalDays);
             }
 
             if (span.TotalHours > 1.0)
             {
-                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTraduction("dowload_speed_h")), span.TotalHours);
+                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTranslation("hour")), span.TotalHours);
             }
 
             if (span.TotalMinutes > 1.0)
             {
-                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTraduction("dowload_speed_m")), span.TotalMinutes);
+                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTranslation("minute")), span.TotalMinutes);
             }
 
             if (span.TotalSeconds > 1.0)
             {
-                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTraduction("dowload_speed_s")), span.TotalSeconds);
+                return FormatPlural(string.Format("{0:0} {0}",PatcherLanguages.GetTranslation("second")), span.TotalSeconds);
             }
 
-            return PatcherLanguages.GetTraduction("dowload_speed_moment");
+            return PatcherLanguages.GetTranslation("a_moment");
         }
 
         private static double? GetRemainingTime(long bytes, long totalBytes, double bytesPerSecond)

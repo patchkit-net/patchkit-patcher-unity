@@ -67,13 +67,13 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                     ErrorMessageText.text = string.Empty;
                     break;
                 case LicenseDialogMessageType.InvalidLicense:
-                    ErrorMessageText.text = PatcherLanguages.GetTraduction("license_invalid");
+                    ErrorMessageText.text = PatcherLanguages.GetTranslation("invalid_license");
                     break;
                 case LicenseDialogMessageType.BlockedLicense:
-                    ErrorMessageText.text = PatcherLanguages.GetTraduction("license_blocked");
+                    ErrorMessageText.text = PatcherLanguages.GetTranslation("blocked_license");
                     break;
                 case LicenseDialogMessageType.ServiceUnavailable:
-                    ErrorMessageText.text = PatcherLanguages.GetTraduction("license_service");
+                    ErrorMessageText.text = PatcherLanguages.GetTranslation("service_is_unavailable");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);

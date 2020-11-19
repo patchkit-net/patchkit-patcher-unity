@@ -105,7 +105,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
                 _unarchivePackageStatus.IsActive.Value = true;
-                _unarchivePackageStatus.Description.Value = PatcherLanguages.GetTraduction("unarchiving_package_0");
+                _unarchivePackageStatus.Description.Value = PatcherLanguages.GetTranslation("unarchiving_package");
                 _unarchivePackageStatus.Progress.Value = 0.0;
 
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
@@ -115,7 +115,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     _unarchivePackageStatus.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
 
-                    _unarchivePackageStatus.Description.Value = string.Format(PatcherLanguages.GetTraduction("unarchiving_package_1"), entry, amount);
+                    _unarchivePackageStatus.Description.Value = string.Format(PatcherLanguages.GetTranslation("unarchiving_package_[count]_[total_count]"), entry, amount);
                 };
 
                 // Allow to unpack with errors. This allows to install content even on corrupted hard drives, and attempt to fix these later
@@ -130,7 +130,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Moving files.");
 
                 _copyFilesStatus.IsActive.Value = true;
-                _copyFilesStatus.Description.Value = PatcherLanguages.GetTraduction("installing_0");
+                _copyFilesStatus.Description.Value = PatcherLanguages.GetTranslation("installing");
                 _copyFilesStatus.Progress.Value = 0.0;
 
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
@@ -147,7 +147,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
-                    _copyFilesStatus.Description.Value = string.Format(PatcherLanguages.GetTraduction("installing_1"), i + 1, _versionContentSummary.Files.Length);
+                    _copyFilesStatus.Description.Value = string.Format(PatcherLanguages.GetTranslation("installing_[count]_[total_count]"), i + 1, _versionContentSummary.Files.Length);
                 }
 
                 _copyFilesStatus.Progress.Value = 1.0;

@@ -55,7 +55,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new OperationStatus
             {
                 Weight = {Value = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary)},
-                Description = {Value = PatcherLanguages.GetTraduction("checking_version_integrity")}
+                Description = {Value = PatcherLanguages.GetTranslation("checking_version_integrity")}
             };
             status.RegisterOperation(_status);
         }

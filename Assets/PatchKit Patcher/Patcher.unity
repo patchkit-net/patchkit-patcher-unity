@@ -929,7 +929,6 @@ GameObject:
   - component: {fileID: 377531152}
   - component: {fileID: 377531153}
   - component: {fileID: 377531154}
-  - component: {fileID: 377531155}
   m_Layer: 0
   m_Name: Patcher
   m_TagString: Untagged
@@ -986,19 +985,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IgnoreEditorErrors: 1
---- !u!114 &377531155
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 377531151}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db2d8adc9274c4240a5b17e919940a96, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaultLanguage: en
 --- !u!1 &421519242
 GameObject:
   m_ObjectHideFlags: 0
@@ -1298,7 +1284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2883888e205d6954f90b593ef122eb8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Key: unablet_to_check_for_updates
+  Key: unable_to_check_for_updates
 --- !u!1 &478039519
 GameObject:
   m_ObjectHideFlags: 0
@@ -2895,7 +2881,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2883888e205d6954f90b593ef122eb8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Key: license
+  Key: please_enter_license_key
 --- !u!1 &835868111
 GameObject:
   m_ObjectHideFlags: 0
@@ -3508,7 +3494,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2883888e205d6954f90b593ef122eb8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Key: license_error
+  Key: entered_code_is_not_valid
 --- !u!1 &1026572723
 GameObject:
   m_ObjectHideFlags: 0
@@ -4653,7 +4639,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2883888e205d6954f90b593ef122eb8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Key: show_changelog
+  Key: changelog
 --- !u!1 &1280328193
 GameObject:
   m_ObjectHideFlags: 0
@@ -5590,7 +5576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2883888e205d6954f90b593ef122eb8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Key: error
+  Key: an_error_has_occured
 --- !u!1 &1895841003
 GameObject:
   m_ObjectHideFlags: 0

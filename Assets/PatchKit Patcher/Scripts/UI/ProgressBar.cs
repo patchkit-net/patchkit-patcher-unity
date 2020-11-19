@@ -72,7 +72,7 @@ namespace PatchKit.Unity.Patcher.UI
                 case PatcherState.LoadingPatcherData:
                 case PatcherState.LoadingPatcherConfiguration:
                 case PatcherState.Connecting:
-                    SetIdle(PatcherLanguages.GetTraduction("progress_bar_0"));
+                    SetIdle(PatcherLanguages.GetTranslation("connecting"));
                     return;
 
                 case PatcherState.UpdatingApp:
@@ -84,7 +84,7 @@ namespace PatchKit.Unity.Patcher.UI
 
                     if (data.Progress <= 0)
                     {
-                        SetIdle(PatcherLanguages.GetTraduction("progress_bar_0"));
+                        SetIdle(PatcherLanguages.GetTranslation("connecting"));
                         return;
                     }
 
@@ -106,7 +106,7 @@ namespace PatchKit.Unity.Patcher.UI
                     break;
 
                 case PatcherState.DisplayingError:
-                    SetProgressBarText(PatcherLanguages.GetTraduction("progress_bar_1"));
+                    SetProgressBarText(PatcherLanguages.GetTranslation("error"));
                     SetProgressBarLinear(0);
                     break;
 

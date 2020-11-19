@@ -3,20 +3,20 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.UI.Languages
 {
-    [RequireComponent (typeof(Text))]
+    [RequireComponent(typeof(Text))]
     public class TextTranslator : MonoBehaviour
     {
         public string Key;
         private Text _text;
 
-        void Awake ()
+        void Awake()
         {
             _text = GetComponent<Text>();
         }
-        
-        void Start ()
+
+        void Start()
         {
-            _text.text = PatcherLanguages.GetTraduction (Key);
+            _text.text = PatcherLanguages.GetTranslation(Key);
         }
     }
 }

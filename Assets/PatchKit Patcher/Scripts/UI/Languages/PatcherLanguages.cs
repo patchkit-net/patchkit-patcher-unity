@@ -8,40 +8,23 @@ using UnityEngine;
 
 namespace PatchKit.Unity.UI.Languages
 {
-    public class PatcherLanguages : MonoBehaviour
+    public static class PatcherLanguages
     {
-        public static PatcherLanguages Instance;
-
-        public static Dictionary<String, String> Fields;
-
-        [SerializeField] 
-        string defaultLanguage = "en";
-
+        private static Dictionary<String, String> Fields;
+        private static string DefaultLanguage = "en";
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLanguages));
 
-        void Awake ()
-        {
-            if (Instance == null) {
-                Instance = this;
-                DontDestroyOnLoad (gameObject);
-            } else {
-                Destroy (gameObject);
-            }
-
-            LoadLanguage ();
-        }
-
-
-        void LoadLanguage ()
+        private static void LoadLanguage()
         {
             if (Fields == null)
-                Fields = new Dictionary<string, string> ();
-        
-            Fields.Clear ();
+                Fields = new Dictionary<string, string>();
+
+            Fields.Clear();
             string allTexts;
             CultureInfo cultureInfo = CurrentCultureInfo.GetCurrentCultureInfo();
             string language = cultureInfo.TwoLetterISOLanguageName;
-            language = EnvironmentInfo.GetEnvironmentVariable(EnvironmentVariables.TranslationLanguageEnvironmentVariable, language);
+            language = EnvironmentInfo.GetEnvironmentVariable(
+                EnvironmentVariables.TranslationLanguageEnvironmentVariable, language);
 
             try
             {
@@ -49,8 +32,9 @@ namespace PatchKit.Unity.UI.Languages
             }
             catch
             {
-                allTexts = (Resources.Load(@"Languages/" + defaultLanguage) as TextAsset).text; //without (.json)
-                DebugLogger.LogWarning(String.Format("Unable to find {0} language file. Default language is set.", language));
+                allTexts = (Resources.Load(@"Languages/" + DefaultLanguage) as TextAsset).text; //without (.json)
+                DebugLogger.LogWarning(String.Format("Unable to find {0} language file. Default language is set.",
+                    language));
             }
 
             if (!String.IsNullOrEmpty(allTexts))
@@ -59,8 +43,10 @@ namespace PatchKit.Unity.UI.Languages
             }
         }
 
-        public static string GetTraduction (string key)
+        public static string GetTranslation(string key)
         {
+            if (Fields == null)
+                LoadLanguage();
             if (!String.IsNullOrEmpty(key))
             {
                 if (!Fields.ContainsKey(key))
@@ -74,7 +60,7 @@ namespace PatchKit.Unity.UI.Languages
                 return null;
             }
 
-            return Fields [key];
+            return Fields[key];
         }
     }
 }

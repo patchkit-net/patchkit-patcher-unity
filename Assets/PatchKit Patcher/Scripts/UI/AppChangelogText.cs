@@ -20,7 +20,7 @@ namespace PatchKit.Unity.UI
                 Text.text = string.Join("\n",
                     response.versions.Select(version =>
                     {
-                        string changelog = string.Format("<b>{label}</b>  {0} {publishdate}\n{changelog}\n\n",PatcherLanguages.GetTraduction("published_at"));
+                        string changelog = string.Format("<b>{label}</b>  {0} {publishdate}\n{changelog}\n\n",PatcherLanguages.GetTranslation("published_at"));
 
                         changelog = changelog.Replace("{label}", version.VersionLabel);
                         changelog = changelog.Replace("{changelog}", version.Changes);
