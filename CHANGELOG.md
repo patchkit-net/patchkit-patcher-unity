@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.5.0]
+### Added
+- Debug menu (available through Ctrl + Shift + D)
+
+### Fixed
+- Starting in offline mode without permissions for working directory
+
 ## [3.17.4.0]
 ### Added
 - Improved changelog displaying (#2033)
