@@ -584,6 +584,11 @@ namespace PatchKit.Unity.Patcher
                     _lockFileStream = File.Open(lockFilePath, FileMode.Append);
                     DebugLogger.Log("Lock file open success");
                 }
+                catch (UnauthorizedAccessException exception)
+                {
+                    DebugLogger.LogError("Patcher does not have permission to create the .lock file");
+                    DebugLogger.LogException(exception);
+                }
                 catch
                 {
                     throw new MultipleInstancesException("Another instance of Patcher spotted");
