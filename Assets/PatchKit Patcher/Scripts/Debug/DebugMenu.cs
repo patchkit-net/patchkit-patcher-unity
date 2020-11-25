@@ -154,7 +154,7 @@ namespace PatchKit.Unity.Patcher.Debug
             OpenPopup("Access to Launcher in the editor is not possible");
 #else
             string logDirectoryPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","");
-            Open(logDirectoryPath);
+            OpenFile(logDirectoryPath);
 #endif
         }
 
@@ -164,7 +164,7 @@ namespace PatchKit.Unity.Patcher.Debug
             OpenPopup("Access to Launcher in the editor is not possible");
 #else
             string logPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","launcher-log.txt");
-            Open(logPath);
+            OpenFile(logPath);
 #endif
         }
 
