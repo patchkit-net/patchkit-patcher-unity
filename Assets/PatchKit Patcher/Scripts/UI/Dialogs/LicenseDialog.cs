@@ -12,8 +12,15 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         private LicenseDialogResult _result;
 
         public Text ErrorMessageText;
+        public TextTranslator ErrorMessageTextTranslator;
 
         public InputField KeyInputField;
+
+        private void Start()
+        {
+            if (ErrorMessageTextTranslator == null)
+                ErrorMessageTextTranslator = ErrorMessageText.gameObject.AddComponent<TextTranslator>();
+        }
 
         public void Confirm()
         {
@@ -64,16 +71,19 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             switch (messageType)
             {
                 case LicenseDialogMessageType.None:
-                    ErrorMessageText.text = string.Empty;
+                    ErrorMessageTextTranslator.SetText(string.Empty);
                     break;
                 case LicenseDialogMessageType.InvalidLicense:
-                    ErrorMessageText.text = PatcherLanguages.GetTranslation("invalid_license");
+                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "invalid_license" +
+                                                       PatcherLanguages.CloseTag);
                     break;
                 case LicenseDialogMessageType.BlockedLicense:
-                    ErrorMessageText.text = PatcherLanguages.GetTranslation("blocked_license");
+                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "blocked_license" +
+                                                       PatcherLanguages.CloseTag);
                     break;
                 case LicenseDialogMessageType.ServiceUnavailable:
-                    ErrorMessageText.text = PatcherLanguages.GetTranslation("service_is_unavailable");
+                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "service_is_unavailable" +
+                                                       PatcherLanguages.CloseTag);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);

@@ -81,7 +81,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         DirectoryOperations.CreateDirectory(unarchivePath, cancellationToken);
                     }
 
-                    var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls, _resource.ChunksData, _resource.Size);
+                    var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls,
+                        _resource.ChunksData, _resource.Size);
 
                     long start = entry.Offset.GetValueOrDefault();
                     long end = (start + entry.Size.GetValueOrDefault()) - 1; // Offset by 1 to denote a byte index
@@ -89,16 +90,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     var range = new BytesRange(start, end);
 
                     downloader.SetRange(range);
-                    var effectiveRange  = downloader.CalculateContainingChunksRange(range);
+                    var effectiveRange = downloader.CalculateContainingChunksRange(range);
 
-                    long totalData = effectiveRange.End == -1 ? _resource.Size - effectiveRange.Start : effectiveRange.End - effectiveRange.Start;
+                    long totalData = effectiveRange.End == -1
+                        ? _resource.Size - effectiveRange.Start
+                        : effectiveRange.End - effectiveRange.Start;
 
                     var downloadStatus = _entryStatus[entry].DownloadStatus;
                     var repairStatus = _entryStatus[entry].RepairStatus;
 
                     downloadStatus.IsActive.Value = true;
                     downloadStatus.TotalBytes.Value = totalData;
-                    downloadStatus.Description.Value = PatcherLanguages.GetTranslation("downloading_fixes");
+                    downloadStatus.Description.Value =
+                        PatcherLanguages.OpenTag + "downloading_fixes" + PatcherLanguages.CloseTag;
                     downloadStatus.Bytes.Value = 0;
 
                     downloader.DownloadProgressChanged += downloadedBytes =>
@@ -112,22 +116,25 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     downloadStatus.IsActive.Value = false;
 
                     repairStatus.IsActive.Value = true;
-                    repairStatus.Description.Value = PatcherLanguages.GetTranslation("applying_fixes");
+                    repairStatus.Description.Value =
+                        PatcherLanguages.OpenTag + "applying_fixes" + PatcherLanguages.CloseTag;
                     repairStatus.Progress.Value = 0.0;
 
                     _logger.LogDebug("Unarchiving the package.");
-                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, _unpackingSuffix, effectiveRange);
+                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword,
+                        _unpackingSuffix, effectiveRange);
                     // allow repair to continue on errors, because after the repair process, all the files must be validated again
                     unarchiver.ContinueOnError = true;
 
-                    unarchiver.UnarchiveProgressChanged += (name, isFile, unarchiveEntry, amount,  entryProgress) =>
+                    unarchiver.UnarchiveProgressChanged += (name, isFile, unarchiveEntry, amount, entryProgress) =>
                     {
                         repairStatus.Progress.Value = entryProgress;
                     };
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
 
-                    EmplaceFile(Path.Combine(unarchivePath, entry.Name + _unpackingSuffix), Path.Combine(_localData.Path, entry.Name), cancellationToken);
+                    EmplaceFile(Path.Combine(unarchivePath, entry.Name + _unpackingSuffix),
+                        Path.Combine(_localData.Path, entry.Name), cancellationToken);
 
                     repairStatus.IsActive.Value = false;
                 });
@@ -138,11 +145,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Prepare(status, cancellationToken);
 
-            foreach(var entry in _entries)
+            foreach (var entry in _entries)
             {
                 var repairStatus = new OperationStatus
                 {
-                    Weight = { Value = StatusWeightHelper.GetUnarchivePackageWeight(entry.Size.Value) }
+                    Weight = {Value = StatusWeightHelper.GetUnarchivePackageWeight(entry.Size.Value)}
                 };
                 status.RegisterOperation(repairStatus);
 

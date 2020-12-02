@@ -62,7 +62,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             int counter = 0;
 
             _statusReporter.IsActive.Value = true;
-            _statusReporter.Description.Value = PatcherLanguages.GetTranslation("uninstalling");
+            _statusReporter.Description.Value = PatcherLanguages.OpenTag + "uninstalling" + PatcherLanguages.CloseTag;
 
             foreach (var fileName in files)
             {
@@ -79,7 +79,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 counter++;
                 _statusReporter.Progress.Value = counter / (double) entries.Length;
-                _statusReporter.Description.Value = string.Format(PatcherLanguages.GetTranslation("uninstalling_[count]_[total_count]"), counter, entries.Length);
+                _statusReporter.Description.Value = PatcherLanguages.OpenTag + "uninstalling" +
+                                                    PatcherLanguages.CloseTag + string.Format(" ({0} / {1}) ...",
+                                                        counter, entries.Length);
             }
 
             // TODO: Delete this after fixing directory registration in install content command

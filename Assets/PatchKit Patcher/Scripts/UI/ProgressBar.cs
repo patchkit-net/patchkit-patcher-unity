@@ -12,6 +12,7 @@ namespace PatchKit.Unity.Patcher.UI
     public class ProgressBar : MonoBehaviour
     {
         public Text Text;
+        public TextTranslator TextTranslator;
 
         public Image Image;
 
@@ -45,7 +46,7 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void SetProgressBarText(string text)
         {
-            Text.text = text;
+            TextTranslator.SetText(text);
         }
 
         private void SetProgress(UpdateData data)
@@ -72,7 +73,7 @@ namespace PatchKit.Unity.Patcher.UI
                 case PatcherState.LoadingPatcherData:
                 case PatcherState.LoadingPatcherConfiguration:
                 case PatcherState.Connecting:
-                    SetIdle(PatcherLanguages.GetTranslation("connecting"));
+                    SetIdle(PatcherLanguages.OpenTag + "connecting" + PatcherLanguages.CloseTag);
                     return;
 
                 case PatcherState.UpdatingApp:
@@ -84,7 +85,7 @@ namespace PatchKit.Unity.Patcher.UI
 
                     if (data.Progress <= 0)
                     {
-                        SetIdle(PatcherLanguages.GetTranslation("connecting"));
+                        SetIdle(PatcherLanguages.OpenTag + "connecting" + PatcherLanguages.CloseTag);
                         return;
                     }
 
@@ -103,10 +104,11 @@ namespace PatchKit.Unity.Patcher.UI
                         SetProgressBarText(FormatProgressForDisplay(0.0));
                         SetProgressBarLinear(0);
                     }
+
                     break;
 
                 case PatcherState.DisplayingError:
-                    SetProgressBarText(PatcherLanguages.GetTranslation("error"));
+                    SetProgressBarText(PatcherLanguages.OpenTag + "error" + PatcherLanguages.CloseTag);
                     SetProgressBarLinear(0);
                     break;
 
@@ -124,19 +126,24 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
+            if (TextTranslator == null)
+                TextTranslator = Text.gameObject.AddComponent<TextTranslator>();
+
             var progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
             var isUpdatingIdle = Patcher.Instance.UpdaterStatus
-                .SelectSwitchOrDefault(p => (IObservable<IReadOnlyOperationStatus>) p.LatestActiveOperation, (IReadOnlyOperationStatus) null)
+                .SelectSwitchOrDefault(p => (IObservable<IReadOnlyOperationStatus>) p.LatestActiveOperation,
+                    (IReadOnlyOperationStatus) null)
                 .SelectSwitchOrDefault(p => p.IsIdle, false);
 
             Patcher.Instance.State
                 .CombineLatest(progress, Patcher.Instance.IsAppInstalled, isUpdatingIdle,
-                    (state, progressValue, isAppInstalled, isUpdatingIdleValue) => new UpdateData {
+                    (state, progressValue, isAppInstalled, isUpdatingIdleValue) => new UpdateData
+                    {
                         Progress = progressValue,
                         State = state,
                         IsAppInstalled = isAppInstalled,
                         IsIdle = isUpdatingIdleValue
-                        })
+                    })
                 .ObserveOnMainThread()
                 .Subscribe(OnUpdate)
                 .AddTo(this);

@@ -778,7 +778,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (displayWarningInsteadOfError)
                 {
-                    _warning.Value = PatcherLanguages.GetTranslation("unable_to_check_for_updates_please_check_your_internet_connection");
+                    _warning.Value = PatcherLanguages.OpenTag+"unable_to_check_for_updates_please_check_your_internet_connection"+PatcherLanguages.CloseTag;
                 }
                 else
                 {
@@ -817,7 +817,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (displayWarningInsteadOfError)
                 {
-                    _warning.Value = PatcherLanguages.GetTranslation("unable_to_check_for_updates_please_check_your_internet_connection");
+                    _warning.Value = "{unable_to_check_for_updates_please_check_your_internet_connection}";
                 }
                 else
                 {

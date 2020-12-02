@@ -1,5 +1,5 @@
 ﻿using UniRx;
-﻿using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.UI.Languages;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +16,8 @@ namespace PatchKit.Unity.Patcher.UI
 
         public Text CheckButtonText;
 
+        public TextTranslator CheckButtonTextTranslator;
+
         private bool _canInstallApp;
 
         private bool _canCheckForAppUpdates;
@@ -29,6 +31,9 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
+            if (CheckButtonTextTranslator == null)
+                CheckButtonTextTranslator = CheckButtonText.gameObject.AddComponent<TextTranslator>();
+
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
                 _animator.SetBool("IsOpened", state == PatcherState.WaitingForUserDecision);
@@ -44,8 +49,9 @@ namespace PatchKit.Unity.Patcher.UI
                 _canInstallApp = canInstallApp;
                 if (_canInstallApp)
                 {
-                    CheckButtonText.text = PatcherLanguages.GetTranslation("install");
+                    CheckButtonTextTranslator.SetText(PatcherLanguages.OpenTag + "install" + PatcherLanguages.CloseTag);
                 }
+
                 CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
             }).AddTo(this);
 
@@ -54,8 +60,10 @@ namespace PatchKit.Unity.Patcher.UI
                 _canCheckForAppUpdates = canCheckForAppUpdates;
                 if (_canCheckForAppUpdates)
                 {
-                    CheckButtonText.text = PatcherLanguages.GetTranslation("check_for_updates");
+                    CheckButtonTextTranslator.SetText(PatcherLanguages.OpenTag + "check_for_updates" +
+                                                      PatcherLanguages.CloseTag);
                 }
+
                 CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
             }).AddTo(this);
 
@@ -65,7 +73,9 @@ namespace PatchKit.Unity.Patcher.UI
             _animator.SetBool("IsOpened", false);
             PlayButton.interactable = false;
             CheckButton.interactable = false;
-            CheckButtonText.text = PatcherLanguages.GetTranslation("check_for_updates");
+            
+            CheckButtonTextTranslator.SetText(
+                PatcherLanguages.OpenTag + "check_for_updates" + PatcherLanguages.CloseTag);
         }
 
         private void OnPlayButtonClicked()
@@ -76,11 +86,11 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void OnCheckButtonClicked()
         {
-            if(_canInstallApp)
+            if (_canInstallApp)
             {
                 Patcher.Instance.SetUserDecision(Patcher.UserDecision.InstallApp);
             }
-            else if(_canCheckForAppUpdates)
+            else if (_canCheckForAppUpdates)
             {
                 Patcher.Instance.SetUserDecision(Patcher.UserDecision.CheckForAppUpdates);
             }

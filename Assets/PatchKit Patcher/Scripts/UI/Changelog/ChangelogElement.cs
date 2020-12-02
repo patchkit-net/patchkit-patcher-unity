@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
+using PatchKit.Unity.UI.Languages;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
     public class ChangelogElement : MonoBehaviour
     {
-        public List<Text> Texts = new List<Text>();
+        public List<TextTranslator> Texts = new List<TextTranslator>();
     }
 }

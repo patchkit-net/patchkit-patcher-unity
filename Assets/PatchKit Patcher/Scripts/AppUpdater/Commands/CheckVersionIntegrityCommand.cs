@@ -55,7 +55,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new OperationStatus
             {
                 Weight = {Value = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary)},
-                Description = {Value = PatcherLanguages.GetTranslation("checking_version_integrity")}
+                Description =
+                    {Value = PatcherLanguages.OpenTag + "checking_version_integrity" + PatcherLanguages.CloseTag}
             };
             status.RegisterOperation(_status);
         }
@@ -70,7 +71,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 VersionId = _versionId,
             };
 
-            System.Func<PatcherStatistics.OptionalParams> timedParams = () => new PatcherStatistics.OptionalParams {
+            System.Func<PatcherStatistics.OptionalParams> timedParams = () => new PatcherStatistics.OptionalParams
+            {
                 VersionId = optionalParams.VersionId,
                 Time = integrityCheckStopwatch.Elapsed.Seconds,
             };
@@ -120,11 +122,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             Action onVerificationFailed = () =>
             {
-                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.FileVerificationFailed, new PatcherStatistics.OptionalParams
-                {
-                    FileName = file.Path,
-                    Size = file.Size,
-                });
+                PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.FileVerificationFailed,
+                    new PatcherStatistics.OptionalParams
+                    {
+                        FileName = file.Path,
+                        Size = file.Size,
+                    });
             };
 
             string localPath = _localDirectory.Path.PathCombine(file.Path);
