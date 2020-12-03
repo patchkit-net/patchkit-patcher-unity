@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
-using PatchKit.Unity.Patcher;
-using PatchKit.Unity.Patcher.Debug;
+using System.IO;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +17,7 @@ namespace PatchKit.Unity.Patcher.Debug
         private bool _showPopup;
         private string _popupMessage;
         private GraphicRaycaster _graphicRaycaster;
+        private PlatformType _platformType;
 
         void Start()
         {
@@ -29,6 +30,7 @@ namespace PatchKit.Unity.Patcher.Debug
             _popupRect = new Rect(x, popupRectY, windowWidth, 120);
             _texturePopupRect = new Rect(0, popupRectY - y, windowWidth, 120);
             _graphicRaycaster = FindObjectOfType<GraphicRaycaster>();
+            _platformType = Platform.GetPlatformType();
         }
 
         void OnGUI()
@@ -87,7 +89,8 @@ namespace PatchKit.Unity.Patcher.Debug
                 OpenLauncherLogFileLocation();
             }
 
-            if (Patcher.Instance.IsAppInstalled.Value)
+            if (Patcher.Instance.IsAppInstalled.Value &&
+                Patcher.Instance.State.Value == PatcherState.WaitingForUserDecision)
             {
                 if (GUILayout.Button("Verify all app files"))
                 {
@@ -128,14 +131,15 @@ namespace PatchKit.Unity.Patcher.Debug
             Close();
         }
 
-        void OpenFile(string path)
+        void OpenFile(string path, bool isFile)
         {
-            try
+            if (File.Exists(path) || Directory.Exists(path))
             {
-                Process.Start(path);
+                var processStartInfo = GetProcessStartInfo(path);
+                StartProcess(processStartInfo, isFile);
                 Close();
             }
-            catch (Exception e)
+            else
             {
                 OpenPopup(string.Format("The directory/file cannot be found: {0}", path));
             }
@@ -153,8 +157,13 @@ namespace PatchKit.Unity.Patcher.Debug
 #if UNITY_EDITOR
             OpenPopup("Access to Launcher in the editor is not possible");
 #else
+#if UNITY_STANDALONE_OSX
+            string logDirectoryPath = Patcher.Instance.Data.Value.LockFilePath.Replace(
+                Patcher.Instance.AppSecret + Path.DirectorySeparatorChar + ".lock", "");
+#else
             string logDirectoryPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","");
-            OpenFile(logDirectoryPath);
+#endif
+            OpenFile(logDirectoryPath, false);
 #endif
         }
 
@@ -163,8 +172,13 @@ namespace PatchKit.Unity.Patcher.Debug
 #if UNITY_EDITOR
             OpenPopup("Access to Launcher in the editor is not possible");
 #else
+#if UNITY_STANDALONE_OSX
+            string logPath = Patcher.Instance.Data.Value.LockFilePath.Replace(
+                Patcher.Instance.AppSecret + Path.DirectorySeparatorChar + ".lock", "launcher-log.txt");
+#else
             string logPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","launcher-log.txt");
-            OpenFile(logPath);
+#endif
+            OpenFile(logPath, true);
 #endif
         }
 
@@ -174,23 +188,26 @@ namespace PatchKit.Unity.Patcher.Debug
             var logDirectoryPath = Application.consoleLogPath.Replace("Editor.log", "");
 #else
 #if UNITY_STANDALONE_WIN
-                var logDirectoryPath = string.Format("{0}",
-                    Application.persistentDataPath);
+            var logDirectoryPath = string.Format("{0}",
+                Application.persistentDataPath);
 #elif UNITY_STANDALONE_LINUX
-                var logDirectoryPath = string.Format("~/.config/unity3d/{0}/{1}",
-                    Application.companyName,
-                    Application.productName);
+            var logDirectoryPath = string.Format("{0}/.config/unity3d/{1}/{2}",
+                Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                Application.companyName,
+                Application.productName);
 #elif UNITY_STANDALONE_OSX
     #if UNITY_2019_1_OR_NEWER
-                var logDirectoryPath = string.Format("~/Library/Logs/{0}/{1}",
-                    Application.companyName,
-                    Application.productName);
+            var logDirectoryPath = string.Format("{1}/Library/Logs/{2}/{3}",
+                Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                Application.companyName,
+                Application.productName);
     #else
-                var logDirectoryPath = "~/Library/Logs/Unity";
+            var logDirectoryPath = string.Format("{0}/Library/Logs/Unity",
+                Environment.GetFolderPath(Environment.SpecialFolder.Personal));
     #endif
 #endif
 #endif
-            OpenFile(logDirectoryPath);
+            OpenFile(logDirectoryPath, false);
         }
 
         private void OpenPatcherLogFile()
@@ -200,28 +217,30 @@ namespace PatchKit.Unity.Patcher.Debug
 #else
 #if UNITY_STANDALONE_WIN
 #if UNITY_2019_1_OR_NEWER
-                var logPath = string.Format("{0}/Player.log",
-                    Application.persistentDataPath);
+            var logPath = string.Format("{0}/Player.log",
+                Application.persistentDataPath);
 #else
-                    var logPath = string.Format("{0}/output_log.txt",
-                    Application.persistentDataPath);
+            var logPath = string.Format("{0}/output_log.txt",
+            Application.persistentDataPath);
 #endif
 #elif UNITY_STANDALONE_LINUX
-                var logPath = string.Format("~/.config/unity3d/{0}/{1}/Player.log",
-                    Application.companyName,
-                    Application.productName);
+            var logPath = string.Format("{0}/.config/unity3d/{1}/{2}/Player.log",
+                Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                Application.companyName,
+                Application.productName);
 #elif UNITY_STANDALONE_OSX
 #if UNITY_2019_1_OR_NEWER
-                var logPath = string.Format("~/Library/Logs/{0}/{1}/Player.log",
-                    Application.companyName,
-                    Application.productName);
-               
+            var logPath = string.Format("{0}/Library/Logs/{0}/{1}/Player.log",
+                Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                Application.companyName,
+                Application.productName);
 #else
-                var logPath = "~/Library/Logs/Unity/Player.log";
+            var logPath = string.Format("{0}/Library/Logs/Unity/Player.log",
+                Environment.GetFolderPath(Environment.SpecialFolder.Personal));
 #endif
 #endif
 #endif
-            OpenFile(logPath);
+            OpenFile(logPath, true);
         }
 
         void DrawPopup(int id)
@@ -244,6 +263,54 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             _show = true;
             _graphicRaycaster.enabled = false;
+        }
+
+        private ProcessStartInfo GetProcessStartInfo(string executablePath)
+        {
+            string workingDir = Path.GetDirectoryName(executablePath) ?? string.Empty;
+            switch (_platformType)
+            {
+                case PlatformType.Unknown:
+                    throw new ArgumentException("Unknown");
+                case PlatformType.Windows:
+                    return new ProcessStartInfo
+                    {
+                        FileName = executablePath,
+                        WorkingDirectory = workingDir
+                    };
+                case PlatformType.OSX:
+
+                    return new ProcessStartInfo
+                    {
+                        FileName = "open",
+                        Arguments = string.Format("\"{0}", executablePath),
+                        WorkingDirectory = workingDir
+                    };
+                case PlatformType.Linux:
+                    return new ProcessStartInfo
+                    {
+                        FileName = executablePath,
+                        WorkingDirectory = workingDir
+                    };
+                default:
+                    throw new ArgumentOutOfRangeException("platform", _platformType, null);
+            }
+        }
+
+        private void StartProcess(ProcessStartInfo processStartInfo, bool isFile)
+        {
+            DebugLogger.Log(string.Format("Starting process '{0}'", processStartInfo.FileName));
+
+            var process = Process.Start(processStartInfo);
+            if (process == null)
+            {
+                DebugLogger.LogError(string.Format("Failed to start process {0}", processStartInfo.FileName));
+            }
+            else if (isFile && process.HasExited)
+            {
+                DebugLogger.LogError(string.Format("Process '{0}' prematurely exited with code '{1}'",
+                    processStartInfo.FileName, process.ExitCode));
+            }
         }
     }
 }
