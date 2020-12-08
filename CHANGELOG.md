@@ -6,14 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.17.5.0]
 ### Added
-- Debug menu (available through Ctrl + Shift + D)
+- Debug menu (available through Ctrl + Shift + D) (#2081)
 
 ### Fixed
-- Starting in offline mode without permissions for working directory
+- Starting in offline mode without permissions for working directory (#2082)
 
 ## [3.17.4.0]
 ### Added
-- Improved changelog displaying (#2033)
+- Improved changelog displaying (#2080)
 
 ## [3.17.3.0]
 ### Added
@@ -21,14 +21,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.17.2.0]
 ### Added
-- Attempting to repair content on failed installation
+- Attempting to repair content on failed installation (#2079)
 
 ### Fixed
-- Ability to test patcher in the editor
+- Ability to test patcher in the editor (#2078)
 
 ## [3.17.1.0]
 ### Fixed
-- Installing diff which contains the same entry in added_files & removed_files
+- Installing diff which contains the same entry in added_files & removed_files (#1916)
 
 ## [3.17.0.0]
 ### Added
