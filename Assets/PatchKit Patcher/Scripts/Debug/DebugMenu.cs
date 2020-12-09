@@ -131,7 +131,7 @@ namespace PatchKit.Unity.Patcher.Debug
             Close();
         }
 
-        void OpenFile(string path, bool isFile)
+        void OpenFileSystemEntry(string path, bool isFile)
         {
             if (File.Exists(path) || Directory.Exists(path))
             {
@@ -159,11 +159,11 @@ namespace PatchKit.Unity.Patcher.Debug
 #else
 #if UNITY_STANDALONE_OSX
             string logDirectoryPath = Patcher.Instance.Data.Value.LockFilePath.Replace(
-                Patcher.Instance.AppSecret + Path.DirectorySeparatorChar + ".lock", "");
+                GetHashAppSecret(Patcher.Instance.AppSecret) + Path.DirectorySeparatorChar + ".lock","");
 #else
             string logDirectoryPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","");
 #endif
-            OpenFile(logDirectoryPath, false);
+            OpenFileSystemEntry(logDirectoryPath, false);
 #endif
         }
 
@@ -174,12 +174,18 @@ namespace PatchKit.Unity.Patcher.Debug
 #else
 #if UNITY_STANDALONE_OSX
             string logPath = Patcher.Instance.Data.Value.LockFilePath.Replace(
-                Patcher.Instance.AppSecret + Path.DirectorySeparatorChar + ".lock", "launcher-log.txt");
+                GetHashAppSecret(Patcher.Instance.AppSecret) + Path.DirectorySeparatorChar + ".lock",
+                "launcher-log.txt");
 #else
             string logPath = Patcher.Instance.Data.Value.LockFilePath.Replace(".lock","launcher-log.txt");
 #endif
-            OpenFile(logPath, true);
+            OpenFileSystemEntry(logPath, true);
 #endif
+        }
+
+        public string GetHashAppSecret(string appSecret)
+        {
+            return appSecret.Substring(0, 8);
         }
 
         private void OpenPatcherLogFileLocation()
@@ -207,7 +213,7 @@ namespace PatchKit.Unity.Patcher.Debug
     #endif
 #endif
 #endif
-            OpenFile(logDirectoryPath, false);
+            OpenFileSystemEntry(logDirectoryPath, false);
         }
 
         private void OpenPatcherLogFile()
@@ -240,7 +246,7 @@ namespace PatchKit.Unity.Patcher.Debug
 #endif
 #endif
 #endif
-            OpenFile(logPath, true);
+            OpenFileSystemEntry(logPath, true);
         }
 
         void DrawPopup(int id)
@@ -279,11 +285,10 @@ namespace PatchKit.Unity.Patcher.Debug
                         WorkingDirectory = workingDir
                     };
                 case PlatformType.OSX:
-
                     return new ProcessStartInfo
                     {
                         FileName = "open",
-                        Arguments = string.Format("\"{0}", executablePath),
+                        Arguments = string.Format("\"{0}\"", executablePath),
                         WorkingDirectory = workingDir
                     };
                 case PlatformType.Linux:
