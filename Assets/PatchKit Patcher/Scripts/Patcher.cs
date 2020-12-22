@@ -398,7 +398,7 @@ namespace PatchKit.Unity.Patcher
         private void StartThread()
         {
             DebugLogger.Log("Starting patcher thread...");
-
+            
             _thread = new Thread(() => ThreadExecution(_threadCancellationTokenSource.Token))
             {
                 IsBackground = true

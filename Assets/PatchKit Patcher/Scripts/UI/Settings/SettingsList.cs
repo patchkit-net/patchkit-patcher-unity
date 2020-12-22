@@ -5,25 +5,29 @@ using PatchKit.Unity.Patcher;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SettingsList : MonoBehaviour
+namespace PatchKit.Unity.Patcher.UI
 {
-    public Toggle ToggleAnalytics;
-    private void Awake()
+    public class SettingsList : MonoBehaviour
     {
-        if (PlayerPrefs.GetInt("analytics") == 1)
-        {
-            PatcherStatistics.SetPermitStatistics(true);
-            ToggleAnalytics.isOn = true;
-        }
-    }
+        public Toggle ToggleAnalytics;
 
-    public bool SetAnalytics
-    {
-        set
+        private void Awake()
         {
-            PatcherStatistics.SetPermitStatistics(value);
-            PlayerPrefs.SetInt("analytics", value ? 1 : 0);
-            PlayerPrefs.Save();
+            if (PlayerPrefs.GetInt("analytics") == 1)
+            {
+                SetAnalytics = true;
+            }
+        }
+
+        public bool SetAnalytics
+        {
+            set
+            {
+                PatcherStatistics.SetPermitStatistics(value);
+                ToggleAnalytics.isOn = value;
+                PlayerPrefs.SetInt("analytics", value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
         }
     }
 }
