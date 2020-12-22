@@ -155,19 +155,19 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 14
+    m_Font: {fileID: 12800000, guid: 7796aa91ae9b8cd4790f3c437e4da787, type: 3}
+    m_FontSize: 11
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_MinSize: 1
+    m_MaxSize: 44
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: IDIOMA
+  m_Text: Iidioma
 --- !u!1 &4428854885864183404
 GameObject:
   m_ObjectHideFlags: 0
@@ -435,23 +435,23 @@ MonoBehaviour:
   m_Value: 8
   m_Options:
     m_Options:
-    - m_Text: LANGUAGE
+    - m_Text: Language
       m_Image: {fileID: 21300000, guid: 28ce83b7bb4802546bec51ee4cc12f85, type: 3}
-    - m_Text: SPRACHE
+    - m_Text: Sprache
       m_Image: {fileID: 21300000, guid: 82fa51bf2c441b842a20b3bd78e16dc3, type: 3}
-    - m_Text: "\u042F\u0417\u042B\u041A"
+    - m_Text: "\u042F\u0437\u044B\u043A"
       m_Image: {fileID: 21300000, guid: 8bd57709b3a03384a9066d90d117298a, type: 3}
-    - m_Text: "J\u0118ZYK"
+    - m_Text: "J\u0119zyk"
       m_Image: {fileID: 21300000, guid: 96902fe36b9bf8647a4a7821f1d83a7f, type: 3}
-    - m_Text: FRENCH
+    - m_Text: French
       m_Image: {fileID: 21300000, guid: cf745ccbc8021e545bd6225d95ccea53, type: 3}
-    - m_Text: IDIOMA
+    - m_Text: Iidioma
       m_Image: {fileID: 21300000, guid: 6e5283b9eecca4f4fa100b4b36778075, type: 3}
-    - m_Text: "L\xCDNGUA"
+    - m_Text: "L\xEDngua"
       m_Image: {fileID: 21300000, guid: 3ec2d0a746b0ed04dbf7bd271834fb2a, type: 3}
-    - m_Text: "\u8BED\u8A00"
+    - m_Text: "\u8A9E\u8A00"
       m_Image: {fileID: 21300000, guid: 421951a70c03c8c4c85a1f086ebe8782, type: 3}
-    - m_Text: IDIOMA
+    - m_Text: Iidioma
       m_Image: {fileID: 21300000, guid: 1e10b5099a76070458fe87142dac4bde, type: 3}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -495,13 +495,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4428854886409175461}
-  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4428854885986971929}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: -19.8, y: -0.8}
@@ -718,8 +718,8 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 14
+    m_Font: {fileID: 12800000, guid: 7796aa91ae9b8cd4790f3c437e4da787, type: 3}
+    m_FontSize: 11
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -730,7 +730,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: LANGUAGE
+  m_Text: Language
 --- !u!1 &4428854886922908427
 GameObject:
   m_ObjectHideFlags: 0
