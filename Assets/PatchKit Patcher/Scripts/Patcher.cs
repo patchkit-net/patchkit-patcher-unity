@@ -18,6 +18,7 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.Patcher.UI;
 using PatchKit.Unity.UI.Languages;
 
 namespace PatchKit.Unity.Patcher
@@ -62,7 +63,7 @@ namespace PatchKit.Unity.Patcher
         private readonly PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _threadCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
 
         private Thread _thread;
-
+        
         private bool _isForceQuitting;
 
         private App _app;
@@ -114,6 +115,8 @@ namespace PatchKit.Unity.Patcher
         public PatcherConfiguration DefaultConfiguration;
 
         public string StartAppCustomArgs { get; set; }
+        
+        public readonly EventWaitHandle WaitHandleAnaliticsPopup = new AutoResetEvent(false);
 
         private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
 
@@ -276,6 +279,9 @@ namespace PatchKit.Unity.Patcher
 
             CheckEditorAppSecretSecure();
 
+            if (PlayerPrefs.GetInt("nextStartPatcher") == 1 || !FindObjectOfType(typeof(AnalyticsPopup)))
+                WaitHandleAnaliticsPopup.Set();
+            
             if (_canStartThread)
             {
                 StartThread();
@@ -398,8 +404,12 @@ namespace PatchKit.Unity.Patcher
         private void StartThread()
         {
             DebugLogger.Log("Starting patcher thread...");
-            
-            _thread = new Thread(() => ThreadExecution(_threadCancellationTokenSource.Token))
+
+            _thread = new Thread(() =>
+            {
+                WaitHandleAnaliticsPopup.WaitOne();
+                ThreadExecution(_threadCancellationTokenSource.Token);
+            })
             {
                 IsBackground = true
             };

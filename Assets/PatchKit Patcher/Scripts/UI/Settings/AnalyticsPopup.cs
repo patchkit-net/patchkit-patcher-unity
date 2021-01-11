@@ -19,6 +19,7 @@ namespace PatchKit.Unity.Patcher.UI
             SettingsList.SetAnalytics = value;
             PlayerPrefs.SetInt("nextStartPatcher", 1);
             PlayerPrefs.Save();
+            Patcher.Instance.WaitHandleAnaliticsPopup.Set();
             gameObject.SetActive(false);
         }
     }

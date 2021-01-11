@@ -14,13 +14,14 @@ namespace PatchKit.Unity.UI.Languages
     public class DropdownLanguages : MonoBehaviour
     {
         private static Dropdown _dropdown;
-        private static int _lastOption;
+        private static int _currentValue;
 
         void Awake()
         {
             _dropdown = GetComponent<Dropdown>();
-            _lastOption = _dropdown.options.Count - 1;
-            _dropdown.value = _lastOption;
+            _currentValue = _dropdown.value;
+            _dropdown.itemImage.sprite = _dropdown.options[_currentValue].image;
+            _dropdown.itemText.text = _dropdown.options[_currentValue].text;
             _dropdown.onValueChanged.AddListener(delegate {
                 DropdownValueChanged(_dropdown);
             });
@@ -31,8 +32,10 @@ namespace PatchKit.Unity.UI.Languages
             int currentLanguages = _dropdown.options.FindIndex(id => id.image.name == language);
             var options = _dropdown.options;
             Dropdown.OptionData tmp = options[currentLanguages];
-            options[currentLanguages] = options[_lastOption];
-            options[_lastOption] = tmp;
+            options[currentLanguages] = options[_currentValue];
+            options[_currentValue] = tmp;
+            _dropdown.itemImage.sprite = _dropdown.options[_currentValue].image;
+            _dropdown.itemText.text = _dropdown.options[_currentValue].text;
         }
 
         void DropdownValueChanged(Dropdown change)
@@ -40,10 +43,10 @@ namespace PatchKit.Unity.UI.Languages
             int currentLanguages = change.value;
             var options = change.options;
             Dropdown.OptionData tmp = options[currentLanguages];
-            options[currentLanguages] = options[_lastOption];
-            options[_lastOption] = tmp;
+            options[currentLanguages] = options[_currentValue];
+            options[_currentValue] = tmp;
             PatcherLanguages.SetLanguage(tmp.image.name);
-            _dropdown.value = _lastOption;
+            _dropdown.value = _currentValue;
         }
     }
 }
