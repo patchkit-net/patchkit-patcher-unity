@@ -1,5 +1,6 @@
 ﻿using System;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,17 +12,15 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         private LicenseDialogResult _result;
 
         public Text ErrorMessageText;
+        public TextTranslator ErrorMessageTextTranslator;
 
         public InputField KeyInputField;
 
-        [Multiline]
-        public string InvalidLicenseMessageText;
-
-        [Multiline]
-        public string BlockedLicenseMessageText;
-
-        [Multiline]
-        public string ServiceUnavailableMessageText;
+        private void Start()
+        {
+            if (ErrorMessageTextTranslator == null)
+                ErrorMessageTextTranslator = ErrorMessageText.gameObject.AddComponent<TextTranslator>();
+        }
 
         public void Confirm()
         {
@@ -72,16 +71,19 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             switch (messageType)
             {
                 case LicenseDialogMessageType.None:
-                    ErrorMessageText.text = string.Empty;
+                    ErrorMessageTextTranslator.SetText(string.Empty);
                     break;
                 case LicenseDialogMessageType.InvalidLicense:
-                    ErrorMessageText.text = InvalidLicenseMessageText;
+                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "invalid_license" +
+                                                       PatcherLanguages.CloseTag);
                     break;
                 case LicenseDialogMessageType.BlockedLicense:
-                    ErrorMessageText.text = BlockedLicenseMessageText;
+                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "blocked_license" +
+                                                       PatcherLanguages.CloseTag);
                     break;
                 case LicenseDialogMessageType.ServiceUnavailable:
-                    ErrorMessageText.text = ServiceUnavailableMessageText;
+                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "service_is_unavailable" +
+                                                       PatcherLanguages.CloseTag);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);

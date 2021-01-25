@@ -6,6 +6,7 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.UI.Languages;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -95,7 +96,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Installing content.");
 
-            TemporaryDirectory.ExecuteIn(_packagePath + ".temp_unpack_" + Path.GetRandomFileName(), (packageDir) => {
+            TemporaryDirectory.ExecuteIn(_packagePath + ".temp_unpack_" + Path.GetRandomFileName(), (packageDir) =>
+            {
                 DebugLogger.LogVariable(packageDir.Path, "packageDirPath");
 
                 DebugLogger.Log("Unarchiving package.");
@@ -104,7 +106,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
                 _unarchivePackageStatus.IsActive.Value = true;
-                _unarchivePackageStatus.Description.Value = "Unarchiving package...";
+                _unarchivePackageStatus.Description.Value =
+                    PatcherLanguages.OpenTag + "unarchiving_package" + PatcherLanguages.CloseTag + " ...";
                 _unarchivePackageStatus.Progress.Value = 0.0;
 
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
@@ -112,9 +115,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     var entryMinProgress = (entry - 1) / (double) amount;
                     var entryMaxProgress = entry / (double) amount;
 
-                    _unarchivePackageStatus.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
+                    _unarchivePackageStatus.Progress.Value =
+                        entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
 
-                    _unarchivePackageStatus.Description.Value = string.Format("Unarchiving package ({0}/{1})...", entry, amount);
+                    _unarchivePackageStatus.Description.Value =
+                        PatcherLanguages.OpenTag + "unarchiving_package" + PatcherLanguages.CloseTag +
+                        string.Format(" ({0} / {1}) ...", entry, amount);
                 };
 
                 // Allow to unpack with errors. This allows to install content even on corrupted hard drives, and attempt to fix these later
@@ -129,7 +135,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Moving files.");
 
                 _copyFilesStatus.IsActive.Value = true;
-                _copyFilesStatus.Description.Value = "Installing...";
+                _copyFilesStatus.Description.Value =
+                    PatcherLanguages.OpenTag + "installing" + PatcherLanguages.CloseTag + " ...";
                 _copyFilesStatus.Progress.Value = 0.0;
 
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
@@ -137,16 +144,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     cancellationToken.ThrowIfCancellationRequested();
                     var sourceFile = new SourceFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
 
-                    if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
+                    if (unarchiver.HasErrors && !sourceFile.Exists()
+                    ) // allow unexistent file only if does not have errors
                     {
-                        DebugLogger.LogWarning("Skipping unexisting file because I've been expecting unpacking errors: " + sourceFile.Name);
-                    } else
+                        DebugLogger.LogWarning(
+                            "Skipping unexisting file because I've been expecting unpacking errors: " +
+                            sourceFile.Name);
+                    }
+                    else
                     {
                         InstallFile(sourceFile, cancellationToken);
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
-                    _copyFilesStatus.Description.Value = string.Format("Installing ({0}/{1})...", i + 1, _versionContentSummary.Files.Length);
+                    _copyFilesStatus.Description.Value =
+                        PatcherLanguages.OpenTag + "installing" + PatcherLanguages.CloseTag +
+                        string.Format(" ({0} / {1}) ...", i + 1, _versionContentSummary.Files.Length);
                 }
 
                 _copyFilesStatus.Progress.Value = 1.0;
@@ -176,7 +189,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             if (!sourceFile.Exists())
             {
-                throw new InstallerException(string.Format("Cannot find file {0} in content package.", sourceFile.Name));
+                throw new InstallerException(string.Format("Cannot find file {0} in content package.",
+                    sourceFile.Name));
             }
 
             string destinationFilePath = _localData.Path.PathCombine(sourceFile.Name);
@@ -198,7 +212,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             private string _suffix;
             private string _root;
 
-            public string FullPath { get { return Path.Combine(_root, Name + _suffix); } }
+            public string FullPath
+            {
+                get { return Path.Combine(_root, Name + _suffix); }
+            }
 
             public SourceFile(string name, string root, string suffix)
             {

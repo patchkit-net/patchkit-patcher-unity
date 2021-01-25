@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Texts:
-  - {fileID: 11414724}
+  - {fileID: 2406077345490737533}
 --- !u!1 &168488
 GameObject:
   m_ObjectHideFlags: 0
@@ -144,6 +144,7 @@ GameObject:
   - component: {fileID: 22481418}
   - component: {fileID: 22200718}
   - component: {fileID: 11414724}
+  - component: {fileID: 2406077345490737533}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -212,6 +213,20 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: Fixes issue wherby ahiceemtn
+--- !u!114 &2406077345490737533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 168488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2883888e205d6954f90b593ef122eb8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Key: 
+  _textComponent: {fileID: 11414724}
 --- !u!1 &194526
 GameObject:
   m_ObjectHideFlags: 0

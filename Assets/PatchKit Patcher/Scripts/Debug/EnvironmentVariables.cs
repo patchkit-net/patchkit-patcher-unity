@@ -8,6 +8,7 @@
         public const string ApiCacheUrlEnvironmentVariable = "PK_PATCHER_API_CACHE_URL";
         public const string KeysUrlEnvironmentVariable = "PK_PATCHER_KEYS_URL";
         public const string KeepFilesOnErrorEnvironmentVariable = "PK_PATCHER_KEEP_FILES_ON_ERROR";
+        public const string TranslationLanguageEnvironmentVariable = "PK_PATCHER_TRANSLATION_LANGUAGE";
 
         // will corrupt every 10th file
         public const string CorruptFilesOnUnpack10 = "PK_PATCHER_CORRUPT_UNPACK_10";

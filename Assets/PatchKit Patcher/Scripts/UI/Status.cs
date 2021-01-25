@@ -1,40 +1,50 @@
 ﻿using System;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UniRx;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
+    [RequireComponent(typeof(TextTranslator))]
     public class Status : MonoBehaviour
     {
-        public Text Text;
+        private TextTranslator _textTranslator;
 
         private void Start()
         {
+            _textTranslator = GetComponent<TextTranslator>();
+            if (_textTranslator == null)
+                _textTranslator = gameObject.AddComponent<TextTranslator>();
+
             var operationStatus = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
 
             var statusDescription = operationStatus.SelectSwitchOrDefault(s => s.Description, string.Empty);
 
+
             Patcher.Instance.State.CombineLatest(statusDescription, (state, description) =>
-            {
-                switch (state)
                 {
-                    case PatcherState.None:
-                        return string.Empty;
-                    case PatcherState.LoadingPatcherData:
-                        return "Loading data...";
-                    case PatcherState.LoadingPatcherConfiguration:
-                        return "Loading configuration...";
-                    case PatcherState.WaitingForUserDecision:
-                        return string.Empty;
-                    case PatcherState.StartingApp:
-                        return "Starting application...";
-                    case PatcherState.UpdatingApp:
-                        return description;
-                }
-                return string.Empty;
-            }).ObserveOnMainThread().SubscribeToText(Text).AddTo(this);
+                    switch (state)
+                    {
+                        case PatcherState.None:
+                            return string.Empty;
+                        case PatcherState.LoadingPatcherData:
+                            return PatcherLanguages.OpenTag + "loading_data" + PatcherLanguages.CloseTag;
+                        case PatcherState.LoadingPatcherConfiguration:
+                            return PatcherLanguages.OpenTag + "loading_configuration" + PatcherLanguages.CloseTag;
+                        case PatcherState.WaitingForUserDecision:
+                            return string.Empty;
+                        case PatcherState.StartingApp:
+                            return PatcherLanguages.OpenTag + "starting_application" + PatcherLanguages.CloseTag;
+                        case PatcherState.UpdatingApp:
+                            return description;
+                    }
+
+                    return string.Empty;
+                }).ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
+                .AddTo(this);
         }
     }
 }

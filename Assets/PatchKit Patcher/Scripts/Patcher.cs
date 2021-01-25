@@ -18,6 +18,7 @@ using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.UI.Languages;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -792,7 +793,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (displayWarningInsteadOfError)
                 {
-                    _warning.Value = "Unable to check for updates. Please check your internet connection.";
+                    _warning.Value = PatcherLanguages.OpenTag+"unable_to_check_for_updates_please_check_your_internet_connection"+PatcherLanguages.CloseTag;
                 }
                 else
                 {
@@ -831,7 +832,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (displayWarningInsteadOfError)
                 {
-                    _warning.Value = "Unable to check for updates. Please check your internet connection.";
+                    _warning.Value = "{unable_to_check_for_updates_please_check_your_internet_connection}";
                 }
                 else
                 {

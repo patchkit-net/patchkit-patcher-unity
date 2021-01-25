@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
@@ -8,14 +9,18 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
+    [RequireComponent(typeof(TextTranslator))]
     public class DownloadSpeed : MonoBehaviour
     {
-        public Text Text;
+        private TextTranslator _textTranslator;
 
         private string _downloadSpeedUnit;
 
         private void Start()
         {
+            _textTranslator = GetComponent<TextTranslator>();
+            if (_textTranslator == null)
+                _textTranslator = gameObject.AddComponent<TextTranslator>();
             var downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
@@ -40,7 +45,8 @@ namespace PatchKit.Unity.Patcher.UI
                     GetStatusText);
             }, string.Empty);
 
-            text.ObserveOnMainThread().SubscribeToText(Text).AddTo(this);
+            text.ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
+                .AddTo(this);
         }
 
         private static string GetStatusText(string formattedDownloadSpeed, string formattedRemainingTime)
@@ -67,12 +73,14 @@ namespace PatchKit.Unity.Patcher.UI
 
         private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + " MB/sec.";
+            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + PatcherLanguages.OpenTag + "megabytes_sec" +
+                   PatcherLanguages.CloseTag;
         }
 
         private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + " KB/sec.";
+            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + PatcherLanguages.OpenTag + "kilobytes_sec" +
+                   PatcherLanguages.CloseTag;
         }
 
         private static string FormatDownloadSpeed(double s)
@@ -91,25 +99,29 @@ namespace PatchKit.Unity.Patcher.UI
 
             if (span.TotalDays > 1.0)
             {
-                return FormatPlural("{0:0} day", span.TotalDays);
+                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "day" + PatcherLanguages.CloseTag,
+                    span.TotalDays);
             }
 
             if (span.TotalHours > 1.0)
             {
-                return FormatPlural("{0:0} hour", span.TotalHours);
+                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "hour" + PatcherLanguages.CloseTag,
+                    span.TotalHours);
             }
 
             if (span.TotalMinutes > 1.0)
             {
-                return FormatPlural("{0:0} minute", span.TotalMinutes);
+                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "minute" + PatcherLanguages.CloseTag,
+                    span.TotalMinutes);
             }
 
             if (span.TotalSeconds > 1.0)
             {
-                return FormatPlural("{0:0} second", span.TotalSeconds);
+                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "second" + PatcherLanguages.CloseTag,
+                    span.TotalSeconds);
             }
 
-            return "a moment";
+            return PatcherLanguages.OpenTag + "a_moment" + PatcherLanguages.CloseTag;
         }
 
         private static double? GetRemainingTime(long bytes, long totalBytes, double bytesPerSecond)
@@ -129,9 +141,9 @@ namespace PatchKit.Unity.Patcher.UI
             return remainingBytes / bytesPerSecond;
         }
 
-        private static string FormatPlural(string format, double value)
+        private static string FormatPlural(string format, string timeUnit, double value)
         {
-            return string.Format(format, value) + GetPlural(value);
+            return string.Format(format, value) + timeUnit + GetPlural(value);
         }
 
         private static string GetPlural(double value)

@@ -8,9 +8,8 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
@@ -80,11 +79,10 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void DestroyOldChangelog()
         {
-            while(transform.childCount > 0)
+            while (transform.childCount > 0)
             {
                 DestroyImmediate(transform.GetChild(0).gameObject);
             }
-
         }
 
         private void CreateChangelog(ChangelogEntry[] versions)
@@ -106,12 +104,13 @@ namespace PatchKit.Unity.Patcher.UI
         private void CreateVersionTitleWithPublishData(string label, long publishTime)
         {
             var title = Instantiate(TitlePrefab);
-            title.Texts[0].text = string.Format("Changelog {0}", label);
-            string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime).ToString("g", CurrentCultureInfo.GetCurrentCultureInfo());
-            title.Texts[1].text = string.Format("Published at: {0}", publishDate);
+            title.Texts[0].SetText(string.Format("Changelog {0}", label));
+            string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime)
+                .ToString("g", CurrentCultureInfo.GetCurrentCultureInfo());
+            title.Texts[1].SetText(string.Format("{0} {1}",
+                PatcherLanguages.OpenTag + "published_at" + PatcherLanguages.CloseTag, publishDate));
             title.transform.SetParent(transform, false);
             title.transform.SetAsLastSibling();
-
         }
 
         private void CreateVersionChangeList(string changelog)
@@ -128,7 +127,7 @@ namespace PatchKit.Unity.Patcher.UI
         private void CreateVersionChange(string changeText)
         {
             var change = Instantiate(ChangePrefab);
-            change.Texts[0].text = changeText;
+            change.Texts[0].SetText(changeText);
             change.transform.SetParent(transform, false);
             change.transform.SetAsLastSibling();
         }

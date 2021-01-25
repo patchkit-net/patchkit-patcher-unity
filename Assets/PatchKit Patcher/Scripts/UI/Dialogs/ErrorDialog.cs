@@ -1,4 +1,6 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
+﻿using System;
+using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UnityEngine.UI;
 
@@ -7,6 +9,13 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
     public class ErrorDialog : Dialog<ErrorDialog>
     {
         public Text ErrorText;
+        public TextTranslator ErrorTextTranslator;
+
+        private void Start()
+        {
+            if (ErrorTextTranslator == null)
+                ErrorTextTranslator = ErrorText.gameObject.AddComponent<TextTranslator>();
+        }
 
         public void Confirm()
         {
@@ -22,7 +31,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         private void UpdateMessage(PatcherError error)
         {
-            ErrorText.text = error.ToString();
+            ErrorTextTranslator.SetText(error.Message, error.Args);
         }
     }
 }
