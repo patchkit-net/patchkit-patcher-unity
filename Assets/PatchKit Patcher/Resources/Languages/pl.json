@@ -50,7 +50,8 @@
   "unable_to_check_for_updates_please_check_your_internet_connection": "Nie można sprawdzić dostępności aktualizacji. Sprawdź połączenie internetowe.",
   "we_will_store_anonymized_data_in_an_aggregated_from_about_downloads_and_updates_we_use_this_data_to_fix_bugs_and_create_statistic_for_game_developer": "Będziemy przechowywać zanonimizowane dane zbiorcze dotyczące pobrań i aktualizacji. Używamy tych danych do naprawiania błędów i tworzenia statystyk dla twórców gier.",
   "analytics": "Analityka",
-  "we_will_store_anonymized_data_in_an_aggregated_from_about_downloads_and_updates_we_use_this_data_to_fix_bugs_and_create_statistic_for_game_developer_do_you_consent_processing_anonymized_data": "Będziemy przechowywać zanonimizowane dane zbiorcze dotyczące pobrań i aktualizacji. Używamy tych danych do naprawiania błędów i tworzenia statystyk dla twórców gier. Czy zgadzasz się na przetwarzanie zanonimizowanych danych?",
   "yes": "Tak",
-  "no": "Nie"
+  "no": "Nie",
+  "what_data": "Jakie dane?",
+  "share_anonymous_usage_data": "Czy wyrażasz zgodę na udostępnienie anonimowych danych?"
 }

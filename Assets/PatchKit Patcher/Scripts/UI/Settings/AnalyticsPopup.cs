@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.UI
                 gameObject.SetActive(false);
             }
         }
-        
+
         public void SetPermitAnalytics(bool value)
         {
             SettingsList.SetAnalytics = value;
@@ -21,6 +21,11 @@ namespace PatchKit.Unity.Patcher.UI
             PlayerPrefs.Save();
             Patcher.Instance.WaitHandleAnaliticsPopup.Set();
             gameObject.SetActive(false);
+        }
+
+        public void OpenWhatDataWebpage()
+        {
+            Application.OpenURL("https://panel.patchkit.net/");
         }
     }
 }

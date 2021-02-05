@@ -1,10 +1,7 @@
-﻿using System;
-using PatchKit.Unity.UI.Languages;
+﻿using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UniRx;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {

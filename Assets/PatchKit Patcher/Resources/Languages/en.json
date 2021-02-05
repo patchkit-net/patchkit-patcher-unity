@@ -50,7 +50,8 @@
   "unable_to_check_for_updates_please_check_your_internet_connection": "Unable to check for updates. Please check your internet connection.",
   "we_will_store_anonymized_data_in_an_aggregated_from_about_downloads_and_updates_we_use_this_data_to_fix_bugs_and_create_statistic_for_game_developer": "We will store anonymized data in an aggregated from about downloads and updates. We use this data to fix bugs and create statistic for game developer.",
   "analytics": "Analytics",
-  "we_will_store_anonymized_data_in_an_aggregated_from_about_downloads_and_updates_we_use_this_data_to_fix_bugs_and_create_statistic_for_game_developer_do_you_consent_processing_anonymized_data": "We will store anonymized data in an aggregated from about downloads and updates. We use this data to fix bugs and create statistic for game developer. Do you consent processing anonymized data?",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "what_data": "What data?",
+  "share_anonymous_usage_data": "Share anonymous usage data?"
 }

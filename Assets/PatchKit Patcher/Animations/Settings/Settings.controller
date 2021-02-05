@@ -6,7 +6,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Changelog Panel 1
+  m_Name: Settings
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: IsOpened
@@ -110,7 +110,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Changelog Panel Closed
+  m_Name: Settings Closed
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -124,7 +124,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: d7a25ddb71dbd41b2a6db61cb73f3fbe, type: 2}
+  m_Motion: {fileID: 7400000, guid: 61643a86abf91c6418d5d190132bfbc1, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -164,7 +164,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Changelog Panel Opened
+  m_Name: Settings Opened
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:

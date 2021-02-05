@@ -51,7 +51,8 @@
   "unable_to_check_for_updates_please_check_your_internet_connection": "Es kann nicht nach Updates gesucht werden. Bitte überprüfe deine Internetverbindung.",
   "we_will_store_anonymized_data_in_an_aggregated_from_about_downloads_and_updates_we_use_this_data_to_fix_bugs_and_create_statistic_for_game_developer": "Wir speichern anonymisierte Daten in einer aggregierten Übersicht über Downloads und Updates. Wir verwenden diese Daten, um Fehler zu beheben und Statistiken für Spieleentwickler zu erstellen.",
   "analytics": "Analytik",
-  "we_will_store_anonymized_data_in_an_aggregated_from_about_downloads_and_updates_we_use_this_data_to_fix_bugs_and_create_statistic_for_game_developer_do_you_consent_processing_anonymized_data": "Wir speichern anonymisierte Daten in einer aggregierten Übersicht über Downloads und Updates. Wir verwenden diese Daten, um Fehler zu beheben und Statistiken für Spieleentwickler zu erstellen. Stimmen Sie der Verarbeitung anonymisierter Daten zu?",
   "yes": "Ja",
-  "no": "Nein"
+  "no": "Nein",
+  "what_data": "Welche Daten?",
+  "share_anonymous_usage_data": "Anonyme Nutzungsdaten teilen?"
 }
