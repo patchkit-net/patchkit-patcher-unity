@@ -213,7 +213,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 7353716579566176734}
         m_MethodName: SetPermitAnalytics
         m_Mode: 6
         m_Arguments:
@@ -841,7 +841,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 7353716579566176734}
         m_MethodName: SetPermitAnalytics
         m_Mode: 6
         m_Arguments:
@@ -1134,7 +1134,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 7353716579566176734}
         m_MethodName: OpenWhatDataWebpage
         m_Mode: 1
         m_Arguments:

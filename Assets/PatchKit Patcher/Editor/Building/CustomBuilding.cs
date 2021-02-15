@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using System;
+using PatchKit.Unity.Editor;
 #if UNITY_2018_1_OR_NEWER
 using UnityEditor.Build.Reporting;
 #endif
@@ -100,7 +101,8 @@ namespace PatchKit.Unity
             {
                 return;
             }
-
+            
+            CustomizationSupport.SetActivePatcherComponentsAll(true);
             ScriptingRuntimeVersionFix.Fix();
             ApiCompatibilityLevelFix.Fix();
 
