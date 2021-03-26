@@ -123,5 +123,18 @@ namespace PatchKit.Unity.Editor
                 componentPatcher.Active = active;
             }
         }
+
+        public static bool TryGetPatchKitLogo(out PatchKitLogo patchKitLogo)
+        {
+            var component = FindObjectOfType<PatchKitLogo>();
+            if (component != null)
+            {
+                patchKitLogo = component;
+                return true;
+            }
+
+            patchKitLogo = null;
+            return false;
+        }
     }
 }

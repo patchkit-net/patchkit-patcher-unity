@@ -102,6 +102,13 @@ namespace PatchKit.Unity
                 return;
             }
             
+            PatchKitLogo patchKitLogo;
+            if (!CustomizationSupport.TryGetPatchKitLogo(out patchKitLogo))
+            {
+                EditorUtility.DisplayDialog("Error", "Please enable the Patchkit logo", "Ok");
+                return;
+            }
+            
             CustomizationSupport.SetActivePatcherComponentsAll(true);
             ScriptingRuntimeVersionFix.Fix();
             ApiCompatibilityLevelFix.Fix();
