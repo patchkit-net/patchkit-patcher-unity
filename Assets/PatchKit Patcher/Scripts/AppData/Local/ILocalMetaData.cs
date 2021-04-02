@@ -44,5 +44,11 @@
         void SetProductKey(string productKey);
 
         string GetProductKey();
+
+        void SetMainExecutableAndArgs(string mainExecutable, string mainExecutableArgs);
+
+        string GetMainExecutable();
+
+        string GetMainExecutableArgs();
     }
 }

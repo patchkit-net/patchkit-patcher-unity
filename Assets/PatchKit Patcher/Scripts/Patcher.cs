@@ -899,6 +899,10 @@ namespace PatchKit.Unity.Patcher
             {
                 _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically, _updateAppCancellationTokenSource.Token);
                 _remoteVersionId.Value = _app.GetLatestVersionId(!automatically, _updateAppCancellationTokenSource.Token);
+                var latestAppVersion =
+                    _app.RemoteMetaData.GetAppVersionInfo(_remoteVersionId.Value.Value, false, cancellationToken);
+                _app.LocalMetaData.SetMainExecutableAndArgs(latestAppVersion.MainExecutable, latestAppVersion.MainExecutableArgs);
+                
                 if (_app.IsFullyInstalled())
                 {
                     _localVersionId.Value = _app.GetInstalledVersionId();

@@ -40,6 +40,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             [DefaultValue("none")]
             [JsonProperty("product_key_encryption", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string ProductKeyEncryption;
+            
+            [JsonProperty("main_executable")]
+            public string MainExecutable;
+            
+            [JsonProperty("main_executable_args")]
+            public string MainExecutableArgs;
 
             [JsonProperty("_fileVersions")] public Dictionary<string, int> FileVersionIds;
         }
@@ -173,6 +179,24 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public string GetProductKey()
         {
             return _data.ProductKey;
+        }
+        
+        public void SetMainExecutableAndArgs(string mainExecutable, string mainExecutableArgs)
+        {
+            _data.MainExecutable = mainExecutable;
+            _data.MainExecutableArgs = mainExecutableArgs;
+
+            SaveData();
+        }
+
+        public string GetMainExecutable()
+        {
+            return _data.MainExecutable;
+        }
+
+        public string GetMainExecutableArgs()
+        {
+            return _data.MainExecutableArgs;
         }
 
         private void CreateDataDir()
