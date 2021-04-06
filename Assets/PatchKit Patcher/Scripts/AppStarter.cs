@@ -100,9 +100,9 @@ namespace PatchKit.Unity.Patcher
             {
                 appArgs += " " + appVersion.Value.MainExecutableArgs;
             }
-            else
+            else if (!string.IsNullOrEmpty(_app.LocalMetaData.MainExecutableArgs))
             {
-                appArgs += " " + _app.LocalMetaData.GetMainExecutableArgs();
+                appArgs += " " + _app.LocalMetaData.MainExecutableArgs;
             }
 
             if (appFilePath == null)

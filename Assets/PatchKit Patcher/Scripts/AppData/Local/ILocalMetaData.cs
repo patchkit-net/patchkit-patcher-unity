@@ -49,6 +49,6 @@
 
         string GetMainExecutable();
 
-        string GetMainExecutableArgs();
+        string MainExecutableArgs { get; }
     }
 }

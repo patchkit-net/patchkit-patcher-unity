@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.6.0]
+### Fixed
+- Starting a valid executable in offline mode (#2146)
+
 ## [3.17.5.0]
 ### Added
 - Debug menu (available through Ctrl + Shift + D) (#2081)

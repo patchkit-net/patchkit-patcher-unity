@@ -14,6 +14,7 @@ using UniRx;
 using UnityEngine;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
+using PatchKit.Api.Models.Main;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
@@ -899,9 +900,6 @@ namespace PatchKit.Unity.Patcher
             {
                 _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically, _updateAppCancellationTokenSource.Token);
                 _remoteVersionId.Value = _app.GetLatestVersionId(!automatically, _updateAppCancellationTokenSource.Token);
-                var latestAppVersion =
-                    _app.RemoteMetaData.GetAppVersionInfo(_remoteVersionId.Value.Value, false, cancellationToken);
-                _app.LocalMetaData.SetMainExecutableAndArgs(latestAppVersion.MainExecutable, latestAppVersion.MainExecutableArgs);
                 
                 if (_app.IsFullyInstalled())
                 {
@@ -919,6 +917,10 @@ namespace PatchKit.Unity.Patcher
                         appUpdater.Update(_updateAppCancellationTokenSource.Token);
                         _wasUpdateSuccessfulOrNotNecessary = true;
                     }
+
+                    AppVersion latestAppVersion =
+                        _app.RemoteMetaData.GetAppVersionInfo(_remoteVersionId.Value.Value, false, cancellationToken);
+                    _app.LocalMetaData.SetMainExecutableAndArgs(latestAppVersion.MainExecutable, latestAppVersion.MainExecutableArgs);
                 }
                 catch (OperationCanceledException)
                 {
