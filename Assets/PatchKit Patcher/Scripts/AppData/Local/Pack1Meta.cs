@@ -34,9 +34,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public static Pack1Meta Parse(string content)
         {
             DebugLogger.Log(content);
-            return JsonConvert.DeserializeObject<Pack1Meta>(content);
-        }
+            Pack1Meta pack = JsonConvert.DeserializeObject<Pack1Meta>(content);
+            foreach (var fileEntry in pack.Files)
+            {
+                fileEntry.Hash = HashCalculator.ComputeMD5Hash(fileEntry.Name);
+            }
 
+            return pack;
+        }
         #endregion
 
 
@@ -45,6 +50,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public class FileEntry
         {
             public string Name { get; set; }
+
+            public string Hash { get; set; }
 
             public string Type { get; set; }
 

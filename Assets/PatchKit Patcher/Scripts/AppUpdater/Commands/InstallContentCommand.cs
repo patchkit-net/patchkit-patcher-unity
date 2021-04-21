@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
@@ -135,9 +136,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var sourceFile = new SourceFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
+                    string pathFile = _versionContentSummary.Files[i].Path;
+                    var sourceFile = new SourceFile(pathFile, packageDir.Path, usedSuffix, _pack1Meta.Files.First(f => f.Name == pathFile).Hash);
 
-                    if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
+                    if (unarchiver.HasErrors && !sourceFile.ExistsHashPath()) // allow unexistent file only if does not have errors
                     {
                         DebugLogger.LogWarning("Skipping unexisting file because I've been expecting unpacking errors: " + sourceFile.Name);
                     } else
@@ -174,7 +176,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log(string.Format("Installing file {0}", sourceFile.Name));
 
-            if (!sourceFile.Exists())
+            if (!sourceFile.ExistsHashPath())
             {
                 throw new InstallerException(string.Format("Cannot find file {0} in content package.", sourceFile.Name));
             }
@@ -187,29 +189,43 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.LogFormat("Destination file {0} already exists, removing it.", destinationFilePath);
                 FileOperations.Delete(destinationFilePath, cancellationToken);
             }
-
-            FileOperations.Move(sourceFile.FullPath, destinationFilePath, cancellationToken);
+#if UNITY_STANDALONE_WIN
+            if (destinationFilePath.Length > 259)
+            {
+                throw new InstallerException(string.Format("Cannot install file {0}, path is too length.", destinationFilePath)); 
+            }
+#endif
+            FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
             _localMetaData.RegisterEntry(sourceFile.Name, _versionId);
-        }
+            }
 
         struct SourceFile
         {
             public string Name { get; private set; }
+            public string Hash { get; private set; }
             private string _suffix;
             private string _root;
 
             public string FullPath { get { return Path.Combine(_root, Name + _suffix); } }
 
-            public SourceFile(string name, string root, string suffix)
+            public string FullHashPath { get { return Path.Combine(_root, Hash + _suffix); } }
+
+            public SourceFile(string name, string root, string suffix, string hash)
             {
                 Name = name;
                 _root = root;
                 _suffix = suffix;
+                Hash = hash;
             }
 
-            public bool Exists()
+            public bool ExistsFullPath()
             {
                 return File.Exists(FullPath);
+            }
+            
+            public bool ExistsHashPath()
+            {
+                return File.Exists(FullHashPath);
             }
         }
     }
