@@ -65,7 +65,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public override void Execute(CancellationToken cancellationToken)
         {
             base.Execute(cancellationToken);
-
+            MapHashExtractedFiles.Clear();
+            
             foreach (var entry in _entries)
             {
                 var tempDirName = _packagePath + "_repair";
@@ -125,8 +126,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     };
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
-
-                    EmplaceFile(Path.Combine(unarchivePath, entry.Name + _unpackingSuffix), Path.Combine(_localData.Path, entry.Name), cancellationToken);
+                    string nameHash;
+                    if (MapHashExtractedFiles.TryGetHash(entry.Name, out nameHash))
+                    {
+                        EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
+                            Path.Combine(_localData.Path, entry.Name), cancellationToken);
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("Cannot find hash for file {0} in mapHash.", entry.Name));
+                    }
 
                     repairStatus.IsActive.Value = false;
                 });
@@ -176,7 +185,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 FileOperations.Delete(target, cancellationToken);
             }
-
+#if UNITY_STANDALONE_WIN
+            if (target.Length > 259)
+            {
+                throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", target)); 
+            }
+#endif
             FileOperations.Move(source, target, cancellationToken);
         }
     }

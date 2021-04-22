@@ -83,7 +83,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             Checks.FileExists(_packagePath);
             Assert.IsTrue(_localMetaData.GetRegisteredEntries().Length == 0,
                 "Cannot install content if previous version is still present.");
-
+            MapHashExtractedFiles.Clear();
+            
             if (_versionContentSummary.CompressionMethod == "pack1")
             {
                 Assert.IsTrue(File.Exists(_packageMetaPath),
@@ -91,6 +92,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 DebugLogger.Log("Parsing package meta file");
                 _pack1Meta = Pack1Meta.ParseFromFile(_packageMetaPath);
+
                 DebugLogger.Log("Package meta file parsed succesfully");
             }
 
@@ -137,14 +139,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     string pathFile = _versionContentSummary.Files[i].Path;
-                    var sourceFile = new SourceFile(pathFile, packageDir.Path, usedSuffix, _pack1Meta.Files.First(f => f.Name == pathFile).Hash);
+                    string nameHash;
+                    if (MapHashExtractedFiles.TryGetHash(pathFile, out nameHash))
+                    {
+                        var sourceFile = new SourceFile(pathFile, packageDir.Path, usedSuffix, nameHash);
 
-                    if (unarchiver.HasErrors && !sourceFile.ExistsHashPath()) // allow unexistent file only if does not have errors
+                        if (unarchiver.HasErrors && !sourceFile.Exists()
+                        ) // allow unexistent file only if does not have errors
+                        {
+                            DebugLogger.LogWarning(
+                                "Skipping unexisting file because I've been expecting unpacking errors: " +
+                                sourceFile.Name);
+                        }
+                        else
+                        {
+                            InstallFile(sourceFile, cancellationToken);
+                        }
+                    }
+                    else
                     {
-                        DebugLogger.LogWarning("Skipping unexisting file because I've been expecting unpacking errors: " + sourceFile.Name);
-                    } else
-                    {
-                        InstallFile(sourceFile, cancellationToken);
+                        throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", pathFile));
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
@@ -176,7 +190,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             DebugLogger.Log(string.Format("Installing file {0}", sourceFile.Name));
 
-            if (!sourceFile.ExistsHashPath())
+            if (!sourceFile.Exists())
             {
                 throw new InstallerException(string.Format("Cannot find file {0} in content package.", sourceFile.Name));
             }
@@ -192,7 +206,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 #if UNITY_STANDALONE_WIN
             if (destinationFilePath.Length > 259)
             {
-                throw new InstallerException(string.Format("Cannot install file {0}, path is too length.", destinationFilePath)); 
+                throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", destinationFilePath)); 
             }
 #endif
             FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
@@ -206,8 +220,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             private string _suffix;
             private string _root;
 
-            public string FullPath { get { return Path.Combine(_root, Name + _suffix); } }
-
             public string FullHashPath { get { return Path.Combine(_root, Hash + _suffix); } }
 
             public SourceFile(string name, string root, string suffix, string hash)
@@ -218,12 +230,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 Hash = hash;
             }
 
-            public bool ExistsFullPath()
-            {
-                return File.Exists(FullPath);
-            }
-            
-            public bool ExistsHashPath()
+            public bool Exists()
             {
                 return File.Exists(FullHashPath);
             }

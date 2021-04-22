@@ -199,7 +199,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackDirectory(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
         {
-            string destPath = Path.Combine(_destinationDirPath, file.Hash);
+            string destPath = Path.Combine(_destinationDirPath, MapHashExtractedFiles.Add(file.Name));
 
             DebugLogger.Log("Creating directory " + destPath);
             DirectoryOperations.CreateDirectory(destPath, cancellationToken);
@@ -208,7 +208,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackSymlink(Pack1Meta.FileEntry file)
         {
-            string destPath = Path.Combine(_destinationDirPath, file.Hash);
+            string destPath = Path.Combine(_destinationDirPath, MapHashExtractedFiles.Add(file.Name));
             DebugLogger.Log("Creating symlink: " + destPath);
             // TODO: how to create a symlink?
         }
@@ -230,7 +230,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
-            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, file.Hash + _suffix);
+            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, MapHashExtractedFiles.Add(file.Name) + _suffix);
+
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
             if (file.Size == null)
@@ -285,8 +286,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     }
                 }
             }
-            //Rename
-            //File.Move(destPath, finePath);
+
             DebugLogger.Log("File " + file.Name + " unpacked successfully!");
         }
 

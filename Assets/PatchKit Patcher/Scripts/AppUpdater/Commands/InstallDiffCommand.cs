@@ -147,7 +147,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _logger.LogDebug("Installing diff...");
 
                 base.Execute(cancellationToken);
-
+                MapHashExtractedFiles.Clear();
+                
                 _logger.LogTrace("diffSummary.compressionMethod = " + _diffSummary.CompressionMethod);
 
                 if (_diffSummary.CompressionMethod == "pack1")
@@ -463,30 +464,44 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             var filePath = _localData.Path.PathCombine(fileName);
             _logger.LogTrace("filePath = " + filePath);
-            var sourceFilePath = Path.Combine(packageDirPath, fileName + suffix);
-            _logger.LogTrace("sourceFilePath = " + sourceFilePath);
-
-            if (!File.Exists(sourceFilePath))
+#if UNITY_STANDALONE_WIN
+            if (filePath.Length > 259)
             {
-                throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package.",
-                    fileName));
+                throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", filePath)); 
             }
+#endif
+            string nameHash;
+            if (MapHashExtractedFiles.TryGetHash(fileName, out nameHash))
+            {
+                var sourceFilePath = Path.Combine(packageDirPath, nameHash + suffix);
+                _logger.LogTrace("sourceFilePath = " + sourceFilePath);
 
-            _logger.LogDebug("Creating file parent directories in local data...");
-            var fileParentDirPath = Path.GetDirectoryName(filePath);
-            _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
-            //TODO: Assert that fileParentDirPath is not null
-            // ReSharper disable once AssignNullToNotNullAttribute
-            DirectoryOperations.CreateDirectory(fileParentDirPath, cancellationToken);
-            _logger.LogDebug("File parent directories created in local data.");
+                if (!File.Exists(sourceFilePath))
+                {
+                    throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package.",
+                        fileName));
+                }
 
-            _logger.LogDebug("Copying file to local data (overwriting if needed)...");
-            FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
-            _logger.LogDebug("File copied to local data.");
+                _logger.LogDebug("Creating file parent directories in local data...");
+                var fileParentDirPath = Path.GetDirectoryName(filePath);
+                _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
+                //TODO: Assert that fileParentDirPath is not null
+                // ReSharper disable once AssignNullToNotNullAttribute
+                DirectoryOperations.CreateDirectory(fileParentDirPath, cancellationToken);
+                _logger.LogDebug("File parent directories created in local data.");
 
-            _localMetaData.RegisterEntry(fileName, _versionId);
+                _logger.LogDebug("Copying file to local data (overwriting if needed)...");
+                FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
+                _logger.LogDebug("File copied to local data.");
 
-            _logger.LogDebug("Add file entry processed.");
+                _localMetaData.RegisterEntry(fileName, _versionId);
+
+                _logger.LogDebug("Add file entry processed.");
+            }
+            else
+            {
+                throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", fileName));
+            }
         }
 
         private void ProcessModifiedFiles(string packageDirPath, string suffix, TemporaryDirectory tempDiffDir,

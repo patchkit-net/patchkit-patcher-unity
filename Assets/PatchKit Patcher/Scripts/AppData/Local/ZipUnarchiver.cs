@@ -1,4 +1,5 @@
-﻿using Ionic.Zip;
+﻿using System.IO;
+using Ionic.Zip;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Cancellation;
 
@@ -69,8 +70,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private void UnarchiveEntry(ZipEntry zipEntry)
         {
             DebugLogger.Log(string.Format("Unarchiving entry {0}", zipEntry.FileName));
-
-            zipEntry.Extract(_destinationDirPath, ExtractExistingFileAction.OverwriteSilently);
+            MemoryStream memoryStream = new MemoryStream();
+            string destPath = Path.Combine(_destinationDirPath, HashCalculator.ComputeMD5Hash(zipEntry.FileName));
+            zipEntry.Extract(memoryStream);
+            using (var target = new FileStream(destPath, FileMode.Create))
+            {
+                memoryStream.WriteTo(target);
+            }
         }
 
         protected virtual void OnUnarchiveProgressChanged(string name, bool isFile, int entry, int amount, double entryProgress)
