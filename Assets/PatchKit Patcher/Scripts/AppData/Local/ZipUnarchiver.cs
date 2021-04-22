@@ -71,7 +71,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             DebugLogger.Log(string.Format("Unarchiving entry {0}", zipEntry.FileName));
             MemoryStream memoryStream = new MemoryStream();
-            string destPath = Path.Combine(_destinationDirPath, HashCalculator.ComputeMD5Hash(zipEntry.FileName));
+            string destPath = Path.Combine(_destinationDirPath, MapHashExtractedFiles.Instance.Add(zipEntry.FileName));
             zipEntry.Extract(memoryStream);
             using (var target = new FileStream(destPath, FileMode.Create))
             {

@@ -83,7 +83,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             Checks.FileExists(_packagePath);
             Assert.IsTrue(_localMetaData.GetRegisteredEntries().Length == 0,
                 "Cannot install content if previous version is still present.");
-            MapHashExtractedFiles.Clear();
+            MapHashExtractedFiles.Instance.Clear();
             
             if (_versionContentSummary.CompressionMethod == "pack1")
             {
@@ -138,14 +138,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    string pathFile = _versionContentSummary.Files[i].Path;
+                    string filePath = _versionContentSummary.Files[i].Path;
                     string nameHash;
-                    if (MapHashExtractedFiles.TryGetHash(pathFile, out nameHash))
+                    if (MapHashExtractedFiles.Instance.TryGetHash(filePath, out nameHash))
                     {
-                        var sourceFile = new SourceFile(pathFile, packageDir.Path, usedSuffix, nameHash);
+                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash);
 
-                        if (unarchiver.HasErrors && !sourceFile.Exists()
-                        ) // allow unexistent file only if does not have errors
+                        if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
                         {
                             DebugLogger.LogWarning(
                                 "Skipping unexisting file because I've been expecting unpacking errors: " +
@@ -216,23 +215,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         struct SourceFile
         {
             public string Name { get; private set; }
-            public string Hash { get; private set; }
+            public string HashName { get; private set; }
             private string _suffix;
             private string _root;
 
-            public string FullHashPath { get { return Path.Combine(_root, Hash + _suffix); } }
+            public string FullHashPath { get { return Path.Combine(_root, HashName + _suffix); } }
 
-            public SourceFile(string name, string root, string suffix, string hash)
+            public SourceFile(string name, string root, string suffix, string hashName)
             {
                 Assert.IsNotNull(name);
                 Assert.IsNotNull(root);
                 Assert.IsNotNull(suffix);
-                Assert.IsNotNull(hash);
+                Assert.IsNotNull(hashName);
                 
                 Name = name;
                 _root = root;
                 _suffix = suffix;
-                Hash = hash;
+                HashName = hashName;
             }
 
             public bool Exists()

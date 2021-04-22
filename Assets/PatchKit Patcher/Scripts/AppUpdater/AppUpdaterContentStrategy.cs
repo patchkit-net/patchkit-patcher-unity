@@ -54,7 +54,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.LogVariable(latestVersionId, "latestVersionId");
 
 #if UNITY_STANDALONE_WIN
-            var checkPathLengthCommand = commandFactory.CreateCheckPathLengthCommandForContent(latestVersionId, _context, cancellationToken);
+            var checkPathLengthCommand = commandFactory.CreateCheckPathLengthCommand(latestVersionId, _context, cancellationToken);
             checkPathLengthCommand.Prepare(_status, cancellationToken);
             checkPathLengthCommand.Execute(cancellationToken);
 #endif

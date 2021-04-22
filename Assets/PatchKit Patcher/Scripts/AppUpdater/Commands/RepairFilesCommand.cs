@@ -65,7 +65,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public override void Execute(CancellationToken cancellationToken)
         {
             base.Execute(cancellationToken);
-            MapHashExtractedFiles.Clear();
+            MapHashExtractedFiles.Instance.Clear();
             
             foreach (var entry in _entries)
             {
@@ -127,7 +127,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
                     string nameHash;
-                    if (MapHashExtractedFiles.TryGetHash(entry.Name, out nameHash))
+                    if (MapHashExtractedFiles.Instance.TryGetHash(entry.Name, out nameHash))
                     {
                         EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
                             Path.Combine(_localData.Path, entry.Name), cancellationToken);

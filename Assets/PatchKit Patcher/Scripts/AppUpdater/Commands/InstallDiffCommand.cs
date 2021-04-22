@@ -147,7 +147,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _logger.LogDebug("Installing diff...");
 
                 base.Execute(cancellationToken);
-                MapHashExtractedFiles.Clear();
+                MapHashExtractedFiles.Instance.Clear();
                 
                 _logger.LogTrace("diffSummary.compressionMethod = " + _diffSummary.CompressionMethod);
 
@@ -471,7 +471,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 #endif
             string nameHash;
-            if (MapHashExtractedFiles.TryGetHash(fileName, out nameHash))
+            if (MapHashExtractedFiles.Instance.TryGetHash(fileName, out nameHash))
             {
                 var sourceFilePath = Path.Combine(packageDirPath, nameHash + suffix);
                 _logger.LogTrace("sourceFilePath = " + sourceFilePath);
