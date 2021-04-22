@@ -157,7 +157,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     }
                     else
                     {
-                        throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", pathFile));
+                        throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", filePath));
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
