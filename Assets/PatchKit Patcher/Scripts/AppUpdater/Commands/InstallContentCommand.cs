@@ -224,6 +224,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             public SourceFile(string name, string root, string suffix, string hash)
             {
+                Assert.IsNotNull(name);
+                Assert.IsNotNull(root);
+                Assert.IsNotNull(suffix);
+                Assert.IsNotNull(hash);
+                
                 Name = name;
                 _root = root;
                 _suffix = suffix;
