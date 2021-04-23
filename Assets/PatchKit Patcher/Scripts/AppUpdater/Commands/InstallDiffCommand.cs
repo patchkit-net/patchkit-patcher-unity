@@ -39,6 +39,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private AppContentSummary _contentSummary;
         private AppDiffSummary _diffSummary;
         private Pack1Meta _pack1Meta;
+        private MapHashExtractedFiles _mapHashExtractedFiles;
 
         public InstallDiffCommand([NotNull] string packagePath, string packageMetaPath, string packagePassword,
             int versionId,
@@ -78,6 +79,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _localData = localData;
             _localMetaData = localMetaData;
             _remoteMetaData = remoteMetaData;
+            _mapHashExtractedFiles = new MapHashExtractedFiles();
         }
 
         public override void Prepare([NotNull] UpdaterStatus status, CancellationToken cancellationToken)
@@ -147,8 +149,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _logger.LogDebug("Installing diff...");
 
                 base.Execute(cancellationToken);
-                MapHashExtractedFiles.Instance.Clear();
-                
+
                 _logger.LogTrace("diffSummary.compressionMethod = " + _diffSummary.CompressionMethod);
 
                 if (_diffSummary.CompressionMethod == "pack1")
@@ -299,10 +300,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 case "zip":
                     usedSuffix = string.Empty;
-                    return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
+                    return new ZipUnarchiver(_packagePath, destinationDir, _mapHashExtractedFiles, _packagePassword);
                 case "pack1":
                     usedSuffix = Suffix;
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _mapHashExtractedFiles, _packagePassword, Suffix);
                 default:
                     throw new UnknownPackageCompressionModeException(string.Format("Unknown compression method: {0}",
                         _diffSummary.CompressionMethod));
@@ -471,7 +472,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 #endif
             string nameHash;
-            if (MapHashExtractedFiles.Instance.TryGetHash(fileName, out nameHash))
+            if (_mapHashExtractedFiles.TryGetHash(fileName, out nameHash))
             {
                 var sourceFilePath = Path.Combine(packageDirPath, nameHash + suffix);
                 _logger.LogTrace("sourceFilePath = " + sourceFilePath);

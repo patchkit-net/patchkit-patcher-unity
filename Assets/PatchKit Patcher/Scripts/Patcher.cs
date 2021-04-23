@@ -940,7 +940,6 @@ namespace PatchKit.Unity.Patcher
 
                     _updaterStatus.Value = null;
                     _updateAppCancellationTokenSource = null;
-                    MapHashExtractedFiles.Instance.Clear();
                 }
             }
         }

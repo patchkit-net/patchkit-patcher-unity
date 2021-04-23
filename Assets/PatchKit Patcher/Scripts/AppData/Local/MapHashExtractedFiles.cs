@@ -4,18 +4,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 {
     public class MapHashExtractedFiles
     {
-        private Dictionary<string, string> MapHash = new Dictionary<string, string>();
-        private static MapHashExtractedFiles _instance = new MapHashExtractedFiles();
-
-        public static MapHashExtractedFiles Instance
+        private Dictionary<string, string> MapHash;
+        
+        public MapHashExtractedFiles()
         {
-            get { return _instance; }
-        }
-
-
-        public void Clear()
-        {
-            MapHash.Clear();
+            MapHash = new Dictionary<string, string>();
         }
         
         public string Add(string path)
