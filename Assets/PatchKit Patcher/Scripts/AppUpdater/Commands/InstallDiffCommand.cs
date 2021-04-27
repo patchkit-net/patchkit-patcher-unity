@@ -39,6 +39,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private AppContentSummary _contentSummary;
         private AppDiffSummary _diffSummary;
         private Pack1Meta _pack1Meta;
+        private MapHashExtractedFiles _mapHashExtractedFiles;
 
         public InstallDiffCommand([NotNull] string packagePath, string packageMetaPath, string packagePassword,
             int versionId,
@@ -78,6 +79,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _localData = localData;
             _localMetaData = localMetaData;
             _remoteMetaData = remoteMetaData;
+            _mapHashExtractedFiles = new MapHashExtractedFiles();
         }
 
         public override void Prepare([NotNull] UpdaterStatus status, CancellationToken cancellationToken)
@@ -298,10 +300,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 case "zip":
                     usedSuffix = string.Empty;
-                    return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
+                    return new ZipUnarchiver(_packagePath, destinationDir, _mapHashExtractedFiles, _packagePassword);
                 case "pack1":
                     usedSuffix = Suffix;
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _mapHashExtractedFiles, _packagePassword, Suffix);
                 default:
                     throw new UnknownPackageCompressionModeException(string.Format("Unknown compression method: {0}",
                         _diffSummary.CompressionMethod));
@@ -463,30 +465,44 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             var filePath = _localData.Path.PathCombine(fileName);
             _logger.LogTrace("filePath = " + filePath);
-            var sourceFilePath = Path.Combine(packageDirPath, fileName + suffix);
-            _logger.LogTrace("sourceFilePath = " + sourceFilePath);
-
-            if (!File.Exists(sourceFilePath))
+#if UNITY_STANDALONE_WIN
+            if (filePath.Length > 259)
             {
-                throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package.",
-                    fileName));
+                throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", filePath)); 
             }
+#endif
+            string nameHash;
+            if (_mapHashExtractedFiles.TryGetHash(fileName, out nameHash))
+            {
+                var sourceFilePath = Path.Combine(packageDirPath, nameHash + suffix);
+                _logger.LogTrace("sourceFilePath = " + sourceFilePath);
 
-            _logger.LogDebug("Creating file parent directories in local data...");
-            var fileParentDirPath = Path.GetDirectoryName(filePath);
-            _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
-            //TODO: Assert that fileParentDirPath is not null
-            // ReSharper disable once AssignNullToNotNullAttribute
-            DirectoryOperations.CreateDirectory(fileParentDirPath, cancellationToken);
-            _logger.LogDebug("File parent directories created in local data.");
+                if (!File.Exists(sourceFilePath))
+                {
+                    throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package.",
+                        fileName));
+                }
 
-            _logger.LogDebug("Copying file to local data (overwriting if needed)...");
-            FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
-            _logger.LogDebug("File copied to local data.");
+                _logger.LogDebug("Creating file parent directories in local data...");
+                var fileParentDirPath = Path.GetDirectoryName(filePath);
+                _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
+                //TODO: Assert that fileParentDirPath is not null
+                // ReSharper disable once AssignNullToNotNullAttribute
+                DirectoryOperations.CreateDirectory(fileParentDirPath, cancellationToken);
+                _logger.LogDebug("File parent directories created in local data.");
 
-            _localMetaData.RegisterEntry(fileName, _versionId);
+                _logger.LogDebug("Copying file to local data (overwriting if needed)...");
+                FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
+                _logger.LogDebug("File copied to local data.");
 
-            _logger.LogDebug("Add file entry processed.");
+                _localMetaData.RegisterEntry(fileName, _versionId);
+
+                _logger.LogDebug("Add file entry processed.");
+            }
+            else
+            {
+                throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", fileName));
+            }
         }
 
         private void ProcessModifiedFiles(string packageDirPath, string suffix, TemporaryDirectory tempDiffDir,

@@ -39,6 +39,10 @@
             return new PatcherError("Unknown error, please try again. If the issue remains, please contact the support.");
         }
 
+        public static PatcherError FilePathTooLong()
+        {
+            return new PatcherError("Launcher is unable to install this application at this location. Please move your files higher in the directory structure.");
+        }
 
         public string ToString() {
             return string.Format(_message, _args);

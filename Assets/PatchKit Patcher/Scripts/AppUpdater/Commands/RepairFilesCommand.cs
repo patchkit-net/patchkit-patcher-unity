@@ -79,7 +79,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     {
                         DirectoryOperations.CreateDirectory(unarchivePath, cancellationToken);
                     }
-
+                    MapHashExtractedFiles mapHashExtracted = new MapHashExtractedFiles();
+                    
                     var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls, _resource.ChunksData, _resource.Size);
 
                     long start = entry.Offset.GetValueOrDefault();
@@ -115,7 +116,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     repairStatus.Progress.Value = 0.0;
 
                     _logger.LogDebug("Unarchiving the package.");
-                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, _unpackingSuffix, effectiveRange);
+                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, mapHashExtracted, _packagePassword, _unpackingSuffix, effectiveRange);
                     // allow repair to continue on errors, because after the repair process, all the files must be validated again
                     unarchiver.ContinueOnError = true;
 
@@ -125,8 +126,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     };
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
-
-                    EmplaceFile(Path.Combine(unarchivePath, entry.Name + _unpackingSuffix), Path.Combine(_localData.Path, entry.Name), cancellationToken);
+                    string nameHash;
+                    if (mapHashExtracted.TryGetHash(entry.Name, out nameHash))
+                    {
+                        EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
+                            Path.Combine(_localData.Path, entry.Name), cancellationToken);
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("Cannot find hash for file {0} in mapHash.", entry.Name));
+                    }
 
                     repairStatus.IsActive.Value = false;
                 });
@@ -176,7 +185,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 FileOperations.Delete(target, cancellationToken);
             }
-
+#if UNITY_STANDALONE_WIN
+            if (target.Length > 259)
+            {
+                throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", target)); 
+            }
+#endif
             FileOperations.Move(source, target, cancellationToken);
         }
     }

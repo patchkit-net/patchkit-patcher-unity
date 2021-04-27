@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
@@ -90,6 +91,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 DebugLogger.Log("Parsing package meta file");
                 _pack1Meta = Pack1Meta.ParseFromFile(_packageMetaPath);
+
                 DebugLogger.Log("Package meta file parsed succesfully");
             }
 
@@ -101,7 +103,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Unarchiving package.");
 
                 string usedSuffix;
-                IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
+                MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles(); 
+                IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, mapHashExtractedFiles, out usedSuffix);
 
                 _unarchivePackageStatus.IsActive.Value = true;
                 _unarchivePackageStatus.Description.Value = "Unarchiving package...";
@@ -135,14 +138,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var sourceFile = new SourceFile(_versionContentSummary.Files[i].Path, packageDir.Path, usedSuffix);
+                    string filePath = _versionContentSummary.Files[i].Path;
+                    string nameHash;
+                    if (mapHashExtractedFiles.TryGetHash(filePath, out nameHash))
+                    {
+                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash);
 
-                    if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
+                        if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
+                        {
+                            DebugLogger.LogWarning(
+                                "Skipping unexisting file because I've been expecting unpacking errors: " +
+                                sourceFile.Name);
+                        }
+                        else
+                        {
+                            InstallFile(sourceFile, cancellationToken);
+                        }
+                    }
+                    else
                     {
-                        DebugLogger.LogWarning("Skipping unexisting file because I've been expecting unpacking errors: " + sourceFile.Name);
-                    } else
-                    {
-                        InstallFile(sourceFile, cancellationToken);
+                        throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", filePath));
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
@@ -154,16 +169,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             });
         }
 
-        private IUnarchiver CreateUnrachiver(string destinationDir, out string usedSuffix)
+        private IUnarchiver CreateUnrachiver(string destinationDir, MapHashExtractedFiles mapHashExtractedFiles, out string usedSuffix)
         {
             switch (_versionContentSummary.CompressionMethod)
             {
                 case "zip":
                     usedSuffix = string.Empty;
-                    return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
+                    return new ZipUnarchiver(_packagePath, destinationDir, mapHashExtractedFiles, _packagePassword);
                 case "pack1":
                     usedSuffix = Suffix;
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, mapHashExtractedFiles, _packagePassword, Suffix);
                 default:
                     throw new InstallerException(string.Format("Unknown compression method: {0}",
                         _versionContentSummary.CompressionMethod));
@@ -187,29 +202,41 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.LogFormat("Destination file {0} already exists, removing it.", destinationFilePath);
                 FileOperations.Delete(destinationFilePath, cancellationToken);
             }
-
-            FileOperations.Move(sourceFile.FullPath, destinationFilePath, cancellationToken);
+#if UNITY_STANDALONE_WIN
+            if (destinationFilePath.Length > 259)
+            {
+                throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", destinationFilePath)); 
+            }
+#endif
+            FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
             _localMetaData.RegisterEntry(sourceFile.Name, _versionId);
-        }
+            }
 
         struct SourceFile
         {
             public string Name { get; private set; }
+            public string HashName { get; private set; }
             private string _suffix;
             private string _root;
 
-            public string FullPath { get { return Path.Combine(_root, Name + _suffix); } }
+            public string FullHashPath { get { return Path.Combine(_root, HashName + _suffix); } }
 
-            public SourceFile(string name, string root, string suffix)
+            public SourceFile(string name, string root, string suffix, string hashName)
             {
+                Assert.IsNotNull(name);
+                Assert.IsNotNull(root);
+                Assert.IsNotNull(suffix);
+                Assert.IsNotNull(hashName);
+                
                 Name = name;
                 _root = root;
                 _suffix = suffix;
+                HashName = hashName;
             }
 
             public bool Exists()
             {
-                return File.Exists(FullPath);
+                return File.Exists(FullHashPath);
             }
         }
     }
