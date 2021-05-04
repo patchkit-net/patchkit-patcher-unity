@@ -31,7 +31,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
-            Assert.IsNotNull(mapHashExtractedFiles);
+            Checks.ArgumentNotNull(mapHashExtractedFiles, "mapHashExtractedFiles");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
@@ -73,12 +73,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private void UnarchiveEntry(ZipEntry zipEntry)
         {
             DebugLogger.Log(string.Format("Unarchiving entry {0}", zipEntry.FileName));
-            MemoryStream memoryStream = new MemoryStream();
             string destPath = Path.Combine(_destinationDirPath, _mapHashExtractedFiles.Add(zipEntry.FileName));
-            zipEntry.Extract(memoryStream);
             using (var target = new FileStream(destPath, FileMode.Create))
             {
-                memoryStream.WriteTo(target);
+                zipEntry.Extract(target);
             }
         }
 

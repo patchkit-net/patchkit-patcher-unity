@@ -68,7 +68,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
             Checks.ArgumentNotNull(suffix, "suffix");
-            Assert.IsNotNull(mapHashExtractedFiles);
+            Checks.ArgumentNotNull(mapHashExtractedFiles, "mapHashExtractedFiles");
 
             if (range.Start == 0)
             {
