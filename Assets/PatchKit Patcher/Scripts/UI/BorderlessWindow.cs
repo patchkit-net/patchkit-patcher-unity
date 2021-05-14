@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
+using UnityEngine.UI;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
 using System;
@@ -11,6 +13,7 @@ using System.Text;
 
 namespace PatchKit.Unity.Patcher.UI
 {
+    [RequireComponent(typeof(CanvasScaler))]
     public class BorderlessWindow : MonoBehaviour
     {
         public const string ScreenSizeFilename = "screensize";
@@ -18,6 +21,8 @@ namespace PatchKit.Unity.Patcher.UI
         private PatchKit.Logging.ILogger _logger;
 
         public Rect DraggableArea;
+
+        private CanvasScaler _canvasScaler;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
         private const string UnityWindowClassName = "UnityWndClass";
@@ -117,10 +122,19 @@ namespace PatchKit.Unity.Patcher.UI
         private void Awake()
         {
             _logger = PatcherLogManager.DefaultLogger;
+            _canvasScaler = GetComponent<CanvasScaler>();
 
-            EnforceCorrectScreenSize();
+            float scaler = Screen.dpi / 100;
+            _logger.LogDebug(string.Format("Scaler resolution: {0}", scaler));
+            
+            EnforceCorrectScreenSize(scaler);
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+            DraggableArea.width = DraggableArea.width * scaler;
+            DraggableArea.height = DraggableArea.height * scaler;
+            DraggableArea.x = DraggableArea.x * scaler;
+            DraggableArea.y = DraggableArea.y * scaler;
+
             _windowRect.position = new Vector2(Screen.currentResolution.width/2.0f - Screen.width/2.0f,
                 Screen.currentResolution.height/2.0f - Screen.height/2.0f);
             _windowRect.size = new Vector2(Screen.width, Screen.height);
@@ -142,7 +156,7 @@ namespace PatchKit.Unity.Patcher.UI
 #endif
         }
 
-        private void EnforceCorrectScreenSize()
+        private void EnforceCorrectScreenSize(float scaler)
         {
             string screenSizeFilePath = Path.Combine(Application.dataPath, ScreenSizeFilename);
             _logger.LogDebug("Reading correct screen size from " + screenSizeFilePath);
@@ -157,14 +171,15 @@ namespace PatchKit.Unity.Patcher.UI
 
             try
             {
-                int width = int.Parse(screenResolutionText[0]);
-                int height = int.Parse(screenResolutionText[1]);
-
+                int width = (int) (int.Parse(screenResolutionText[0]) * scaler);
+                int height = (int) (int.Parse(screenResolutionText[1]) * scaler);
+ 
                 PlayerPrefs.SetInt("Screenmanager Resolution Width", width);
                 PlayerPrefs.SetInt("Screenmanager Resolution Height", height);
                 PlayerPrefs.SetInt("Screenmanager Is Fullscreen mode", 0);
 
                 Screen.SetResolution(width, height, false);
+                _canvasScaler.scaleFactor = scaler;
             }
             catch (System.Exception e)
             {
