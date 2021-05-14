@@ -20,7 +20,6 @@ namespace PatchKit.Unity.UI.Languages
         {
             _dropdown = GetComponent<Dropdown>();
             _currentValue = _dropdown.value;
-            _dropdown.itemImage.sprite = _dropdown.options[_currentValue].image;
             _dropdown.itemText.text = _dropdown.options[_currentValue].text;
             _dropdown.onValueChanged.AddListener(delegate {
                 DropdownValueChanged(_dropdown);
@@ -29,12 +28,11 @@ namespace PatchKit.Unity.UI.Languages
 
         public static void SetValue(string language)
         {
-            int currentLanguages = _dropdown.options.FindIndex(id => id.image.name == language);
+            int currentLanguages = _dropdown.options.FindIndex(id => id.text.ToLower() == language);
             var options = _dropdown.options;
             Dropdown.OptionData tmp = options[currentLanguages];
             options[currentLanguages] = options[_currentValue];
             options[_currentValue] = tmp;
-            _dropdown.itemImage.sprite = _dropdown.options[_currentValue].image;
             _dropdown.itemText.text = _dropdown.options[_currentValue].text;
         }
 
@@ -45,7 +43,7 @@ namespace PatchKit.Unity.UI.Languages
             Dropdown.OptionData tmp = options[currentLanguages];
             options[currentLanguages] = options[_currentValue];
             options[_currentValue] = tmp;
-            PatcherLanguages.SetLanguage(tmp.image.name);
+            PatcherLanguages.SetLanguage(tmp.text.ToLower());
             _dropdown.value = _currentValue;
         }
     }

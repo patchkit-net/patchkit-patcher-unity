@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
     [RequireComponent(typeof(Animator))]
     public class SettingsPanel : MonoBehaviour
     {
+        public Image BackgroundShowSettings;
         private Animator _animator;
 
         private bool _isOpened;
@@ -20,7 +22,16 @@ namespace PatchKit.Unity.Patcher.UI
                 }
 
                 _isOpened = value;
-                _animator.SetBool("IsOpened", _isOpened);
+                if (_isOpened)
+                {
+                    transform.localPosition= new Vector3(0, -24, 0);
+                    BackgroundShowSettings.enabled = true;
+                }
+                else
+                {
+                    transform.localPosition= new Vector3(0, -671, 0);
+                    BackgroundShowSettings.enabled = false;
+                }
             }
         }
 
@@ -42,6 +53,18 @@ namespace PatchKit.Unity.Patcher.UI
         public void Close()
         {
             IsOpened = false;
+        }
+
+        public void OpenClose()
+        {
+            if (_isOpened)
+            {
+                Close();
+            }
+            else
+            {
+                Open();
+            }
         }
     }
 }
