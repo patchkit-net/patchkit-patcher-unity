@@ -124,9 +124,28 @@ namespace PatchKit.Unity.Patcher.UI
             _logger = PatcherLogManager.DefaultLogger;
             _canvasScaler = GetComponent<CanvasScaler>();
 
-            float scaler = Screen.dpi / 100;
+            float scaler;
+            float currentDpi = Screen.dpi;
+            if (currentDpi == 0)
+            {
+                scaler = 1;
+                _logger.LogWarning("Unable to determine the current DPI.");
+            }
+            else if (currentDpi > 200 && currentDpi < 400)
+            {
+                scaler = 2;
+            }
+            else if (currentDpi >= 400)
+            {
+                scaler = 4;
+            }
+            else
+            {
+                scaler = 1;
+            }
+
             _logger.LogDebug(string.Format("Scaler resolution: {0}", scaler));
-            
+
             EnforceCorrectScreenSize(scaler);
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
