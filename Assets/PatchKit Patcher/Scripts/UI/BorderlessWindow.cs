@@ -13,7 +13,6 @@ using System.Text;
 
 namespace PatchKit.Unity.Patcher.UI
 {
-    [RequireComponent(typeof(CanvasScaler))]
     public class BorderlessWindow : MonoBehaviour
     {
         public const string ScreenSizeFilename = "screensize";
@@ -124,7 +123,7 @@ namespace PatchKit.Unity.Patcher.UI
             _logger = PatcherLogManager.DefaultLogger;
             if (CanvasScaler == null)
             {
-                CanvasScaler = GetComponent<CanvasScaler>();
+                CanvasScaler = FindObjectOfType<CanvasScaler>();
             }
 
             float screenScale;
