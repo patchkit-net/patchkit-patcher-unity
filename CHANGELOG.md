@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.17.7.0]
 ### Added
 - Checking path length on Windows
-- Support high dpi
+- Support for HDPI
 
 ### Fixed
 - Paths too long when unpacking (#2156)
