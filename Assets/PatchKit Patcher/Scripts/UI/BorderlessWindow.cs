@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.Debug;
 using UnityEngine;
+using UnityEngine.UI;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
 using System;
@@ -18,6 +20,8 @@ namespace PatchKit.Unity.Patcher.UI
         private PatchKit.Logging.ILogger _logger;
 
         public Rect DraggableArea;
+
+        public CanvasScaler CanvasScaler;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
         private const string UnityWindowClassName = "UnityWndClass";
@@ -117,10 +121,41 @@ namespace PatchKit.Unity.Patcher.UI
         private void Awake()
         {
             _logger = PatcherLogManager.DefaultLogger;
+            if (CanvasScaler == null)
+            {
+                CanvasScaler = FindObjectOfType<CanvasScaler>();
+            }
 
-            EnforceCorrectScreenSize();
+            float screenScale;
+            float screenDpi = Screen.dpi;
+            if (screenDpi >= 400)
+            {
+                screenScale = 4;
+            }
+            else if (screenDpi >= 200)
+            {
+                screenScale = 2;
+            }
+            else
+            {
+                if (screenDpi == 0)
+                {
+                    _logger.LogWarning("Unable to determine the current DPI.");
+                }
+
+                screenScale = 1;
+            }
+
+            _logger.LogDebug(string.Format("Screen scale: {0}", screenScale));
+
+            EnforceCorrectScreenSize(screenScale);
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+            DraggableArea.width = DraggableArea.width * screenScale;
+            DraggableArea.height = DraggableArea.height * screenScale;
+            DraggableArea.x = DraggableArea.x * screenScale;
+            DraggableArea.y = DraggableArea.y * screenScale;
+
             _windowRect.position = new Vector2(Screen.currentResolution.width/2.0f - Screen.width/2.0f,
                 Screen.currentResolution.height/2.0f - Screen.height/2.0f);
             _windowRect.size = new Vector2(Screen.width, Screen.height);
@@ -142,7 +177,7 @@ namespace PatchKit.Unity.Patcher.UI
 #endif
         }
 
-        private void EnforceCorrectScreenSize()
+        private void EnforceCorrectScreenSize(float screenScale)
         {
             string screenSizeFilePath = Path.Combine(Application.dataPath, ScreenSizeFilename);
             _logger.LogDebug("Reading correct screen size from " + screenSizeFilePath);
@@ -157,14 +192,15 @@ namespace PatchKit.Unity.Patcher.UI
 
             try
             {
-                int width = int.Parse(screenResolutionText[0]);
-                int height = int.Parse(screenResolutionText[1]);
+                int width = (int) (int.Parse(screenResolutionText[0]) * screenScale);
+                int height = (int) (int.Parse(screenResolutionText[1]) * screenScale);
 
                 PlayerPrefs.SetInt("Screenmanager Resolution Width", width);
                 PlayerPrefs.SetInt("Screenmanager Resolution Height", height);
                 PlayerPrefs.SetInt("Screenmanager Is Fullscreen mode", 0);
 
                 Screen.SetResolution(width, height, false);
+                CanvasScaler.scaleFactor = screenScale;
             }
             catch (System.Exception e)
             {
