@@ -22,7 +22,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             OnDisplayed();
         }
 
-        public void Display(PatcherError error, CancellationToken cancellationToken)
+        public override void Display(PatcherError error, CancellationToken cancellationToken)
         {
             UnityDispatcher.Invoke(() => UpdateMessage(error)).WaitOne();
 

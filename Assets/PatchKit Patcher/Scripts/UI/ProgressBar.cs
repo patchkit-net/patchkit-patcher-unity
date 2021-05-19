@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Patcher.UI
     public class ProgressBar : MonoBehaviour
     {
         public Text Text;
-        public TextTranslator TextTranslator;
+        public ITextTranslator textMeshProTranslator;
 
         public Image Image;
 
@@ -46,7 +46,7 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void SetProgressBarText(string text)
         {
-            TextTranslator.SetText(text);
+            textMeshProTranslator.SetText(text);
         }
 
         private void SetProgress(UpdateData data)
@@ -126,8 +126,8 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            if (TextTranslator == null)
-                TextTranslator = Text.gameObject.AddComponent<TextTranslator>();
+            if (textMeshProTranslator == null)
+                textMeshProTranslator = Text.gameObject.AddComponent<TextTranslator>();
 
             var progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
             var isUpdatingIdle = Patcher.Instance.UpdaterStatus

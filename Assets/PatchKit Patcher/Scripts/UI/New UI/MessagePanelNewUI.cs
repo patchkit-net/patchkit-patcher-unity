@@ -1,5 +1,6 @@
 ﻿using UniRx;
 using PatchKit.Unity.UI.Languages;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +16,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         public Text CheckButtonText;
 
-        public TextTranslator CheckButtonTextTranslator;
+        public ITextTranslator checkButtonTextMeshProTranslator;
 
         public GameObject ProgressBar;
 
@@ -32,8 +33,8 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Start()
         {
-            if (CheckButtonTextTranslator == null)
-                CheckButtonTextTranslator = CheckButtonText.gameObject.AddComponent<TextTranslator>();
+            if (checkButtonTextMeshProTranslator == null)
+                checkButtonTextMeshProTranslator = CheckButtonText.gameObject.AddComponent<TextTranslator>();
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
@@ -52,7 +53,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
                 if (_canInstallApp)
                 {
-                    CheckButtonTextTranslator.SetText(PatcherLanguages.OpenTag + "install" + PatcherLanguages.CloseTag);
+                    checkButtonTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "install" + PatcherLanguages.CloseTag);
                 }
                 
                 CheckButton.gameObject.SetActive(_canInstallApp);
@@ -63,7 +64,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
             _animator.SetBool("IsOpened", false);
 
-            CheckButtonTextTranslator.SetText(
+            checkButtonTextMeshProTranslator.SetText(
                 PatcherLanguages.OpenTag + "check_for_updates" + PatcherLanguages.CloseTag);
         }
 

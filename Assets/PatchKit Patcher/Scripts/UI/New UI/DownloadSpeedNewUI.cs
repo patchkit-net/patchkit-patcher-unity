@@ -9,18 +9,18 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {
-    [RequireComponent(typeof(TextTranslator))]
+    [RequireComponent(typeof(ITextTranslator))]
     public class DownloadSpeedNewUI : MonoBehaviour
     {
-        private TextTranslator _textTranslator;
+        private ITextTranslator _textMeshProTranslator;
 
         private string _downloadSpeedUnit;
 
         private void Start()
         {
-            _textTranslator = GetComponent<TextTranslator>();
-            if (_textTranslator == null)
-                _textTranslator = gameObject.AddComponent<TextTranslator>();
+            _textMeshProTranslator = GetComponent<ITextTranslator>();
+            if (_textMeshProTranslator == null)
+                _textMeshProTranslator = gameObject.AddComponent<TextTranslator>();
             var downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                     GetStatusText);
             }, string.Empty);
 
-            text.ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
+            text.ObserveOnMainThread().Subscribe(textTranslation => _textMeshProTranslator.SetText(textTranslation))
                 .AddTo(this);
         }
 

@@ -55,5 +55,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         {
             _animator.SetBool("IsOpened", _isDisplaying);
         }
+
+        public virtual void Display(PatcherError patcherError, CancellationToken cancellationToken) { }
     }
 }

@@ -106,7 +106,7 @@ namespace PatchKit.Unity.Patcher
         
         public string AppSecret { get; private set; }
         
-        public ErrorDialog ErrorDialog;
+        public Dialog<ErrorDialog> ErrorDialog;
 
         public string EditorAppSecret;
 
@@ -261,6 +261,7 @@ namespace PatchKit.Unity.Patcher
         {
             UnityEngine.Assertions.Assert.raiseExceptions = true;
 
+            ErrorDialog = FindObjectOfType<Dialog<ErrorDialog>>();
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 

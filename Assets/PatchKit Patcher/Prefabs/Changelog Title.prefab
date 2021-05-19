@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 22474624}
   - component: {fileID: 22215054}
   - component: {fileID: 11458712}
-  - component: {fileID: 2144168728392512646}
+  - component: {fileID: 5687003322694237906}
   m_Layer: 5
   m_Name: TextTitle
   m_TagString: Untagged
@@ -80,7 +80,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Jan 13 PC Game Update Notes
---- !u!114 &2144168728392512646
+--- !u!114 &5687003322694237906
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -89,11 +89,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 117614}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2883888e205d6954f90b593ef122eb8f, type: 3}
+  m_Script: {fileID: 11500000, guid: 22cc3b64208d2224486920c23fb36bf8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Key: 
-  _textComponent: {fileID: 11458712}
 --- !u!1 &174066
 GameObject:
   m_ObjectHideFlags: 0
@@ -165,9 +164,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4643043f98eec45e59a9a0f141b4470f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Texts:
-  - {fileID: 2144168728392512646}
-  - {fileID: 1402068692696795026}
 --- !u!1 &3410554769880655951
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +175,7 @@ GameObject:
   - component: {fileID: 3318983435525947329}
   - component: {fileID: 1979397782845455035}
   - component: {fileID: 452168358594054215}
-  - component: {fileID: 1402068692696795026}
+  - component: {fileID: 615277040872714403}
   m_Layer: 5
   m_Name: TextPublishDate
   m_TagString: Untagged
@@ -248,7 +244,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: 'Published at: 2019-07-29 12:40'
---- !u!114 &1402068692696795026
+--- !u!114 &615277040872714403
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -257,8 +253,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3410554769880655951}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2883888e205d6954f90b593ef122eb8f, type: 3}
+  m_Script: {fileID: 11500000, guid: 22cc3b64208d2224486920c23fb36bf8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Key: 
-  _textComponent: {fileID: 452168358594054215}

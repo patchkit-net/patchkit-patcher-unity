@@ -6,19 +6,19 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
-    [RequireComponent(typeof(TextTranslator))]
+    [RequireComponent(typeof(ITextTranslator))]
     public class WarningText : MonoBehaviour
     {
-        private TextTranslator _textTranslator;
+        private ITextTranslator _textMeshProTranslator;
 
         private void Start()
         {
-            _textTranslator = GetComponent<TextTranslator>();
-            if (_textTranslator == null)
-                _textTranslator = gameObject.AddComponent<TextTranslator>();
+            _textMeshProTranslator = GetComponent<ITextTranslator>();
+            if (_textMeshProTranslator == null)
+                _textMeshProTranslator = gameObject.AddComponent<TextTranslator>();
             Patcher.Instance.Warning.ObserveOnMainThread().Subscribe(warning =>
             {
-                _textTranslator.SetText(warning);
+                _textMeshProTranslator.SetText(warning);
             }).AddTo(this);
         }
     }

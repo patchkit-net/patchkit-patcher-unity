@@ -12,14 +12,14 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         private LicenseDialogResult _result;
 
         public Text ErrorMessageText;
-        public TextTranslator ErrorMessageTextTranslator;
+        public ITextTranslator errorMessageTextMeshProTranslator;
 
         public InputField KeyInputField;
 
         private void Start()
         {
-            if (ErrorMessageTextTranslator == null)
-                ErrorMessageTextTranslator = ErrorMessageText.gameObject.AddComponent<TextTranslator>();
+            if (errorMessageTextMeshProTranslator == null)
+                errorMessageTextMeshProTranslator = ErrorMessageText.gameObject.AddComponent<TextTranslator>();
         }
 
         public void Confirm()
@@ -71,18 +71,18 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             switch (messageType)
             {
                 case LicenseDialogMessageType.None:
-                    ErrorMessageTextTranslator.SetText(string.Empty);
+                    errorMessageTextMeshProTranslator.SetText(string.Empty);
                     break;
                 case LicenseDialogMessageType.InvalidLicense:
-                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "invalid_license" +
+                    errorMessageTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "invalid_license" +
                                                        PatcherLanguages.CloseTag);
                     break;
                 case LicenseDialogMessageType.BlockedLicense:
-                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "blocked_license" +
+                    errorMessageTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "blocked_license" +
                                                        PatcherLanguages.CloseTag);
                     break;
                 case LicenseDialogMessageType.ServiceUnavailable:
-                    ErrorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "service_is_unavailable" +
+                    errorMessageTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "service_is_unavailable" +
                                                        PatcherLanguages.CloseTag);
                     break;
                 default:

@@ -5,16 +5,16 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.UI
 {
-    [RequireComponent(typeof(TextTranslator))]
+    [RequireComponent(typeof(ITextTranslator))]
     public class Status : MonoBehaviour
     {
-        private TextTranslator _textTranslator;
+        private ITextTranslator _textMeshProTranslator;
 
         private void Start()
         {
-            _textTranslator = GetComponent<TextTranslator>();
-            if (_textTranslator == null)
-                _textTranslator = gameObject.AddComponent<TextTranslator>();
+            _textMeshProTranslator = GetComponent<ITextTranslator>();
+            if (_textMeshProTranslator == null)
+                _textMeshProTranslator = gameObject.AddComponent<TextTranslator>();
 
             var operationStatus = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
 
@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.UI
                     }
 
                     return string.Empty;
-                }).ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
+                }).ObserveOnMainThread().Subscribe(textTranslation => _textMeshProTranslator.SetText(textTranslation))
                 .AddTo(this);
         }
     }

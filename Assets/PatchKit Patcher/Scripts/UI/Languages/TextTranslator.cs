@@ -1,12 +1,10 @@
-﻿using System;
-using UniRx;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.UI.Languages
 {
     [RequireComponent(typeof(Text))]
-    public class TextTranslator : MonoBehaviour
+    public class TextTranslator : MonoBehaviour, ITextTranslator
     {
         public string Key;
         private Text _textComponent;

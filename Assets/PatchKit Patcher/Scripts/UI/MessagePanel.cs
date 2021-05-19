@@ -16,7 +16,7 @@ namespace PatchKit.Unity.Patcher.UI
 
         public Text CheckButtonText;
 
-        public TextTranslator CheckButtonTextTranslator;
+        public ITextTranslator checkButtonTextMeshProTranslator;
 
         private bool _canInstallApp;
 
@@ -31,8 +31,8 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            if (CheckButtonTextTranslator == null)
-                CheckButtonTextTranslator = CheckButtonText.gameObject.AddComponent<TextTranslator>();
+            if (checkButtonTextMeshProTranslator == null)
+                checkButtonTextMeshProTranslator = CheckButtonText.gameObject.AddComponent<TextTranslator>();
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
@@ -49,7 +49,7 @@ namespace PatchKit.Unity.Patcher.UI
                 _canInstallApp = canInstallApp;
                 if (_canInstallApp)
                 {
-                    CheckButtonTextTranslator.SetText(PatcherLanguages.OpenTag + "install" + PatcherLanguages.CloseTag);
+                    checkButtonTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "install" + PatcherLanguages.CloseTag);
                 }
 
                 CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
@@ -60,7 +60,7 @@ namespace PatchKit.Unity.Patcher.UI
                 _canCheckForAppUpdates = canCheckForAppUpdates;
                 if (_canCheckForAppUpdates)
                 {
-                    CheckButtonTextTranslator.SetText(PatcherLanguages.OpenTag + "check_for_updates" +
+                    checkButtonTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "check_for_updates" +
                                                       PatcherLanguages.CloseTag);
                 }
 
@@ -74,7 +74,7 @@ namespace PatchKit.Unity.Patcher.UI
             PlayButton.interactable = false;
             CheckButton.interactable = false;
             
-            CheckButtonTextTranslator.SetText(
+            checkButtonTextMeshProTranslator.SetText(
                 PatcherLanguages.OpenTag + "check_for_updates" + PatcherLanguages.CloseTag);
         }
 
