@@ -1,25 +1,24 @@
 ﻿using System;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
-using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
-    public class LicenseDialogNewUI : Dialog<LicenseDialog>, ILicenseDialog
+    public class LicenseDialogNewUI : ALicenseDialog
     {
         private LicenseDialogResult _result;
+        
+        public TextMeshProTranslator errorMessageTextMeshProTranslator;
 
-        public Text ErrorMessageText;
-        public ITextTranslator errorMessageTextMeshProTranslator;
-
-        public InputField KeyInputField;
+        public TMP_InputField KeyInputField;
 
         private void Start()
         {
-            if (errorMessageTextMeshProTranslator == null)
-                errorMessageTextMeshProTranslator = ErrorMessageText.gameObject.AddComponent<TextTranslator>();
+            Assert.IsNotNull(errorMessageTextMeshProTranslator);
+            Assert.IsNotNull(KeyInputField);
         }
 
         public void Confirm()
@@ -88,11 +87,6 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);
             }
-        }
-
-        public override void Display(PatcherError patcherError, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }

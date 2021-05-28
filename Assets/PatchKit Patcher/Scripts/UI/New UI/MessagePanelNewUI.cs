@@ -1,4 +1,5 @@
-﻿using UniRx;
+﻿using PatchKit.Unity.Patcher.Debug;
+using UniRx;
 using PatchKit.Unity.UI.Languages;
 using TMPro;
 using UnityEngine;
@@ -14,9 +15,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         public Button CheckButton;
 
-        public Text CheckButtonText;
-
-        public ITextTranslator checkButtonTextMeshProTranslator;
+        public TextMeshProTranslator checkButtonTextMeshProTranslator;
 
         public GameObject ProgressBar;
 
@@ -33,8 +32,11 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Start()
         {
-            if (checkButtonTextMeshProTranslator == null)
-                checkButtonTextMeshProTranslator = CheckButtonText.gameObject.AddComponent<TextTranslator>();
+            Assert.IsNotNull(checkButtonTextMeshProTranslator);
+            Assert.IsNotNull(ProgressBar);
+            Assert.IsNotNull(PlayButton);
+            Assert.IsNotNull(CheckButton);
+            Assert.IsNotNull(_animator);
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {

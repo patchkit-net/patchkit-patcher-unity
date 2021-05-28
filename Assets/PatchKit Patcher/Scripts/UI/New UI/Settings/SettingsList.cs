@@ -5,7 +5,7 @@ using PatchKit.Unity.Patcher;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace PatchKit.Unity.Patcher.UI
+namespace PatchKit.Unity.Patcher.UI.NewUI
 {
     public class SettingsList : MonoBehaviour
     {

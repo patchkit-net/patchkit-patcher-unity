@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace PatchKit.Unity.Patcher.UI
+namespace PatchKit.Unity.Patcher.UI.NewUI
 {
     [RequireComponent(typeof(Animator))]
     public class SettingsPanel : MonoBehaviour

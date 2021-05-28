@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
-    public class ErrorDialogNewUI : Dialog<ErrorDialog>
+    public class ErrorDialogNewUI : AErrorDialog
     {
         public TextMeshProUGUI ErrorText;
         public TextMeshProTranslator errorTextMeshProTranslator;
@@ -18,8 +18,14 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 errorTextMeshProTranslator = ErrorText.gameObject.AddComponent<TextMeshProTranslator>();
         }
 
-        public void Confirm()
+        public void Wait()
         {
+            OnDisplayed();
+        }
+        
+        public void Restart()
+        {
+            Patcher.Instance.SetUserDecision(Patcher.UserDecision.CheckForAppUpdates);
             OnDisplayed();
         }
 

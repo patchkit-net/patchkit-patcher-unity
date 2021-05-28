@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
-    public class ErrorDialog : Dialog<ErrorDialog>
+    public class ErrorDialog : AErrorDialog
     {
         public Text ErrorText;
         public TextTranslator ErrorTextTranslator;

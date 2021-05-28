@@ -8,13 +8,13 @@ namespace PatchKit.Unity.Patcher.UI
     [RequireComponent(typeof(ITextTranslator))]
     public class Status : MonoBehaviour
     {
-        private ITextTranslator _textMeshProTranslator;
+        private ITextTranslator _textTranslator;
 
         private void Start()
         {
-            _textMeshProTranslator = GetComponent<ITextTranslator>();
-            if (_textMeshProTranslator == null)
-                _textMeshProTranslator = gameObject.AddComponent<TextTranslator>();
+            _textTranslator = GetComponent<ITextTranslator>();
+            if (_textTranslator == null)
+                _textTranslator = gameObject.AddComponent<TextTranslator>();
 
             var operationStatus = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
 
@@ -40,7 +40,7 @@ namespace PatchKit.Unity.Patcher.UI
                     }
 
                     return string.Empty;
-                }).ObserveOnMainThread().Subscribe(textTranslation => _textMeshProTranslator.SetText(textTranslation))
+                }).ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
                 .AddTo(this);
         }
     }

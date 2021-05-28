@@ -112,5 +112,7 @@ namespace PatchKit.Api.Models.Main
         [JsonProperty("children_channels")]
         public AppRef[] ChildrenChannels;
         
+        [JsonProperty("collect_usage_data")]
+        public string CollectUsageData;
     }
 }

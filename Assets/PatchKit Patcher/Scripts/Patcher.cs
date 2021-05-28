@@ -19,6 +19,7 @@ using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.UI;
+using PatchKit.Unity.Patcher.UI.NewUI;
 using PatchKit.Unity.UI.Languages;
 
 namespace PatchKit.Unity.Patcher
@@ -106,7 +107,7 @@ namespace PatchKit.Unity.Patcher
         
         public string AppSecret { get; private set; }
         
-        public Dialog<ErrorDialog> ErrorDialog;
+        public AErrorDialog ErrorDialog;
 
         public string EditorAppSecret;
 
@@ -260,8 +261,7 @@ namespace PatchKit.Unity.Patcher
         private void Awake()
         {
             UnityEngine.Assertions.Assert.raiseExceptions = true;
-
-            ErrorDialog = FindObjectOfType<Dialog<ErrorDialog>>();
+            
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 
@@ -280,9 +280,6 @@ namespace PatchKit.Unity.Patcher
 
             CheckEditorAppSecretSecure();
 
-            if (PlayerPrefs.GetInt("nextStartPatcher") == 1 || !FindObjectOfType(typeof(AnalyticsPopup)))
-                WaitHandleAnaliticsPopup.Set();
-            
             if (_canStartThread)
             {
                 StartThread();
@@ -408,7 +405,6 @@ namespace PatchKit.Unity.Patcher
 
             _thread = new Thread(() =>
             {
-                WaitHandleAnaliticsPopup.WaitOne();
                 ThreadExecution(_threadCancellationTokenSource.Token);
             })
             {
@@ -474,6 +470,12 @@ namespace PatchKit.Unity.Patcher
 
                 UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
+                if (AnalyticsPopup.Instance != null)
+                {
+                    SetCollectUsagesData();
+                    WaitHandleAnaliticsPopup.WaitOne();
+                }
+
                 PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
 
                 while (true)
@@ -512,6 +514,29 @@ namespace PatchKit.Unity.Patcher
             finally
             {
                 _state.Value = PatcherState.None;
+            }
+        }
+
+        private void SetCollectUsagesData()
+        {
+            PatcherCollectUsageData patcherCollectUsageData = new PatcherCollectUsageData();
+            if (patcherCollectUsageData.IsNone())
+            {
+                WaitHandleAnaliticsPopup.Set();
+            }
+            else
+            {
+                if (PlayerPrefs.GetInt("analytics", 2) == 2)
+                {
+                    if (patcherCollectUsageData.IsPopup())
+                    {
+                        AnalyticsPopup.Instance.Display();
+                    }
+                    else
+                    {
+                        AnalyticsBanner.Instance.Display();
+                    }
+                }
             }
         }
 

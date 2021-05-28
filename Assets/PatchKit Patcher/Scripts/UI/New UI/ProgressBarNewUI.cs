@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using PatchKit.Unity.Patcher.AppUpdater.Status;
+﻿using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UniRx;
@@ -11,8 +10,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 {
     public class ProgressBarNewUI : MonoBehaviour
     {
-        public Text Text;
-        public ITextTranslator textMeshProTranslator;
+        public TextMeshProTranslator TextMeshProTranslator;
 
         public Image Image;
 
@@ -46,7 +44,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void SetProgressBarText(string text)
         {
-            textMeshProTranslator.SetText(text);
+            TextMeshProTranslator.SetText(text);
         }
 
         private void SetProgress(UpdateData data)
@@ -61,7 +59,8 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private string FormatProgressForDisplay(double progress)
         {
-            return string.Format(PatcherLanguages.OpenTag + "updating" + PatcherLanguages.CloseTag + " {0:0.0}", progress * 100.0) + "%";
+            return string.Format(PatcherLanguages.OpenTag + "updating" + PatcherLanguages.CloseTag + " {0:0.0}",
+                progress * 100.0) + "%";
         }
 
         private void OnUpdate(UpdateData data)
@@ -126,8 +125,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Start()
         {
-            if (textMeshProTranslator == null)
-                textMeshProTranslator = Text.gameObject.AddComponent<TextTranslator>();
+            Assert.IsNotNull(TextMeshProTranslator);
 
             var progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
             var isUpdatingIdle = Patcher.Instance.UpdaterStatus
