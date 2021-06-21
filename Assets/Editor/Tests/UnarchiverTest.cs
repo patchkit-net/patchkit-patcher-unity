@@ -53,7 +53,8 @@ class UnarchiverTest
     [Test]
     public void Unarchive()
     {
-        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/zip.zip"), _dirPath);
+        MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles();
+        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/zip.zip"), _dirPath, mapHashExtractedFiles);
 
         unarchiver.Unarchive(CancellationToken.Empty);
 
@@ -63,7 +64,8 @@ class UnarchiverTest
     [Test]
     public void CancelUnarchive()
     {
-        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/zip.zip"), _dirPath);
+        MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles();
+        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/zip.zip"), _dirPath, mapHashExtractedFiles);
 
         CancellationTokenSource source = new CancellationTokenSource();
         source.Cancel();
@@ -74,7 +76,8 @@ class UnarchiverTest
     [Test]
     public void UnarchiveCorruptedArchive()
     {
-        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/corrupted-zip.zip"), _dirPath);
+        MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles();
+        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/corrupted-zip.zip"), _dirPath, mapHashExtractedFiles);
 
         Assert.That(() => unarchiver.Unarchive(CancellationToken.Empty), Throws.Exception);
     }
@@ -84,7 +87,8 @@ class UnarchiverTest
     {
         string password = "\x08\x07\x18\x24" + "123==";
 
-        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/password-zip.zip"), _dirPath, password);
+        MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles();
+        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/password-zip.zip"), _dirPath, mapHashExtractedFiles, password);
 
         unarchiver.Unarchive(CancellationToken.Empty);
 
@@ -94,7 +98,8 @@ class UnarchiverTest
     [Test]
     public void ProgressReporting()
     {
-        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/zip.zip"), _dirPath);
+        MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles();
+        var unarchiver = new ZipUnarchiver(TestFixtures.GetFilePath("unarchiver-test/zip.zip"), _dirPath, mapHashExtractedFiles);
 
         int? lastAmount = null;
         int? lastEntry = null;

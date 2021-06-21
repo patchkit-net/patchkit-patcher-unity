@@ -19,6 +19,11 @@ namespace PatchKit.Unity.Patcher.Debug
         public void Write(Message message, MessageContext messageContext)
         {
             var text = _formatter.Format(message, messageContext);
+            var patcher = Patcher.Instance;
+            if (!string.IsNullOrEmpty(patcher.AppSecret))
+            {
+                text = text.Replace(patcher.AppSecret, patcher.TraceableAppSecret);
+            }
 
             switch (message.Type)
             {
