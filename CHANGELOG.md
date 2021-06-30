@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Paths too long when unpacking (#2156)
+- Improved stability of saving app meta data file - caching files every 100MB
+- Saving executable name and arguments - only when changed
 
 ## [3.17.6.0]
 ### Fixed
