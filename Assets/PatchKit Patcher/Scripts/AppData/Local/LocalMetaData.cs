@@ -20,7 +20,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     public class LocalMetaData : ILocalMetaData
     {
         private readonly ILogger _logger;
+        private long _unsavedEntriesSize = 0;
         private const string DeprecatedCachePatchKitKey = "patchkit-key";
+        private const long UnsavedEntriesSizeLimit = 104857600; //100MiB
 
         /// <summary>
         /// Data structure stored in file.
@@ -79,7 +81,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
-        public void RegisterEntry([NotNull] string entryName, int versionId)
+        public void RegisterEntry([NotNull] string entryName, int versionId, long entrySize, bool isLastEntry)
         {
             if (entryName == null)
             {
@@ -103,7 +105,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 _data.FileVersionIds[entryName] = versionId;
 
-                SaveData();
+                if (ShouldSaveEntry(entrySize, isLastEntry))
+                {
+                    SaveData();
+                }
 
                 _logger.LogDebug("Entry registered.");
             }
@@ -112,6 +117,22 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 _logger.LogError("Failed to register entry.", e);
                 throw;
             }
+        }
+
+        private bool ShouldSaveEntry(long entrySize, bool isLastEntry)
+        {
+            if (isLastEntry)
+            {
+                return true;
+            }
+
+            _unsavedEntriesSize += entrySize;
+            if (_unsavedEntriesSize > UnsavedEntriesSizeLimit)
+            {
+                _unsavedEntriesSize = 0;
+                return true;
+            }
+            return false;
         }
 
         public void UnregisterEntry([NotNull] string entryName)
@@ -183,10 +204,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         
         public void SetMainExecutableAndArgs(string mainExecutable, string mainExecutableArgs)
         {
-            _data.MainExecutable = mainExecutable;
-            _data.MainExecutableArgs = mainExecutableArgs;
+            if (_data.MainExecutable != mainExecutable ||
+                _data.MainExecutableArgs != mainExecutableArgs)
+            {
+                _data.MainExecutable = mainExecutable;
+                _data.MainExecutableArgs = mainExecutableArgs;
 
-            SaveData();
+                SaveData();
+            }
         }
 
         public string GetMainExecutable()

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Checking path length on Windows
 - Support for HDPI
 
+### Changed
+- Speed up the installation/patching process due to less frequent meta data saving
+
 ### Fixed
 - Paths too long when unpacking (#2156)
 

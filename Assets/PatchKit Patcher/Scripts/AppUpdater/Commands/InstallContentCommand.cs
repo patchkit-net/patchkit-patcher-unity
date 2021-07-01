@@ -138,11 +138,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
                     string filePath = _versionContentSummary.Files[i].Path;
                     string nameHash;
                     if (mapHashExtractedFiles.TryGetHash(filePath, out nameHash))
                     {
-                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash);
+                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Size);
 
                         if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
                         {
@@ -152,7 +153,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         }
                         else
                         {
-                            InstallFile(sourceFile, cancellationToken);
+                            InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
                         }
                     }
                     else
@@ -185,7 +186,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken)
+        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken, bool isLastEntry)
         {
             DebugLogger.Log(string.Format("Installing file {0}", sourceFile.Name));
 
@@ -202,6 +203,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.LogFormat("Destination file {0} already exists, removing it.", destinationFilePath);
                 FileOperations.Delete(destinationFilePath, cancellationToken);
             }
+
 #if UNITY_STANDALONE_WIN
             if (destinationFilePath.Length > 259)
             {
@@ -209,19 +211,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 #endif
             FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
-            _localMetaData.RegisterEntry(sourceFile.Name, _versionId);
+            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size, isLastEntry);
             }
 
         struct SourceFile
         {
             public string Name { get; private set; }
+            public long Size { get; private set; }
             public string HashName { get; private set; }
             private string _suffix;
             private string _root;
 
             public string FullHashPath { get { return Path.Combine(_root, HashName + _suffix); } }
 
-            public SourceFile(string name, string root, string suffix, string hashName)
+            public SourceFile(string name, string root, string suffix, string hashName, long size)
             {
                 Assert.IsNotNull(name);
                 Assert.IsNotNull(root);
@@ -229,6 +232,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 Assert.IsNotNull(hashName);
                 
                 Name = name;
+                Size = size;
                 _root = root;
                 _suffix = suffix;
                 HashName = hashName;
