@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Checking path length on Windows
 - Support for HDPI
 
+### Changed
+- Speeding up the installation/patching process due to less frequent meta data saving - caching files every 100MB
+- Saving executable name and arguments - only when changed
+
 ### Fixed
 - Paths too long when unpacking (#2156)
-- Improved stability of saving app meta data file - caching files every 100MB
-- Saving executable name and arguments - only when changed
 
 ## [3.17.6.0]
 ### Fixed

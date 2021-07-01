@@ -186,7 +186,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken, bool lastEntry)
+        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken, bool isLastEntry)
         {
             DebugLogger.Log(string.Format("Installing file {0}", sourceFile.Name));
 
@@ -211,7 +211,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 #endif
             FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
-            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size, lastEntry);
+            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size, isLastEntry);
             }
 
         struct SourceFile

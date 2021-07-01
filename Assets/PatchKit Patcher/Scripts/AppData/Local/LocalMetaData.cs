@@ -204,8 +204,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         
         public void SetMainExecutableAndArgs(string mainExecutable, string mainExecutableArgs)
         {
-            if (!_data.MainExecutable.Contains(mainExecutable) ||
-                !_data.MainExecutableArgs.Contains(mainExecutableArgs))
+            if (_data.MainExecutable != mainExecutable ||
+                _data.MainExecutableArgs != mainExecutableArgs)
             {
                 _data.MainExecutable = mainExecutable;
                 _data.MainExecutableArgs = mainExecutableArgs;
