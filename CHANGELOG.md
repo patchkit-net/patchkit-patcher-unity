@@ -10,8 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for HDPI
 
 ### Changed
-- Speeding up the installation/patching process due to less frequent meta data saving - caching files every 100MB
-- Saving executable name and arguments - only when changed
+- Speed up the installation/patching process due to less frequent meta data saving
 
 ### Fixed
 - Paths too long when unpacking (#2156)
