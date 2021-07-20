@@ -69,22 +69,22 @@ namespace PatchKit.Unity.Patcher.Debug
                 GUI.BringWindowToFront(1);
             }
 
-            if (GUILayout.Button("Open Patcher log file"))
+            if (GUILayout.Button("Open Launcher log file"))
             {
                 OpenPatcherLogFile();
             }
 
-            if (GUILayout.Button("Open Patcher log file location"))
+            if (GUILayout.Button("Open Launcher log file location"))
             {
                 OpenPatcherLogFileLocation();
             }
 
-            if (GUILayout.Button("Open Launcher log file"))
+            if (GUILayout.Button("Open Runner log file"))
             {
                 OpenLauncherLogFile();
             }
 
-            if (GUILayout.Button("Open Launcher log file location"))
+            if (GUILayout.Button("Open Runner log file location"))
             {
                 OpenLauncherLogFileLocation();
             }
@@ -155,7 +155,7 @@ namespace PatchKit.Unity.Patcher.Debug
         private void OpenLauncherLogFileLocation()
         {
 #if UNITY_EDITOR
-            OpenPopup("Access to Launcher in the editor is not possible");
+            OpenPopup("Access to Runner in the editor is not possible");
 #else
 #if UNITY_STANDALONE_OSX
             string logDirectoryPath = Patcher.Instance.Data.Value.LockFilePath.Replace(
@@ -170,7 +170,7 @@ namespace PatchKit.Unity.Patcher.Debug
         private void OpenLauncherLogFile()
         {
 #if UNITY_EDITOR
-            OpenPopup("Access to Launcher in the editor is not possible");
+            OpenPopup("Access to Runner in the editor is not possible");
 #else
 #if UNITY_STANDALONE_OSX
             string logPath = Patcher.Instance.Data.Value.LockFilePath.Replace(
