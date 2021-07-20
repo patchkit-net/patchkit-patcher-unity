@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.7.0]
+### Added
+- Checking path length on Windows
+- Support for HDPI
+
+### Changed
+- Speed up the installation/patching process due to less frequent meta data saving
+
+### Fixed
+- Paths too long when unpacking (#2156)
+
 ## [3.17.6.0]
 ### Fixed
 - Starting a valid executable in offline mode (#2146)

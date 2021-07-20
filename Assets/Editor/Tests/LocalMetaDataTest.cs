@@ -31,7 +31,7 @@ public class LocalMetaDataTest
 
         var localMetaData = new LocalMetaData(_filePath, _deprecatedFilePath);
 
-        localMetaData.RegisterEntry("test", 1);
+        localMetaData.RegisterEntry("test", 1, 0, true);
 
         Assert.True(File.Exists(_filePath));
     }
@@ -41,8 +41,8 @@ public class LocalMetaDataTest
     {
         var localMetaData = new LocalMetaData(_filePath, _deprecatedFilePath);
 
-        localMetaData.RegisterEntry("a", 1);
-        localMetaData.RegisterEntry("b", 2);
+        localMetaData.RegisterEntry("a", 1, 0 , true);
+        localMetaData.RegisterEntry("b", 2, 0 , true);
 
         var localMetaData2 = new LocalMetaData(_filePath, _deprecatedFilePath);
 
