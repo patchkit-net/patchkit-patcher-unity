@@ -18,6 +18,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 
 namespace PatchKit.Unity.Patcher
@@ -832,6 +833,11 @@ namespace PatchKit.Unity.Patcher
             {
                 DebugLogger.LogException(e);
                 ThreadDisplayError(PatcherError.CannotRepairDiskFilesException(), cancellationToken);
+            }
+            catch (FilePathTooLongException e)
+            {
+                DebugLogger.LogException(e);
+                ThreadDisplayError(PatcherError.FilePathTooLong(), cancellationToken);
             }
             catch (ThreadInterruptedException)
             {

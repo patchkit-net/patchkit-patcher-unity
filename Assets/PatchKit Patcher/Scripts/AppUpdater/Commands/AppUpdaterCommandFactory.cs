@@ -133,5 +133,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             var geolocateCommand = new GeolocateCommand();
             return geolocateCommand;
         }
+        
+        public ICheckPathLengthCommand CreateCheckPathLengthCommand(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)
+        {
+            AppContentSummary contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
+            return new CheckPathLengthCommand(contentSummary, context.App.LocalDirectory.Path);
+        }
     }
 }

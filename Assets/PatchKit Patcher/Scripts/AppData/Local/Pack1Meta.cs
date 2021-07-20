@@ -36,7 +36,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             DebugLogger.Log(content);
             return JsonConvert.DeserializeObject<Pack1Meta>(content);
         }
-
         #endregion
 
 
