@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using PatchKit.Unity.Patcher.UI;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,17 +19,11 @@ namespace PatchKit.Unity.Patcher.Debug
         private string _popupMessage;
         private GraphicRaycaster _graphicRaycaster;
         private PlatformType _platformType;
+        private bool _isStart = true;
+
 
         void Start()
         {
-            int windowWidth = 250;
-            int windowHeight = 180;
-            int x = (Screen.width - windowWidth) / 2;
-            int y = (Screen.height - windowHeight) / 2;
-            int popupRectY = (Screen.height - 120) / 2;
-            _rect = new Rect(x, y, windowWidth, windowHeight);
-            _popupRect = new Rect(x, popupRectY, windowWidth, 120);
-            _texturePopupRect = new Rect(0, popupRectY - y, windowWidth, 120);
             _graphicRaycaster = FindObjectOfType<GraphicRaycaster>();
             _platformType = Platform.GetPlatformType();
         }
@@ -50,6 +45,20 @@ namespace PatchKit.Unity.Patcher.Debug
 
             if (_show)
             {
+                if (_isStart)
+                {
+                    _isStart = false;
+                    float scale = ScreenScale.Value;
+                    float windowWidth = 250 * scale;
+                    float windowHeight = 200 * scale;
+                    float x = (Screen.width - windowWidth) / 2;
+                    float y = (Screen.height - windowHeight) / 2;
+                    float popupRectY = (Screen.height - 120) / 2;
+                    _rect = new Rect(x, y, windowWidth, windowHeight);
+                    _popupRect = new Rect(x, popupRectY, windowWidth, 120);
+                    _texturePopupRect = new Rect(0, popupRectY - y, windowWidth, 120);
+                }
+
                 GUI.DrawTexture(_rect, Texture2D.whiteTexture);
                 GUI.Window(0, _rect, Draw, "Debug Menu");
                 if (_showPopup)
@@ -101,6 +110,11 @@ namespace PatchKit.Unity.Patcher.Debug
                 {
                     RemoveAllAppFiles();
                 }
+            }
+
+            if (GUILayout.Button("Close"))
+            {
+                Close();
             }
 
             if (_showPopup)
@@ -269,6 +283,7 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             _show = true;
             _graphicRaycaster.enabled = false;
+            _isStart = true;
         }
 
         private ProcessStartInfo GetProcessStartInfo(string executablePath)
