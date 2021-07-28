@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.8.0]
+### Fixed
+- Correct processing modified files during install diff
+- incorrect scrolling of window on multiple monitors (#1158)
+- Support HDPI for debug menu
+
 ## [3.17.7.0]
 ### Added
 - Checking path length on Windows
