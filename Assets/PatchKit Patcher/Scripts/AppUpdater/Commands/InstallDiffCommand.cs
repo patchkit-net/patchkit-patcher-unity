@@ -568,28 +568,37 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 _logger.LogDebug("Patching is necessary. Generating new file with patched content...");
 
-                var sourceDeltaFilePath = Path.Combine(packageDirPath, fileName + suffix);
-                _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
-
-                if (!File.Exists(sourceDeltaFilePath))
+                string nameHash;
+                if (_mapHashExtractedFiles.TryGetHash(fileName, out nameHash))
                 {
-                    throw new MissingFileFromPackageException(string.Format("Cannot find delta file {0} in diff package.",
-                        fileName));
+                    var sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
+                    _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
+
+                    if (!File.Exists(sourceDeltaFilePath))
+                    {
+                        throw new MissingFileFromPackageException(string.Format(
+                            "Cannot find delta file {0} in diff package.",
+                            fileName));
+                    }
+
+                    var newFilePath = tempDiffDir.GetUniquePath();
+                    _logger.LogTrace("newFilePath = " + newFilePath);
+
+                    var filePatcher = new FilePatcher(filePath, sourceDeltaFilePath, newFilePath);
+                    filePatcher.Patch();
+
+                    _logger.LogDebug("New file generated. Deleting old file in local data...");
+                    FileOperations.Delete(filePath, cancellationToken);
+
+                    _logger.LogDebug("Old file deleted. Moving new file to local data...");
+                    FileOperations.Move(newFilePath, filePath, cancellationToken);
+
+                    _logger.LogDebug("New file moved.");
                 }
-
-                var newFilePath = tempDiffDir.GetUniquePath();
-                _logger.LogTrace("newFilePath = " + newFilePath);
-
-                var filePatcher = new FilePatcher(filePath, sourceDeltaFilePath, newFilePath);
-                filePatcher.Patch();
-
-                _logger.LogDebug("New file generated. Deleting old file in local data...");
-                FileOperations.Delete(filePath, cancellationToken);
-
-                _logger.LogDebug("Old file deleted. Moving new file to local data...");
-                FileOperations.Move(newFilePath, filePath, cancellationToken);
-
-                _logger.LogDebug("New file moved.");
+                else
+                {
+                    throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", fileName));
+                }
             }
             else
             {
