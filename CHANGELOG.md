@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Sending statistic events (#1625)
 
+## [3.17.8.0]
+### Fixed
+- Processing patched diff files
+
 ## [3.17.7.0]
 ### Added
 - Checking path length on Windows
