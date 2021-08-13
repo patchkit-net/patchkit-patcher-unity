@@ -636,10 +636,6 @@ namespace PatchKit.Unity.Patcher
         {
             try
             {
-                DebugLogger.Log("Waiting for user decision...");
-
-                _state.Value = PatcherState.WaitingForUserDecision;
-
                 bool isInstalled = _app.IsFullyInstalled();
 
                 DebugLogger.LogVariable(isInstalled, "isInstalled");
@@ -682,6 +678,10 @@ namespace PatchKit.Unity.Patcher
                     _userDecision = UserDecision.StartAppAutomatically;
                     return;
                 }
+                
+                DebugLogger.Log("Waiting for user decision...");
+
+                _state.Value = PatcherState.WaitingForUserDecision;
 
                 _canRepairApp.Value = canRepairApp;
                 _canInstallApp.Value = canInstallApp;
