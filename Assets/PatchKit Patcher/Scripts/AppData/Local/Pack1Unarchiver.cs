@@ -2,6 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Ionic.Zlib;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
@@ -9,11 +10,10 @@ using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Data;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Utilities;
-using SharpCompress.Compressors.LZMA;
 using SharpCompress.Compressors.Xz;
 using SharpRaven;
 using SharpRaven.Data;
-using SharpRaven.Utilities;
+using FileMode = System.IO.FileMode;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -42,6 +42,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly BytesRange _range;
 
         private MapHashExtractedFiles _mapHashExtractedFiles;
+        private volatile int _space = 0;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
@@ -113,7 +114,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     Unpack(file, progress =>
                     {
                         OnUnarchiveProgressChanged(currentFile.Name, currentFile.Type == Pack1Meta.RegularFileType, currentEntry, _metaData.Files.Length, progress);
-                    }, cancellationToken);
+                    }, cancellationToken, false);
                 }
                 else
                 {
@@ -124,6 +125,19 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 entry++;
             }
+            while (true)
+            {
+                lock (this)
+                {
+                    if (_space == 0)
+                    {
+                        break;
+                    }
+                    UnityEngine.Debug.Log(_space);
+                }
+                Thread.Sleep(1000);
+            }
+
             DebugLogger.Log("Unpacking finished succesfully!");
         }
 
@@ -136,8 +150,19 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 throw new ArgumentOutOfRangeException("file", file, null);
             }
 
-            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress), cancellationToken, destinationDirPath);
-
+            Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress), cancellationToken, true, destinationDirPath);
+            while (true)
+            {
+                lock (this)
+                {
+                    if (_space == 0)
+                    {
+                        break;
+                    }
+                    UnityEngine.Debug.Log(_space);
+                }
+                Thread.Sleep(1000);
+            }
             OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 1.0);
         }
 
@@ -156,14 +181,41 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return file.Offset >= _range.Start && file.Offset + file.Size <= _range.End;
         }
 
-        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, CancellationToken cancellationToken, string destinationDirPath = null)
+        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, CancellationToken cancellationToken, bool isSingle, string destinationDirPath = null)
         {
             switch (file.Type)
             {
                 case Pack1Meta.RegularFileType:
                     try
                     {
-                        UnpackRegularFile(file, progress, cancellationToken, destinationDirPath);
+                        if (file.Size < 524288 && !isSingle)
+                        {
+                            while (true)
+                            {
+                                int tmp;
+                                lock (this)
+                                {
+                                    tmp = _space;
+                                }
+                                if (tmp < 16)
+                                {
+                                    break;
+                                }
+                                Thread.Sleep(1);
+                            }
+                            
+                            lock (this)
+                            {
+                                _space++;
+                            }
+
+                            ThreadPool.QueueUserWorkItem(state => UnpackProc(file, progress, cancellationToken,
+                                destinationDirPath));
+                        }
+                        else
+                        {
+                            UnpackRegularFile(file, progress, cancellationToken, destinationDirPath);
+                        }
                     }
                     catch (Ionic.Zlib.ZlibException e)
                     {
@@ -201,6 +253,27 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         }
 
+        private void UnpackProc(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
+        {
+            try
+            {
+                UnpackRegularFile(file, onProgress, cancellationToken,
+                    destinationDirPath);
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogError(e);
+                throw;
+            }
+            finally
+            {
+                lock (this)
+                {
+                    _space--;
+                }
+            }
+        }
+
         private void UnpackDirectory(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
         {
             string destPath = Path.Combine(_destinationDirPath, _mapHashExtractedFiles.Add(file.Name));
@@ -234,7 +307,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
-            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, _mapHashExtractedFiles.Add(file.Name) + _suffix);
+            string nameUnPackFile;
+            lock (_mapHashExtractedFiles)
+            {
+                nameUnPackFile = _mapHashExtractedFiles.Add(file.Name) + _suffix;
+            }
+            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath,  nameUnPackFile);
 
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
@@ -269,7 +347,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             DecompressorCreator decompressorCreator = ResolveDecompressor(_metaData);
 
-            using (var fs = new FileStream(_packagePath, FileMode.Open))
+            using (var fs = new FileStream(_packagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 fs.Seek(file.Offset.Value - _range.Start, SeekOrigin.Begin);
 
