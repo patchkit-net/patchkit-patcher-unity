@@ -1,5 +1,7 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
@@ -7,7 +9,6 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -31,6 +32,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private OperationStatus _copyFilesStatus;
         private OperationStatus _unarchivePackageStatus;
         private Pack1Meta _pack1Meta;
+        private volatile int _space = 0;
 
         public InstallContentCommand(string packagePath, string packageMetaPath, string packagePassword, int versionId,
             AppContentSummary versionContentSummary, ILocalDirectory localData, ILocalMetaData localMetaData)
@@ -143,7 +145,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     string nameHash;
                     if (mapHashExtractedFiles.TryGetHash(filePath, out nameHash))
                     {
-                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Size);
+                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Files[i].Size);
 
                         if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
                         {
@@ -168,6 +170,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _copyFilesStatus.Progress.Value = 1.0;
                 _copyFilesStatus.IsActive.Value = false;
             });
+            while (true)
+            {
+                lock (this)
+                {
+                    if (_space == 0)
+                    {
+                        break;
+                    }
+                    UnityEngine.Debug.Log(_space);
+                }
+                Thread.Sleep(1000);
+            }
         }
 
         private IUnarchiver CreateUnrachiver(string destinationDir, MapHashExtractedFiles mapHashExtractedFiles, out string usedSuffix)
@@ -210,9 +224,45 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", destinationFilePath)); 
             }
 #endif
-            FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
-            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size, isLastEntry);
+            while (true)
+            {
+                int tmp;
+                lock (this)
+                {
+                    tmp = _space;
+                }
+                if (tmp < 16)
+                {
+                    break;
+                }
+                Thread.Sleep(1);
             }
+            lock (this)
+            {
+                _space++;
+            }
+
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                try
+                {
+                    FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    DebugLogger.LogError(e.ToString());
+                    throw;
+                }
+                finally
+                {
+                    lock (this)
+                    {
+                        _space--;
+                    }
+                }
+            });
+            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size, isLastEntry);
+        }
 
         struct SourceFile
         {
