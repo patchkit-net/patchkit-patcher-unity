@@ -115,10 +115,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status.IsActive.Value = false;
         }
 
+        private int _eventSendCount;
         private FileIntegrity CheckFile(AppContentSummaryFile file)
         {
             Action onVerificationFailed = () =>
             {
+                _eventSendCount++;
+                if (_eventSendCount > 32)
+                {
+                    return;
+                }
                 PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.FileVerificationFailed, new PatcherStatistics.OptionalParams
                 {
                     FileName = file.Path,
