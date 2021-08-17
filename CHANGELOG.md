@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.17.9.0]
 ### Fixed
-- Information about size of file at installation
+- Wrong information about file size during installation
 
 ## [3.17.8.0]
 ### Fixed
