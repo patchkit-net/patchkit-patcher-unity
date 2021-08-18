@@ -19,7 +19,7 @@ namespace PatchKit.Unity.Patcher.Debug
         private string _popupMessage;
         private GraphicRaycaster _graphicRaycaster;
         private PlatformType _platformType;
-        private bool _isStart = true;
+        private bool _wasInitialized;
 
 
         void Start()
@@ -45,9 +45,9 @@ namespace PatchKit.Unity.Patcher.Debug
 
             if (_show)
             {
-                if (_isStart)
+                if (!_wasInitialized)
                 {
-                    _isStart = false;
+                    _wasInitialized = true;
                     float scale = ScreenScale.Value;
                     float windowWidth = 250 * scale;
                     float windowHeight = 200 * scale;
@@ -283,7 +283,7 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             _show = true;
             _graphicRaycaster.enabled = false;
-            _isStart = true;
+            _wasInitialized = false;
         }
 
         private ProcessStartInfo GetProcessStartInfo(string executablePath)
