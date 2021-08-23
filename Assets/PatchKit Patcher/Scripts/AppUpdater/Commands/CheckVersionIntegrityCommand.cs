@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using System.Threading;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.Local;
@@ -21,8 +22,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalMetaData _localMetaData;
 
         private OperationStatus _status;
-        bool _isCheckingHash;
-        bool _isCheckingSize;
+        private volatile bool _isCheckingHash;
+        private volatile bool _isCheckingSize;
+        private volatile int _space;
 
         public CheckVersionIntegrityCommand(int versionId, AppContentSummary versionSummary,
             ILocalDirectory localDirectory, ILocalMetaData localMetaData, bool isCheckingHash, bool isCheckingSize)
@@ -95,19 +97,80 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
+        private static volatile FileIntegrity[] files;
+
         private void ExecuteInternal(CancellationToken cancellationToken)
         {
             DebugLogger.Log("Checking version integrity.");
 
             _status.IsActive.Value = true;
 
-            var files = new FileIntegrity[_versionSummary.Files.Length];
-
-            for (int i = 0; i < _versionSummary.Files.Length; i++)
+            files = new FileIntegrity[_versionSummary.Files.Length];
+            int i = 0;
+            foreach (var file in _versionSummary.Files)
             {
-                files[i] = CheckFile(_versionSummary.Files[i]);
+                while (true)
+                {
+                    int tmp;
+                    lock (this)
+                    {
+                        tmp = _space;
+                    }
+
+                    if (tmp < 16)
+                    {
+                        break;
+                    }
+
+                    Thread.Sleep(1);
+                }
+
+                lock (this)
+                {
+                    _space++;
+                }
+
+                var fileInThread = file;
+                var number = i;
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    try
+                    {
+                        var fileIntegrity = CheckFile(fileInThread);
+                        lock (this)
+                        {
+                            files[number] = fileIntegrity;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        DebugLogger.LogError(e.ToString());
+                        throw;
+                    }
+                    finally
+                    {
+                        lock (this)
+                        {
+                            _space--;
+                        }
+                    }
+                });
 
                 _status.Progress.Value = (i + 1) / (double) _versionSummary.Files.Length;
+                i++;
+            }
+
+            while (true)
+            {
+                lock (this)
+                {
+                    if (_space == 0)
+                    {
+                        break;
+                    }
+                }
+
+                Thread.Sleep(1000);
             }
 
             Results = new VersionIntegrity(files);
