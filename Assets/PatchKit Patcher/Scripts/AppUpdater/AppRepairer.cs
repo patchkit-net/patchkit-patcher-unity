@@ -18,6 +18,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public readonly AppUpdaterContext Context;
 
+        public ICheckVersionIntegrityCommand checkIntegrity;
+
         // set to true if you wish to check file hashes
         public bool CheckHashes = false;
 
@@ -146,7 +148,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             int installedVersionId
             )
         {
-            ICheckVersionIntegrityCommand checkIntegrity = _commandFactory
+            checkIntegrity = _commandFactory
                 .CreateCheckVersionIntegrityCommand(
                     versionId: installedVersionId,
                     context: Context,
