@@ -153,7 +153,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         }
                         else
                         {
-                            InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
+                            InstallFile(sourceFile, cancellationToken);
                         }
                     }
                     else
@@ -186,7 +186,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken, bool isLastEntry)
+        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken)
         {
             DebugLogger.Log(string.Format("Installing file {0}", sourceFile.Name));
 
@@ -211,7 +211,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 #endif
             FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
-            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size, isLastEntry);
+            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size);
             }
 
         struct SourceFile
