@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PatchKit.Unity.UI.Languages
 {
-    [RequireComponent(typeof(TextMeshPro))]
+    [RequireComponent(typeof(TextMeshProUGUI))]
     public class TextMeshProTranslator : MonoBehaviour, ITextTranslator
     {
         public string Key;

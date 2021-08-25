@@ -16,6 +16,8 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         public Button CheckButton;
 
         public TextMeshProTranslator checkButtonTextMeshProTranslator;
+        
+        public TextMeshProTranslator sizeTextMeshProTranslator;
 
         public GameObject ProgressBar;
 
