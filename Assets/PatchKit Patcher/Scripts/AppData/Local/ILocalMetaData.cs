@@ -16,7 +16,9 @@
         /// </summary>
         /// <param name="entryName">Name of the entry.</param>
         /// <param name="versionId">The version id.</param>
-        void RegisterEntry(string entryName, int versionId);
+        /// <param name="entrySize">Size of entry.</param>
+        /// <param name="isLastEntry">If set to true, it is last entry.</param>
+        void RegisterEntry(string entryName, int versionId, long entrySize, bool isLastEntry);
 
         /// <summary>
         /// Unregisters the entry.
@@ -44,5 +46,11 @@
         void SetProductKey(string productKey);
 
         string GetProductKey();
+
+        void SetMainExecutableAndArgs(string mainExecutable, string mainExecutableArgs);
+
+        string GetMainExecutable();
+
+        string MainExecutableArgs { get; }
     }
 }

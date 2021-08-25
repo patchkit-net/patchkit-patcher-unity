@@ -84,10 +84,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var contentSummary = _context.App.RemoteMetaData.GetContentSummary(installedVersionId, cancellationToken);
 
-            foreach (var invalidVersionIdFile in filesIntegrity.Where(x =>
-                x.Status == FileIntegrityStatus.InvalidVersion).ToArray())
+            var filesIntegrityWithInvalidVersion = filesIntegrity.Where(x =>
+                x.Status == FileIntegrityStatus.InvalidVersion).ToArray();
+            for (int i = 0; i < filesIntegrityWithInvalidVersion.Length; i++)
             {
-                var fileName = invalidVersionIdFile.FileName;
+                var fileName = filesIntegrityWithInvalidVersion[i].FileName;
                 var file = contentSummary.Files.First(x => x.Path == fileName);
 
                 var localPath = _context.App.LocalDirectory.Path.PathCombine(file.Path);
@@ -96,13 +97,15 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 if (actualFileHash != file.Hash)
                 {
                     FileOperations.Delete(localPath, cancellationToken);
-                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId);
-                    invalidVersionIdFile.Status = FileIntegrityStatus.MissingData;
+                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size, 
+                        i == filesIntegrityWithInvalidVersion.Length - 1);
+                    filesIntegrityWithInvalidVersion[i].Status = FileIntegrityStatus.MissingData;
                 }
                 else
                 {
-                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId);
-                    invalidVersionIdFile.Status = FileIntegrityStatus.Ok;
+                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size, 
+                        i == filesIntegrityWithInvalidVersion.Length - 1);
+                    filesIntegrityWithInvalidVersion[i].Status = FileIntegrityStatus.Ok;
                 }
             }
 

@@ -20,7 +20,9 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     public class LocalMetaData : ILocalMetaData
     {
         private readonly ILogger _logger;
+        private long _unsavedEntriesSize = 0;
         private const string DeprecatedCachePatchKitKey = "patchkit-key";
+        private const long UnsavedEntriesSizeLimit = 104857600; //100MiB
 
         /// <summary>
         /// Data structure stored in file.
@@ -40,6 +42,12 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             [DefaultValue("none")]
             [JsonProperty("product_key_encryption", DefaultValueHandling = DefaultValueHandling.Populate)]
             public string ProductKeyEncryption;
+            
+            [JsonProperty("start_exe_path")]
+            public string MainExecutable;
+            
+            [JsonProperty("start_exe_args")]
+            public string MainExecutableArgs;
 
             [JsonProperty("_fileVersions")] public Dictionary<string, int> FileVersionIds;
         }
@@ -73,7 +81,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
-        public void RegisterEntry([NotNull] string entryName, int versionId)
+        public void RegisterEntry([NotNull] string entryName, int versionId, long entrySize, bool isLastEntry)
         {
             if (entryName == null)
             {
@@ -97,7 +105,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 _data.FileVersionIds[entryName] = versionId;
 
-                SaveData();
+                if (ShouldSaveEntry(entrySize, isLastEntry))
+                {
+                    SaveData();
+                }
 
                 _logger.LogDebug("Entry registered.");
             }
@@ -106,6 +117,22 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 _logger.LogError("Failed to register entry.", e);
                 throw;
             }
+        }
+
+        private bool ShouldSaveEntry(long entrySize, bool isLastEntry)
+        {
+            if (isLastEntry)
+            {
+                return true;
+            }
+
+            _unsavedEntriesSize += entrySize;
+            if (_unsavedEntriesSize > UnsavedEntriesSizeLimit)
+            {
+                _unsavedEntriesSize = 0;
+                return true;
+            }
+            return false;
         }
 
         public void UnregisterEntry([NotNull] string entryName)
@@ -173,6 +200,28 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         public string GetProductKey()
         {
             return _data.ProductKey;
+        }
+        
+        public void SetMainExecutableAndArgs(string mainExecutable, string mainExecutableArgs)
+        {
+            if (_data.MainExecutable != mainExecutable ||
+                _data.MainExecutableArgs != mainExecutableArgs)
+            {
+                _data.MainExecutable = mainExecutable;
+                _data.MainExecutableArgs = mainExecutableArgs;
+
+                SaveData();
+            }
+        }
+
+        public string GetMainExecutable()
+        {
+            return _data.MainExecutable;
+        }
+
+        public string MainExecutableArgs
+        {
+            get { return _data.MainExecutableArgs; }
         }
 
         private void CreateDataDir()

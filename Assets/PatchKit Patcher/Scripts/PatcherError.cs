@@ -57,9 +57,13 @@ namespace PatchKit.Unity.Patcher
                                     "unknown_error_please_try_again_if_the_issue_remains_please_contact_the_support" +
                                     PatcherLanguages.CloseTag);
         }
-
-        public string ToString()
+        
+        public static PatcherError FilePathTooLong()
         {
+            return new PatcherError("Launcher is unable to install this application at this location. Please move your files higher in the directory structure.");
+        }
+
+        public string ToString() {
             return string.Format(Message, Args);
         }
     }

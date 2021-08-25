@@ -4,9 +4,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.9.0]
+### Fixed
+- incorrect scrolling of window on multiple monitors (#1158)
+- Support HDPI for debug menu
+
+## [3.17.8.0]
+### Fixed
+- Processing patched diff files
+
+## [3.17.7.0]
+### Added
+- Checking path length on Windows
+- Support for HDPI
+
+### Changed
+- Speed up the installation/patching process due to less frequent meta data saving
+
+### Fixed
+- Paths too long when unpacking (#2156)
+
+## [3.17.6.0]
+### Fixed
+- Starting a valid executable in offline mode (#2146)
+
+## [3.17.5.0]
+### Added
+- Debug menu (available through Ctrl + Shift + D) (#2081)
+
+### Fixed
+- Starting in offline mode without permissions for working directory (#2082)
+
 ## [3.17.4.0]
 ### Added
-- Improved changelog displaying (#2033)
+- Improved changelog displaying (#2080)
 
 ## [3.17.3.0]
 ### Added
@@ -14,14 +45,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.17.2.0]
 ### Added
-- Attempting to repair content on failed installation
+- Attempting to repair content on failed installation (#2079)
 
 ### Fixed
-- Ability to test patcher in the editor
+- Ability to test patcher in the editor (#2078)
 
 ## [3.17.1.0]
 ### Fixed
-- Installing diff which contains the same entry in added_files & removed_files
+- Installing diff which contains the same entry in added_files & removed_files (#1916)
 
 ## [3.17.0.0]
 ### Added
