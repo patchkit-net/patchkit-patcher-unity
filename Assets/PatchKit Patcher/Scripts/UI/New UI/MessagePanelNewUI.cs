@@ -42,6 +42,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             Assert.IsNotNull(PlayButton);
             Assert.IsNotNull(CheckButton);
             Assert.IsNotNull(_animator);
+            Assert.IsNotNull(sizeTextMeshProTranslator);
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
