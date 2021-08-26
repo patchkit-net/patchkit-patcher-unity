@@ -110,7 +110,7 @@ namespace PatchKit.Unity.Patcher
         private string _traceableAppSecret;
         
         public string AppSecret { get; private set; }
-        
+
         public AErrorDialog ErrorDialog;
 
         public string EditorAppSecret;
@@ -205,6 +205,13 @@ namespace PatchKit.Unity.Patcher
         public IReadOnlyReactiveProperty<Api.Models.Main.App> AppInfo
         {
             get { return _appInfo; }
+        }
+        
+        private ReactiveProperty<long> _sizeLastContentSummary = new ReactiveProperty<long>();
+        
+        public IReadOnlyReactiveProperty<long> SizeLastContentSummary
+        {
+            get { return _sizeLastContentSummary; }
         }
 
         public void SetUserDecision(UserDecision userDecision)
@@ -474,7 +481,27 @@ namespace PatchKit.Unity.Patcher
 
                 ThreadLoadPatcherConfiguration();
 
-                UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
+                UnityDispatcher.Invoke(() =>
+                {
+                    _app =
+                        new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId,
+                            _requestTimeoutCalculator);
+                    
+                }).WaitOne();
+
+                if (!_app.IsFullyInstalled() && !_configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
+                {
+                    _updateAppCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
+                    using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
+                    {
+                        _appInfo.Value =
+                            _app.RemoteMetaData.GetAppInfo(true, _updateAppCancellationTokenSource.Token);
+                        _remoteVersionId.Value =
+                            _app.GetLatestVersionId(true, _updateAppCancellationTokenSource.Token);
+                        _sizeLastContentSummary.Value = _app.RemoteMetaData
+                            .GetContentSummary(_remoteVersionId.Value.Value, _updateAppCancellationTokenSource).Size;
+                    }
+                }
 
                 if (AnalyticsPopup.Instance != null)
                 {

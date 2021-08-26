@@ -1,6 +1,9 @@
-﻿using PatchKit.Unity.Patcher.Debug;
+﻿using System;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.Patcher.Debug;
 using UniRx;
 using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.Utilities;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,14 +12,14 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 {
     public class MessagePanelNewUI : MonoBehaviour
     {
-  public string StartAppCustomArgs;
+        public string StartAppCustomArgs;
 
         public Button PlayButton;
 
         public Button CheckButton;
 
         public TextMeshProTranslator checkButtonTextMeshProTranslator;
-        
+
         public TextMeshProTranslator sizeTextMeshProTranslator;
 
         public GameObject ProgressBar;
@@ -57,11 +60,24 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
                 if (_canInstallApp)
                 {
-                    checkButtonTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "install" + PatcherLanguages.CloseTag);
+                    checkButtonTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "install" +
+                                                             PatcherLanguages.CloseTag);
                 }
-                
+
                 CheckButton.gameObject.SetActive(_canInstallApp);
             }).AddTo(this);
+
+            var text = Patcher.Instance.SizeLastContentSummary.Select(
+                sizeLastContentSummary =>
+                {
+                    if (sizeLastContentSummary != 0)
+                    {
+                        return string.Format("({0:0.0}MB)", sizeLastContentSummary / 1024.0 / 1024.0);
+                    }
+                    return String.Empty;
+                });
+
+            text.ObserveOnMainThread().Subscribe(t => sizeTextMeshProTranslator.SetText(t)).AddTo(this);
             
             PlayButton.onClick.AddListener(OnPlayButtonClicked);
             CheckButton.onClick.AddListener(OnCheckButtonClicked);
