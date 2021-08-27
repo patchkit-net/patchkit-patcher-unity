@@ -15,11 +15,13 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 {
     public class NewChangelogList : UIApiComponent
     {
-        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(ChangelogList));
+        private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(NewChangelogList));
 
         public ChangelogElement TitlePrefab;
 
         public ChangelogElement ChangePrefab;
+
+        public RealeasesList RealeasesList;
 
         protected override IEnumerator LoadCoroutine()
         {
@@ -88,7 +90,8 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         private void CreateChangelog(ChangelogEntry[] versions)
         {
             DestroyOldChangelog();
-
+            
+            RealeasesList.AddButtons(versions);
             foreach (ChangelogEntry version in versions)
             {
                 CreateVersionChangelog(version);
