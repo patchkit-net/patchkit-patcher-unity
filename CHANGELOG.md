@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Sending statistic events (#1625)
 
+## [3.17.9.0]
+### Added
+- Support HDPI for debug menu
+
+### Fixed
+- Wrong information about file size during installation
+- Broken borderless window position restrictions on multiple monitors (#1158)
+
 ## [3.17.8.0]
 ### Fixed
 - Processing patched diff files

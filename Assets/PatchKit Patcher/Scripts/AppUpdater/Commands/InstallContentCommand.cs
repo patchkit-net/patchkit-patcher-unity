@@ -143,7 +143,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     string nameHash;
                     if (mapHashExtractedFiles.TryGetHash(filePath, out nameHash))
                     {
-                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Size);
+                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Files[i].Size);
 
                         if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
                         {

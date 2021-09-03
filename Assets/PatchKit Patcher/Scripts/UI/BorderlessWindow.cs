@@ -126,28 +126,7 @@ namespace PatchKit.Unity.Patcher.UI
                 CanvasScaler = FindObjectOfType<CanvasScaler>();
             }
 
-            float screenScale;
-            float screenDpi = Screen.dpi;
-            if (screenDpi >= 400)
-            {
-                screenScale = 4;
-            }
-            else if (screenDpi >= 200)
-            {
-                screenScale = 2;
-            }
-            else
-            {
-                if (screenDpi == 0)
-                {
-                    _logger.LogWarning("Unable to determine the current DPI.");
-                }
-
-                screenScale = 1;
-            }
-
-            _logger.LogDebug(string.Format("Screen scale: {0}", screenScale));
-
+            float screenScale = ScreenScale.Value;
             EnforceCorrectScreenSize(screenScale);
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
@@ -233,9 +212,6 @@ namespace PatchKit.Unity.Patcher.UI
 
             screenMax.x -= Screen.width;
             screenMax.y -= Screen.height;
-
-            _windowRect.position = new Vector2(Mathf.Clamp(_windowRect.position.x, 0.0f, screenMax.x),
-                Mathf.Clamp(_windowRect.position.y, 0.0f, screenMax.y));
 
             int flags = (int) GetWindowLongPtr(_windowsHandle, GwlStyle);
 
