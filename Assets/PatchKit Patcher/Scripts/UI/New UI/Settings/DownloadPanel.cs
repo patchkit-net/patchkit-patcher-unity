@@ -4,9 +4,9 @@ using UnityEngine.UI;
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {
     [RequireComponent(typeof(Animator))]
-    public class SettingsPanel : MonoBehaviour
+    public class DownloadPanel : MonoBehaviour
     {
-        public Button BackgroundShowSettings;
+        public Button BackgroundShowDownload;
         private Animator _animator;
 
         private bool _isOpened;
@@ -25,15 +25,17 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 _animator.SetBool("IsOpened", _isOpened);
                 if (_isOpened)
                 {
-                    ColorBlock cb = BackgroundShowSettings.colors;
+                    transform.localPosition= new Vector3(0, -24, 0);
+                    ColorBlock cb = BackgroundShowDownload.colors;
                     cb.normalColor = Color.white;
-                    BackgroundShowSettings.colors = cb;
+                    BackgroundShowDownload.colors = cb;
                 }
                 else
                 {
-                    ColorBlock cb = BackgroundShowSettings.colors;
+                    transform.localPosition= new Vector3(0, -671, 0);
+                    ColorBlock cb = BackgroundShowDownload.colors;
                     cb.normalColor = Color.clear;
-                    BackgroundShowSettings.colors = cb;
+                    BackgroundShowDownload.colors = cb;
                 }
             }
         }
