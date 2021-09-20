@@ -15,6 +15,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private readonly UpdaterStatus _status;
 
+        private const int MAX_CHECK_HASHES_FILE_COUNT = 10000;
+
         private bool _updateHasBeenCalled;
 
         public bool RepairOnError { get; set; }
@@ -119,7 +121,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 DebugLogger.Log("Content installed with errors, requesting repair");
 
                 var appRepairer = new AppRepairer(_context, _status);
-                if (_context.App.RemoteMetaData.GetContentSummary(latestVersionId, cancellationToken).Files.Length < 10000)
+                if (_context.App.RemoteMetaData.GetContentSummary(latestVersionId, cancellationToken).Files.Length < MAX_CHECK_HASHES_FILE_COUNT)
                 {
                     appRepairer.CheckHashes = true;
                 }

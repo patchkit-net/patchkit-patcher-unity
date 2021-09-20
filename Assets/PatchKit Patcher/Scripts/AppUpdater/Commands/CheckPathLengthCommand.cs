@@ -32,7 +32,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 foreach (AppContentSummaryFile contentSummaryFile in _contentSummary.Value.Files)
                 {
-                    var pathFile = Path.Combine(_localDirectoryPath, contentSummaryFile.Path);
+                    string  pathFile = Path.Combine(_localDirectoryPath, contentSummaryFile.Path);
 
                     if (pathFile.Length > 259)
                     {
