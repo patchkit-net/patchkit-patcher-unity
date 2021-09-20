@@ -168,7 +168,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             return filesToRepair
                 .Select(f => contentSummary.Files.FirstOrDefault(e => e.Path == f.FileName))
-                .Sum(f => Math.Max(PACK1_BLOCK_SIZE, f.Size));
+                .Sum(f => Math.Max(contentSummary.Chunks.Size, f.Size));
         }
 
         private void ReinstallContent(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
