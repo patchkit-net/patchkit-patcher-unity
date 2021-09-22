@@ -6,7 +6,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 {
     public interface IAppUpdaterStrategyResolver
     {
-        StrategyType Resolve(AppUpdaterContext context, ICheckVersionIntegrityCommand checkVersionIntegrity, CancellationToken cancellationToken);
+        StrategyType Resolve(AppUpdaterContext context, VersionIntegrity versionIntegrity, CancellationToken cancellationToken);
 
         IAppUpdaterStrategy Create(StrategyType type, AppUpdaterContext context);
 
