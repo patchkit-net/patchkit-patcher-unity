@@ -97,18 +97,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 if (actualFileHash != file.Hash)
                 {
                     FileOperations.Delete(localPath, cancellationToken);
-                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size, 
-                        i == filesIntegrityWithInvalidVersion.Length - 1);
+                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size);
                     filesIntegrityWithInvalidVersion[i].Status = FileIntegrityStatus.MissingData;
                 }
                 else
                 {
-                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size, 
-                        i == filesIntegrityWithInvalidVersion.Length - 1);
+                    _context.App.LocalMetaData.RegisterEntry(fileName, installedVersionId, file.Size);
                     filesIntegrityWithInvalidVersion[i].Status = FileIntegrityStatus.Ok;
                 }
             }
 
+            _context.App.LocalMetaData.SaveData();
             Pack1Meta.FileEntry[] brokenFiles = filesIntegrity
                 // Filter only files with invalid size, hash or missing entirely
                 .Where(f => f.Status == FileIntegrityStatus.InvalidHash

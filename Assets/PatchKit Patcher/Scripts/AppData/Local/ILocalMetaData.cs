@@ -17,8 +17,7 @@
         /// <param name="entryName">Name of the entry.</param>
         /// <param name="versionId">The version id.</param>
         /// <param name="entrySize">Size of entry.</param>
-        /// <param name="isLastEntry">If set to true, it is last entry.</param>
-        void RegisterEntry(string entryName, int versionId, long entrySize, bool isLastEntry);
+        void RegisterEntry(string entryName, int versionId, long? entrySize);
 
         /// <summary>
         /// Unregisters the entry.
@@ -52,5 +51,7 @@
         string GetMainExecutable();
 
         string MainExecutableArgs { get; }
+        
+        void SaveData();
     }
 }

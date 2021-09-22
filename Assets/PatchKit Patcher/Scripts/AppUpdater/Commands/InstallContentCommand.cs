@@ -153,7 +153,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         }
                         else
                         {
-                            InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
+                            InstallFile(sourceFile, cancellationToken);
                         }
                     }
                     else
@@ -164,6 +164,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
                     _copyFilesStatus.Description.Value = string.Format("Installing ({0}/{1})...", i + 1, _versionContentSummary.Files.Length);
                 }
+
+                _localMetaData.SaveData();
 
                 _copyFilesStatus.Progress.Value = 1.0;
                 _copyFilesStatus.IsActive.Value = false;
@@ -186,7 +188,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
-        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken, bool isLastEntry)
+        private void InstallFile(SourceFile sourceFile, CancellationToken cancellationToken)
         {
             DebugLogger.Log(string.Format("Installing file {0}", sourceFile.Name));
 
@@ -211,7 +213,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 #endif
             FileOperations.Move(sourceFile.FullHashPath, destinationFilePath, cancellationToken);
-            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size, isLastEntry);
+            _localMetaData.RegisterEntry(sourceFile.Name, _versionId, sourceFile.Size);
             }
 
         struct SourceFile
