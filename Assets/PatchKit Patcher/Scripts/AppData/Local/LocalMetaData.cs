@@ -21,8 +21,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
     {
         private readonly ILogger _logger;
         private long _unsavedEntriesSize = 0;
+        private int _unsavedEntriesCount = 0;
         private const string DeprecatedCachePatchKitKey = "patchkit-key";
         private const long UnsavedEntriesSizeLimit = 104857600; //100MiB
+        private const long UnsavedEntriesCountLimit = 100;
 
         /// <summary>
         /// Data structure stored in file.
@@ -81,7 +83,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return _data.FileVersionIds.Select(pair => pair.Key).ToArray();
         }
 
-        public void RegisterEntry([NotNull] string entryName, int versionId, long entrySize)
+        public void RegisterEntry([NotNull] string entryName, int versionId, long? entrySize)
         {
             if (entryName == null)
             {
@@ -102,9 +104,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             try
             {
                 _logger.LogDebug(string.Format("Registering entry {0} as version {1}.", entryName, versionId));
-
                 _data.FileVersionIds[entryName] = versionId;
-                _unsavedEntriesSize += entrySize;
+     
                 if (ShouldSaveEntry(entrySize))
                 {
                     SaveData();
@@ -119,12 +120,24 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
         }
 
-        private bool ShouldSaveEntry(long entrySize)
+        private bool ShouldSaveEntry(long? entrySize)
         {
-            if (_unsavedEntriesSize > UnsavedEntriesSizeLimit)
+            if (entrySize.HasValue)
             {
-                return true;
+                _unsavedEntriesSize += entrySize.Value;
+                if (_unsavedEntriesSize > UnsavedEntriesSizeLimit)
+                {
+                    return true;
+                }
             }
+            else
+            {
+                if (++_unsavedEntriesCount > UnsavedEntriesCountLimit)
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -194,7 +207,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             return _data.ProductKey;
         }
-        
+
         public void SetMainExecutableAndArgs(string mainExecutable, string mainExecutableArgs)
         {
             if (_data.MainExecutable != mainExecutable ||
@@ -230,6 +243,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             _logger.LogDebug(string.Format("Saving data to {0}", _filePath));
             _unsavedEntriesSize = 0;
+            _unsavedEntriesCount = 0;
             CreateDataDir();
             Files.WriteAllText(_filePath, JsonConvert.SerializeObject(_data, Formatting.None));
 

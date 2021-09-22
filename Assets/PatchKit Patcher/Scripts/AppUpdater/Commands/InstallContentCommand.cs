@@ -165,6 +165,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     _copyFilesStatus.Description.Value = string.Format("Installing ({0}/{1})...", i + 1, _versionContentSummary.Files.Length);
                 }
 
+                _localMetaData.SaveData();
+
                 _copyFilesStatus.Progress.Value = 1.0;
                 _copyFilesStatus.IsActive.Value = false;
             });
