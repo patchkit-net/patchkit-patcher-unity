@@ -16,6 +16,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(CheckVersionIntegrityCommand));
 
+        private const int MaxThreadCount = 16;
         private readonly int _versionId;
         private readonly AppContentSummary _versionSummary;
         private readonly ILocalDirectory _localDirectory;
@@ -24,7 +25,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private OperationStatus _status;
         private volatile bool _isCheckingHash;
         private volatile bool _isCheckingSize;
-        private volatile int _space;
+        private volatile int _currentThreadCount;
 
         public CheckVersionIntegrityCommand(int versionId, AppContentSummary versionSummary,
             ILocalDirectory localDirectory, ILocalMetaData localMetaData, bool isCheckingHash, bool isCheckingSize)
@@ -106,7 +107,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status.IsActive.Value = true;
 
             files = new FileIntegrity[_versionSummary.Files.Length];
-            int i = 0;
+            int fileIndex = 0;
             foreach (var file in _versionSummary.Files)
             {
                 while (true)
@@ -114,10 +115,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     int tmp;
                     lock (this)
                     {
-                        tmp = _space;
+                        tmp = _currentThreadCount;
                     }
 
-                    if (tmp < 16)
+                    if (tmp < MaxThreadCount)
                     {
                         break;
                     }
@@ -127,11 +128,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 lock (this)
                 {
-                    _space++;
+                    _currentThreadCount++;
                 }
 
                 var fileInThread = file;
-                var number = i;
+                var threadFileIndex = fileIndex;
                 ThreadPool.QueueUserWorkItem(state =>
                 {
                     try
@@ -139,7 +140,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         var fileIntegrity = CheckFile(fileInThread);
                         lock (this)
                         {
-                            files[number] = fileIntegrity;
+                            files[threadFileIndex] = fileIntegrity;
                         }
                     }
                     catch (Exception e)
@@ -151,20 +152,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     {
                         lock (this)
                         {
-                            _space--;
+                            _currentThreadCount--;
                         }
                     }
                 });
 
-                _status.Progress.Value = (i + 1) / (double) _versionSummary.Files.Length;
-                i++;
+                _status.Progress.Value = (fileIndex + 1) / (double) _versionSummary.Files.Length;
+                fileIndex++;
             }
 
             while (true)
             {
                 lock (this)
                 {
-                    if (_space == 0)
+                    if (_currentThreadCount == 0)
                     {
                         break;
                     }
