@@ -27,6 +27,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private bool _updateHasBeenCalled;
         private bool _uninstallHasBeenCalled;
         private bool _verifyFilesHasBeenCalled;
+        private VersionIntegrity _versionIntegrity;
 
         public IReadOnlyUpdaterStatus Status
         {
@@ -47,6 +48,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             var appRepairer = new AppRepairer(Context, _status);
             appRepairer.Perform(cancellationToken);
+            _versionIntegrity = appRepairer.VersionIntegrity;
         }
 
         public void Update(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)
@@ -60,7 +62,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             DebugLogger.Log("Updating.");
 
-            StrategyType type = _strategyResolver.Resolve(Context, cancellationToken);
+            StrategyType type = _strategyResolver.Resolve(Context, _versionIntegrity, cancellationToken);
             _strategy = _strategyResolver.Create(type, Context);
 
             try

@@ -59,7 +59,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             }
         }
 
-        public StrategyType Resolve([NotNull] AppUpdaterContext context, CancellationToken cancellationToken)
+        public StrategyType Resolve([NotNull] AppUpdaterContext context, VersionIntegrity versionIntegrity, CancellationToken cancellationToken)
         {
             if (context == null)
             {
@@ -129,7 +129,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                             {
                                 _logger.LogDebug("Checking consitency before allowing diff update...");
 
-                                if (!IsVersionIntegral(contentSize, context, cancellationToken))
+                                if (!IsVersionIntegral(contentSize, versionIntegrity, context, cancellationToken))
                                 {
                                     if (IsRepairPossible(context, cancellationToken))
                                     {
@@ -195,7 +195,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             return versionId + 1 < lowestVersionWithDiffId;
         }
 
-        private bool IsVersionIntegral(long contentSize, AppUpdaterContext context, CancellationToken cancellationToken)
+        private bool IsVersionIntegral(long contentSize, VersionIntegrity versionIntegrity, AppUpdaterContext context, CancellationToken cancellationToken)
         {
             var commandFactory = new AppUpdaterCommandFactory();
             int installedVersionId = context.App.GetInstalledVersionId();
@@ -205,18 +205,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             bool isCheckingHash = contentSize < context.Configuration.HashSizeThreshold;
             _logger.LogTrace("isCheckingHash = " + isCheckingHash);
 
-            var checkVersionIntegrity = commandFactory.CreateCheckVersionIntegrityCommand(
-                installedVersionId, context, isCheckingHash, true, cancellationToken);
-
-            checkVersionIntegrity.Prepare(_status, cancellationToken);
-            checkVersionIntegrity.Execute(CancellationToken.Empty);
-
-            bool isValid = checkVersionIntegrity.Results.Files.All(
+            bool isValid = versionIntegrity.Files.All(
                 fileIntegrity => fileIntegrity.Status == FileIntegrityStatus.Ok);
 
             if (!isValid)
             {
-                foreach (var fileIntegrity in checkVersionIntegrity.Results.Files)
+                foreach (var fileIntegrity in versionIntegrity.Files)
                 {
                     if (fileIntegrity.Status != FileIntegrityStatus.Ok)
                     {

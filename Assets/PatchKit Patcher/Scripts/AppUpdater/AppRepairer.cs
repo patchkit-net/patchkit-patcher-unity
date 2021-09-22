@@ -14,6 +14,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         public readonly AppUpdaterContext Context;
 
+        public VersionIntegrity VersionIntegrity;
+
         // set to true if you wish to check file hashes
         public bool CheckHashes = false;
 
@@ -60,8 +62,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             // retry count reached, let's check for the last time if data is ok, but without repairing
             int installedVersionId = Context.App.GetInstalledVersionId();
-            VersionIntegrity results = CheckIntegrity(cancellationToken, installedVersionId);
-            var filesNeedFixing = FilesNeedFixing(results);
+            VersionIntegrity = CheckIntegrity(cancellationToken, installedVersionId);
+            var filesNeedFixing = FilesNeedFixing(VersionIntegrity);
 
             if (filesNeedFixing.Count() == 0)
             {
@@ -79,8 +81,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             int installedVersionId = Context.App.GetInstalledVersionId();
 
-            VersionIntegrity results = CheckIntegrity(cancellationToken, installedVersionId);
-            var filesNeedFixing = FilesNeedFixing(results);
+            VersionIntegrity = CheckIntegrity(cancellationToken, installedVersionId);
+            var filesNeedFixing = FilesNeedFixing(VersionIntegrity);
 
             if (filesNeedFixing.Count() == 0)
             {
