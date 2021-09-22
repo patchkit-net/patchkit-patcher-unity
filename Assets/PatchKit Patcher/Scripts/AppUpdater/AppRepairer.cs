@@ -29,8 +29,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private int _lowestVersionWithContentId;
 
         private const double IncreaseRepairCost = 1.5d;
-        private const long PACK1_BLOCK_SIZE = 524288;
-
 
         public AppRepairer(AppUpdaterContext context, UpdaterStatus status)
         {
