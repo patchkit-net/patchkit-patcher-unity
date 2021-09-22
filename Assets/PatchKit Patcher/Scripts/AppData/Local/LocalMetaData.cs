@@ -130,12 +130,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     return true;
                 }
             }
-            else
+
+            if (++_unsavedEntriesCount > UnsavedEntriesCountLimit)
             {
-                if (++_unsavedEntriesCount > UnsavedEntriesCountLimit)
-                {
-                    return true;
-                }
+                return true;
             }
 
             return false;

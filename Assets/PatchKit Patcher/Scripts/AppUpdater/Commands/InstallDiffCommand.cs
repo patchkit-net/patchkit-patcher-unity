@@ -593,10 +593,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     fileName, _versionId - 1, fileVersion));
             }
 
-            _logger.LogDebug("Checking whether patching file content is necessary...");
-
-            _logger.LogDebug("Patching is necessary. Generating new file with patched content...");
-
             string nameHash;
             if (_mapHashExtractedFiles.TryGetHash(fileName, out nameHash))
             {
