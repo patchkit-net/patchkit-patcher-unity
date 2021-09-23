@@ -32,6 +32,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private const double IncreaseRepairCost = 1.5d;
 
+        private string[] _brokenFiles;
+
+
         public AppRepairer(AppUpdaterContext context, UpdaterStatus status)
         {
             DebugLogger.LogConstructor();
@@ -40,6 +43,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             Context = context;
             _status = status;
+
+            _strategyResolver = new AppUpdaterStrategyResolver(_status);
+            _commandFactory = new AppUpdaterCommandFactory();
+        }
+        
+        public AppRepairer(AppUpdaterContext context, UpdaterStatus status, string[] brokenFiles)
+        {
+            DebugLogger.LogConstructor();
+
+            Checks.ArgumentNotNull(context, "context");
+
+            Context = context;
+            _status = status;
+            _brokenFiles = brokenFiles;
 
             _strategyResolver = new AppUpdaterStrategyResolver(_status);
             _commandFactory = new AppUpdaterCommandFactory();
@@ -62,8 +79,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             // retry count reached, let's check for the last time if data is ok, but without repairing
             int installedVersionId = Context.App.GetInstalledVersionId();
-            VersionIntegrity = CheckIntegrity(cancellationToken, installedVersionId);
-            var filesNeedFixing = FilesNeedFixing(VersionIntegrity);
+            VersionIntegrity results = CheckIntegrity(cancellationToken, installedVersionId);
+            var filesNeedFixing = FilesNeedFixing(results);
 
             if (filesNeedFixing.Count() == 0)
             {
@@ -81,15 +98,23 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         {
             int installedVersionId = Context.App.GetInstalledVersionId();
 
-            VersionIntegrity = CheckIntegrity(cancellationToken, installedVersionId);
-            var filesNeedFixing = FilesNeedFixing(VersionIntegrity);
-
-            if (filesNeedFixing.Count() == 0)
+            if (_brokenFiles == null)
             {
-                DebugLogger.Log("No missing or invalid size files.");
-                return true;
+                VersionIntegrity = CheckIntegrity(cancellationToken, installedVersionId);
+            }
+            else
+            {
+                VersionIntegrity = new CheckVersionIntegrityCommand(_brokenFiles).Results;
             }
 
+            var filesNeedFixing = FilesNeedFixing(VersionIntegrity);
+
+                if (filesNeedFixing.Count() == 0)
+                {
+                    DebugLogger.Log("No missing or invalid size files.");
+                    return true;
+                }
+                
             // need to collect some data about the application to calculate the repair cost and make decisions
             
             int latestVersionId = Context.App.GetLatestVersionId(true, cancellationToken);
@@ -126,7 +151,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             else if (repairCost < contentSize)
             {
                 DebugLogger.Log(string.Format("Repair cost {0} is smaller than content cost {1}, repairing...", repairCost, contentSize));
-                IAppUpdaterStrategy repairStrategy = _strategyResolver.Create(StrategyType.Repair, Context);
+                IAppUpdaterStrategy repairStrategy = new AppUpdaterRepairStrategy(Context, _status, VersionIntegrity);
                 repairStrategy.Update(cancellationToken);
             }
             else

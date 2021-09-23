@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.10.0]
+### Added
+- Caching for diff and content app summary
+- Restriction of hash repair for a large number of files
+- Reduced number of events sent for version integration check
+- Retries to install files during diff
+- Caching of broken files during diff and a subsequent attempt to repair these files. 
+
+### Changed
+- Repair cost and decision
+
+### Fixed
+- The retry button resumes the update
+
+### Removed
+- Check version for diff
+- Processing of contnet summary files during diff
+
+### Fixed
+- The retry button resumes the update
+
 ## [3.17.9.0]
 ### Added
 - Support HDPI for debug menu

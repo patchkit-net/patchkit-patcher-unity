@@ -31,6 +31,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private Pack1Meta.FileEntry[] _entries;
 
         private ILocalDirectory _localData;
+        private readonly ILocalMetaData _localMetaData;
+        private readonly int _versionId;
 
         private string _packagePath;
         private string _packagePassword;
@@ -48,7 +50,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             Pack1Meta.FileEntry[] fileEntries,
             string destinationPackagePath,
             string packagePassword,
-            ILocalDirectory localData)
+            ILocalDirectory localData,
+            ILocalMetaData localMetaData,
+            int versionId)
         {
             _resource = resource;
             _meta = meta;
@@ -58,6 +62,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _packagePassword = packagePassword;
 
             _localData = localData;
+            _localMetaData = localMetaData;
+            _versionId = versionId;
 
             _logger = PatcherLogManager.DefaultLogger;
         }
@@ -131,6 +137,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     {
                         EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
                             Path.Combine(_localData.Path, entry.Name), cancellationToken);
+                        _localMetaData.RegisterEntry(entry.Name, _versionId, entry.Size.Value);
                     }
                     else
                     {
@@ -140,6 +147,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     repairStatus.IsActive.Value = false;
                 });
             }
+            
+            _localMetaData.SaveData();
         }
 
         public override void Prepare(UpdaterStatus status, CancellationToken cancellationToken)

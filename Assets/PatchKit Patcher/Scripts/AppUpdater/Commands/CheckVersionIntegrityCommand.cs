@@ -42,6 +42,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _isCheckingSize = isCheckingSize;
             _isCheckingHash = isCheckingHash;
         }
+        
+        public CheckVersionIntegrityCommand(string[] brokenFiles)
+        {
+            Results = new VersionIntegrity(brokenFiles.Select(file =>
+                new FileIntegrity(file, FileIntegrityStatus.MissingData)).ToArray());
+        }
 
         public override void Prepare(UpdaterStatus status, CancellationToken cancellationToken)
         {
@@ -135,12 +141,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             string localPath = _localDirectory.Path.PathCombine(file.Path);
             if (!File.Exists(localPath))
             {
+                DebugLogger.LogWarning("File " + localPath + " not exist");
                 onVerificationFailed();
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingData);
             }
 
             if (!_localMetaData.IsEntryRegistered(file.Path))
             {
+                DebugLogger.LogWarning("File " + file.Path + " is not entry registered");
                 onVerificationFailed();
                 return new FileIntegrity(file.Path, FileIntegrityStatus.MissingMetaData);
             }
@@ -148,6 +156,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             int actualVersionId = _localMetaData.GetEntryVersionId(file.Path);
             if (actualVersionId != _versionId)
             {
+                DebugLogger.LogWarning("File " + file.Path + " version is " + actualVersionId + ", expected " + _versionId);
                 onVerificationFailed();
                 return FileIntegrity.InvalidVersion(_versionId, actualVersionId, file.Path);
             }
@@ -157,6 +166,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 long actualSize = new FileInfo(localPath).Length;
                 if (actualSize != file.Size)
                 {
+                    DebugLogger.LogWarning("File " + localPath + " size is " + actualSize + ", expected " + file.Size);
                     onVerificationFailed();
                     return FileIntegrity.InvalidSize(file.Size, actualSize, file.Path);
                 }
@@ -167,6 +177,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 string actualFileHash = HashCalculator.ComputeFileHash(localPath);
                 if (actualFileHash != file.Hash)
                 {
+                    DebugLogger.LogWarning("File " + localPath + " hash is " + actualFileHash + ", expected " + file.Hash);
+
                     onVerificationFailed();
                     return FileIntegrity.InvalidHash(file.Hash, actualFileHash, file.Path);
                 }

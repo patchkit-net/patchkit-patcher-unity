@@ -20,6 +20,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     public class InstallDiffCommand : BaseAppUpdaterCommand, IInstallDiffCommand
     {
         private const string Suffix = "_"; // FIX: Bug #714
+        private const long EntriesSize = 1048576; //1MiB
+        private const int Whenever = 100;
+        private const int Ratio = 10;
+        private int _checkNumber = 100;
         private readonly ILogger _logger;
 
         private readonly string _packagePath;
@@ -40,6 +44,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private AppDiffSummary _diffSummary;
         private Pack1Meta _pack1Meta;
         private MapHashExtractedFiles _mapHashExtractedFiles;
+        private List<string> _brokenFiles = new List<string>();
 
         public InstallDiffCommand([NotNull] string packagePath, string packageMetaPath, string packagePassword,
             int versionId,
@@ -343,7 +348,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 counter++;
                 _removeFilesStatusReporter.Progress.Value = counter / (double) _diffSummary.RemovedFiles.Length;
-                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter, _diffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter,
+                    _diffSummary.RemovedFiles.Length);
             }
 
             foreach (var dirName in dirNames)
@@ -354,7 +360,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 counter++;
                 _removeFilesStatusReporter.Progress.Value = counter / (double) _diffSummary.RemovedFiles.Length;
-                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter, _diffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter,
+                    _diffSummary.RemovedFiles.Length);
             }
 
             _removeFilesStatusReporter.Progress.Value = 1.0;
@@ -435,21 +442,41 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             for (int i = 0; i < _diffSummary.AddedFiles.Length; i++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var entryName = _diffSummary.AddedFiles[i];
-
-                if (entryName.EndsWith("/"))
+                try
                 {
-                    AddDirectory(entryName, cancellationToken);
-                }
-                else
-                {
-                    AddFile(entryName, packageDirPath, suffix, cancellationToken, i);
-                }
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                _addFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.AddedFiles.Length;
-                _addFilesStatusReporter.Description.Value = string.Format("Adding new files ({0}/{1})...", i + 1, _diffSummary.AddedFiles.Length);
+                    var entryName = _diffSummary.AddedFiles[i];
+
+                    if (entryName.EndsWith("/"))
+                    {
+                        AddDirectory(entryName, cancellationToken);
+                    }
+                    else
+                    {
+                        RetryStrategy.TryExecute(() => AddFile(entryName, packageDirPath, suffix, cancellationToken),
+                            cancellationToken);
+                    }
+
+                    _addFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.AddedFiles.Length;
+                    _addFilesStatusReporter.Description.Value = string.Format("Adding new files ({0}/{1})...", i + 1,
+                        _diffSummary.AddedFiles.Length);
+                }
+                catch (Exception e)
+                {
+                    string brokenFile = _diffSummary.AddedFiles[i];
+                    _logger.LogWarning("Broken file during modifying: " + brokenFile + " Exception: " + e);
+                    _brokenFiles.Add(brokenFile);
+                    int brokenFilesCount = _brokenFiles.Count;
+                    if (brokenFilesCount > _checkNumber)
+                    {
+                        _checkNumber += Whenever;
+                        if (brokenFilesCount > (i - brokenFilesCount) * Ratio)
+                        {
+                            throw;
+                        }
+                    }
+                }
             }
 
             _localMetaData.SaveData();
@@ -474,8 +501,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Add directory entry processed.");
         }
 
-        private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken,
-            int fileIndex)
+        private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Processing add file entry {0}", fileName));
 
@@ -536,18 +562,38 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 .ToArray();
             for (int i = 0; i < entryNames.Length; i++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var entryName = entryNames[i];
-
-                if (!entryName.EndsWith("/"))
+                try
                 {
-                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken, i);
-                }
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) entryNames.Length;
-                _modifiedFilesStatusReporter.Description.Value =
-                    string.Format("Applying diffs ({0}/{1})...", i + 1, entryNames.Length);
+                    var entryName = entryNames[i];
+
+                    if (!entryName.EndsWith("/"))
+                    {
+                        RetryStrategy.TryExecute(
+                            () => PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken, i),
+                            cancellationToken);
+                    }
+
+                    _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) entryName.Length;
+                    _modifiedFilesStatusReporter.Description.Value =
+                        string.Format("Applying diffs ({0}/{1})...", i + 1, entryName.Length);
+                }
+                catch (Exception e)
+                {
+                    string brokenFile = entryNames[i];
+                    _logger.LogWarning("Broken file during modifying: " + brokenFile + " Exception: " + e);
+                    _brokenFiles.Add(brokenFile);
+                    int brokenFilesCount = _brokenFiles.Count;
+                    if (brokenFilesCount > _checkNumber)
+                    {
+                        _checkNumber += Whenever;
+                        if (brokenFilesCount > (i - brokenFilesCount) * Ratio)
+                        {
+                            throw;
+                        }
+                    }
+                }
             }
 
             _localMetaData.SaveData();
@@ -661,6 +707,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return Directory.Exists(dirPath) &&
                    dirPath.EndsWith(".app") &&
                    Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0;
+        }
+
+        public string[] GetBrokenFiles()
+        {
+            return _brokenFiles.ToArray();
         }
     }
 }

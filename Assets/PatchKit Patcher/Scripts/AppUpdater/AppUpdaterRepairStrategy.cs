@@ -21,6 +21,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private readonly UpdaterStatus _status;
 
         private readonly ILogger _logger;
+        private VersionIntegrity _versionIntegrity;
 
         // not used
         public bool RepairOnError { get; set; }
@@ -31,6 +32,17 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             _context = context;
             _status = status;
+
+            _logger = PatcherLogManager.DefaultLogger;
+        }
+        
+        public AppUpdaterRepairStrategy(AppUpdaterContext context, UpdaterStatus status, VersionIntegrity versionIntegrity)
+        {
+            Assert.IsNotNull(context, "Context is null");
+
+            _context = context;
+            _status = status;
+            _versionIntegrity = versionIntegrity;
 
             _logger = PatcherLogManager.DefaultLogger;
         }
@@ -72,15 +84,20 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             var downloader = new HttpDownloader(metaDestination, resource.GetMetaUrls());
             downloader.Download(cancellationToken);
 
-            ICheckVersionIntegrityCommand checkVersionIntegrityCommand
-                = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context, true, true, cancellationToken);
+            if (_versionIntegrity == null)
+            {
+                ICheckVersionIntegrityCommand checkVersionIntegrityCommand
+                    = commandFactory.CreateCheckVersionIntegrityCommand(installedVersionId, _context, true, true,
+                        cancellationToken);
 
-            checkVersionIntegrityCommand.Prepare(_status, cancellationToken);
-            checkVersionIntegrityCommand.Execute(cancellationToken);
+                checkVersionIntegrityCommand.Prepare(_status, cancellationToken);
+                checkVersionIntegrityCommand.Execute(cancellationToken);
+                _versionIntegrity = checkVersionIntegrityCommand.Results;
+            }
 
             var meta = Pack1Meta.ParseFromFile(metaDestination);
 
-            FileIntegrity[] filesIntegrity = checkVersionIntegrityCommand.Results.Files;
+            FileIntegrity[] filesIntegrity = _versionIntegrity.Files;
 
             var contentSummary = _context.App.RemoteMetaData.GetContentSummary(installedVersionId, cancellationToken);
 
@@ -110,9 +127,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             _context.App.LocalMetaData.SaveData();
             Pack1Meta.FileEntry[] brokenFiles = filesIntegrity
                 // Filter only files with invalid size, hash or missing entirely
-                .Where(f => f.Status == FileIntegrityStatus.InvalidHash
-                         || f.Status == FileIntegrityStatus.InvalidSize
-                         || f.Status == FileIntegrityStatus.MissingData)
+                .Where(f => f.Status != FileIntegrityStatus.Ok)
                 // Map to file entires from meta
                 .Select(integrity => meta.Files.SingleOrDefault(file => file.Name == integrity.FileName))
                 // Filter only regular files

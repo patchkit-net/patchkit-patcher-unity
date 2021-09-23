@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -114,7 +117,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
                 try
                 {
-                    
                     PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadStarted, optionalParams);
                     diffCommands.Download.Command.Execute(cancellationToken);
                     PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadSucceeded, optionalParams);
@@ -129,8 +131,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                     PatcherStatistics.DispatchSendEvent(PatcherStatistics.Event.PatchDownloadFailed, optionalParams);
                     throw;
                 }
-
+                
                 diffCommands.Install.Execute(cancellationToken);
+
+                var brokenFiles = diffCommands.Install.GetBrokenFiles();
+                if (brokenFiles.Length == 0)
+                {
+                    DebugLogger.Log("Nothing to repair.");
+                    break;
+                }
+                DebugLogger.Log(string.Format("Broken files count: {0}", brokenFiles.Length));
+
+                AppRepairer appRepairer = new AppRepairer(_context, _status, brokenFiles);
+                if (!appRepairer.Perform(cancellationToken))
+                {
+                    throw new CannotRepairDiskFilesException("Failed to validate/repair disk files");
+                }
             }
 
             _context.App.DownloadDirectory.Clear();
