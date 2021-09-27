@@ -9,6 +9,12 @@
         public const string KeysUrlEnvironmentVariable = "PK_PATCHER_KEYS_URL";
         public const string KeepFilesOnErrorEnvironmentVariable = "PK_PATCHER_KEEP_FILES_ON_ERROR";
 
+        public const string NumberOfFilesToCrashWhenAddingDiffEnvironmentVariable =
+            "PK_PATCHER_NUMBER_OF_FILES_TO_CRASH_WHEN_ADDING_DIFF";
+
+        public const string NumberOfFilesToCrashWhenModifyingDiffEnvironmentVariable =
+            "PK_PATCHER_NUMBER_OF_FILES_TO_CRASH_WHEN_MODIFYING_DIFF";
+        
         // will corrupt every 10th file
         public const string CorruptFilesOnUnpack10 = "PK_PATCHER_CORRUPT_UNPACK_10";
 

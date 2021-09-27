@@ -45,6 +45,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private Pack1Meta _pack1Meta;
         private MapHashExtractedFiles _mapHashExtractedFiles;
         private List<string> _brokenFiles = new List<string>();
+        private int _numberOfFilesToCrashWhenModifyingDiffEnvironmentVariable;
+        private int _numberOfFilesToCrashWhenAddingDiffEnvironmentVariable;
 
         public InstallDiffCommand([NotNull] string packagePath, string packageMetaPath, string packagePassword,
             int versionId,
@@ -139,6 +141,25 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 status.RegisterOperation(_removeFilesStatusReporter);
 
                 _logger.LogDebug("Diff installation prepared.");
+
+                string tmp;
+                if (EnvironmentInfo.TryReadEnvironmentVariable(
+                    EnvironmentVariables.NumberOfFilesToCrashWhenModifyingDiffEnvironmentVariable,
+                    out tmp))
+                {
+                    if (int.TryParse(tmp, out _numberOfFilesToCrashWhenModifyingDiffEnvironmentVariable))
+                    {
+                        _logger.LogDebug(string.Format("Number of files to crash when modifying diff {0}", _numberOfFilesToCrashWhenModifyingDiffEnvironmentVariable));
+                    }
+                }
+
+                if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.NumberOfFilesToCrashWhenAddingDiffEnvironmentVariable, out tmp))
+                {
+                    if (int.TryParse(tmp, out _numberOfFilesToCrashWhenAddingDiffEnvironmentVariable))
+                    {
+                        _logger.LogDebug(string.Format("Number of files to crash when adding diff {0}", _numberOfFilesToCrashWhenAddingDiffEnvironmentVariable));
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -448,6 +469,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     var entryName = _diffSummary.AddedFiles[i];
 
+                    if (i < _numberOfFilesToCrashWhenAddingDiffEnvironmentVariable)
+                        throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package. Controlled crash.",
+                            entryName));
+
                     if (entryName.EndsWith("/"))
                     {
                         AddDirectory(entryName, cancellationToken);
@@ -465,7 +490,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 catch (Exception e)
                 {
                     string brokenFile = _diffSummary.AddedFiles[i];
-                    _logger.LogWarning("Broken file during modifying: " + brokenFile + " Exception: " + e);
+                    _logger.LogWarning("Broken file during adding: " + brokenFile + " Exception: " + e);
                     _brokenFiles.Add(brokenFile);
                     int brokenFilesCount = _brokenFiles.Count;
                     if (brokenFilesCount > _checkNumber)
@@ -568,6 +593,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     var entryName = entryNames[i];
 
+                    if (i < _numberOfFilesToCrashWhenModifyingDiffEnvironmentVariable)
+                        throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package. Controlled crash.",
+                            entryName));
+                    
                     if (!entryName.EndsWith("/"))
                     {
                         RetryStrategy.TryExecute(
