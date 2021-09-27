@@ -12,8 +12,8 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(RetryStrategy));
 
-        public const int DefaultTryCount = 10;
-        public const int DefaultDelayMsec = 500;
+        public const int DefaultTryCount = 5;
+        public const int DefaultDelayMsec = 10;
 
         private readonly int _tryCount;
         private int _currentTry = 0;

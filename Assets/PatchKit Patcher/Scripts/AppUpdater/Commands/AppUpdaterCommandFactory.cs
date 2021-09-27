@@ -44,7 +44,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             var packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
             var packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
 
-            return new RepairFilesCommand(resource, meta, brokenFiles, packagePath, packagePassword, context.App.LocalDirectory);
+            return new RepairFilesCommand(resource, meta, brokenFiles, packagePath, packagePassword, context.App.LocalDirectory, context.App.LocalMetaData, versionId);
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)

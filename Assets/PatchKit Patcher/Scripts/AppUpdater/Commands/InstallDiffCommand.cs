@@ -20,6 +20,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     public class InstallDiffCommand : BaseAppUpdaterCommand, IInstallDiffCommand
     {
         private const string Suffix = "_"; // FIX: Bug #714
+        private const long EntriesSize = 1048576; //1MiB
+        private const int Whenever = 100;
+        private const int Ratio = 10;
+        private int _checkNumber = 100;
         private readonly ILogger _logger;
 
         private readonly string _packagePath;
@@ -40,6 +44,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private AppDiffSummary _diffSummary;
         private Pack1Meta _pack1Meta;
         private MapHashExtractedFiles _mapHashExtractedFiles;
+        private List<string> _brokenFiles = new List<string>();
+        private int _numberOfFilesToCrashWhenModifyingDiffEnvironmentVariable;
+        private int _numberOfFilesToCrashWhenAddingDiffEnvironmentVariable;
 
         public InstallDiffCommand([NotNull] string packagePath, string packageMetaPath, string packagePassword,
             int versionId,
@@ -134,6 +141,25 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 status.RegisterOperation(_removeFilesStatusReporter);
 
                 _logger.LogDebug("Diff installation prepared.");
+
+                string tmp;
+                if (EnvironmentInfo.TryReadEnvironmentVariable(
+                    EnvironmentVariables.NumberOfFilesToCrashWhenModifyingDiffEnvironmentVariable,
+                    out tmp))
+                {
+                    if (int.TryParse(tmp, out _numberOfFilesToCrashWhenModifyingDiffEnvironmentVariable))
+                    {
+                        _logger.LogDebug(string.Format("Number of files to crash when modifying diff {0}", _numberOfFilesToCrashWhenModifyingDiffEnvironmentVariable));
+                    }
+                }
+
+                if (EnvironmentInfo.TryReadEnvironmentVariable(EnvironmentVariables.NumberOfFilesToCrashWhenAddingDiffEnvironmentVariable, out tmp))
+                {
+                    if (int.TryParse(tmp, out _numberOfFilesToCrashWhenAddingDiffEnvironmentVariable))
+                    {
+                        _logger.LogDebug(string.Format("Number of files to crash when adding diff {0}", _numberOfFilesToCrashWhenAddingDiffEnvironmentVariable));
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -189,12 +215,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         ProcessRemovedFiles(cancellationToken);
                     }
 
-                    TemporaryDirectory.ExecuteIn(_packagePath + ".temp_diff_" + Path.GetRandomFileName(), (tempDiffDir) =>
-                    {
-                        _logger.LogTrace("tempDiffDir = " + tempDiffDir.Path);
+                    TemporaryDirectory.ExecuteIn(_packagePath + ".temp_diff_" + Path.GetRandomFileName(),
+                        (tempDiffDir) =>
+                        {
+                            _logger.LogTrace("tempDiffDir = " + tempDiffDir.Path);
 
-                        ProcessModifiedFiles(packageDir.Path, usedSuffix, tempDiffDir, cancellationToken);
-                    });
+                            ProcessModifiedFiles(packageDir.Path, usedSuffix, tempDiffDir, cancellationToken);
+                        });
 
                     DeleteEmptyMacAppDirectories(cancellationToken);
                 });
@@ -250,10 +277,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("pack1Meta.iv = " + _pack1Meta.Iv);
             _logger.LogTrace("pack1Meta.version = " + _pack1Meta.Version);
             _logger.LogTrace("pack1Meta.encryption = " + _pack1Meta.Encryption);
-            for (int i = 0; i < _pack1Meta.Files.Length; i++)
+
+            var filesMeta = _pack1Meta.Files;
+            List<Pack1Meta.FileEntry> fileEntries = new List<Pack1Meta.FileEntry>();
+            for (int i = 0; i < filesMeta.Length; i++)
             {
-                _logger.LogTrace(string.Format("pack1Meta.files[{0}] = {1}", i, _pack1Meta.Files[i]));
+                if (!_diffSummary.UnchangedFiles.Contains(filesMeta[i].Name))
+                {
+                    fileEntries.Add(filesMeta[i]);
+                    _logger.LogTrace(string.Format("pack1Meta.files[{0}] = {1}", i, _pack1Meta.Files[i]));
+                }
             }
+
+            _pack1Meta.Files = fileEntries.ToArray();
         }
 
         private void UnarchivePackage(string packageDirPath, out string usedSuffix, CancellationToken cancellationToken)
@@ -281,9 +317,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 var entryMinProgress = (entry - 1) / (double) amount;
                 var entryMaxProgress = entry / (double) amount;
 
-                _unarchivePackageStatusReporter.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
+                _unarchivePackageStatusReporter.Progress.Value =
+                    entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
 
-                _unarchivePackageStatusReporter.Description.Value = string.Format("Unarchiving package ({0}/{1})...", entry, amount);
+                _unarchivePackageStatusReporter.Description.Value =
+                    string.Format("Unarchiving package ({0}/{1})...", entry, amount);
             };
 
             unarchiver.Unarchive(cancellationToken);
@@ -303,7 +341,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     return new ZipUnarchiver(_packagePath, destinationDir, _mapHashExtractedFiles, _packagePassword);
                 case "pack1":
                     usedSuffix = Suffix;
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _mapHashExtractedFiles, _packagePassword, Suffix);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _mapHashExtractedFiles,
+                        _packagePassword, Suffix);
                 default:
                     throw new UnknownPackageCompressionModeException(string.Format("Unknown compression method: {0}",
                         _diffSummary.CompressionMethod));
@@ -330,7 +369,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 counter++;
                 _removeFilesStatusReporter.Progress.Value = counter / (double) _diffSummary.RemovedFiles.Length;
-                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter, _diffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter,
+                    _diffSummary.RemovedFiles.Length);
             }
 
             foreach (var dirName in dirNames)
@@ -341,7 +381,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 counter++;
                 _removeFilesStatusReporter.Progress.Value = counter / (double) _diffSummary.RemovedFiles.Length;
-                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter, _diffSummary.RemovedFiles.Length);
+                _removeFilesStatusReporter.Description.Value = string.Format("Removing old files ({0}/{1})...", counter,
+                    _diffSummary.RemovedFiles.Length);
             }
 
             _removeFilesStatusReporter.Progress.Value = 1.0;
@@ -422,22 +463,48 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             for (int i = 0; i < _diffSummary.AddedFiles.Length; i++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var entryName = _diffSummary.AddedFiles[i];
-
-                if (entryName.EndsWith("/"))
+                try
                 {
-                    AddDirectory(entryName, cancellationToken);
-                }
-                else
-                {
-                    AddFile(entryName, packageDirPath, suffix, cancellationToken, i);
-                }
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                _addFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.AddedFiles.Length;
-                _addFilesStatusReporter.Description.Value = string.Format("Adding new files ({0}/{1})...", i + 1, _diffSummary.AddedFiles.Length);
+                    var entryName = _diffSummary.AddedFiles[i];
+
+                    if (i < _numberOfFilesToCrashWhenAddingDiffEnvironmentVariable)
+                        throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package. Controlled crash.",
+                            entryName));
+
+                    if (entryName.EndsWith("/"))
+                    {
+                        AddDirectory(entryName, cancellationToken);
+                    }
+                    else
+                    {
+                        RetryStrategy.TryExecute(() => AddFile(entryName, packageDirPath, suffix, cancellationToken),
+                            cancellationToken);
+                    }
+
+                    _addFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.AddedFiles.Length;
+                    _addFilesStatusReporter.Description.Value = string.Format("Adding new files ({0}/{1})...", i + 1,
+                        _diffSummary.AddedFiles.Length);
+                }
+                catch (Exception e)
+                {
+                    string brokenFile = _diffSummary.AddedFiles[i];
+                    _logger.LogWarning("Broken file during adding: " + brokenFile + " Exception: " + e);
+                    _brokenFiles.Add(brokenFile);
+                    int brokenFilesCount = _brokenFiles.Count;
+                    if (brokenFilesCount > _checkNumber)
+                    {
+                        _checkNumber += Whenever;
+                        if (brokenFilesCount > (i - brokenFilesCount) * Ratio)
+                        {
+                            throw;
+                        }
+                    }
+                }
             }
+
+            _localMetaData.SaveData();
 
             _addFilesStatusReporter.Progress.Value = 1.0;
             _addFilesStatusReporter.IsActive.Value = false;
@@ -459,8 +526,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Add directory entry processed.");
         }
 
-        private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken,
-            int fileIndex)
+        private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken)
         {
             _logger.LogDebug(string.Format("Processing add file entry {0}", fileName));
 
@@ -469,7 +535,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 #if UNITY_STANDALONE_WIN
             if (filePath.Length > 259)
             {
-                throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", filePath)); 
+                throw new FilePathTooLongException(string.Format(
+                    "Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).",
+                    filePath));
             }
 #endif
             string nameHash;
@@ -483,7 +551,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package.",
                         fileName));
                 }
-                
+
                 _logger.LogDebug("Creating file parent directories in local data...");
                 var fileParentDirPath = Path.GetDirectoryName(filePath);
                 _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
@@ -496,9 +564,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
                 _logger.LogDebug("File copied to local data.");
 
-                _localMetaData.RegisterEntry(fileName, _versionId, 
-                    _contentSummary.Files.First(x => x.Path == fileName).Size, 
-                    fileIndex == _diffSummary.AddedFiles.Length - 1);
+                _localMetaData.RegisterEntry(fileName, _versionId,
+                    _contentSummary.Files.First(x => x.Path == fileName).Size);
 
                 _logger.LogDebug("Add file entry processed.");
             }
@@ -516,21 +583,59 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _modifiedFilesStatusReporter.IsActive.Value = true;
             _modifiedFilesStatusReporter.Description.Value = "Applying diffs...";
 
-            for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
+            var entryNames = _pack1Meta.Files.Select(f => f.Name).Where(f => _diffSummary.ModifiedFiles.Contains(f))
+                .ToArray();
+            for (int i = 0; i < entryNames.Length; i++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var entryName = _diffSummary.ModifiedFiles[i];
-
-                if (!entryName.EndsWith("/"))
+                try
                 {
-                    PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken, i);
-                }
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.ModifiedFiles.Length;
-                _modifiedFilesStatusReporter.Description.Value = string.Format("Applying diffs ({0}/{1})...", i + 1, _diffSummary.ModifiedFiles.Length);
+                    var entryName = entryNames[i];
+
+                    if (i < _numberOfFilesToCrashWhenModifyingDiffEnvironmentVariable)
+                        throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package. Controlled crash.",
+                            entryName));
+                    
+                    if (!entryName.EndsWith("/"))
+                    {
+                        RetryStrategy.TryExecute(
+                            () => PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken, i),
+                            cancellationToken);
+                    }
+
+                    _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) entryName.Length;
+                    _modifiedFilesStatusReporter.Description.Value =
+                        string.Format("Applying diffs ({0}/{1})...", i + 1, entryName.Length);
+                }
+                catch (Exception e)
+                {
+                    string brokenFile = entryNames[i];
+                    _logger.LogWarning("Broken file during modifying: " + brokenFile + " Exception: " + e);
+                    _brokenFiles.Add(brokenFile);
+                    int brokenFilesCount = _brokenFiles.Count;
+                    if (brokenFilesCount > _checkNumber)
+                    {
+                        _checkNumber += Whenever;
+                        if (brokenFilesCount > (i - brokenFilesCount) * Ratio)
+                        {
+                            throw;
+                        }
+                    }
+                }
             }
 
+            _localMetaData.SaveData();
+
+            _logger.LogDebug("Register entry for unchanged files.");
+            _modifiedFilesStatusReporter.Description.Value = "Applying diffs...";
+
+            foreach (string fileName in _diffSummary.UnchangedFiles)
+            {
+                _localMetaData.RegisterEntry(fileName, _versionId, null);
+            }
+
+            _localMetaData.SaveData();
             _modifiedFilesStatusReporter.Progress.Value = 1.0;
             _modifiedFilesStatusReporter.IsActive.Value = false;
 
@@ -563,67 +668,40 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     fileName, _versionId - 1, fileVersion));
             }
 
-            _logger.LogDebug("Checking whether patching file content is necessary...");
-            if (IsPatchingFileContentNecessary(fileName))
+            string nameHash;
+            if (_mapHashExtractedFiles.TryGetHash(fileName, out nameHash))
             {
-                _logger.LogDebug("Patching is necessary. Generating new file with patched content...");
+                var sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
+                _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
 
-                string nameHash;
-                if (_mapHashExtractedFiles.TryGetHash(fileName, out nameHash))
+                if (!File.Exists(sourceDeltaFilePath))
                 {
-                    var sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
-                    _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
-
-                    if (!File.Exists(sourceDeltaFilePath))
-                    {
-                        throw new MissingFileFromPackageException(string.Format(
-                            "Cannot find delta file {0} in diff package.",
-                            fileName));
-                    }
-
-                    var newFilePath = tempDiffDir.GetUniquePath();
-                    _logger.LogTrace("newFilePath = " + newFilePath);
-
-                    var filePatcher = new FilePatcher(filePath, sourceDeltaFilePath, newFilePath);
-                    filePatcher.Patch();
-
-                    _logger.LogDebug("New file generated. Deleting old file in local data...");
-                    FileOperations.Delete(filePath, cancellationToken);
-
-                    _logger.LogDebug("Old file deleted. Moving new file to local data...");
-                    FileOperations.Move(newFilePath, filePath, cancellationToken);
-
-                    _logger.LogDebug("New file moved.");
+                    throw new MissingFileFromPackageException(string.Format(
+                        "Cannot find delta file {0} in diff package.",
+                        fileName));
                 }
-                else
-                {
-                    throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", fileName));
-                }
+
+                var newFilePath = tempDiffDir.GetUniquePath();
+                _logger.LogTrace("newFilePath = " + newFilePath);
+
+                var filePatcher = new FilePatcher(filePath, sourceDeltaFilePath, newFilePath);
+                filePatcher.Patch();
+
+                _logger.LogDebug("New file generated. Deleting old file in local data...");
+                FileOperations.Delete(filePath, cancellationToken);
+
+                _logger.LogDebug("Old file deleted. Moving new file to local data...");
+                FileOperations.Move(newFilePath, filePath, cancellationToken);
+
+                _logger.LogDebug("New file moved.");
             }
             else
             {
-                _logger.LogDebug("Patching is not necessary. File content is the same as in previous version.");
+                throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", fileName));
             }
-            
-            _localMetaData.RegisterEntry(fileName, _versionId, 
-                _contentSummary.Files.First(x => x.Path == fileName).Size, 
-                fileIndex == _diffSummary.ModifiedFiles.Length - 1);
 
+            _localMetaData.RegisterEntry(fileName, _versionId, null);
             _logger.LogDebug("Patch file entry processed.");
-        }
-
-        private bool IsPatchingFileContentNecessary(string fileName)
-        {
-            if (_diffSummary.UnchangedFiles.Contains(fileName))
-            {
-                return false;
-            }
-
-            //TODO: Throw exceptions if file is not present in any of both content summaries
-            var fileHash = _contentSummary.Files.First(x => x.Path == fileName).Hash;
-            var previousFileHash = _previousContentSummary.Files.First(x => x.Path == fileName).Hash;
-
-            return fileHash != previousFileHash;
         }
 
         // TODO: Temporary solution for situation when .app directory is not deleted
@@ -658,6 +736,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return Directory.Exists(dirPath) &&
                    dirPath.EndsWith(".app") &&
                    Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0;
+        }
+
+        public string[] GetBrokenFiles()
+        {
+            return _brokenFiles.ToArray();
         }
     }
 }

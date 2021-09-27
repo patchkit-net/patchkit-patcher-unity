@@ -27,13 +27,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             _status.IsActive.Value = true;
             _status.IsIdle.Value = true;
-
+            DebugLogger.Log("Check Path Length Command Execute...");
             try
             {
-                string pathFile;
                 foreach (AppContentSummaryFile contentSummaryFile in _contentSummary.Value.Files)
                 {
-                    pathFile = Path.Combine(_localDirectoryPath, contentSummaryFile.Path);
+                    string pathFile = Path.Combine(_localDirectoryPath, contentSummaryFile.Path);
 
                     if (pathFile.Length > 259)
                     {
