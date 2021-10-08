@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Sending statistic events (#1625)
 
+## [3.17.10.0]
+### Changed
+- Improve speed of getting API data by caching it
+
+### Fixed
+- Retrying the failed operation from error dialog
+
 ## [3.17.9.0]
 ### Added
 - Support HDPI for debug menu
