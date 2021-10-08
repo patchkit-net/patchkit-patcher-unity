@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using PatchKit.Api;
 using PatchKit.Api.Models.Main;
@@ -16,6 +17,9 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         private readonly MainApiConnection _mainApiConnectionWithoutRetry;
         private readonly MainApiConnection _mainApiConnection;
         private readonly KeysApiConnection _keysApiConnection;
+
+        public Dictionary<int, AppContentSummary> _cacheAppContentSummary = new Dictionary<int, AppContentSummary>();
+        public Dictionary<int, AppDiffSummary> _cacheAppDiffSummary = new Dictionary<int, AppDiffSummary>();
 
         public RemoteMetaData([NotNull] string appSecret, [NotNull] IRequestTimeoutCalculator requestTimeoutCalculator)
         {
@@ -77,8 +81,16 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
         {
             Checks.ArgumentValidVersionId(versionId, "versionId");
             DebugLogger.Log(string.Format("Getting content summary of version with id {0}.", versionId));
+            AppContentSummary appContentSummary;
+            if (_cacheAppContentSummary.TryGetValue(versionId, out appContentSummary))
+            {
+                return appContentSummary;
+            }
 
-            return _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId, cancellationToken);
+            appContentSummary =
+                _mainApiConnection.GetAppVersionContentSummary(_appSecret, versionId, cancellationToken);
+            _cacheAppContentSummary.Add(versionId, appContentSummary);
+            return appContentSummary;
         }
 
         public AppDiffSummary GetDiffSummary(int versionId, CancellationToken cancellationToken)
@@ -86,7 +98,16 @@ namespace PatchKit.Unity.Patcher.AppData.Remote
             Checks.ArgumentValidVersionId(versionId, "versionId");
             DebugLogger.Log(string.Format("Getting diff summary of version with id {0}.", versionId));
 
-            return _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId, cancellationToken);
+            AppDiffSummary appDiffSummary;
+            if (_cacheAppDiffSummary.TryGetValue(versionId, out appDiffSummary))
+            {
+                return appDiffSummary;
+            }
+
+            appDiffSummary =
+                _mainApiConnection.GetAppVersionDiffSummary(_appSecret, versionId, cancellationToken);
+            _cacheAppDiffSummary.Add(versionId, appDiffSummary);
+            return appDiffSummary;
         }
 
         public string GetKeySecret(string key, string cachedKeySecret, CancellationToken cancellationToken)
