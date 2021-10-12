@@ -158,7 +158,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             return file.Offset >= _range.Start && file.Offset + file.Size <= _range.End;
         }
 
-        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, CancellationToken cancellationToken, bool isSingle, string destinationDirPath = null)
+        private void Unpack(Pack1Meta.FileEntry file, Action<double> progress, CancellationToken cancellationToken, bool canUseThreadPool, string destinationDirPath = null)
         {
             switch (file.Type)
             {
@@ -166,7 +166,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     try
                     {
                         progress(0.0);
-                        if (file.Size.Value < 524288 && !isSingle)
+                        if (file.Size.Value < 524288 && !canUseThreadPool)
                         {
                             ThreadingPool.ThreadingPoolExecute(cancellationToken,
                                 () => UnpackRegularFile(file, cancellationToken, destinationDirPath));
@@ -246,13 +246,13 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackRegularFile(Pack1Meta.FileEntry file, CancellationToken cancellationToken, string destinationDirPath = null)
         {
-            string nameUnPackFile;
+            string fileRealName;
             lock (_mapHashExtractedFiles)
             {
-                nameUnPackFile = _mapHashExtractedFiles.Add(file.Name) + _suffix;
+                fileRealName = _mapHashExtractedFiles.Add(file.Name) + _suffix;
             }
 
-            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath,  nameUnPackFile);
+            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath,  fileRealName);
 
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
