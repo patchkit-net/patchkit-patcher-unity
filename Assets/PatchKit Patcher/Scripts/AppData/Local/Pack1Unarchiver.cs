@@ -2,7 +2,6 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using Ionic.Zlib;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
