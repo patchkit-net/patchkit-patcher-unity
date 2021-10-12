@@ -41,8 +41,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         /// </summary>
         private readonly BytesRange _range;
 
-        private MapHashExtractedFiles _mapHashExtractedFiles;
-        private volatile int _space = 0;
+        private volatile MapHashExtractedFiles _mapHashExtractedFiles;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
@@ -125,19 +124,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
                 entry++;
             }
-            while (true)
-            {
-                lock (this)
-                {
-                    if (_space == 0)
-                    {
-                        break;
-                    }
-                    UnityEngine.Debug.Log(_space);
-                }
-                Thread.Sleep(1000);
-            }
 
+            ThreadingPool.WaitOne(cancellationToken);
             DebugLogger.Log("Unpacking finished succesfully!");
         }
 
@@ -151,18 +139,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
 
             Unpack(file, progress => OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 1, 1, progress), cancellationToken, true, destinationDirPath);
-            while (true)
-            {
-                lock (this)
-                {
-                    if (_space == 0)
-                    {
-                        break;
-                    }
-                    UnityEngine.Debug.Log(_space);
-                }
-                Thread.Sleep(1000);
-            }
+
             OnUnarchiveProgressChanged(file.Name, file.Type == Pack1Meta.RegularFileType, 0, 1, 1.0);
         }
 
@@ -188,34 +165,17 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 case Pack1Meta.RegularFileType:
                     try
                     {
-                        if (file.Size < 524288 && !isSingle)
+                        progress(0.0);
+                        if (file.Size.Value < 524288 && !isSingle)
                         {
-                            while (true)
-                            {
-                                int tmp;
-                                lock (this)
-                                {
-                                    tmp = _space;
-                                }
-                                if (tmp < 16)
-                                {
-                                    break;
-                                }
-                                Thread.Sleep(1);
-                            }
-                            
-                            lock (this)
-                            {
-                                _space++;
-                            }
-
-                            ThreadPool.QueueUserWorkItem(state => UnpackProc(file, progress, cancellationToken,
-                                destinationDirPath));
+                            ThreadingPool.ThreadingPoolExecute(cancellationToken,
+                                () => UnpackRegularFile(file, cancellationToken, destinationDirPath));
                         }
                         else
                         {
-                            UnpackRegularFile(file, progress, cancellationToken, destinationDirPath);
+                            UnpackRegularFile(file, cancellationToken, destinationDirPath);
                         }
+                        progress(1.0);
                     }
                     catch (Ionic.Zlib.ZlibException e)
                     {
@@ -253,27 +213,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         }
 
-        private void UnpackProc(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
-        {
-            try
-            {
-                UnpackRegularFile(file, onProgress, cancellationToken,
-                    destinationDirPath);
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogError(e);
-                throw;
-            }
-            finally
-            {
-                lock (this)
-                {
-                    _space--;
-                }
-            }
-        }
-
         private void UnpackDirectory(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
         {
             string destPath = Path.Combine(_destinationDirPath, _mapHashExtractedFiles.Add(file.Name));
@@ -305,13 +244,14 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             }
         }
 
-        private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
+        private void UnpackRegularFile(Pack1Meta.FileEntry file, CancellationToken cancellationToken, string destinationDirPath = null)
         {
             string nameUnPackFile;
             lock (_mapHashExtractedFiles)
             {
                 nameUnPackFile = _mapHashExtractedFiles.Add(file.Name) + _suffix;
             }
+
             string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath,  nameUnPackFile);
 
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
@@ -357,7 +297,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                     {
                         using (var target = new FileStream(destPath, FileMode.Create))
                         {
-                            ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
+                            ExtractFileFromStream(limitedStream, target, decryptor, decompressorCreator, cancellationToken);
                             DebugTestCorruption(target);
                         }
                     }
@@ -416,10 +356,8 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private void ExtractFileFromStream(
             Stream sourceStream,
             Stream targetStream,
-            long fileSize,
             ICryptoTransform decryptor,
             DecompressorCreator createDecompressor,
-            Action<double> onProgress,
             CancellationToken cancellationToken)
         {
             using (var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read))
@@ -442,9 +380,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                                     {
                                         cancellationToken.ThrowIfCancellationRequested();
                                         targetStream.Write(buffer, 0, count);
-
-                                        long bytesProcessed = sourceStream.Position;
-                                        onProgress(bytesProcessed / (double) fileSize);
                                     }
                                 }
                                 catch (OperationCanceledException)

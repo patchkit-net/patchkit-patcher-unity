@@ -4,25 +4,32 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 {
     public class MapHashExtractedFiles
     {
-        private Dictionary<string, string> MapHash;
+        private volatile Dictionary<string, string> _mapHash;
         
         public MapHashExtractedFiles()
         {
-            MapHash = new Dictionary<string, string>();
+            _mapHash = new Dictionary<string, string>();
         }
         
         public string Add(string path)
         {
             string nameHash = HashCalculator.ComputeMD5Hash(path);
-            MapHash.Add(path, nameHash);
+            lock (_mapHash)
+            {
+                _mapHash.Add(path, nameHash);
+            }
+
             return nameHash;
         }
 
         public bool TryGetHash(string path,out string nameHash)
         {
-            if (MapHash.TryGetValue(path, out nameHash))
+            lock (_mapHash)
             {
-                return true;
+                if (_mapHash.TryGetValue(path, out nameHash))
+                {
+                    return true;
+                }
             }
 
             return false;
