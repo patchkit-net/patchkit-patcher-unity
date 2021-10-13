@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.9.0]
+### Added
+- Support HDPI for debug menu
+
+### Fixed
+- Wrong information about file size during installation
+- Broken borderless window position restrictions on multiple monitors (#1158)
+
 ## [3.17.8.0]
 ### Fixed
 - Processing patched diff files

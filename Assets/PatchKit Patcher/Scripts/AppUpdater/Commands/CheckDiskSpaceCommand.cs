@@ -66,6 +66,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status.IsActive.Value = true;
             _status.IsIdle.Value = true;
 
+            DebugLogger.Log("Check Disk Space Command Execute...");
             try
             {
                 long availableDiskSpace = -1;
