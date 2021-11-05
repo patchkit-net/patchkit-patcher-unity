@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.17.11.0]
 ### Fixed
-- Minimizing and closing invisible with popup
+- Minimize and close buttons invisible with popup
 
 ## [3.17.10.0]
 ### Changed
