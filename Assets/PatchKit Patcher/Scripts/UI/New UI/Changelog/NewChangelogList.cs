@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
 using PatchKit.Api.Models.Main;
@@ -8,7 +8,6 @@ using PatchKit.Api.Utilities;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.UI.Animations;
 using PatchKit.Unity.UI;
 using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
@@ -19,13 +18,11 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
     public class NewChangelogList : UIApiComponent
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(NewChangelogList));
-
-        public ChangelogElement TitlePrefab;
-        public ChangelogElement ChangePrefab;
-        public RealeasesList RealeasesList;
-        public PointerEventsController pointerEventsController;
         
-        private AnimationManager _animationManager;
+        public ChangelogElementHeader TitlePrefabDark;
+        public ChangelogElementHeader TitlePrefabBright;
+        public NewChangelogElement ChangePrefab;
+        public LastRelease LastRelease;
 
         protected override IEnumerator LoadCoroutine()
         {
@@ -35,8 +32,6 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             }
 
             var appSecret = Patcher.Instance.Data.Value.AppSecret;
-            _animationManager = new AnimationManager();
-            pointerEventsController.AnimationManager = _animationManager;
 
             LoadChangelogFromCache(appSecret);
 
@@ -92,65 +87,76 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 DestroyImmediate(transform.GetChild(0).gameObject);
             }
         }
-
-        private List<int> versionElements = new List<int>();
-        private int versionNumber = 0;
+        
+        private int versionNumber;
 
         private void CreateChangelog(ChangelogEntry[] versions)
         {
             DestroyOldChangelog();
+            versionNumber = versions.Length;
 
+            CreateLastRelease(versions[0]);
             foreach (ChangelogEntry version in versions)
             {
                 CreateVersionChangelog(version);
-                versionNumber++;
+                versionNumber--;
             }
+        }
 
-            RealeasesList.AddButtons(versionNumber, versionElements);
+        private void CreateLastRelease(ChangelogEntry changelogEntry)
+        {
+            LastRelease.Label.SetText(changelogEntry.VersionLabel);
+            LastRelease.Version.SetText(PatcherLanguages.OpenTag + "version" + PatcherLanguages.CloseTag + " " +
+                                        versionNumber);
+            string publishDate = UnixTimeConvert.FromUnixTimeStamp(changelogEntry.PublishTime)
+                .ToString("dd <>MMM</>, yyyy").ToLower()
+                .Replace("<>", PatcherLanguages.OpenTag)
+                .Replace("</>", PatcherLanguages.CloseTag);
+            LastRelease.PublishDate.SetText(publishDate);
+            
+            CreateVersionChangeList(changelogEntry.Changes, LastRelease.ChangeList);
+            LastRelease.gameObject.SetActive(false);
         }
 
         private void CreateVersionChangelog(ChangelogEntry changelogEntry)
         {
-            CreateVersionTitleWithPublishData(changelogEntry.VersionLabel, changelogEntry.PublishTime);
-            CreateVersionChangeList(changelogEntry.Changes);
+            Transform body = CreateVersionTitleWithPublishData(changelogEntry.VersionLabel, changelogEntry.PublishTime);
+            CreateVersionChangeList(changelogEntry.Changes, body);
+            body.gameObject.SetActive(false);
         }
 
-        private void CreateVersionTitleWithPublishData(string label, long publishTime)
+        private Transform CreateVersionTitleWithPublishData(string label, long publishTime)
         {
-            var title = Instantiate(TitlePrefab, transform, false);
-            title.Texts[1].SetText(string.Format("Changelog {0}", label));
+            ChangelogElementHeader title = Instantiate(versionNumber % 2 == 1 ? TitlePrefabDark : TitlePrefabBright,
+                transform, false);
+            title.Title.SetText(string.Format("{0}", label));
             string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime)
-                .ToString("g", CurrentCultureInfo.GetCurrentCultureInfo());
-            title.Texts[0].SetText(string.Format("{0} {1}",
-                PatcherLanguages.OpenTag + "published_at" + PatcherLanguages.CloseTag, publishDate));
+                .ToString("dd <>MMM</>, yyyy").ToLower()
+                .Replace("<>", PatcherLanguages.OpenTag)
+                .Replace("</>", PatcherLanguages.CloseTag);
+            title.PublishDate.SetText(string.Format("{0}", publishDate));
+            title.ID.SetText(versionNumber.ToString());
             title.transform.SetAsLastSibling();
 
-            versionElements.Add(versionNumber);
+            return title.Body;
         }
 
-        private void CreateVersionChangeList(string changelog)
+        private void CreateVersionChangeList(string changelog, Transform parent)
         {
             var changeList = (changelog ?? string.Empty).Split('\n');
 
             foreach (var change in changeList.Where(s => !string.IsNullOrEmpty(s)))
             {
                 string formattedChange = change.TrimStart(' ', '-', '*');
-                CreateVersionChange(formattedChange);
+                CreateVersionChange(formattedChange, parent);
             }
         }
 
-        private void CreateVersionChange(string changeText)
+        private void CreateVersionChange(string changeText, Transform parent)
         {
-            var change = Instantiate(ChangePrefab, transform, false);
-            change.Texts[0].SetText(changeText);
+            var change = Instantiate(ChangePrefab, parent, false);
+            change.Text.SetText(changeText);
             change.transform.SetAsLastSibling();
-
-            versionElements.Add(versionNumber);
-        }
-
-        public void Scrolling(NewChangelogList changelogList, Vector3 newPosition, Action action)
-        {
-            _animationManager.DoScrolling(changelogList.transform, newPosition, action);
         }
     }
 }

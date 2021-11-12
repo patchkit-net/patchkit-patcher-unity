@@ -11,12 +11,12 @@ namespace PatchKit.Unity.UI.Languages
     public static class PatcherLanguages
     {
         private static Dictionary<String, String> Fields;
-        private static string DefaultLanguage = "en";
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLanguages));
 
         public const string OpenTag = "<key>";
         public const string CloseTag = "</key>";
         public static string language;
+        public static string DefaultLanguage = "en";
 
         public static void SetLanguage(string newlanguage)
         {

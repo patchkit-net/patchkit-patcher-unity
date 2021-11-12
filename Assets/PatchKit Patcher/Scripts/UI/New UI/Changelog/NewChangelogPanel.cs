@@ -11,9 +11,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         private bool _isOpened;
 
         public GameObject dotNewVersion;
-
-        public RealeasesList RealeasesList;
-
+        
         public bool IsOpened
         {
             get { return _isOpened; }
@@ -47,7 +45,6 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         public void Open()
         {
             IsOpened = true;
-            RealeasesList.PrepareReleases();
         }
 
         public void Close()
