@@ -1,17 +1,15 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.Patcher.UI.Dialogs;
+﻿using PatchKit.Unity.Patcher.UI.Dialogs;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {
-    public class Analytics : Dialog<Analytics>
+    public class Analytics<T> : Dialog<T> where T : Analytics<T>
     {
         public SettingsList SettingsList;
 
         public void SetPermitAnalytics(bool value)
         {
             SettingsList.SetAnalytics = value;
-            Patcher.Instance.WaitHandleAnaliticsPopup.Set();
             OnDisplayed();
         }
 
@@ -20,9 +18,6 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             Application.OpenURL("https://panel.patchkit.net/");
         }
 
-        public void Display()
-        {
-            base.Display(CancellationToken.Empty);
-        }
+        public virtual void Display() { }
     }
 }

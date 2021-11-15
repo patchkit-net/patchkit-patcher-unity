@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using UniRx;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppData.Local;
     
@@ -8,7 +6,7 @@ namespace PatchKit.Unity.Patcher
 {
     public class PatcherCollectUsageData
     {
-        private const string CollectUsageDataCacheKey = "collect-usageD--data";
+        private const string CollectUsageDataCacheKey = "collect-usage-data";
         
         private CollectUsageData _collectUsageData;
         
@@ -25,10 +23,7 @@ namespace PatchKit.Unity.Patcher
 
             Assert.IsNotNull(patcher);
 
-            patcher.AppInfo
-                .ObserveOnMainThread()
-                .Where(x => !string.IsNullOrEmpty(x.CollectUsageData))
-                .Subscribe(SetAndCachCollectUsageData);
+            SetAndCachCollectUsageData(patcher.AppInfo.Value);
         }
         
         private void SetAndCachCollectUsageData(PatchKit.Api.Models.Main.App app)
@@ -59,7 +54,7 @@ namespace PatchKit.Unity.Patcher
 
         public bool IsPopup()
         {
-            return _collectUsageData == CollectUsageData.ask_banner;
+            return _collectUsageData == CollectUsageData.ask_popup;
         }
         
         public bool IsBanner()

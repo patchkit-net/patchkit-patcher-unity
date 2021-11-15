@@ -6,7 +6,6 @@ using System.Threading;
 using PatchKit.Api;
 using PatchKit.Unity.Patcher.AppUpdater;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
-using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.UI.Dialogs;
@@ -16,11 +15,8 @@ using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
 using PatchKit.Api.Models.Main;
 using PatchKit.Network;
-using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
-using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit.Unity.Patcher.UI;
 using PatchKit.Unity.Patcher.UI.NewUI;
 using PatchKit.Unity.UI.Languages;
 
@@ -59,16 +55,18 @@ namespace PatchKit.Unity.Patcher
                 {
                     _instance = FindObjectOfType<Patcher>();
                 }
+
                 return _instance;
             }
         }
 
         private bool _canStartThread = true;
 
-        private readonly PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _threadCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
+        private readonly PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _threadCancellationTokenSource =
+            new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
 
         private Thread _thread;
-        
+
         private bool _isForceQuitting;
 
         private App _app;
@@ -94,7 +92,7 @@ namespace PatchKit.Unity.Patcher
 
         private PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _updateAppCancellationTokenSource;
 
-        public string TraceableAppSecret     
+        public string TraceableAppSecret
         {
             get
             {
@@ -108,7 +106,7 @@ namespace PatchKit.Unity.Patcher
         }
 
         private string _traceableAppSecret;
-        
+
         public string AppSecret { get; private set; }
 
         public AErrorDialog ErrorDialog;
@@ -120,10 +118,9 @@ namespace PatchKit.Unity.Patcher
         public PatcherConfiguration DefaultConfiguration;
 
         public string StartAppCustomArgs { get; set; }
-        
-        public readonly EventWaitHandle WaitHandleAnaliticsPopup = new AutoResetEvent(false);
 
-        private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
+        private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus =
+            new ReactiveProperty<IReadOnlyUpdaterStatus>();
 
         public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus
         {
@@ -206,9 +203,9 @@ namespace PatchKit.Unity.Patcher
         {
             get { return _appInfo; }
         }
-        
+
         private ReactiveProperty<long> _sizeLastContentSummary = new ReactiveProperty<long>();
-        
+
         public IReadOnlyReactiveProperty<long> SizeLastContentSummary
         {
             get { return _sizeLastContentSummary; }
@@ -263,7 +260,7 @@ namespace PatchKit.Unity.Patcher
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 DebugLogger.LogWarning("Lock file closing error - " + e);
             }
@@ -272,7 +269,7 @@ namespace PatchKit.Unity.Patcher
         private void Awake()
         {
             UnityEngine.Assertions.Assert.raiseExceptions = true;
-            
+
             Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 
@@ -351,7 +348,8 @@ namespace PatchKit.Unity.Patcher
 
                 if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
                 {
-                    yield return StartCoroutine(PatcherStatistics.SendEvent(PatcherStatistics.Event.PatcherSucceededClosed));
+                    yield return StartCoroutine(
+                        PatcherStatistics.SendEvent(PatcherStatistics.Event.PatcherSucceededClosed));
                 }
 
                 if (!Application.isEditor)
@@ -416,10 +414,7 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Starting patcher thread...");
 
-            _thread = new Thread(() =>
-            {
-                ThreadExecution(_threadCancellationTokenSource.Token);
-            })
+            _thread = new Thread(() => { ThreadExecution(_threadCancellationTokenSource.Token); })
             {
                 IsBackground = true
             };
@@ -486,12 +481,13 @@ namespace PatchKit.Unity.Patcher
                     _app =
                         new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId,
                             _requestTimeoutCalculator);
-                    
                 }).WaitOne();
 
-                if (!_app.IsFullyInstalled() && !_configuration.AutomaticallyInstallApp && !_hasAutomaticallyInstalledApp)
+                if (!_app.IsFullyInstalled() && !_configuration.AutomaticallyInstallApp &&
+                    !_hasAutomaticallyInstalledApp)
                 {
-                    _updateAppCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
+                    _updateAppCancellationTokenSource =
+                        new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
                     using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
                     {
                         _appInfo.Value =
@@ -506,7 +502,6 @@ namespace PatchKit.Unity.Patcher
                 if (AnalyticsPopup.Instance != null)
                 {
                     SetCollectUsagesData();
-                    WaitHandleAnaliticsPopup.WaitOne();
                 }
 
                 PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
@@ -553,13 +548,15 @@ namespace PatchKit.Unity.Patcher
         private void SetCollectUsagesData()
         {
             PatcherCollectUsageData patcherCollectUsageData = new PatcherCollectUsageData();
-            if (patcherCollectUsageData.IsNone())
+            if (!patcherCollectUsageData.IsNone())
             {
-                WaitHandleAnaliticsPopup.Set();
-            }
-            else
-            {
-                if (PlayerPrefs.GetInt("analytics", 2) == 2)
+                int analytics = 2;
+                UnityDispatcher.Invoke(() =>
+                {
+                    analytics = PlayerPrefs.GetInt("analytics", 2);
+                }).WaitOne();
+                
+                if (analytics == 2)
                 {
                     if (patcherCollectUsageData.IsPopup())
                     {
