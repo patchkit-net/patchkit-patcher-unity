@@ -71,6 +71,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _status.IsActive.Value = true;
             _status.TotalBytes.Value = _resource.Size;
+            if(File.Exists(_destinationPackagePath))
+                _status.StartBytes.Value = new FileInfo(_destinationPackagePath).Length;
 
             var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource);
 

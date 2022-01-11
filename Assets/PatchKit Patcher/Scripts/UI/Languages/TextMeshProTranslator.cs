@@ -19,7 +19,7 @@ namespace PatchKit.Unity.UI.Languages
             if(!string.IsNullOrEmpty(Key))
                 _textComponent.text = PatcherLanguages.GetTranslation(Key);
             if(!string.IsNullOrEmpty(_text))
-                _textComponent.text = PatcherLanguages.GetTranslationText(string.Format(_text, _args));
+                _textComponent.text = string.Format(PatcherLanguages.GetTranslationText(_text), _args);
         }
 
         void Update()
@@ -33,10 +33,7 @@ namespace PatchKit.Unity.UI.Languages
                 }
                 else
                 {
-                    if(_args != null)
-                        _textComponent.text = PatcherLanguages.GetTranslationText(string.Format(_text, _args));
-                    else
-                        _textComponent.text = PatcherLanguages.GetTranslationText(_text);
+                    _textComponent.text = string.Format(PatcherLanguages.GetTranslationText(_text), _args);
                 }
             }
         }

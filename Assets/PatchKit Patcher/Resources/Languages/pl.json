@@ -32,7 +32,7 @@
   "please_check_your_internet_connection": "Proszę sprawdzić swoje połączenie z internetem.",
   "please_check_write_permissions_in_applications_directory": "Proszę sprawdzić prawa zapisu w katalogu aplikacji.",
   "patcher_has_to_be_started_using_the_launcher": "Patcher musi być uruchomiony przy pomocy launchera.",
-  "not_enough_disk_space_to_install_this_application_additional_[count]_gb_of_disk_space_is_required": "Za mało miejsca na dysku, aby zainstalować tę aplikację. Wymagane jest dodatkowe {0: 0,00} GB miejsca na dysku.",
+  "not_enough_disk_space_to_install_this_application_additional_[count]_gb_of_disk_space_is_required": "Za mało miejsca na dysku, aby zainstalować tę aplikację. Wymagane jest dodatkowe {0: 0.00} GB miejsca na dysku.",
   "unknown_error_please_try_again_if_the_issue_remains_please_contact_the_support": "Nieznany błąd, spróbuj ponownie. Jeśli problem nie ustąpi, skontaktuj się z pomocą techniczną.",
   "couldnt_validate_local_files_please_try_again_if_the_issue_remains_it_could_mean_a_disk_issue": "Nie można zweryfikować plików lokalnych, spróbuj ponownie. Jeśli problem nie ustąpi, może to oznaczać problem z dyskiem.",
   "play": "Graj",
@@ -57,7 +57,7 @@
   "what_data": "Jakie dane?",
   "whats_new": "Co nowego",
   "submit": "Zatwierdź",
-  "updating": "AKTUALIZACJA",
+  "updating": "Updating",
   "restart": "Restart",
   "improve_game": "Wspomóż grę",
   "share_anonymous_analytics_data_with_us": "Udostępnij nam anonimowe dane analityczne",
@@ -78,5 +78,11 @@
   "oct": "Paź",
   "nov": "Lis",
   "dec": "Gru",
-  "support": "Pomoc"
+  "support": "Pomoc",
+  "downloading_info": "Informacje o pobieraniu",
+  "estimated_time": "Szacowany czas",
+  "operation": "Proces",
+  "disc_free_space": "Wolne miejsce na dysku",
+  "pack_size": "Wielkość paczki",
+  "download": "Download"
 }

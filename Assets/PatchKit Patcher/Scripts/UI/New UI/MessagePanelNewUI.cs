@@ -19,9 +19,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         public Button CheckButton;
 
         public TextMeshProTranslator checkButtonTextMeshProTranslator;
-
-        public TextMeshProTranslator sizeTextMeshProTranslator;
-
+        
         public GameObject ProgressBar;
 
         private bool _canInstallApp;
@@ -42,7 +40,6 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             Assert.IsNotNull(PlayButton);
             Assert.IsNotNull(CheckButton);
             Assert.IsNotNull(_animator);
-            Assert.IsNotNull(sizeTextMeshProTranslator);
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
@@ -68,18 +65,6 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 CheckButton.gameObject.SetActive(_canInstallApp);
             }).AddTo(this);
 
-            var text = Patcher.Instance.SizeLastContentSummary.Select(
-                sizeLastContentSummary =>
-                {
-                    if (sizeLastContentSummary != 0)
-                    {
-                        return string.Format("({0:0.0}MB)", sizeLastContentSummary / 1024.0 / 1024.0);
-                    }
-                    return String.Empty;
-                });
-
-            text.ObserveOnMainThread().Subscribe(t => sizeTextMeshProTranslator.SetText(t)).AddTo(this);
-            
             PlayButton.onClick.AddListener(OnPlayButtonClicked);
             CheckButton.onClick.AddListener(OnCheckButtonClicked);
 

@@ -38,28 +38,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _bigestFileSize = bigestFileSize;
         }
 
-#if UNITY_STANDALONE_WIN
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool GetDiskFreeSpaceEx(string directoryName,
-            out ulong freeBytes,
-            out ulong totalBytes,
-            out ulong totalFreeBytes);
-
-#elif UNITY_STANDALONE_OSX
-        [DllImport("getdiskspaceosx", SetLastError = true, CharSet = CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
-
-#elif UNITY_STANDALONE_LINUX
-        [DllImport("libgetdiskspace", SetLastError = true, CharSet = CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
-
-#else
-#error Unsupported platform
-#endif
-
         public void Execute(CancellationToken cancellationToken)
         {
             _status.IsActive.Value = true;
@@ -67,24 +45,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             try
             {
-                long availableDiskSpace = -1;
+                long availableDiskSpace = AvailableDiskSpace.Instance.GetAvailableDiskSpace(_localDirectoryPath);
                 long requiredDiskSpace = GetRequiredDiskSpace();
-
-                var dir = new FileInfo(_localDirectoryPath);
-
-#if UNITY_STANDALONE_WIN
-                ulong freeBytes, totalBytes, totalFreeBytes;
-                GetDiskFreeSpaceEx(dir.Directory.FullName, out freeBytes, out totalBytes, out totalFreeBytes);
-
-                availableDiskSpace = (long) freeBytes;
-
-#else
-                long freeBytes = 0;
-                getAvailableDiskSpace(dir.Directory.FullName, out freeBytes);
-
-                availableDiskSpace = freeBytes;
-
-#endif
 
                 DebugLogger.Log("Available free space " + availableDiskSpace + " >= required disk space " +
                                 requiredDiskSpace);
@@ -119,6 +81,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _status.IsActive.Value = false;
             }
         }
+
+
 
         private bool TryAllocateDiskSpace(string directory, long space)
         {

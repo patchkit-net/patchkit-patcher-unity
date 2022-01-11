@@ -9,7 +9,6 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
-    [RequireComponent(typeof(ITextTranslator))]
     public class DownloadSpeed : MonoBehaviour
     {
         private ITextTranslator _textMeshProTranslator;

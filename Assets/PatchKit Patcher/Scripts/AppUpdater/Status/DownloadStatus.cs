@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using UniRx;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Status
@@ -7,6 +6,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
     public class DownloadStatus : IReadOnlyDownloadStatus
     {
         public ReactiveProperty<long> Bytes { get; private set; }
+        public ReactiveProperty<long> StartBytes { get; private set; }
         public ReactiveProperty<long> TotalBytes { get; private set; }
         public ReactiveProperty<double> Weight { get; private set; }
         public ReactiveProperty<bool> IsActive { get; private set; }
@@ -29,6 +29,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         public DownloadStatus()
         {
             Bytes = new ReactiveProperty<long>();
+            StartBytes = new ReactiveProperty<long>();
             TotalBytes = new ReactiveProperty<long>();
             Progress = Bytes.CombineLatest(TotalBytes, (b, t) => t > 0 ? (double) b / (double) t : 0.0)
                 .ToReadOnlyReactiveProperty();
@@ -43,14 +44,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
             });
 
             var timedBytes = Bytes.Select(b => new ByteSample{
-                Bytes = b,
+                Bytes = b - StartBytes.Value,
                 Timestamp = DateTime.Now
             });
 
             var interval = Observable
                 .Interval(TimeSpan.FromSeconds(1))
                 .Select(_ => new ByteSample{
-                    Bytes = Bytes.Value,
+                    Bytes = Bytes.Value - StartBytes.Value,
                     Timestamp = DateTime.Now
                 });
 
@@ -64,6 +65,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Status
         IReadOnlyReactiveProperty<long> IReadOnlyDownloadStatus.Bytes
         {
             get { return Bytes; }
+        }
+
+        IReadOnlyReactiveProperty<long> IReadOnlyDownloadStatus.StartBytes
+        {
+            get { return StartBytes; }
         }
 
         IReadOnlyReactiveProperty<long> IReadOnlyDownloadStatus.TotalBytes

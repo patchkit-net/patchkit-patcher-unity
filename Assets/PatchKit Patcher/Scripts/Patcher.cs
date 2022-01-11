@@ -498,6 +498,8 @@ namespace PatchKit.Unity.Patcher
                             .GetContentSummary(_remoteVersionId.Value.Value, _updateAppCancellationTokenSource).Size;
                     }
                 }
+                
+                AvailableDiskSpace.Instance.GetAvailableDiskSpace(Data.Value.AppDataPath);
 
                 if (AnalyticsPopup.Instance != null)
                 {

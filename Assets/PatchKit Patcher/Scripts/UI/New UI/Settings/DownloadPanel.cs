@@ -7,6 +7,9 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
     public class DownloadPanel : MonoBehaviour
     {
         public Button BackgroundShowDownload;
+        public Transform MessagePanel;
+        public Transform MessagePanelInDownloadPanel;
+        public Transform ProgressBar;
         private Animator _animator;
 
         private bool _isOpened;
@@ -25,17 +28,17 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 _animator.SetBool("IsOpened", _isOpened);
                 if (_isOpened)
                 {
-                    transform.localPosition= new Vector3(0, -24, 0);
                     ColorBlock cb = BackgroundShowDownload.colors;
                     cb.normalColor = Color.white;
                     BackgroundShowDownload.colors = cb;
+                    ProgressBar.SetParent(MessagePanelInDownloadPanel, false);
                 }
                 else
                 {
-                    transform.localPosition= new Vector3(0, -671, 0);
                     ColorBlock cb = BackgroundShowDownload.colors;
                     cb.normalColor = Color.clear;
                     BackgroundShowDownload.colors = cb;
+                    ProgressBar.SetParent(MessagePanel, false);
                 }
             }
         }

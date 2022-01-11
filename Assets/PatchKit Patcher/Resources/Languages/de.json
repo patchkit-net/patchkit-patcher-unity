@@ -32,7 +32,7 @@
   "please_check_your_internet_connection": "Bitte überprüfe deine Internetverbindung.",
   "please_check_write_permissions_in_applications_directory": "Bitte überprüfen Sie die Schreibberechtigungen im Verzeichnis der Anwendung.",
   "patcher_has_to_be_started_using_the_launcher": "Patcher muss mit dem Launcher gestartet werden.",
-  "not_enough_disk_space_to_install_this_application_additional_[count]_gb_of_disk_space_is_required": "Nicht genügend Speicherplatz, um diese Anwendung zu installieren. Zusätzlicher {0: 0,00} GB Speicherplatz ist erforderlich.",
+  "not_enough_disk_space_to_install_this_application_additional_[count]_gb_of_disk_space_is_required": "Nicht genügend Speicherplatz, um diese Anwendung zu installieren. Zusätzlicher {0: 0.00} GB Speicherplatz ist erforderlich.",
   "unknown_error_please_try_again_if_the_issue_remains_please_contact_the_support": "Unbekannter Fehler, bitte versuchen Sie es erneut. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.",
   "couldnt_validate_local_files_please_try_again_if_the_issue_remains_it_could_mean_a_disk_issue": "Lokale Dateien konnten nicht überprüft werden. Bitte versuchen Sie es erneut. Wenn das Problem weiterhin besteht, kann dies ein Festplattenproblem bedeuten.",
   "play": "abspielen",
@@ -58,7 +58,7 @@
   "what_data": "Welche Daten?",
   "whats_new": "Was gibt's Neues",
   "submit": "Absenden",
-  "updating": "AKTUALISIERUNG",
+  "updating": "Updating",
   "restart": "Neustart",
   "improve_game": "Spiel verbessern",
   "share_anonymous_analytics_data_with_us": "Teilen Sie anonyme Analysedaten mit uns",
@@ -79,5 +79,11 @@
   "oct": "Okt",
   "nov": "Nov",
   "dec": "Dez",
-  "support": "Unterstützung"
+  "support": "Unterstützung",
+  "downloading_info": "Herunterladen von Informationen",
+  "estimated_time": "Geschätzte Zeit",
+  "operation": "Betrieb",
+  "disc_free_space": "Freier Speicherplatz auf der Disc",
+  "pack_size": "Paket Größe",
+  "download": "Download"
 }

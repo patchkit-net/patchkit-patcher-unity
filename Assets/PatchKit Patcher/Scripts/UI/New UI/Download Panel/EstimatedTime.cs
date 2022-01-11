@@ -1,30 +1,25 @@
 ﻿using System;
-using System.Linq;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {
-    [RequireComponent(typeof(TextMeshProTranslator))]
-    public class DownloadSpeedNewUI : MonoBehaviour
+    public class EstimatedTime : MonoBehaviour
     {
-        private TextMeshProTranslator _textMeshProTranslator;
-
-        private string _downloadSpeedUnit;
+        private ITextTranslator _textTranslator;
 
         private void Start()
         {
-            _textMeshProTranslator = GetComponent<TextMeshProTranslator>();
+            _textTranslator = GetComponent<ITextTranslator>();
+            if (_textTranslator == null)
+                _textTranslator = gameObject.AddComponent<TextMeshProTranslator>();
 
             var downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
-
-            var downloadSpeedUnit = Patcher.Instance.AppInfo.Select(a => a.PatcherDownloadSpeedUnit);
 
             var text = downloadStatus.SelectSwitchOrDefault(status =>
             {
@@ -34,57 +29,11 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                     status.Bytes.CombineLatest<long, long, double, double?>(status.TotalBytes, bytesPerSecond,
                         GetRemainingTime);
 
-                var formattedRemainingTime = remainingTime.Select<double?, string>(GetFormattedRemainingTime);
-
-                var formattedDownloadSpeed =
-                    bytesPerSecond.CombineLatest<double, string, string>(downloadSpeedUnit,
-                        GetFormattedDownloadSpeed);
-
-                return formattedDownloadSpeed.CombineLatest<string, string, string>(formattedRemainingTime,
-                    GetStatusText);
+                return remainingTime.Select<double?, string>(GetFormattedRemainingTime);
             }, string.Empty);
 
-            text.ObserveOnMainThread().Subscribe(textTranslation => _textMeshProTranslator.SetText(textTranslation))
+            text.ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
                 .AddTo(this);
-        }
-
-        private static string GetStatusText(string formattedDownloadSpeed, string formattedRemainingTime)
-        {
-            return formattedDownloadSpeed + " " + formattedRemainingTime;
-        }
-
-        private static string GetFormattedDownloadSpeed(double bytesPerSecond, string downloadSpeedUnit)
-        {
-            switch (downloadSpeedUnit)
-            {
-                case "kilobytes":
-                    return FormatDownloadSpeedKilobytes(bytesPerSecond);
-                case "megabytes":
-                    return FormatDownloadSpeedMegabytes(bytesPerSecond);
-                default: // "human_readable" and any other
-                {
-                    return bytesPerSecond > Units.MB
-                        ? FormatDownloadSpeedMegabytes(bytesPerSecond)
-                        : FormatDownloadSpeedKilobytes(bytesPerSecond);
-                }
-            }
-        }
-
-        private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
-        {
-            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + PatcherLanguages.OpenTag + "megabytes_sec" +
-                   PatcherLanguages.CloseTag;
-        }
-
-        private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
-        {
-            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + PatcherLanguages.OpenTag + "kilobytes_sec" +
-                   PatcherLanguages.CloseTag;
-        }
-
-        private static string FormatDownloadSpeed(double s)
-        {
-            return s.ToString("#,#0.0");
         }
 
         private static string GetFormattedRemainingTime(double? remainingTime)
@@ -142,7 +91,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private static string FormatPlural(string format, string timeUnit, double value)
         {
-            return Environment.NewLine + string.Format(format, value) + timeUnit + GetPlural(value);
+            return string.Format(format, value) + timeUnit + GetPlural(value);
         }
 
         private static string GetPlural(double value)

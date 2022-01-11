@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.UI
 {
-    [RequireComponent(typeof(ITextTranslator))]
     public class Status : MonoBehaviour
     {
         private ITextTranslator _textTranslator;

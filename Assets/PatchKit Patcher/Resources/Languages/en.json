@@ -57,7 +57,7 @@
   "what_data": "What data?",
   "whats_new": "What's new",
   "submit": "Submit",
-  "updating": "UPDATING",
+  "updating": "Updating",
   "restart": "Restart",
   "improve_game": "Improve game",
   "share_anonymous_analytics_data_with_us": "Share anonymous analytics data with us",
@@ -78,5 +78,11 @@
   "oct": "Oct",
   "nov": "Nov",
   "dec": "Dec",
-  "support": "Support"
+  "support": "Support",
+  "downloading_info": "Downloading info",
+  "estimated_time": "Estimated time",
+  "operation": "Operation",
+  "disc_free_space": "Disc free space",
+  "pack_size": "Pack size",
+  "download": "Download"
 }

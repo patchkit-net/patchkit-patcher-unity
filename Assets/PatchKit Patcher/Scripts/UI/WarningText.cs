@@ -1,12 +1,9 @@
-﻿using System;
-using PatchKit.Unity.UI.Languages;
+﻿using PatchKit.Unity.UI.Languages;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
-    [RequireComponent(typeof(ITextTranslator))]
     public class WarningText : MonoBehaviour
     {
         private ITextTranslator _textMeshProTranslator;
