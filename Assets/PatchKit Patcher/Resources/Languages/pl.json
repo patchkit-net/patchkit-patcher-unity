@@ -84,5 +84,7 @@
   "operation": "Proces",
   "disc_free_space": "Wolne miejsce na dysku",
   "pack_size": "Wielkość paczki",
-  "download": "Download"
+  "download": "Pobieranie",
+  "you_have_no_current_tasks": "Nie masz żadnych bieżących zadań",
+  "checking_path_length": "Sprawdźanie długości ścieżki..."
 }

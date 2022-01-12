@@ -3,6 +3,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.UI.Languages;
 
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -54,7 +55,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new OperationStatus
             {
                 Weight = {Value = 0.00001},
-                Description = {Value = "Check path length..."}
+                Description = {Value = PatcherLanguages.OpenTag +  "checking_path_length" + PatcherLanguages.CloseTag}
             };
             status.RegisterOperation(_status);
         }

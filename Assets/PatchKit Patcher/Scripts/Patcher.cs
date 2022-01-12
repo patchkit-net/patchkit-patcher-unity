@@ -482,21 +482,17 @@ namespace PatchKit.Unity.Patcher
                         new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId,
                             _requestTimeoutCalculator);
                 }).WaitOne();
-
-                if (!_app.IsFullyInstalled() && !_configuration.AutomaticallyInstallApp &&
-                    !_hasAutomaticallyInstalledApp)
+                
+                _updateAppCancellationTokenSource =
+                    new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
+                using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
                 {
-                    _updateAppCancellationTokenSource =
-                        new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
-                    using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
-                    {
-                        _appInfo.Value =
-                            _app.RemoteMetaData.GetAppInfo(true, _updateAppCancellationTokenSource.Token);
-                        _remoteVersionId.Value =
-                            _app.GetLatestVersionId(true, _updateAppCancellationTokenSource.Token);
-                        _sizeLastContentSummary.Value = _app.RemoteMetaData
-                            .GetContentSummary(_remoteVersionId.Value.Value, _updateAppCancellationTokenSource).Size;
-                    }
+                    _appInfo.Value =
+                        _app.RemoteMetaData.GetAppInfo(true, _updateAppCancellationTokenSource.Token);
+                    _remoteVersionId.Value =
+                        _app.GetLatestVersionId(true, _updateAppCancellationTokenSource.Token);
+                    _sizeLastContentSummary.Value = _app.RemoteMetaData
+                        .GetContentSummary(_remoteVersionId.Value.Value, _updateAppCancellationTokenSource.Token).Size;
                 }
                 
                 AvailableDiskSpace.Instance.GetAvailableDiskSpace(Data.Value.AppDataPath);

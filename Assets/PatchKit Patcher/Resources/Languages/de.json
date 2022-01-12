@@ -85,5 +85,7 @@
   "operation": "Betrieb",
   "disc_free_space": "Freier Speicherplatz auf der Disc",
   "pack_size": "Paket Größe",
-  "download": "Download"
+  "download": "Herunterladen",
+  "you_have_no_current_tasks": "Sie haben keine aktuellen Aufgaben",
+  "checking_path_length": "Pfadlänge prüfen..."
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UniRx;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
@@ -10,6 +11,8 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         public Transform MessagePanel;
         public Transform MessagePanelInDownloadPanel;
         public Transform ProgressBar;
+        public GameObject WhenUpdatingPanel;
+        public GameObject StaticPanel;
         private Animator _animator;
 
         private bool _isOpened;
@@ -46,6 +49,22 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         private void Awake()
         {
             _animator = GetComponent<Animator>();
+
+            Patcher.Instance.State.ObserveOnMainThread().Subscribe(ChangeUIOnUpdatingApp);
+        }
+
+        private void ChangeUIOnUpdatingApp(PatcherState state)
+        {
+            if (state == PatcherState.UpdatingApp)
+            {
+                WhenUpdatingPanel.SetActive(true);
+                StaticPanel.SetActive(false);
+            }
+            else
+            {
+                WhenUpdatingPanel.SetActive(false);
+                StaticPanel.SetActive(true);
+            }
         }
 
         private void Start()

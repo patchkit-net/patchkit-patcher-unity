@@ -13,7 +13,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         public int NumberOfSamples = 100;
         public float WaitTime = 1;
         public Transform DownloadSpeedTransform;
-        
+
         private float _maxSpeed = 30;
         private int _id = 0;
         private int _smaNumber = 1;
@@ -38,7 +38,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             Rect rect = ((RectTransform) transform).rect;
             _chartWidth = rect.width;
             _image.material.SetInt("_NumberOfSamples", NumberOfSamples);
-            
+
             var downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
@@ -48,7 +48,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             var totalBytes = downloadStatus.SelectSwitchOrDefault(d => d.TotalBytes, 0);
             var bytes = downloadStatus.SelectSwitchOrDefault(d => d.Bytes, 0);
 
-            
+
             Patcher.Instance.State
                 .CombineLatest(bytes, speed, startBytes, totalBytes,
                     (state, bytesValue, speedValue, startBytesValue, totalBytesValue) => new DownloadData
@@ -61,6 +61,11 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 .ObserveOnMainThread()
                 .Subscribe(downloadData => _downloadData = downloadData)
                 .AddTo(this);
+
+            Patcher.Instance.State.ObserveOnMainThread().Where(s => s != PatcherState.UpdatingApp).Subscribe(state =>
+            {
+                _image.material.SetFloat("_StepMax", 0);
+            });
         }
 
         private void Update()

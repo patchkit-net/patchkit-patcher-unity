@@ -84,5 +84,7 @@
   "operation": "Operation",
   "disc_free_space": "Disc free space",
   "pack_size": "Pack size",
-  "download": "Download"
+  "download": "Download",
+  "you_have_no_current_tasks": "You have no current tasks",
+  "checking_path_length": "Checking path length..."
 }
