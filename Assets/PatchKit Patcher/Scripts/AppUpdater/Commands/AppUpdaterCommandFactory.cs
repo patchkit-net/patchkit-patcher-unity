@@ -139,5 +139,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             AppContentSummary contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
             return new CheckPathLengthCommand(contentSummary, context.App.LocalDirectory.Path);
         }
+        
+        public ICollectUsageDataCommand CreateCollectUsageDataCommand(AppUpdaterContext context)
+        {
+            return new CollectUsageDataCommand(context.App.RemoteMetaData);
+        }
     }
 }

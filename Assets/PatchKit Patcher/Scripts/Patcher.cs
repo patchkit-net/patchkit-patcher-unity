@@ -500,12 +500,7 @@ namespace PatchKit.Unity.Patcher
                 }
                 
                 AvailableDiskSpace.Instance.GetAvailableDiskSpace(Data.Value.AppDataPath);
-
-                if (AnalyticsPopup.Instance != null)
-                {
-                    SetCollectUsagesData();
-                }
-
+                
                 PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
 
                 while (true)
@@ -544,31 +539,6 @@ namespace PatchKit.Unity.Patcher
             finally
             {
                 _state.Value = PatcherState.None;
-            }
-        }
-
-        private void SetCollectUsagesData()
-        {
-            PatcherCollectUsageData patcherCollectUsageData = new PatcherCollectUsageData();
-            if (!patcherCollectUsageData.IsNone())
-            {
-                int analytics = 2;
-                UnityDispatcher.Invoke(() =>
-                {
-                    analytics = PlayerPrefs.GetInt("analytics", 2);
-                }).WaitOne();
-                
-                if (analytics == 2)
-                {
-                    if (patcherCollectUsageData.IsPopup())
-                    {
-                        AnalyticsPopup.Instance.Display();
-                    }
-                    else
-                    {
-                        AnalyticsBanner.Instance.Display();
-                    }
-                }
             }
         }
 

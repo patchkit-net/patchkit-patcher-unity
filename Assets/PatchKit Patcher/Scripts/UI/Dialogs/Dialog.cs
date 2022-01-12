@@ -50,7 +50,11 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 "Display dialog can be only used on separate thread.");
 
             _isDisplaying = true;
-
+        }
+        
+        protected void OnDisplayWithoutWait()
+        {
+            _isDisplaying = false;
         }
 
         protected virtual void Awake()
