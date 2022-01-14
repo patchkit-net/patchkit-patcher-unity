@@ -11,11 +11,6 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
     {
         [SerializeField]
         [RequireInterface(typeof(ITextTranslator))]
-        private GameObject _versionReference;
-        public ITextTranslator Version;
-        
-        [SerializeField]
-        [RequireInterface(typeof(ITextTranslator))]
         private GameObject _publishDateReference;
         public ITextTranslator PublishDate;
         
@@ -30,7 +25,6 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         {
             Label = _labelReference.GetComponent<ITextTranslator>();
             PublishDate = _publishDateReference.GetComponent<ITextTranslator>();
-            Version = _versionReference.GetComponent<ITextTranslator>();
         }
     }
 }

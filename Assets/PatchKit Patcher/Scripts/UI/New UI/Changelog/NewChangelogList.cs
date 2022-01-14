@@ -105,8 +105,6 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         private void CreateLastRelease(ChangelogEntry changelogEntry)
         {
             LastRelease.Label.SetText(changelogEntry.VersionLabel);
-            LastRelease.Version.SetText(PatcherLanguages.OpenTag + "version" + PatcherLanguages.CloseTag + " " +
-                                        versionNumber);
             string publishDate = UnixTimeConvert.FromUnixTimeStamp(changelogEntry.PublishTime)
                 .ToString("dd <>MMM</>, yyyy").ToLower()
                 .Replace("<>", PatcherLanguages.OpenTag)
@@ -119,12 +117,13 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void CreateVersionChangelog(ChangelogEntry changelogEntry)
         {
-            Transform body = CreateVersionTitleWithPublishData(changelogEntry.VersionLabel, changelogEntry.PublishTime);
+            Transform body = CreateVersionTitleWithPublishData(changelogEntry.VersionLabel, changelogEntry.PublishTime,
+                !String.IsNullOrEmpty(changelogEntry.Changes));
             CreateVersionChangeList(changelogEntry.Changes, body);
             body.gameObject.SetActive(false);
         }
 
-        private Transform CreateVersionTitleWithPublishData(string label, long publishTime)
+        private Transform CreateVersionTitleWithPublishData(string label, long publishTime, bool areChanges)
         {
             ChangelogElementHeader title = Instantiate(versionNumber % 2 == 1 ? TitlePrefabDark : TitlePrefabBright,
                 transform, false);
@@ -134,16 +133,16 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 .Replace("<>", PatcherLanguages.OpenTag)
                 .Replace("</>", PatcherLanguages.CloseTag);
             title.PublishDate.SetText(string.Format("{0}", publishDate));
-            title.ID.SetText(versionNumber.ToString());
+            title.ArrowButton.SetActive(areChanges);
             title.transform.SetAsLastSibling();
-
+            
             return title.Body;
         }
 
         private void CreateVersionChangeList(string changelog, Transform parent)
         {
             var changeList = (changelog ?? string.Empty).Split('\n');
-
+            
             foreach (var change in changeList.Where(s => !string.IsNullOrEmpty(s)))
             {
                 string formattedChange = change.TrimStart(' ', '-', '*');

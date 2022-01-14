@@ -8,7 +8,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
     public class ChangelogElementHeader : MonoBehaviour
     {
         public Transform Body;
-        public TextMeshProUGUI ID;
+        public GameObject ArrowButton;
         
         [SerializeField]
         [RequireInterface(typeof(ITextTranslator))]
