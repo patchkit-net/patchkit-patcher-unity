@@ -13,11 +13,11 @@ public class ScreenScale
         {
             float screenScale;
             float screenDpi = Screen.dpi;
-            if (screenDpi >= 392)
+            if (screenDpi >= 384)
             {
                 screenScale = 4;
             }
-            else if (screenDpi >= 196)
+            else if (screenDpi >= 192)
             {
                 screenScale = 2;
             }
