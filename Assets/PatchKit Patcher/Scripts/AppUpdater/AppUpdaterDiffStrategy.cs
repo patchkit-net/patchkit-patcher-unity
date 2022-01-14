@@ -63,10 +63,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.LogVariable(currentLocalVersionId, "currentLocalVersionId");
 
             var commandFactory = new AppUpdaterCommandFactory();
-            var collectUsageDataCommand = commandFactory.CreateCollectUsageDataCommand(_context);
-            collectUsageDataCommand.Prepare(_status, cancellationToken);
-            collectUsageDataCommand.Execute(cancellationToken);
-            
+
             var geolocateCommand = commandFactory.CreateGeolocateCommand();
             geolocateCommand.Prepare(_status, cancellationToken);
             geolocateCommand.Execute(cancellationToken);

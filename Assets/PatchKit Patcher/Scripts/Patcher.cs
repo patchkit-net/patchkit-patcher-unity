@@ -346,7 +346,7 @@ namespace PatchKit.Unity.Patcher
 
                 yield return StartCoroutine(KillThread());
 
-                if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
+                if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted && PatcherStatistics.GetPermitStatistics())
                 {
                     yield return StartCoroutine(
                         PatcherStatistics.SendEvent(PatcherStatistics.Event.PatcherSucceededClosed));
@@ -494,6 +494,9 @@ namespace PatchKit.Unity.Patcher
                     _sizeLastContentSummary.Value = _app.RemoteMetaData
                         .GetContentSummary(_remoteVersionId.Value.Value, _updateAppCancellationTokenSource.Token).Size;
                 }
+
+                CollectUsageDate collectUsageDate = new CollectUsageDate(_appInfo.Value);
+                collectUsageDate.Execute();
                 
                 AvailableDiskSpace.Instance.GetAvailableDiskSpace(Data.Value.AppDataPath);
                 

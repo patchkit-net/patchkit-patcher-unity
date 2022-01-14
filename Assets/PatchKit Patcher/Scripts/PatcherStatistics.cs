@@ -83,6 +83,11 @@ namespace PatchKit.Unity.Patcher
         {
             _permitStatistics = value;
         }
+        
+        public static bool GetPermitStatistics()
+        {
+            return _permitStatistics;
+        }
 
         public static bool TryDispatchSendEvent(Event ev, OptionalParams? parameters = null)
         {
