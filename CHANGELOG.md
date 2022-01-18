@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.9.2]
+### Changed
+- HDPI scale tresholds
+
 ## [3.17.9.1]
-### Fixed
-- Support for HDPI(change of thresholds)
+### Changed
+- HDPI scale tresholds
 
 ## [3.17.9.0]
 ### Added
