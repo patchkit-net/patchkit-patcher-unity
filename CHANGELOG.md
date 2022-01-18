@@ -6,11 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.17.9.2]
 ### Changed
-- HDPI scale tresholds
+- HDPI scale thresholds
 
 ## [3.17.9.1]
 ### Changed
-- HDPI scale tresholds
+- HDPI scale thresholds
 
 ## [3.17.9.0]
 ### Added
