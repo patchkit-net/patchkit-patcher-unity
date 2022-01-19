@@ -16,9 +16,9 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         public Button PlayButton;
 
-        public Button CheckButton;
-
-        public TextMeshProTranslator checkButtonTextMeshProTranslator;
+        public Button InstallButton;
+        
+        public Button UpdateButton;
         
         public GameObject ProgressBar;
 
@@ -35,10 +35,10 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Start()
         {
-            Assert.IsNotNull(checkButtonTextMeshProTranslator);
+            Assert.IsNotNull(UpdateButton);
             Assert.IsNotNull(ProgressBar);
             Assert.IsNotNull(PlayButton);
-            Assert.IsNotNull(CheckButton);
+            Assert.IsNotNull(InstallButton);
             Assert.IsNotNull(_animator);
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
@@ -56,22 +56,21 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             {
                 _canInstallApp = canInstallApp;
 
-                if (_canInstallApp)
-                {
-                    checkButtonTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "install" +
-                                                             PatcherLanguages.CloseTag);
-                }
-
-                CheckButton.gameObject.SetActive(_canInstallApp);
+                InstallButton.gameObject.SetActive(_canInstallApp);
+            }).AddTo(this);
+            
+            Patcher.Instance.CanCheckForAppUpdates.ObserveOnMainThread().Subscribe(canCheckForAppUpdates =>
+            {
+                _canCheckForAppUpdates = canCheckForAppUpdates;
+                
+                UpdateButton.gameObject.SetActive(_canCheckForAppUpdates);
             }).AddTo(this);
 
             PlayButton.onClick.AddListener(OnPlayButtonClicked);
-            CheckButton.onClick.AddListener(OnCheckButtonClicked);
+            InstallButton.onClick.AddListener(OnCheckButtonClicked);
+            UpdateButton.onClick.AddListener(OnCheckButtonClicked);
 
             _animator.SetBool("IsOpened", false);
-
-            checkButtonTextMeshProTranslator.SetText(
-                PatcherLanguages.OpenTag + "check_for_updates" + PatcherLanguages.CloseTag);
         }
 
         private void OnPlayButtonClicked()

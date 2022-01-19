@@ -1,4 +1,6 @@
-﻿using UniRx;
+﻿using System;
+using PatchKit.Unity.Utilities;
+using UniRx;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
@@ -11,7 +13,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         private bool _isOpened;
 
         public GameObject dotNewVersion;
-        
+
         public bool IsOpened
         {
             get { return _isOpened; }
@@ -36,10 +38,11 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         {
             IsOpened = false;
             
-            Patcher.Instance.CanInstallApp.ObserveOnMainThread().Subscribe(canInstallApp =>
-            {
-                dotNewVersion.SetActive(canInstallApp);
-            }).AddTo(this);
+            Patcher.Instance.CanCheckForAppUpdates
+                .CombineLatest(Patcher.Instance.CanInstallApp,
+                    (canCheckForAppUpdates, canInstallApp) => canCheckForAppUpdates || canInstallApp)
+                .ObserveOnMainThread()
+                .Subscribe(b => dotNewVersion.SetActive(b));
         }
 
         public void Open()

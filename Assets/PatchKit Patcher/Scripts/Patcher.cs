@@ -676,12 +676,12 @@ namespace PatchKit.Unity.Patcher
 
                 DebugLogger.LogVariable(isInstalled, "isInstalled");
 
+                _isAppInstalled.Value = isInstalled;
+                
                 bool canRepairApp = false; // not implemented
                 bool canInstallApp = !isInstalled;
-                bool canCheckForAppUpdates = isInstalled;
+                bool canCheckForAppUpdates = IsUpdate();
                 bool canStartApp = isInstalled;
-
-                _isAppInstalled.Value = isInstalled;
 
                 _canRepairApp.Value = false;
                 _canInstallApp.Value = false;
@@ -757,6 +757,16 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
+        private bool IsUpdate()
+        {
+            if(_isAppInstalled.Value)
+            {
+                DebugLogger.LogWarning("Bool: " + (_app.GetInstalledVersionId() != _remoteVersionId.Value));
+                return _app.GetInstalledVersionId() != _remoteVersionId.Value;
+            }
+            return false;
+        }
+        
         private void ThreadExecuteUserDecision(CancellationToken cancellationToken)
         {
             bool displayWarningInsteadOfError = false;
@@ -936,14 +946,11 @@ namespace PatchKit.Unity.Patcher
 
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
-                _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically, _updateAppCancellationTokenSource.Token);
-                _remoteVersionId.Value = _app.GetLatestVersionId(!automatically, _updateAppCancellationTokenSource.Token);
-                
                 if (_app.IsFullyInstalled())
                 {
                     _localVersionId.Value = _app.GetInstalledVersionId();
                 }
-
+                
                 var appUpdater = new AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration ) );
 
                 try
