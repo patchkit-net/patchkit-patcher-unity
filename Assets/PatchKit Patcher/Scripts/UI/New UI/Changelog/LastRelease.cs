@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using PatchKit.Unity.UI;
-using PatchKit.Unity.Utilities;
-using TMPro;
+﻿using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI

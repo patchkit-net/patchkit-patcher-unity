@@ -1,21 +1,19 @@
-﻿using System;
-using PatchKit.Unity.Patcher.Cancellation;
+﻿using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
-using TMPro;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
     public class ErrorDialogNewUI : AErrorDialog
     {
-        public TextMeshProUGUI ErrorText;
-        public TextMeshProTranslator errorTextMeshProTranslator;
+        public Text ErrorText;
+        public TextTranslator errorTextTranslator;
 
         private void Start()
         {
-            if (errorTextMeshProTranslator == null)
-                errorTextMeshProTranslator = ErrorText.gameObject.AddComponent<TextMeshProTranslator>();
+            if (errorTextTranslator == null)
+                errorTextTranslator = ErrorText.gameObject.AddComponent<TextTranslator>();
         }
 
         public void Wait()
@@ -38,7 +36,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
 
         private void UpdateMessage(PatcherError error)
         {
-            errorTextMeshProTranslator.SetText(error.Message, error.Args);
+            errorTextTranslator.SetText(error.Message, error.Args);
         }
     }
 }

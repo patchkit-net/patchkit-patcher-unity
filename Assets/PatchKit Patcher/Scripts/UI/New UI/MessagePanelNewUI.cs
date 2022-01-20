@@ -1,10 +1,5 @@
-﻿using System;
-using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit.Unity.Patcher.Debug;
+﻿using PatchKit.Unity.Patcher.Debug;
 using UniRx;
-using PatchKit.Unity.UI.Languages;
-using PatchKit.Unity.Utilities;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 

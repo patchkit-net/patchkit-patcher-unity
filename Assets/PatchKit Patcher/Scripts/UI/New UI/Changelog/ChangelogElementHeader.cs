@@ -1,7 +1,5 @@
 ﻿using PatchKit.Unity.Utilities;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {

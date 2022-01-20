@@ -2,7 +2,7 @@
 using UniRx;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppData.Local;
-using TMPro;
+using UnityEngine.UI;
 
 namespace PatchKit.Unity
 {
@@ -10,7 +10,7 @@ namespace PatchKit.Unity
     {
         private const string TitleCacheKey = "app-display-name";
 
-        public TextMeshProUGUI Text;
+        public Text Text;
 
         private bool _hasBeenSet;
 

@@ -6,16 +6,16 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {
-    [RequireComponent(typeof(TextMeshProTranslator))]
+    [RequireComponent(typeof(TextTranslator))]
     public class DownloadSpeedNewUI : MonoBehaviour
     {
-        private TextMeshProTranslator _textMeshProTranslator;
+        private TextTranslator _textTranslator;
 
         private string _downloadSpeedUnit;
 
         private void Start()
         {
-            _textMeshProTranslator = GetComponent<TextMeshProTranslator>();
+            _textTranslator = GetComponent<TextTranslator>();
 
             var downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
@@ -31,7 +31,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                         GetFormattedDownloadSpeed);
             }, string.Empty);
 
-            text.ObserveOnMainThread().Subscribe(textTranslation => _textMeshProTranslator.SetText(textTranslation))
+            text.ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
                 .AddTo(this);
         }
 

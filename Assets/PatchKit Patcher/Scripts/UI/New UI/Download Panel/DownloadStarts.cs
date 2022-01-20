@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         {
             _textTranslator = GetComponent<ITextTranslator>();
             if (_textTranslator == null)
-                _textTranslator = gameObject.AddComponent<TextMeshProTranslator>();
+                _textTranslator = gameObject.AddComponent<TextTranslator>();
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {

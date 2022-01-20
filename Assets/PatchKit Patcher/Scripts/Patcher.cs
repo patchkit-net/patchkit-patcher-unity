@@ -761,7 +761,6 @@ namespace PatchKit.Unity.Patcher
         {
             if(_isAppInstalled.Value)
             {
-                DebugLogger.LogWarning("Bool: " + (_app.GetInstalledVersionId() != _remoteVersionId.Value));
                 return _app.GetInstalledVersionId() != _remoteVersionId.Value;
             }
             return false;

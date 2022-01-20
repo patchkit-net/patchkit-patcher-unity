@@ -7,7 +7,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 {
     public class PackSizeCalculate : MonoBehaviour
     {
-        public TextMeshProTranslator sizeTextMeshProTranslator;
+        public TextTranslator sizeTextTranslator;
         
         void Start()
         {
@@ -21,7 +21,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                     return String.Empty;
                 });
 
-            text.ObserveOnMainThread().Subscribe(t => sizeTextMeshProTranslator.SetText(t)).AddTo(this);
+            text.ObserveOnMainThread().Subscribe(t => sizeTextTranslator.SetText(t)).AddTo(this);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 {
     public class ProgressBarNewUI : MonoBehaviour
     {
-        public TextMeshProTranslator TextMeshProTranslator;
+        public TextTranslator TextTranslator;
 
         public Image Image;
 
@@ -44,7 +44,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void SetProgressBarText(string text)
         {
-            TextMeshProTranslator.SetText(text);
+            TextTranslator.SetText(text);
         }
 
         private void SetProgress(UpdateData data)
@@ -125,7 +125,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Start()
         {
-            Assert.IsNotNull(TextMeshProTranslator);
+            Assert.IsNotNull(TextTranslator);
 
             var progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
             var isUpdatingIdle = Patcher.Instance.UpdaterStatus
