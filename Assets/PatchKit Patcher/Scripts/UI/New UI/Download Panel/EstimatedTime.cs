@@ -47,26 +47,22 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
             if (span.TotalDays > 1.0)
             {
-                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "day" + PatcherLanguages.CloseTag,
-                    span.TotalDays);
+                return FormatPlural("{0:0} ", "day", span.TotalDays);
             }
 
             if (span.TotalHours > 1.0)
             {
-                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "hour" + PatcherLanguages.CloseTag,
-                    span.TotalHours);
+                return FormatPlural("{0:0} ", "hour", span.TotalHours);
             }
 
             if (span.TotalMinutes > 1.0)
             {
-                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "minute" + PatcherLanguages.CloseTag,
-                    span.TotalMinutes);
+                return FormatPlural("{0:0} ", "minute", span.TotalMinutes);
             }
 
             if (span.TotalSeconds > 1.0)
             {
-                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "second" + PatcherLanguages.CloseTag,
-                    span.TotalSeconds);
+                return FormatPlural("{0:0} ", "second", span.TotalSeconds);
             }
 
             return PatcherLanguages.OpenTag + "a_moment" + PatcherLanguages.CloseTag;
@@ -91,7 +87,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private static string FormatPlural(string format, string timeUnit, double value)
         {
-            return string.Format(format, value) + timeUnit + GetPlural(value);
+            return string.Format(format, value) + PatcherLanguages.OpenTag +  timeUnit + GetPlural(value) + PatcherLanguages.CloseTag;
         }
 
         private static string GetPlural(double value)
