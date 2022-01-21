@@ -93,5 +93,9 @@
   "you_have_no_current_tasks": "You have no current tasks",
   "checking_path_length": "Checking path length...",
   "update": "Update",
-  "releases":"Releases"
+  "releases":"Releases",
+  "last_release": "Last release",
+  "history": "History",
+  "title": "Title",
+  "release_date": "Release date"
 }

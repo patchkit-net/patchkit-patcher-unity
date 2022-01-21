@@ -93,5 +93,9 @@
   "you_have_no_current_tasks": "Nie masz żadnych bieżących zadań",
   "checking_path_length": "Sprawdźanie długości ścieżki...",
   "update": "Aktualizuj",
-  "releases":"Wydania"
+  "releases":"Wydania",
+  "last_release": "Ostatnie wydanie",
+  "history": "Historia",
+  "title": "Tytuł",
+  "release_date": "Data wydania"
 }

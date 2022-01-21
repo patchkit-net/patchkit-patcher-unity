@@ -94,5 +94,9 @@
   "you_have_no_current_tasks": "Sie haben keine aktuellen Aufgaben",
   "checking_path_length": "Pfadlänge prüfen...",
   "update": "Aktualisieren",
-  "releases":"Freigaben"
+  "releases":"Freigaben",
+  "last_release": "Last release",
+  "history": "History",
+  "title": "Titel",
+  "release_date": "Veröffentlichungsdatum"
 }
