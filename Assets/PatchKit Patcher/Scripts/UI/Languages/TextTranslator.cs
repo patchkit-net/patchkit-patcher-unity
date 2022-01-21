@@ -34,7 +34,7 @@ namespace PatchKit.Unity.UI.Languages
                 else
                 {
                     if(_args != null)
-                        _textComponent.text = PatcherLanguages.GetTranslationText(string.Format(_text, _args));
+                        _textComponent.text = PatcherLanguages.GetTranslationText(_text, _args);
                     else
                         _textComponent.text = PatcherLanguages.GetTranslationText(_text);
                 }

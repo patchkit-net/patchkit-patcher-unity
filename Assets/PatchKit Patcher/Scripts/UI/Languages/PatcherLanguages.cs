@@ -96,7 +96,7 @@ namespace PatchKit.Unity.UI.Languages
             return Fields[key];
         }
         
-        public static string GetTranslationText(string text)
+        public static string GetTranslationText(string text, params object[] args)
         {
             if (string.IsNullOrEmpty(text))
                 return "";
@@ -106,7 +106,7 @@ namespace PatchKit.Unity.UI.Languages
                 Start = text.IndexOf(OpenTag, 0) + OpenTag.Length;
                 End = text.IndexOf(CloseTag, Start);
                 string key = text.Substring(Start, End - Start);
-                text = text.Replace(OpenTag + key + CloseTag, GetTranslation(key));
+                text = string.Format(text.Replace(OpenTag + key + CloseTag, GetTranslation(key)), args);
             }
             return text;
         }
