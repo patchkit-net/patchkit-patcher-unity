@@ -4,5 +4,7 @@
     {
         void SetValue(string key, string value);
         string GetValue(string key, string defaultValue = null);
+        void SetInt(string key, int value);
+        int GetInt(string key, int defaultValue = 0);
     }
 }

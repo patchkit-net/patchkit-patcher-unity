@@ -1,6 +1,4 @@
-﻿using PatchKit.Logging;
-using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Utilities;
+﻿using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
@@ -16,7 +14,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private string HashSecret(string secret)
         {
-
             return HashCalculator.ComputeMD5Hash(secret);
         }
 
@@ -38,6 +35,22 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             string result = string.Empty;
             UnityDispatcher.Invoke(() => result = PlayerPrefs.GetString(FormatKey(key), defaultValue)).WaitOne();
+            return result;
+        }
+
+        public void SetInt(string key, int value)
+        {
+            UnityDispatcher.Invoke(() =>
+            {
+                PlayerPrefs.SetInt(FormatKey(key), value);
+                PlayerPrefs.Save();
+            }).WaitOne();
+        }
+
+        public int GetInt(string key, int defaultValue = 0)
+        {
+            int result = 0;
+            UnityDispatcher.Invoke(() => result = PlayerPrefs.GetInt(FormatKey(key), defaultValue)).WaitOne();
             return result;
         }
     }

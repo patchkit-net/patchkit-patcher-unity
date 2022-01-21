@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using PatchKit.Unity.Patcher.AppData.Local;
+using PatchKit.Unity.Patcher.Debug;
+using UniRx;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
@@ -6,13 +9,23 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
     public class SettingsList : MonoBehaviour
     {
         public Toggle ToggleAnalytics;
+        
+        private bool _hasBeenSet;
+        private string _appSecret;
 
         private void Awake()
         {
-            if (PlayerPrefs.GetInt("analytics") == 1)
-            {
-                SetAnalytics = true;
-            }
+            var patcher = Patcher.Instance;
+
+            Assert.IsNotNull(patcher);
+
+            patcher.Data
+                .ObserveOnMainThread()
+                .Select(x => x.AppSecret)
+                .SkipWhile(string.IsNullOrEmpty)
+                .First()
+                .Subscribe(UseCachedAnalytics)
+                .AddTo(this);
         }
 
         public bool SetAnalytics
@@ -21,9 +34,30 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             {
                 PatcherStatistics.SetPermitStatistics(value);
                 ToggleAnalytics.isOn = value;
-                PlayerPrefs.SetInt("analytics", value ? 1 : 0);
-                PlayerPrefs.Save();
+                GetCache(_appSecret).SetInt(CollectUsageDate.CachePatchKitAnalytics, value ? 1 : 0);
             }
+        }
+
+        private void UseCachedAnalytics(string appSecret)
+        {
+            if (_hasBeenSet)
+            {
+                return;
+            }
+
+            _appSecret = appSecret;
+
+            if (GetCache(_appSecret).GetInt(CollectUsageDate.CachePatchKitAnalytics) == 1)
+            {
+                SetAnalytics = true;
+            }
+
+            _hasBeenSet = true;
+        }
+
+        private ICache GetCache(string appSecret)
+        {
+            return new UnityCache(appSecret);
         }
     }
 }

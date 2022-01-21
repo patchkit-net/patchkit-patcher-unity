@@ -12,6 +12,7 @@ namespace PatchKit.Unity.UI.Languages
     {
         private static Dictionary<String, String> Fields;
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherLanguages));
+        private const string CachePatchKitLanguages = "patchkit-language";
 
         public const string OpenTag = "<key>";
         public const string CloseTag = "</key>";
@@ -21,14 +22,14 @@ namespace PatchKit.Unity.UI.Languages
         public static void SetLanguage(string newlanguage)
         {
             language = newlanguage;
-            PlayerPrefs.SetString("language", language);
+            PlayerPrefs.SetString(CachePatchKitLanguages, language);
             PlayerPrefs.Save();
             ChangeLaguage();
         }
         
         private static void LoadLanguage()
         {
-            language = PlayerPrefs.GetString("language");
+            language = PlayerPrefs.GetString(CachePatchKitLanguages);
             if (String.IsNullOrEmpty(language))
             {
                 CultureInfo cultureInfo = CurrentCultureInfo.GetCurrentCultureInfo();

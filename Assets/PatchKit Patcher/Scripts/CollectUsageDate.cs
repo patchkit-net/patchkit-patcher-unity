@@ -1,9 +1,8 @@
 ﻿using System;
-using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.UI.NewUI;
 using PatchKit.Unity.Utilities;
-using UnityEngine;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -13,6 +12,8 @@ namespace PatchKit.Unity.Patcher
 
         private CollectUsageData _collectUsageData;
         private readonly Api.Models.Main.App _appInfo;
+        
+        public const string CachePatchKitAnalytics = "patchkit-analytics";
 
         enum CollectUsageData
         {
@@ -42,7 +43,7 @@ namespace PatchKit.Unity.Patcher
             {
                 int analytics = 2;
 
-                UnityDispatcher.Invoke(() => analytics = PlayerPrefs.GetInt("analytics", 2)).WaitOne();
+                UnityDispatcher.Invoke(() => analytics = GetCache(Patcher.Instance.AppSecret).GetInt(CachePatchKitAnalytics, 2)).WaitOne();
                 
                 if (analytics == 2)
                 {
@@ -71,6 +72,11 @@ namespace PatchKit.Unity.Patcher
         public bool IsBanner()
         {
             return _collectUsageData == CollectUsageData.ask_banner;
+        }
+        
+        private ICache GetCache(string appSecret)
+        {
+            return new UnityCache(appSecret);
         }
     }
 }
