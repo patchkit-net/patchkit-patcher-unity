@@ -2,14 +2,7 @@
 {
     public abstract class ALicenseDialog : Dialog<ALicenseDialog>, ILicenseDialog
     {
-        public virtual void SetKey(string key)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public virtual LicenseDialogResult Display(LicenseDialogMessageType messageType)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract void SetKey(string key);
+        public abstract LicenseDialogResult Display(LicenseDialogMessageType messageType);
     }
 }
