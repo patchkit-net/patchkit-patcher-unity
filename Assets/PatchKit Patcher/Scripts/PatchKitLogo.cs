@@ -1,21 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 using UniRx;
 using PatchKit.Unity.Patcher.Debug;
 
 namespace PatchKit.Unity
 {
-
     [RequireComponent(typeof(Button))]
     [RequireComponent(typeof(Image))]
-    public class PatchKitLogo : MonoBehaviour
+    public class PatchKitLogo : CursorManager
     {
         private const string PatchKitWebsiteUrl = "https://patchkit.net/?source=patcher";
-
-        public Texture2D CursorTexture;
-
-        public Vector2 CursorHotspot;
 
         private Image _image;
 
@@ -52,16 +46,6 @@ namespace PatchKit.Unity
         private void Resolve(bool isWhitelabel)
         {
             ChangeVisibility(!isWhitelabel);
-        }
-
-        public void OnMouseEnter()
-        {
-            Cursor.SetCursor(CursorTexture, CursorHotspot, CursorMode.Auto);
-        }
-
-        public void OnMouseExit()
-        {
-            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         }
 
         public void GoToPatchKit()

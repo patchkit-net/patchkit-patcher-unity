@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {
-    public class ChangelogElementHeader : MonoBehaviour
+    public class ChangelogElementHeader : CursorManager
     {
         public Transform Body;
         public GameObject ArrowButton;
