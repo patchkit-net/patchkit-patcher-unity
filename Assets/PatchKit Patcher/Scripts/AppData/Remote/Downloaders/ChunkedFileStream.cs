@@ -188,14 +188,18 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 
                 if (ChunkFullyInBuffer())
                 {
-                    if (BufferedChunkValid())
+                    byte[] bufferHash = _hashFunction(_buffer, 0, (int) Math.Min(_chunksData.ChunkSize, RemainingLength));
+                    byte[] chunkHash = _chunksData.Chunks[_chunkIndex + _startChunk].Hash;
+                    
+                    if (BufferedChunkValid(bufferHash, chunkHash))
                     {
                         FlushBuffer();
                     }
                     else
                     {
                         DiscardBuffer();
-                        throw new InvalidChunkDataException("Invalid chunk data.");
+                        throw new InvalidChunkDataException("Invalid chunk data. Expected " +
+                                                            BitConverter.ToString(chunkHash) + ", got " + BitConverter.ToString(bufferHash));
                     }
                 }
             } while (count > 0);
@@ -206,11 +210,8 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
             return _bufferPos == Math.Min(_chunksData.ChunkSize, RemainingLength);
         }
 
-        private bool BufferedChunkValid()
+        private bool BufferedChunkValid(byte[] bufferHash, byte[] chunkHash)
         {
-            byte[] bufferHash = _hashFunction(_buffer, 0, (int) Math.Min(_chunksData.ChunkSize, RemainingLength));
-            byte[] chunkHash = _chunksData.Chunks[_chunkIndex + _startChunk].Hash;
-
             return bufferHash.SequenceEqual(chunkHash);
         }
 
