@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Retrying the failed operation from error dialog
 
+## [3.17.9.3]
+### Added
+- More information about invalid chunk data exception
+
+## [3.17.9.2]
+### Changed
+- HDPI scale thresholds
+
+## [3.17.9.1]
+### Changed
+- HDPI scale thresholds
+
 ## [3.17.9.0]
 ### Added
 - Support HDPI for debug menu
