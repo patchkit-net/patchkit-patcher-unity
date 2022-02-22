@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.9.3]
+### Added
+- More information about invalid chunk data exception
+
 ## [3.17.9.2]
 ### Changed
 - HDPI scale thresholds

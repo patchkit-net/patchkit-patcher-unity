@@ -5,7 +5,7 @@ namespace PatchKit.Unity.Patcher
         public const int Major = 3;
         public const int Minor = 17;
         public const int Patch = 9;
-        public const int Hotfix = 2;
+        public const int Hotfix = 3;
 
         public static string Value
         {
