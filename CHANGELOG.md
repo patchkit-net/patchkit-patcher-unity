@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.11.0]
+### Fixed
+- Minimize and close buttons invisible with popup
+
 ## [3.17.10.0]
 ### Changed
 - Improve speed of getting API data by caching it
