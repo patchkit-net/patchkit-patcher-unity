@@ -4,12 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.17.11.0]
+## [3.17.12.0]
 ### Changed
 - Disable checking hashes for repairing after failed installation if files count is over 10000
 
 ### Fixed
 - Wrong cost calculation of repairing while making installation decision
+
+## [3.17.11.0]
+### Fixed
+- Minimize and close buttons invisible with popup
 
 ## [3.17.10.0]
 ### Changed
@@ -17,6 +21,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Retrying the failed operation from error dialog
+
+## [3.17.9.3]
+### Added
+- More information about invalid chunk data exception
+
+## [3.17.9.2]
+### Changed
+- HDPI scale thresholds
+
+## [3.17.9.1]
+### Changed
+- HDPI scale thresholds
 
 ## [3.17.9.0]
 ### Added
