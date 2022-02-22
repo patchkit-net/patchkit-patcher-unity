@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.11.0]
+### Fixed
+- Minimize and close buttons invisible with popup
+
+## [3.17.10.0]
+### Changed
+- Improve speed of getting API data by caching it
+
+### Fixed
+- Retrying the failed operation from error dialog
+
+## [3.17.9.3]
+### Added
+- More information about invalid chunk data exception
+
+## [3.17.9.2]
+### Changed
+- HDPI scale thresholds
+
+## [3.17.9.1]
+### Changed
+- HDPI scale thresholds
+
 ## [3.17.9.0]
 ### Added
 - Support HDPI for debug menu
