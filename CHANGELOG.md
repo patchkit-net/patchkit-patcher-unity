@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Wrong cost calculation of repairing while making installation decision
+- Support HDPI for debug menu
 
 ## [3.17.11.0]
 ### Fixed

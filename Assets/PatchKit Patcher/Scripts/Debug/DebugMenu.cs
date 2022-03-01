@@ -20,12 +20,13 @@ namespace PatchKit.Unity.Patcher.Debug
         private GraphicRaycaster _graphicRaycaster;
         private PlatformType _platformType;
         private bool _wasInitialized;
-
+        private Vector2 _pivotCenterScreen;
 
         void Start()
         {
             _graphicRaycaster = FindObjectOfType<GraphicRaycaster>();
             _platformType = Platform.GetPlatformType();
+            _pivotCenterScreen = new Vector2(Screen.width / 2, Screen.height / 2);
         }
 
         void OnGUI()
@@ -48,9 +49,8 @@ namespace PatchKit.Unity.Patcher.Debug
                 if (!_wasInitialized)
                 {
                     _wasInitialized = true;
-                    float scale = ScreenScale.Value;
-                    float windowWidth = 250 * scale;
-                    float windowHeight = 200 * scale;
+                    float windowWidth = 250;
+                    float windowHeight = 200;
                     float x = (Screen.width - windowWidth) / 2;
                     float y = (Screen.height - windowHeight) / 2;
                     float popupRectY = (Screen.height - 120) / 2;
@@ -58,7 +58,8 @@ namespace PatchKit.Unity.Patcher.Debug
                     _popupRect = new Rect(x, popupRectY, windowWidth, 120);
                     _texturePopupRect = new Rect(0, popupRectY - y, windowWidth, 120);
                 }
-
+                
+                GUIUtility.ScaleAroundPivot(Vector2.one * ScreenScale.Value, _pivotCenterScreen);
                 GUI.DrawTexture(_rect, Texture2D.whiteTexture);
                 GUI.Window(0, _rect, Draw, "Debug Menu");
                 if (_showPopup)
