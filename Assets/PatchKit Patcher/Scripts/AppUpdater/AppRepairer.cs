@@ -1,10 +1,6 @@
 using System;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
 using System.Collections.Generic;
-using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
@@ -33,7 +29,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         private int _lowestVersionWithContentId;
 
         private const double IncreaseRepairCost = 1.5d;
-
 
         public AppRepairer(AppUpdaterContext context, UpdaterStatus status)
         {
@@ -162,17 +157,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
         private IEnumerable<FileIntegrity> FilesNeedFixing(VersionIntegrity results)
         {
-            var missingFiles = results.Files.Where(f => f.Status == FileIntegrityStatus.MissingData);
-            var invalidSizeFiles = results.Files.Where(f => f.Status == FileIntegrityStatus.InvalidSize);
+            var invalidFiles = results.Files.Where(f => f.Status != FileIntegrityStatus.Ok);
 
-            return missingFiles.Concat(invalidSizeFiles);
+            return invalidFiles;
         }
 
         private long CalculateRepairCost(AppContentSummary contentSummary, IEnumerable<FileIntegrity> filesToRepair)
         {
             return filesToRepair
                 .Select(f => contentSummary.Files.FirstOrDefault(e => e.Path == f.FileName))
-                .Sum(f => f.Size);
+                .Sum(f => Math.Max(contentSummary.Chunks.Size, f.Size));
         }
 
         private void ReinstallContent(PatchKit.Unity.Patcher.Cancellation.CancellationToken cancellationToken)

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.12.0]
+### Changed
+- Disable checking hashes for repairing after failed installation if files count is over 10000
+
+### Fixed
+- Wrong cost calculation of repairing while making installation decision
+- Support HDPI for debug menu
+
 ## [3.17.11.0]
 ### Fixed
 - Minimize and close buttons invisible with popup
