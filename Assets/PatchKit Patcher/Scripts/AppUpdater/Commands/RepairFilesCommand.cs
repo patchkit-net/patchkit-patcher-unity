@@ -126,17 +126,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     };
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
-                    string nameHash;
-                    if (mapHashExtracted.TryGetHash(entry.Name, out nameHash))
-                    {
-                        EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
-                            Path.Combine(_localData.Path, entry.Name), cancellationToken);
-                    }
-                    else
-                    {
-                        throw new Exception(string.Format("Cannot find hash for file {0} in mapHash.", entry.Name));
-                    }
+                    string nameHash = mapHashExtracted.GetNameHash(entry.Name);
 
+                    EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
+                        Path.Combine(_localData.Path, entry.Name), cancellationToken);
+                    
                     repairStatus.IsActive.Value = false;
                 });
             }

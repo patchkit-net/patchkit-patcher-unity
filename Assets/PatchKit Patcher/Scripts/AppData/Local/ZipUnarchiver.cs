@@ -73,7 +73,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private void UnarchiveEntry(ZipEntry zipEntry)
         {
             DebugLogger.Log(string.Format("Unarchiving entry {0}", zipEntry.FileName));
-            string destPath = Path.Combine(_destinationDirPath, _mapHashExtractedFiles.Add(zipEntry.FileName));
+            string destPath = Path.Combine(_destinationDirPath, _mapHashExtractedFiles.GetNameHash(zipEntry.FileName));
             using (var target = new FileStream(destPath, FileMode.Create))
             {
                 zipEntry.Extract(target);

@@ -140,25 +140,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     cancellationToken.ThrowIfCancellationRequested();
 
                     string filePath = _versionContentSummary.Files[i].Path;
-                    string nameHash;
-                    if (mapHashExtractedFiles.TryGetHash(filePath, out nameHash))
-                    {
-                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Files[i].Size);
+                    string nameHash = mapHashExtractedFiles.GetNameHash(filePath);
+       
+                    var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Files[i].Size);
 
-                        if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
-                        {
-                            DebugLogger.LogWarning(
-                                "Skipping unexisting file because I've been expecting unpacking errors: " +
-                                sourceFile.Name);
-                        }
-                        else
-                        {
-                            InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
-                        }
+                    if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
+                    {
+                        DebugLogger.LogWarning(
+                            "Skipping unexisting file because I've been expecting unpacking errors: " +
+                            sourceFile.Name);
                     }
                     else
                     {
-                        throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", filePath));
+                        InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;

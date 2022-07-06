@@ -33,7 +33,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private OperationStatus _addFilesStatusReporter;
         private OperationStatus _modifiedFilesStatusReporter;
         private OperationStatus _removeFilesStatusReporter;
-        private OperationStatus _unarchivePackageStatusReporter;
+        private ProgressBytesFilesStatus _unarchivePackageStatusReporter;
 
         private AppContentSummary _previousContentSummary;
         private AppContentSummary _contentSummary;
@@ -103,7 +103,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 double unarchivePackageWeight = StatusWeightHelper.GetUnarchivePackageWeight(_diffSummary.Size);
                 _logger.LogTrace("unarchivePackageWeight = " + unarchivePackageWeight);
-                _unarchivePackageStatusReporter = new OperationStatus
+                _unarchivePackageStatusReporter = new ProgressBytesFilesStatus("Unarchiving package")
                 {
                     Weight = {Value = unarchivePackageWeight}
                 };
@@ -265,8 +265,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _unarchivePackageStatusReporter.IsActive.Value = true;
             _unarchivePackageStatusReporter.Description.Value = "Unarchiving package...";
+            _unarchivePackageStatusReporter.TotalBytes.Value = _diffSummary.Size;
 
-            int lastEntry = 0;
+            int lastEntry = 0, nextEntry = -1;
 
             unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
             {
@@ -278,12 +279,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     _logger.LogTrace("entry = " + entry);
                 }
 
-                var entryMinProgress = (entry - 1) / (double) amount;
-                var entryMaxProgress = entry / (double) amount;
+                if (nextEntry == entry) return;
+                nextEntry = entry;
+                
+                string entryName = _mapHashExtractedFiles.GetNameHash(name);
 
-                _unarchivePackageStatusReporter.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
-
-                _unarchivePackageStatusReporter.Description.Value = string.Format("Unarchiving package ({0}/{1})...", entry, amount);
+                _logger.LogWarning(Path.Combine(packageDirPath, entryName) + Suffix);
+                _unarchivePackageStatusReporter.ObserveFile(Path.Combine(packageDirPath, entryName) + Suffix);
             };
 
             unarchiver.Unarchive(cancellationToken);
@@ -456,7 +458,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DirectoryOperations.CreateDirectory(dirPath, cancellationToken);
             _logger.LogDebug("Directory created.");
 
-            _logger.LogDebug("Add directory entry processed.");
+            _logger.LogDebug("GetNameHash directory entry processed.");
         }
 
         private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken,
@@ -472,40 +474,35 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", filePath)); 
             }
 #endif
-            string nameHash;
-            if (_mapHashExtractedFiles.TryGetHash(fileName, out nameHash))
+            string nameHash = _mapHashExtractedFiles.GetNameHash(fileName);
+            var sourceFilePath = Path.Combine(packageDirPath, nameHash + suffix);
+            
+            _logger.LogTrace("sourceFilePath = " + sourceFilePath);
+            _logger.LogTrace("sourceFileName = " + fileName);
+            
+            if (!File.Exists(sourceFilePath))
             {
-                var sourceFilePath = Path.Combine(packageDirPath, nameHash + suffix);
-                _logger.LogTrace("sourceFilePath = " + sourceFilePath);
-
-                if (!File.Exists(sourceFilePath))
-                {
-                    throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package.",
-                        fileName));
-                }
-                
-                _logger.LogDebug("Creating file parent directories in local data...");
-                var fileParentDirPath = Path.GetDirectoryName(filePath);
-                _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
-                //TODO: Assert that fileParentDirPath is not null
-                // ReSharper disable once AssignNullToNotNullAttribute
-                DirectoryOperations.CreateDirectory(fileParentDirPath, cancellationToken);
-                _logger.LogDebug("File parent directories created in local data.");
-
-                _logger.LogDebug("Copying file to local data (overwriting if needed)...");
-                FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
-                _logger.LogDebug("File copied to local data.");
-
-                _localMetaData.RegisterEntry(fileName, _versionId, 
-                    _contentSummary.Files.First(x => x.Path == fileName).Size, 
-                    fileIndex == _diffSummary.AddedFiles.Length - 1);
-
-                _logger.LogDebug("Add file entry processed.");
+                throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package.",
+                    fileName));
             }
-            else
-            {
-                throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", fileName));
-            }
+            
+            _logger.LogDebug("Creating file parent directories in local data...");
+            var fileParentDirPath = Path.GetDirectoryName(filePath);
+            _logger.LogTrace("fileParentDirPath = " + fileParentDirPath);
+            //TODO: Assert that fileParentDirPath is not null
+            // ReSharper disable once AssignNullToNotNullAttribute
+            DirectoryOperations.CreateDirectory(fileParentDirPath, cancellationToken);
+            _logger.LogDebug("File parent directories created in local data.");
+
+            _logger.LogDebug("Copying file to local data (overwriting if needed)...");
+            FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
+            _logger.LogDebug("File copied to local data.");
+
+            _localMetaData.RegisterEntry(fileName, _versionId, 
+                _contentSummary.Files.First(x => x.Path == fileName).Size, 
+                fileIndex == _diffSummary.AddedFiles.Length - 1);
+
+            _logger.LogDebug("GetNameHash file entry processed.");
         }
 
         private void ProcessModifiedFiles(string packageDirPath, string suffix, TemporaryDirectory tempDiffDir,
@@ -568,37 +565,32 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 _logger.LogDebug("Patching is necessary. Generating new file with patched content...");
 
-                string nameHash;
-                if (_mapHashExtractedFiles.TryGetHash(fileName, out nameHash))
+                string nameHash = _mapHashExtractedFiles.GetNameHash(fileName);
+      
+                var sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
+                _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
+                _logger.LogTrace("Name = " + fileName);
+
+                if (!File.Exists(sourceDeltaFilePath))
                 {
-                    var sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
-                    _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
-
-                    if (!File.Exists(sourceDeltaFilePath))
-                    {
-                        throw new MissingFileFromPackageException(string.Format(
-                            "Cannot find delta file {0} in diff package.",
-                            fileName));
-                    }
-
-                    var newFilePath = tempDiffDir.GetUniquePath();
-                    _logger.LogTrace("newFilePath = " + newFilePath);
-
-                    var filePatcher = new FilePatcher(filePath, sourceDeltaFilePath, newFilePath);
-                    filePatcher.Patch();
-
-                    _logger.LogDebug("New file generated. Deleting old file in local data...");
-                    FileOperations.Delete(filePath, cancellationToken);
-
-                    _logger.LogDebug("Old file deleted. Moving new file to local data...");
-                    FileOperations.Move(newFilePath, filePath, cancellationToken);
-
-                    _logger.LogDebug("New file moved.");
+                    throw new MissingFileFromPackageException(string.Format(
+                        "Cannot find delta file {0} in diff package.",
+                        fileName));
                 }
-                else
-                {
-                    throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", fileName));
-                }
+
+                var newFilePath = tempDiffDir.GetUniquePath();
+                _logger.LogTrace("newFilePath = " + newFilePath);
+
+                var filePatcher = new FilePatcher(filePath, sourceDeltaFilePath, newFilePath);
+                filePatcher.Patch();
+
+                _logger.LogDebug("New file generated. Deleting old file in local data...");
+                FileOperations.Delete(filePath, cancellationToken);
+
+                _logger.LogDebug("Old file deleted. Moving new file to local data...");
+                FileOperations.Move(newFilePath, filePath, cancellationToken);
+
+                _logger.LogDebug("New file moved.");
             }
             else
             {

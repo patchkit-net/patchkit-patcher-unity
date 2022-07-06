@@ -11,21 +11,22 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             MapHash = new Dictionary<string, string>();
         }
         
-        public string Add(string path)
+        public string GetNameHash(string path)
         {
-            string nameHash = HashCalculator.ComputeMD5Hash(path);
+            string nameHash;
+            if (TryGetHash(path, out nameHash))
+            {
+                return nameHash;
+            }
+            
+            nameHash = HashCalculator.ComputeMD5Hash(path);
             MapHash.Add(path, nameHash);
             return nameHash;
         }
 
-        public bool TryGetHash(string path,out string nameHash)
+        private bool TryGetHash(string path, out string nameHash)
         {
-            if (MapHash.TryGetValue(path, out nameHash))
-            {
-                return true;
-            }
-
-            return false;
+            return MapHash.TryGetValue(path, out nameHash);
         }
     }
 }
