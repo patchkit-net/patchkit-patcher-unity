@@ -31,7 +31,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly IRemoteMetaData _remoteMetaData;
 
         private OperationStatus _addFilesStatusReporter;
-        private OperationStatus _modifiedFilesStatusReporter;
+        private ProgressBytesFilesStatus _modifiedFilesStatusReporter;
         private OperationStatus _removeFilesStatusReporter;
         private ProgressBytesFilesStatus _unarchivePackageStatusReporter;
 
@@ -119,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 double modifiedFilesWeight = StatusWeightHelper.GetModifyDiffFilesWeight(_diffSummary);
                 _logger.LogTrace("modifiedFilesWeight = " + modifiedFilesWeight);
-                _modifiedFilesStatusReporter = new OperationStatus
+                _modifiedFilesStatusReporter = new ProgressBytesFilesStatus("Applying diffs")
                 {
                     Weight = {Value = modifiedFilesWeight}
                 };
@@ -283,8 +283,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 nextEntry = entry;
                 
                 string entryName = _mapHashExtractedFiles.GetNameHash(name);
-
-                _logger.LogWarning(Path.Combine(packageDirPath, entryName) + Suffix);
+                
                 _unarchivePackageStatusReporter.ObserveFile(Path.Combine(packageDirPath, entryName) + Suffix);
             };
 
@@ -512,6 +511,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _modifiedFilesStatusReporter.IsActive.Value = true;
             _modifiedFilesStatusReporter.Description.Value = "Applying diffs...";
+            _modifiedFilesStatusReporter.TotalBytes.Value = GetTotalSizeModifiedFiles(packageDirPath);
 
             for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
             {
@@ -523,9 +523,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 {
                     PatchFile(entryName, packageDirPath, suffix, tempDiffDir, cancellationToken, i);
                 }
-
-                _modifiedFilesStatusReporter.Progress.Value = (i + 1) / (double) _diffSummary.ModifiedFiles.Length;
-                _modifiedFilesStatusReporter.Description.Value = string.Format("Applying diffs ({0}/{1})...", i + 1, _diffSummary.ModifiedFiles.Length);
             }
 
             _modifiedFilesStatusReporter.Progress.Value = 1.0;
@@ -534,7 +531,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Diff modified files processed.");
         }
 
+        private long GetTotalSizeModifiedFiles(string packageDirPath)
+        {
+            long totalSize = 0;
+            foreach(var modifiedFiles in _diffSummary.ModifiedFiles.Where(f => !_diffSummary.UnchangedFiles.Contains(f)))
+            {
+                string nameHash = _mapHashExtractedFiles.GetNameHash(modifiedFiles);
+                string filePath = Path.Combine(packageDirPath, nameHash) + Suffix;
+                if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                {
+                    totalSize += new FileInfo(filePath).Length;
+                }
+            }
 
+            return totalSize;
+        }
+        
         private void PatchFile(
             string fileName, string packageDirPath, string suffix,
             TemporaryDirectory tempDiffDir, CancellationToken cancellationToken, int fileIndex)
@@ -566,6 +578,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _logger.LogDebug("Patching is necessary. Generating new file with patched content...");
 
                 string nameHash = _mapHashExtractedFiles.GetNameHash(fileName);
+                _modifiedFilesStatusReporter.ObserveFile(fileName);
       
                 var sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
                 _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
