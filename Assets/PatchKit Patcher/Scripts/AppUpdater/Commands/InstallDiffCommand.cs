@@ -265,7 +265,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _unarchivePackageStatusReporter.IsActive.Value = true;
             _unarchivePackageStatusReporter.Description.Value = "Unarchiving package...";
-            _unarchivePackageStatusReporter.TotalBytes.Value = _diffSummary.Size;
+            _unarchivePackageStatusReporter.TotalBytes.Value = _diffSummary.UncompressedSize;
 
             int lastEntry = 0, nextEntry = -1;
 
@@ -511,7 +511,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _modifiedFilesStatusReporter.IsActive.Value = true;
             _modifiedFilesStatusReporter.Description.Value = "Applying diffs...";
-            _modifiedFilesStatusReporter.TotalBytes.Value = GetTotalSizeModifiedFiles(packageDirPath);
+            _modifiedFilesStatusReporter.TotalBytes.Value = GetTotalSizeModifiedFiles();
 
             for (int i = 0; i < _diffSummary.ModifiedFiles.Length; i++)
             {
@@ -531,20 +531,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Diff modified files processed.");
         }
 
-        private long GetTotalSizeModifiedFiles(string packageDirPath)
+        private long GetTotalSizeModifiedFiles()
         {
-            long totalSize = 0;
-            foreach(var modifiedFiles in _diffSummary.ModifiedFiles.Where(f => !_diffSummary.UnchangedFiles.Contains(f)))
-            {
-                string nameHash = _mapHashExtractedFiles.GetNameHash(modifiedFiles);
-                string filePath = Path.Combine(packageDirPath, nameHash) + Suffix;
-                if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
-                {
-                    totalSize += new FileInfo(filePath).Length;
-                }
-            }
-
-            return totalSize;
+            var modifiedFiles = _diffSummary.ModifiedFiles.Where(f => !_diffSummary.UnchangedFiles.Contains(f));
+            return _contentSummary.Files.Where(f => modifiedFiles.Contains(f.Path)).Sum(f => f.Size);
         }
         
         private void PatchFile(
@@ -578,11 +568,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _logger.LogDebug("Patching is necessary. Generating new file with patched content...");
 
                 string nameHash = _mapHashExtractedFiles.GetNameHash(fileName);
-                _modifiedFilesStatusReporter.ObserveFile(fileName);
-      
+
                 var sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
                 _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
-                _logger.LogTrace("Name = " + fileName);
 
                 if (!File.Exists(sourceDeltaFilePath))
                 {
@@ -595,6 +583,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _logger.LogTrace("newFilePath = " + newFilePath);
 
                 var filePatcher = new FilePatcher(filePath, sourceDeltaFilePath, newFilePath);
+                _modifiedFilesStatusReporter.ObserveFile(newFilePath);
                 filePatcher.Patch();
 
                 _logger.LogDebug("New file generated. Deleting old file in local data...");
