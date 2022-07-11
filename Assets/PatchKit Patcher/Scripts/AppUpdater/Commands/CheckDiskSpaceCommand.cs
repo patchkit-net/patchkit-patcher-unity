@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
@@ -157,14 +158,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private long GetRequiredDiskSpace()
         {
+            string directoryDownloadedFiles = Path.Combine(_localDirectoryPath, ".downloads");
+            long sizeDownloadedFiles = GetSizeDirectory(directoryDownloadedFiles);
+            
+            DebugLogger.Log(string.Format("Size of downloaded files {0}.", sizeDownloadedFiles));
             if (UseContentSummary())
             {
                 long requiredDiskSpaceForContent = GetRequiredDiskSpaceForContent();
-                return requiredDiskSpaceForContent;
+                return requiredDiskSpaceForContent - sizeDownloadedFiles;
             }
 
             long requiredDiskSpaceForDiff = GetRequiredDiskSpaceForDiff();
-            return requiredDiskSpaceForDiff;
+            return requiredDiskSpaceForDiff - sizeDownloadedFiles;
+        }
+
+        private long GetSizeDirectory(string directoryDownloadedFiles)
+        {
+            return Directory.Exists(directoryDownloadedFiles)
+                ? new DirectoryInfo(directoryDownloadedFiles).GetFiles("*.*", SearchOption.AllDirectories)
+                    .Sum(x => x.Length)
+                : 0;
         }
 
         private bool UseContentSummary()
