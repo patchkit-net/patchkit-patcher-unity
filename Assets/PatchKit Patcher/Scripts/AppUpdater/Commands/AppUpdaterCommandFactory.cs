@@ -2,6 +2,7 @@
 using System.IO;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -106,7 +107,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public ICheckDiskSpace CreateCheckDiskSpaceCommandForDiff(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)
         {
             // get project biggest file size
-            long biggestFileSize = 0;
+            long biggestFileSize = 0, sizeProcessedFiles = 0;
             string[] registeredEntries = context.App.LocalMetaData.GetRegisteredEntries();
             foreach (string entry in registeredEntries)
             {
@@ -119,13 +120,30 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 
             AppDiffSummary diffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId, cancellationToken);
-            return new CheckDiskSpaceCommand(diffSummary, context.App.LocalDirectory.Path, biggestFileSize);
+            
+            var appDownloadDirectory = context.App.DownloadDirectory;
+            var destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
+            sizeProcessedFiles += FileOperations.GetSizeFile(destinationFilePath);
+            
+            string destinationMetaPath = appDownloadDirectory.GetDiffPackageMetaPath(versionId);
+            sizeProcessedFiles += FileOperations.GetSizeFile(destinationMetaPath);
+            
+            return new CheckDiskSpaceCommand(diffSummary, context.App.LocalDirectory.Path, biggestFileSize, sizeProcessedFiles);
         }
 
         public ICheckDiskSpace CreateCheckDiskSpaceCommandForContent(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)
         {
             AppContentSummary contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
-            return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path);
+
+            long sizeProcessedFiles = 0;
+            var appDownloadDirectory = context.App.DownloadDirectory;
+            var destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
+            sizeProcessedFiles += FileOperations.GetSizeFile(destinationFilePath);
+            
+            string destinationMetaPath = appDownloadDirectory.GetContentPackageMetaPath(versionId);
+            sizeProcessedFiles += FileOperations.GetSizeFile(destinationMetaPath);
+            
+            return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path, sizeProcessedFiles);
         }
 
         public IGeolocateCommand CreateGeolocateCommand()

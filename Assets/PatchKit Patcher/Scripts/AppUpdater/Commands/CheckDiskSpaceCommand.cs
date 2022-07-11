@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
@@ -19,23 +18,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly AppDiffSummary? _diffSummary;
         private readonly string _localDirectoryPath;
         private readonly long _bigestFileSize;
+        private readonly long _sizeProcessedFiles;
         private OperationStatus _status;
 
-        public CheckDiskSpaceCommand(AppContentSummary contentSummary, string localDirectoryPath)
+        public CheckDiskSpaceCommand(AppContentSummary contentSummary, string localDirectoryPath, long sizeProcessedFiles)
         {
             Checks.ArgumentNotNull(localDirectoryPath, "localDirectoryPath");
 
             _contentSummary = contentSummary;
             _localDirectoryPath = localDirectoryPath;
+            _sizeProcessedFiles = sizeProcessedFiles;
         }
 
-        public CheckDiskSpaceCommand(AppDiffSummary diffSummary, string localDirectoryPath, long bigestFileSize)
+        public CheckDiskSpaceCommand(AppDiffSummary diffSummary, string localDirectoryPath, long bigestFileSize, long sizeProcessedFiles)
         {
             Checks.ArgumentNotNull(localDirectoryPath, "localDirectoryPath");
 
             _diffSummary = diffSummary;
             _localDirectoryPath = localDirectoryPath;
             _bigestFileSize = bigestFileSize;
+            _sizeProcessedFiles = sizeProcessedFiles;
         }
 
 #if UNITY_STANDALONE_WIN
@@ -70,7 +72,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             try
             {
                 long availableDiskSpace = -1;
-                long requiredDiskSpace = GetRequiredDiskSpace();
+                long requiredDiskSpace = GetRequiredDiskSpace() - _sizeProcessedFiles;
 
                 var dir = new FileInfo(_localDirectoryPath);
 
@@ -158,26 +160,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private long GetRequiredDiskSpace()
         {
-            string directoryDownloadedFiles = Path.Combine(_localDirectoryPath, ".downloads");
-            long sizeDownloadedFiles = GetSizeDirectory(directoryDownloadedFiles);
-            
-            DebugLogger.Log(string.Format("Size of downloaded files {0}.", sizeDownloadedFiles));
             if (UseContentSummary())
             {
                 long requiredDiskSpaceForContent = GetRequiredDiskSpaceForContent();
-                return requiredDiskSpaceForContent - sizeDownloadedFiles;
+                return requiredDiskSpaceForContent;
             }
 
             long requiredDiskSpaceForDiff = GetRequiredDiskSpaceForDiff();
-            return requiredDiskSpaceForDiff - sizeDownloadedFiles;
-        }
-
-        private long GetSizeDirectory(string directoryDownloadedFiles)
-        {
-            return Directory.Exists(directoryDownloadedFiles)
-                ? new DirectoryInfo(directoryDownloadedFiles).GetFiles("*.*", SearchOption.AllDirectories)
-                    .Sum(x => x.Length)
-                : 0;
+            return requiredDiskSpaceForDiff;
         }
 
         private bool UseContentSummary()

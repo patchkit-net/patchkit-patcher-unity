@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using UniRx;
 
@@ -53,10 +53,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private void UpdateBytes()
         {
-            if (!string.IsNullOrEmpty(FilePath) && File.Exists(FilePath))
-            {
-                BytesCurrentFile.Value = new FileInfo(FilePath).Length;
-            }
+            BytesCurrentFile.Value = FileOperations.GetSizeFile(FilePath);
         }
 
         IReadOnlyReactiveProperty<double> IReadOnlyOperationStatus.Progress
