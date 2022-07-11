@@ -457,7 +457,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             DirectoryOperations.CreateDirectory(dirPath, cancellationToken);
             _logger.LogDebug("Directory created.");
 
-            _logger.LogDebug("GetNameHash directory entry processed.");
+            _logger.LogDebug("Add directory entry processed.");
         }
 
         private void AddFile(string fileName, string packageDirPath, string suffix, CancellationToken cancellationToken,
@@ -501,7 +501,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _contentSummary.Files.First(x => x.Path == fileName).Size, 
                 fileIndex == _diffSummary.AddedFiles.Length - 1);
 
-            _logger.LogDebug("GetNameHash file entry processed.");
+            _logger.LogDebug("Add file entry processed.");
         }
 
         private void ProcessModifiedFiles(string packageDirPath, string suffix, TemporaryDirectory tempDiffDir,
