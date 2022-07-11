@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using Ionic.Zlib;
+using System.IO.Compression;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
