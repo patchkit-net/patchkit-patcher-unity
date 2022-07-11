@@ -494,7 +494,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("File parent directories created in local data.");
 
             _logger.LogDebug("Copying file to local data (overwriting if needed)...");
-            FileOperations.Copy(sourceFilePath, filePath, true, cancellationToken);
+            FileOperations.Move(sourceFilePath, filePath, cancellationToken);
             _logger.LogDebug("File copied to local data.");
 
             _localMetaData.RegisterEntry(fileName, _versionId, 
