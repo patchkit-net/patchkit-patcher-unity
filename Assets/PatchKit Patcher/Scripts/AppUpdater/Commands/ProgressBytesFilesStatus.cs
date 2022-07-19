@@ -37,18 +37,41 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     (bytes + currentBytes) / 1024.0 / 1024.0,
                     totalBytes / 1024.0 / 1024.0)).ToReactiveProperty();
 
-            Observable
+            IDisposable updateBytesObservable = Observable
                 .Interval(TimeSpan.FromSeconds(1), Scheduler.MainThread)
                 .ObserveOn(Scheduler.MainThread)
-                .Subscribe(_ => UpdateBytes());
+                .Subscribe(_ =>
+                {
+                    if (IsActive.Value)
+                    {
+                        UpdateBytes();
+                    }
+                });
+
+            IsActive.Subscribe(isActive =>
+            {
+                if (!isActive && Math.Abs(Progress.Value - 1) < 0.8)
+                {
+                    updateBytesObservable.Dispose();
+                }
+            });
         }
 
-        public void ObserveFile(string pathFIle)
+        public void ObserveFile(string pathFile)
         {
             UpdateBytes();
             Bytes.Value += BytesCurrentFile.Value;
             BytesCurrentFile.Value = 0;
-            FilePath = pathFIle;
+            FilePath = pathFile;
+        }
+        
+        
+        public void EndObserveFile()
+        {
+            UpdateBytes();
+            Bytes.Value += BytesCurrentFile.Value;
+            BytesCurrentFile.Value = 0;
+            FilePath = null;
         }
 
         private void UpdateBytes()

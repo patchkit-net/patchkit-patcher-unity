@@ -41,7 +41,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         /// </summary>
         private readonly BytesRange _range;
 
-        private MapHashExtractedFiles _mapHashExtractedFiles;
+        private HashExtractedFiles _hashExtractedFiles;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
@@ -51,24 +51,24 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         // After Unarchive() finishes if this set to true, there were unpacking errors.
         public bool HasErrors { get; private set; }
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, MapHashExtractedFiles mapHashExtractedFiles, string key, string suffix = "")
-            : this(packagePath, metaData, destinationDirPath, mapHashExtractedFiles, Encoding.ASCII.GetBytes(key), suffix, new BytesRange(0, -1))
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, HashExtractedFiles hashExtractedFiles, string key, string suffix = "")
+            : this(packagePath, metaData, destinationDirPath, hashExtractedFiles, Encoding.ASCII.GetBytes(key), suffix, new BytesRange(0, -1))
         {
             // do nothing
         }
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, MapHashExtractedFiles mapHashExtractedFiles, string key, string suffix, BytesRange range)
-            : this(packagePath, metaData, destinationDirPath, mapHashExtractedFiles, Encoding.ASCII.GetBytes(key), suffix, range)
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, HashExtractedFiles hashExtractedFiles, string key, string suffix, BytesRange range)
+            : this(packagePath, metaData, destinationDirPath, hashExtractedFiles, Encoding.ASCII.GetBytes(key), suffix, range)
         {
             // do nothing
         }
 
-        private Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, MapHashExtractedFiles mapHashExtractedFiles, byte[] key, string suffix, BytesRange range)
+        private Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, HashExtractedFiles hashExtractedFiles, byte[] key, string suffix, BytesRange range)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
             Checks.ArgumentNotNull(suffix, "suffix");
-            Checks.ArgumentNotNull(mapHashExtractedFiles, "mapHashExtractedFiles");
+            Checks.ArgumentNotNull(hashExtractedFiles, "hashExtractedFiles");
 
             if (range.Start == 0)
             {
@@ -85,7 +85,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             _destinationDirPath = destinationDirPath;
             _suffix = suffix;
             _range = range;
-            _mapHashExtractedFiles = mapHashExtractedFiles;
+            _hashExtractedFiles = hashExtractedFiles;
 
             using (var sha256 = SHA256.Create())
             {
@@ -203,7 +203,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackDirectory(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
         {
-            string destPath = Path.Combine(_destinationDirPath, _mapHashExtractedFiles.GetNameHash(file.Name));
+            string destPath = Path.Combine(_destinationDirPath, _hashExtractedFiles.Hash(file.Name));
 
             DebugLogger.Log("Creating directory " + destPath);
             DirectoryOperations.CreateDirectory(destPath, cancellationToken);
@@ -212,7 +212,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackSymlink(Pack1Meta.FileEntry file)
         {
-            string destPath = Path.Combine(_destinationDirPath, _mapHashExtractedFiles.GetNameHash(file.Name));
+            string destPath = Path.Combine(_destinationDirPath, _hashExtractedFiles.Hash(file.Name));
             DebugLogger.Log("Creating symlink: " + destPath);
             // TODO: how to create a symlink?
         }
@@ -234,7 +234,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
-            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, _mapHashExtractedFiles.GetNameHash(file.Name) + _suffix);
+            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, _hashExtractedFiles.Hash(file.Name) + _suffix);
 
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
