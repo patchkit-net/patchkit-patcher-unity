@@ -39,8 +39,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private AppContentSummary _contentSummary;
         private AppDiffSummary _diffSummary;
         private Pack1Meta _pack1Meta;
-        private HashExtractedFiles _hashExtractedFiles;
-
         public InstallDiffCommand([NotNull] string packagePath, string packageMetaPath, string packagePassword,
             int versionId,
             [NotNull] ILocalDirectory localData, [NotNull] ILocalMetaData localMetaData,
@@ -79,7 +77,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _localData = localData;
             _localMetaData = localMetaData;
             _remoteMetaData = remoteMetaData;
-            _hashExtractedFiles = new HashExtractedFiles();
         }
 
         public override void Prepare([NotNull] UpdaterStatus status, CancellationToken cancellationToken)
@@ -285,7 +282,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 }
                 
                 nextEntry = entry;
-                string entryName = _hashExtractedFiles.Hash(name);
+                string entryName = HashCalculator.ComputeMD5Hash(name);
                 
                 _unarchivePackageStatusReporter.ObserveFile(Path.Combine(packageDirPath, entryName) + Suffix);
             };
@@ -304,10 +301,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 case "zip":
                     usedSuffix = string.Empty;
-                    return new ZipUnarchiver(_packagePath, destinationDir, _hashExtractedFiles, _packagePassword);
+                    return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
                 case "pack1":
                     usedSuffix = Suffix;
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _hashExtractedFiles, _packagePassword, Suffix);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
                 default:
                     throw new UnknownPackageCompressionModeException(string.Format("Unknown compression method: {0}",
                         _diffSummary.CompressionMethod));
@@ -476,7 +473,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", filePath)); 
             }
 #endif
-            string nameHash = _hashExtractedFiles.Hash(fileName);
+            string nameHash = HashCalculator.ComputeMD5Hash(fileName);
             string sourceFilePath = Path.Combine(packageDirPath, nameHash + suffix);
             
             _logger.LogTrace("sourceFilePath = " + sourceFilePath);
@@ -570,7 +567,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 _logger.LogDebug("Patching is necessary. Generating new file with patched content...");
 
-                string nameHash = _hashExtractedFiles.Hash(fileName);
+                string nameHash = HashCalculator.ComputeMD5Hash(fileName);
 
                 string sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
                 _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);

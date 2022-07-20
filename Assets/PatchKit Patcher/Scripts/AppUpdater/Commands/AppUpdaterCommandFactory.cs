@@ -15,10 +15,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public IDownloadPackageCommand CreateDownloadContentPackageCommand(int versionId, string keySecret,
             string countryCode, AppUpdaterContext context, CancellationToken cancellationToken)
         {
-            var resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret, countryCode, cancellationToken);
+            RemoteResource resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret, countryCode, cancellationToken);
 
-            var appDownloadDirectory = context.App.DownloadDirectory;
-            var destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
+            IDownloadDirectory appDownloadDirectory = context.App.DownloadDirectory;
+            string destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
             string destinationMetaPath = appDownloadDirectory.GetContentPackageMetaPath(versionId);
 
             appDownloadDirectory.PrepareForWriting();
@@ -29,10 +29,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret,
             string countryCode, AppUpdaterContext context, CancellationToken cancellationToken)
         {
-            var resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret, countryCode, cancellationToken);
+            RemoteResource resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret, countryCode, cancellationToken);
 
-            var appDownloadDirectory = context.App.DownloadDirectory;
-            var destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
+            IDownloadDirectory appDownloadDirectory = context.App.DownloadDirectory;
+            string destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
             string destinationMetaPath = appDownloadDirectory.GetDiffPackageMetaPath(versionId);
 
             appDownloadDirectory.PrepareForWriting();
@@ -42,18 +42,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public IRepairFilesCommand CreateRepairFilesCommand(int versionId, AppUpdaterContext context, RemoteResource resource, Pack1Meta.FileEntry[] brokenFiles, Pack1Meta meta)
         {
-            var packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
-            var packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
+            string packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
+            string packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
 
             return new RepairFilesCommand(resource, meta, brokenFiles, packagePath, packagePassword, context.App.LocalDirectory);
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)
         {
-            var packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
-            var packageMetaPath = context.App.DownloadDirectory.GetContentPackageMetaPath(versionId);
-            var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
-            var packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
+            string packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
+            string packageMetaPath = context.App.DownloadDirectory.GetContentPackageMetaPath(versionId);
+            AppContentSummary versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
+            string packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
 
             return new InstallContentCommand(packagePath,
                 packageMetaPath,
@@ -66,9 +66,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public IInstallDiffCommand CreateInstallDiffCommand(int versionId, AppUpdaterContext context)
         {
-            var packagePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
-            var packageMetaPath = context.App.DownloadDirectory.GetDiffPackageMetaPath(versionId);
-            var packagePassword = context.App.RemoteData.GetDiffPackageResourcePassword(versionId);
+            string packagePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
+            string packageMetaPath = context.App.DownloadDirectory.GetDiffPackageMetaPath(versionId);
+            string packagePassword = context.App.RemoteData.GetDiffPackageResourcePassword(versionId);
 
             return new InstallDiffCommand(packagePath,
                 packageMetaPath,
@@ -82,7 +82,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context,
                 bool isCheckingHash, bool isCheckingSize, CancellationToken cancellationToken)
         {
-            var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
+            AppContentSummary versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
 
             return new CheckVersionIntegrityCommand(versionId,
                 versionContentSummary,
@@ -121,8 +121,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             AppDiffSummary diffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId, cancellationToken);
             
-            var appDownloadDirectory = context.App.DownloadDirectory;
-            var destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
+            IDownloadDirectory appDownloadDirectory = context.App.DownloadDirectory;
+            string destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
             filesToProcessSize += FileOperations.GetSizeFile(destinationFilePath);
             
             string destinationMetaPath = appDownloadDirectory.GetDiffPackageMetaPath(versionId);
@@ -136,8 +136,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             AppContentSummary contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
 
             long filesToProcessSize = 0;
-            var appDownloadDirectory = context.App.DownloadDirectory;
-            var destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
+            IDownloadDirectory appDownloadDirectory = context.App.DownloadDirectory;
+            string destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
             filesToProcessSize += FileOperations.GetSizeFile(destinationFilePath);
             
             string destinationMetaPath = appDownloadDirectory.GetContentPackageMetaPath(versionId);

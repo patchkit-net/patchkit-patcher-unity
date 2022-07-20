@@ -79,8 +79,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     {
                         DirectoryOperations.CreateDirectory(unarchivePath, cancellationToken);
                     }
-                    HashExtractedFiles hashExtracted = new HashExtractedFiles();
-                    
+
                     var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls, _resource.ChunksData, _resource.Size);
 
                     long start = entry.Offset.GetValueOrDefault();
@@ -116,7 +115,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     repairStatus.Progress.Value = 0.0;
 
                     _logger.LogDebug("Unarchiving the package.");
-                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, hashExtracted, _packagePassword, _unpackingSuffix, effectiveRange);
+                    var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, _unpackingSuffix, effectiveRange);
                     // allow repair to continue on errors, because after the repair process, all the files must be validated again
                     unarchiver.ContinueOnError = true;
 
@@ -126,7 +125,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     };
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
-                    string nameHash = hashExtracted.Hash(entry.Name);
+                    string nameHash = HashCalculator.ComputeMD5Hash(entry.Name);
 
                     EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
                         Path.Combine(_localData.Path, entry.Name), cancellationToken);

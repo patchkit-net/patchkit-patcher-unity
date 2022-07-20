@@ -40,9 +40,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         /// The range (in bytes) of the partial pack1 source file
         /// </summary>
         private readonly BytesRange _range;
-
-        private HashExtractedFiles _hashExtractedFiles;
-
+        
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
         // set to true to continue unpacking on error. Check HasErrors later to see if there are any
@@ -51,24 +49,23 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         // After Unarchive() finishes if this set to true, there were unpacking errors.
         public bool HasErrors { get; private set; }
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, HashExtractedFiles hashExtractedFiles, string key, string suffix = "")
-            : this(packagePath, metaData, destinationDirPath, hashExtractedFiles, Encoding.ASCII.GetBytes(key), suffix, new BytesRange(0, -1))
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key, string suffix = "")
+            : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key), suffix, new BytesRange(0, -1))
         {
             // do nothing
         }
 
-        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, HashExtractedFiles hashExtractedFiles, string key, string suffix, BytesRange range)
-            : this(packagePath, metaData, destinationDirPath, hashExtractedFiles, Encoding.ASCII.GetBytes(key), suffix, range)
+        public Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, string key, string suffix, BytesRange range)
+            : this(packagePath, metaData, destinationDirPath, Encoding.ASCII.GetBytes(key), suffix, range)
         {
             // do nothing
         }
 
-        private Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, HashExtractedFiles hashExtractedFiles, byte[] key, string suffix, BytesRange range)
+        private Pack1Unarchiver(string packagePath, Pack1Meta metaData, string destinationDirPath, byte[] key, string suffix, BytesRange range)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
             Checks.ArgumentNotNull(suffix, "suffix");
-            Checks.ArgumentNotNull(hashExtractedFiles, "hashExtractedFiles");
 
             if (range.Start == 0)
             {
@@ -85,7 +82,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             _destinationDirPath = destinationDirPath;
             _suffix = suffix;
             _range = range;
-            _hashExtractedFiles = hashExtractedFiles;
 
             using (var sha256 = SHA256.Create())
             {
@@ -203,7 +199,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackDirectory(Pack1Meta.FileEntry file, CancellationToken cancellationToken)
         {
-            string destPath = Path.Combine(_destinationDirPath, _hashExtractedFiles.Hash(file.Name));
+            string destPath = Path.Combine(_destinationDirPath, HashCalculator.ComputeMD5Hash(file.Name));
 
             DebugLogger.Log("Creating directory " + destPath);
             DirectoryOperations.CreateDirectory(destPath, cancellationToken);
@@ -212,7 +208,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackSymlink(Pack1Meta.FileEntry file)
         {
-            string destPath = Path.Combine(_destinationDirPath, _hashExtractedFiles.Hash(file.Name));
+            string destPath = Path.Combine(_destinationDirPath, HashCalculator.ComputeMD5Hash(file.Name));
             DebugLogger.Log("Creating symlink: " + destPath);
             // TODO: how to create a symlink?
         }
@@ -234,7 +230,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void UnpackRegularFile(Pack1Meta.FileEntry file, Action<double> onProgress, CancellationToken cancellationToken, string destinationDirPath = null)
         {
-            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, _hashExtractedFiles.Hash(file.Name) + _suffix);
+            string destPath = Path.Combine(destinationDirPath == null ? _destinationDirPath : destinationDirPath, HashCalculator.ComputeMD5Hash(file.Name) + _suffix);
 
             DebugLogger.LogFormat("Unpacking regular file {0} to {1}", file, destPath);
 
