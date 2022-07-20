@@ -162,7 +162,10 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
 
         public static long GetSizeFile(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath)) return 0;
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return 0;
+            }
             
             FileInfo fInfo = new FileInfo(filePath);
             return fInfo.Exists ? fInfo.Length : 0;

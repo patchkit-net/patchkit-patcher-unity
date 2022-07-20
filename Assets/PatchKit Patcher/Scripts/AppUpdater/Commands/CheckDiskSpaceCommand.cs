@@ -18,26 +18,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly AppDiffSummary? _diffSummary;
         private readonly string _localDirectoryPath;
         private readonly long _bigestFileSize;
-        private readonly long _sizeProcessedFiles;
+        private readonly long _processedFilesSize;
         private OperationStatus _status;
 
-        public CheckDiskSpaceCommand(AppContentSummary contentSummary, string localDirectoryPath, long sizeProcessedFiles)
+        public CheckDiskSpaceCommand(AppContentSummary contentSummary, string localDirectoryPath, long processedFilesSize)
         {
             Checks.ArgumentNotNull(localDirectoryPath, "localDirectoryPath");
 
             _contentSummary = contentSummary;
             _localDirectoryPath = localDirectoryPath;
-            _sizeProcessedFiles = sizeProcessedFiles;
+            _processedFilesSize = processedFilesSize;
         }
 
-        public CheckDiskSpaceCommand(AppDiffSummary diffSummary, string localDirectoryPath, long bigestFileSize, long sizeProcessedFiles)
+        public CheckDiskSpaceCommand(AppDiffSummary diffSummary, string localDirectoryPath, long bigestFileSize, long processedFilesSize)
         {
             Checks.ArgumentNotNull(localDirectoryPath, "localDirectoryPath");
 
             _diffSummary = diffSummary;
             _localDirectoryPath = localDirectoryPath;
             _bigestFileSize = bigestFileSize;
-            _sizeProcessedFiles = sizeProcessedFiles;
+            _processedFilesSize = processedFilesSize;
         }
 
 #if UNITY_STANDALONE_WIN
@@ -72,7 +72,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             try
             {
                 long availableDiskSpace = -1;
-                long requiredDiskSpace = GetRequiredDiskSpace() - _sizeProcessedFiles;
+                long requiredDiskSpace = GetRequiredDiskSpace() - _processedFilesSize;
 
                 var dir = new FileInfo(_localDirectoryPath);
 
