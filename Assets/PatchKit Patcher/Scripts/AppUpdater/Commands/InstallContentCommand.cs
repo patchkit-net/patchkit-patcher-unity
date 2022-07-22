@@ -103,8 +103,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Unarchiving package.");
 
                 string usedSuffix;
-                MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles(); 
-                IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, mapHashExtractedFiles, out usedSuffix);
+                IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
                 _unarchivePackageStatus.IsActive.Value = true;
                 _unarchivePackageStatus.Description.Value = "Unarchiving package...";
@@ -140,25 +139,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     cancellationToken.ThrowIfCancellationRequested();
 
                     string filePath = _versionContentSummary.Files[i].Path;
-                    string nameHash;
-                    if (mapHashExtractedFiles.TryGetHash(filePath, out nameHash))
-                    {
-                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Files[i].Size);
+                    string nameHash = HashCalculator.ComputeMD5Hash(filePath);
+       
+                    var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Files[i].Size);
 
-                        if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
-                        {
-                            DebugLogger.LogWarning(
-                                "Skipping unexisting file because I've been expecting unpacking errors: " +
-                                sourceFile.Name);
-                        }
-                        else
-                        {
-                            InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
-                        }
+                    if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
+                    {
+                        DebugLogger.LogWarning(
+                            "Skipping unexisting file because I've been expecting unpacking errors: " +
+                            sourceFile.Name);
                     }
                     else
                     {
-                        throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", filePath));
+                        InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
@@ -170,16 +163,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             });
         }
 
-        private IUnarchiver CreateUnrachiver(string destinationDir, MapHashExtractedFiles mapHashExtractedFiles, out string usedSuffix)
+        private IUnarchiver CreateUnrachiver(string destinationDir, out string usedSuffix)
         {
             switch (_versionContentSummary.CompressionMethod)
             {
                 case "zip":
                     usedSuffix = string.Empty;
-                    return new ZipUnarchiver(_packagePath, destinationDir, mapHashExtractedFiles, _packagePassword);
+                    return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
                 case "pack1":
                     usedSuffix = Suffix;
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, mapHashExtractedFiles, _packagePassword, Suffix);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
                 default:
                     throw new InstallerException(string.Format("Unknown compression method: {0}",
                         _versionContentSummary.CompressionMethod));

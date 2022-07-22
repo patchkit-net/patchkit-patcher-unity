@@ -17,7 +17,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private readonly string _password;
 
         private bool _unarchiveHasBeenCalled;
-        private MapHashExtractedFiles _mapHashExtractedFiles;
 
         public event UnarchiveProgressChangedHandler UnarchiveProgressChanged;
 
@@ -27,11 +26,10 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         // not used
         public bool HasErrors { get; private set; }
 
-        public ZipUnarchiver(string packagePath, string destinationDirPath, MapHashExtractedFiles mapHashExtractedFiles, string password = null)
+        public ZipUnarchiver(string packagePath, string destinationDirPath, string password = null)
         {
             Checks.ArgumentFileExists(packagePath, "packagePath");
             Checks.ArgumentDirectoryExists(destinationDirPath, "destinationDirPath");
-            Checks.ArgumentNotNull(mapHashExtractedFiles, "mapHashExtractedFiles");
 
             DebugLogger.LogConstructor();
             DebugLogger.LogVariable(packagePath, "packagePath");
@@ -40,7 +38,6 @@ namespace PatchKit.Unity.Patcher.AppData.Local
             _packagePath = packagePath;
             _destinationDirPath = destinationDirPath;
             _password = password;
-            _mapHashExtractedFiles = mapHashExtractedFiles;
         }
 
         public void Unarchive(CancellationToken cancellationToken)
@@ -73,7 +70,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         private void UnarchiveEntry(ZipEntry zipEntry)
         {
             DebugLogger.Log(string.Format("Unarchiving entry {0}", zipEntry.FileName));
-            string destPath = Path.Combine(_destinationDirPath, _mapHashExtractedFiles.Add(zipEntry.FileName));
+            string destPath = Path.Combine(_destinationDirPath, HashCalculator.ComputeMD5Hash(zipEntry.FileName));
             using (var target = new FileStream(destPath, FileMode.Create))
             {
                 zipEntry.Extract(target);
