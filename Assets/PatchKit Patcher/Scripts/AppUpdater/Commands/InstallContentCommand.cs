@@ -29,7 +29,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalMetaData _localMetaData;
 
         private OperationStatus _copyFilesStatus;
-        private OperationStatus _unarchivePackageStatus;
+        private ProgressBytesFilesStatus _unarchivePackageStatus;
         private Pack1Meta _pack1Meta;
 
         public InstallContentCommand(string packagePath, string packageMetaPath, string packagePassword, int versionId,
@@ -69,7 +69,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             };
             status.RegisterOperation(_copyFilesStatus);
 
-            _unarchivePackageStatus = new OperationStatus
+            _unarchivePackageStatus = new ProgressBytesFilesStatus("Unarchiving package")
             {
                 Weight = {Value = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size)}
             };
@@ -108,15 +108,29 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 _unarchivePackageStatus.IsActive.Value = true;
                 _unarchivePackageStatus.Description.Value = "Unarchiving package...";
                 _unarchivePackageStatus.Progress.Value = 0.0;
+                _unarchivePackageStatus.TotalBytes.Value = _versionContentSummary.UncompressedSize;
 
+                int lastEntry = 0, nextEntry = -1;
+                
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
                 {
-                    var entryMinProgress = (entry - 1) / (double) amount;
-                    var entryMaxProgress = entry / (double) amount;
+                    if (lastEntry != entry)
+                    {
+                        lastEntry = entry;
 
-                    _unarchivePackageStatus.Progress.Value = entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
+                        DebugLogger.Log(string.Format("Unarchiving entry ({0}/{1})...", entry, amount));
+                        DebugLogger.Log("entry = " + entry);
+                    }
 
-                    _unarchivePackageStatus.Description.Value = string.Format("Unarchiving package ({0}/{1})...", entry, amount);
+                    if (nextEntry == entry)
+                    {
+                        return;
+                    }
+                
+                    nextEntry = entry;
+                    string entryName = HashCalculator.ComputeMD5Hash(name);
+                
+                    _unarchivePackageStatus.ObserveFile(Path.Combine(packageDir.Path, entryName) + Suffix);
                 };
 
                 // Allow to unpack with errors. This allows to install content even on corrupted hard drives, and attempt to fix these later
