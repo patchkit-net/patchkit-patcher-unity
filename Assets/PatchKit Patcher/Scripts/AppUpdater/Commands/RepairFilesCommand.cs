@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using PatchKit.Api.Models.Main;
 using PatchKit.Logging;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData;
@@ -22,11 +24,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
     {
         private struct EntryStatus
         {
-            public OperationStatus RepairStatus;
+            public ProgressBytesFilesStatus RepairStatus;
             public DownloadStatus DownloadStatus;
         }
 
         private RemoteResource _resource;
+        private AppContentSummary _contentSummary;
         private Pack1Meta _meta;
         private Pack1Meta.FileEntry[] _entries;
 
@@ -48,7 +51,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             Pack1Meta.FileEntry[] fileEntries,
             string destinationPackagePath,
             string packagePassword,
-            ILocalDirectory localData)
+            ILocalDirectory localData,
+            AppContentSummary contentSummary)
         {
             _resource = resource;
             _meta = meta;
@@ -56,6 +60,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             _packagePath = destinationPackagePath;
             _packagePassword = packagePassword;
+            _contentSummary = contentSummary;
 
             _localData = localData;
 
@@ -113,20 +118,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     repairStatus.IsActive.Value = true;
                     repairStatus.Description.Value = "Applying fixes...";
                     repairStatus.Progress.Value = 0.0;
+                    repairStatus.TotalBytes.Value = _contentSummary.Files.First(f => f.Path == entry.Name).Size;
 
                     _logger.LogDebug("Unarchiving the package.");
                     var unarchiver = new Pack1Unarchiver(packagePath, _meta, unarchivePath, _packagePassword, _unpackingSuffix, effectiveRange);
                     // allow repair to continue on errors, because after the repair process, all the files must be validated again
                     unarchiver.ContinueOnError = true;
-
-                    unarchiver.UnarchiveProgressChanged += (name, isFile, unarchiveEntry, amount,  entryProgress) =>
-                    {
-                        repairStatus.Progress.Value = entryProgress;
-                    };
+                    
+                    string nameHash = HashCalculator.ComputeMD5Hash(entry.Name);
+                    repairStatus.ObserveFile(Path.Combine(unarchivePath, nameHash) + _unpackingSuffix);
 
                     unarchiver.UnarchiveSingleFile(entry, cancellationToken);
-                    string nameHash = HashCalculator.ComputeMD5Hash(entry.Name);
-
+                    
                     EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
                         Path.Combine(_localData.Path, entry.Name), cancellationToken);
                     
@@ -141,7 +144,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             foreach(var entry in _entries)
             {
-                var repairStatus = new OperationStatus
+                var repairStatus = new ProgressBytesFilesStatus("Applying fixes")
                 {
                     Weight = { Value = StatusWeightHelper.GetUnarchivePackageWeight(entry.Size.Value) }
                 };

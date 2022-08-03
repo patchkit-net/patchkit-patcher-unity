@@ -40,12 +40,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath);
         }
 
-        public IRepairFilesCommand CreateRepairFilesCommand(int versionId, AppUpdaterContext context, RemoteResource resource, Pack1Meta.FileEntry[] brokenFiles, Pack1Meta meta)
+        public IRepairFilesCommand CreateRepairFilesCommand(int versionId, AppUpdaterContext context, RemoteResource resource,
+            Pack1Meta.FileEntry[] brokenFiles, Pack1Meta meta, CancellationToken cancellationToken)
         {
             string packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
             string packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
+            AppContentSummary versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
 
-            return new RepairFilesCommand(resource, meta, brokenFiles, packagePath, packagePassword, context.App.LocalDirectory);
+            return new RepairFilesCommand(resource, meta, brokenFiles, packagePath, packagePassword, context.App.LocalDirectory, versionContentSummary);
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)
