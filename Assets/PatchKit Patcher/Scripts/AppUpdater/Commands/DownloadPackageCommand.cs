@@ -72,6 +72,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             if (FileOperations.GetSizeFile(_destinationPackagePath) == _resource.Size)
             {
                 DebugLogger.Log("Package has already been downloaded.");
+                _status.TotalBytes.Value = _resource.Size;
+                _status.Bytes.Value = _resource.Size;
                 return;
             }
             
