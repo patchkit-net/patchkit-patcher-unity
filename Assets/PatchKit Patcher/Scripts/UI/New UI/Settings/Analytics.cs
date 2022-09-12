@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         public void OpenWhatDataWebpage()
         {
-            Application.OpenURL("https://panel.patchkit.net/");
+            Application.OpenURL("https://patchkit.net/privacy_policy.html");
         }
 
         public virtual void Display() { }

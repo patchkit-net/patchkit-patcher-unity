@@ -3083,7 +3083,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ErrorDialog: {fileID: 272161832}
-  EditorAppSecret: 4a7c08b6d68e5fe458ddd307f0294a4a
+  EditorAppSecret: 94987833c3b51565ce7bf85e9a747571
   EditorOverrideLatestVersionId: 0
   DefaultConfiguration:
     AppUpdaterConfiguration:
@@ -8888,7 +8888,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 20
+  m_ScrollSensitivity: 60
   m_Viewport: {fileID: 0}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 126986356}
@@ -18514,9 +18514,9 @@ RectTransform:
   m_Father: {fileID: 6002860322435375810}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 5, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 5, y: -67.66667}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &2112354409
@@ -19510,4 +19510,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90d0fcf57b2fcce4eac9df2f789eba51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ToggleAnalytics: {fileID: 0}
+  ToggleAnalytics: {fileID: 1199602870}
