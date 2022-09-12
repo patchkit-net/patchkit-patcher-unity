@@ -30,6 +30,12 @@ namespace PatchKit.Unity.Patcher
         public void Execute()
         {
             DebugLogger.Log("Collect usage data...");
+
+            if (AnalyticsPopup.Instance == null)
+            {
+                DebugLogger.Log("Launcher does not support collecting usage data.");
+                return;
+            }
             
             if (String.IsNullOrEmpty(_appInfo.CollectUsageData))
             {
