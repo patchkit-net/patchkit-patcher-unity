@@ -30,9 +30,8 @@ public class Pack1UnarchiverTest
         string metaPath = TestFixtures.GetFilePath("pack1/test.pack1.meta");
         string metaString = File.ReadAllText(metaPath);
         Pack1Meta meta = Pack1Meta.Parse(metaString);
-
-        MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles();
-        var pack1Unarchiver = new Pack1Unarchiver(archivePath, meta, _tempDir, mapHashExtractedFiles, Key);
+        
+        var pack1Unarchiver = new Pack1Unarchiver(archivePath, meta, _tempDir, Key);
         pack1Unarchiver.Unarchive(new CancellationToken());
 
         Assert.True(Directory.Exists(Path.Combine(_tempDir, "dir")));

@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Sending statistic events (#1625)
 
+## [3.17.12.0]
+### Fixed
+- Displaying the progress bar for patching files for large files
+
+### Added
+- Skipping package download if everything has been downloaded
+- Checking the size of downloaded files while checking the available disk size
+
+### Changed
+- Mapping of extracted hash files to always calculate the files hash
+- Displaying the progress bar for unpacking and patching files from number of files to files size
+
 ## [3.17.11.0]
 ### Fixed
 - Minimize and close buttons invisible with popup
