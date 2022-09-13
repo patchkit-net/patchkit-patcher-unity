@@ -4,12 +4,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.12.0]
+### Fixed
+- Displaying the progress bar for patching files for large files
+
+### Added
+- Skipping package download if everything has been downloaded
+- Checking the size of downloaded files while checking the available disk size
+
+### Changed
+- Mapping of extracted hash files to always calculate the files hash
+- Displaying the progress bar for unpacking and patching files from number of files to files size
+
+## [3.17.11.0]
+### Fixed
+- Minimize and close buttons invisible with popup
+
 ## [3.17.10.0]
 ### Changed
 - Improve speed of getting API data by caching it
 
 ### Fixed
 - Retrying the failed operation from error dialog
+
+## [3.17.9.3]
+### Added
+- More information about invalid chunk data exception
+
+## [3.17.9.2]
+### Changed
+- HDPI scale thresholds
+
+## [3.17.9.1]
+### Changed
+- HDPI scale thresholds
 
 ## [3.17.9.0]
 ### Added

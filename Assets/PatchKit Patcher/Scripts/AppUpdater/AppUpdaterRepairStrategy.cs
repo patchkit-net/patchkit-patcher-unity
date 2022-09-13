@@ -132,7 +132,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
                 _context,
                 resource,
                 brokenFiles,
-                meta);
+                meta,
+                cancellationToken);
 
             repairCommand.Prepare(_status, cancellationToken);
             repairCommand.Execute(cancellationToken);

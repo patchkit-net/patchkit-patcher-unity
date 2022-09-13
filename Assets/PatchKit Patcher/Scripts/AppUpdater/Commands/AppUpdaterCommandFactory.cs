@@ -2,6 +2,7 @@
 using System.IO;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -14,10 +15,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public IDownloadPackageCommand CreateDownloadContentPackageCommand(int versionId, string keySecret,
             string countryCode, AppUpdaterContext context, CancellationToken cancellationToken)
         {
-            var resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret, countryCode, cancellationToken);
+            RemoteResource resource = context.App.RemoteData.GetContentPackageResource(versionId, keySecret, countryCode, cancellationToken);
 
-            var appDownloadDirectory = context.App.DownloadDirectory;
-            var destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
+            IDownloadDirectory appDownloadDirectory = context.App.DownloadDirectory;
+            string destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
             string destinationMetaPath = appDownloadDirectory.GetContentPackageMetaPath(versionId);
 
             appDownloadDirectory.PrepareForWriting();
@@ -28,10 +29,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public IDownloadPackageCommand CreateDownloadDiffPackageCommand(int versionId, string keySecret,
             string countryCode, AppUpdaterContext context, CancellationToken cancellationToken)
         {
-            var resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret, countryCode, cancellationToken);
+            RemoteResource resource = context.App.RemoteData.GetDiffPackageResource(versionId, keySecret, countryCode, cancellationToken);
 
-            var appDownloadDirectory = context.App.DownloadDirectory;
-            var destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
+            IDownloadDirectory appDownloadDirectory = context.App.DownloadDirectory;
+            string destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
             string destinationMetaPath = appDownloadDirectory.GetDiffPackageMetaPath(versionId);
 
             appDownloadDirectory.PrepareForWriting();
@@ -39,20 +40,22 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             return new DownloadPackageCommand(resource, destinationFilePath, destinationMetaPath);
         }
 
-        public IRepairFilesCommand CreateRepairFilesCommand(int versionId, AppUpdaterContext context, RemoteResource resource, Pack1Meta.FileEntry[] brokenFiles, Pack1Meta meta)
+        public IRepairFilesCommand CreateRepairFilesCommand(int versionId, AppUpdaterContext context, RemoteResource resource,
+            Pack1Meta.FileEntry[] brokenFiles, Pack1Meta meta, CancellationToken cancellationToken)
         {
-            var packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
-            var packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
+            string packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
+            string packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
+            AppContentSummary versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
 
-            return new RepairFilesCommand(resource, meta, brokenFiles, packagePath, packagePassword, context.App.LocalDirectory);
+            return new RepairFilesCommand(resource, meta, brokenFiles, packagePath, packagePassword, context.App.LocalDirectory, versionContentSummary);
         }
 
         public IInstallContentCommand CreateInstallContentCommand(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)
         {
-            var packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
-            var packageMetaPath = context.App.DownloadDirectory.GetContentPackageMetaPath(versionId);
-            var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
-            var packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
+            string packagePath = context.App.DownloadDirectory.GetContentPackagePath(versionId);
+            string packageMetaPath = context.App.DownloadDirectory.GetContentPackageMetaPath(versionId);
+            AppContentSummary versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
+            string packagePassword = context.App.RemoteData.GetContentPackageResourcePassword(versionId);
 
             return new InstallContentCommand(packagePath,
                 packageMetaPath,
@@ -65,9 +68,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         public IInstallDiffCommand CreateInstallDiffCommand(int versionId, AppUpdaterContext context)
         {
-            var packagePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
-            var packageMetaPath = context.App.DownloadDirectory.GetDiffPackageMetaPath(versionId);
-            var packagePassword = context.App.RemoteData.GetDiffPackageResourcePassword(versionId);
+            string packagePath = context.App.DownloadDirectory.GetDiffPackagePath(versionId);
+            string packageMetaPath = context.App.DownloadDirectory.GetDiffPackageMetaPath(versionId);
+            string packagePassword = context.App.RemoteData.GetDiffPackageResourcePassword(versionId);
 
             return new InstallDiffCommand(packagePath,
                 packageMetaPath,
@@ -81,7 +84,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public ICheckVersionIntegrityCommand CreateCheckVersionIntegrityCommand(int versionId, AppUpdaterContext context,
                 bool isCheckingHash, bool isCheckingSize, CancellationToken cancellationToken)
         {
-            var versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
+            AppContentSummary versionContentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
 
             return new CheckVersionIntegrityCommand(versionId,
                 versionContentSummary,
@@ -106,7 +109,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         public ICheckDiskSpace CreateCheckDiskSpaceCommandForDiff(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)
         {
             // get project biggest file size
-            long biggestFileSize = 0;
+            long biggestFileSize = 0, filesToProcessSize = 0;
             string[] registeredEntries = context.App.LocalMetaData.GetRegisteredEntries();
             foreach (string entry in registeredEntries)
             {
@@ -119,13 +122,30 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 
             AppDiffSummary diffSummary = context.App.RemoteMetaData.GetDiffSummary(versionId, cancellationToken);
-            return new CheckDiskSpaceCommand(diffSummary, context.App.LocalDirectory.Path, biggestFileSize);
+            
+            IDownloadDirectory appDownloadDirectory = context.App.DownloadDirectory;
+            string destinationFilePath = appDownloadDirectory.GetDiffPackagePath(versionId);
+            filesToProcessSize += FileOperations.GetSizeFile(destinationFilePath);
+            
+            string destinationMetaPath = appDownloadDirectory.GetDiffPackageMetaPath(versionId);
+            filesToProcessSize += FileOperations.GetSizeFile(destinationMetaPath);
+            
+            return new CheckDiskSpaceCommand(diffSummary, context.App.LocalDirectory.Path, biggestFileSize, filesToProcessSize);
         }
 
         public ICheckDiskSpace CreateCheckDiskSpaceCommandForContent(int versionId, AppUpdaterContext context, CancellationToken cancellationToken)
         {
             AppContentSummary contentSummary = context.App.RemoteMetaData.GetContentSummary(versionId, cancellationToken);
-            return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path);
+
+            long filesToProcessSize = 0;
+            IDownloadDirectory appDownloadDirectory = context.App.DownloadDirectory;
+            string destinationFilePath = appDownloadDirectory.GetContentPackagePath(versionId);
+            filesToProcessSize += FileOperations.GetSizeFile(destinationFilePath);
+            
+            string destinationMetaPath = appDownloadDirectory.GetContentPackageMetaPath(versionId);
+            filesToProcessSize += FileOperations.GetSizeFile(destinationMetaPath);
+            
+            return new CheckDiskSpaceCommand(contentSummary, context.App.LocalDirectory.Path, filesToProcessSize);
         }
 
         public IGeolocateCommand CreateGeolocateCommand()
