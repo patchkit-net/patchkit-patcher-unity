@@ -30,7 +30,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly ILocalMetaData _localMetaData;
 
         private OperationStatus _copyFilesStatus;
-        private OperationStatus _unarchivePackageStatus;
+        private ProgressBytesFilesStatus _unarchivePackageStatus;
         private Pack1Meta _pack1Meta;
 
         public InstallContentCommand(string packagePath, string packageMetaPath, string packagePassword, int versionId,
@@ -70,7 +70,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             };
             status.RegisterOperation(_copyFilesStatus);
 
-            _unarchivePackageStatus = new OperationStatus
+            _unarchivePackageStatus = new ProgressBytesFilesStatus(PatcherLanguages.OpenTag + "unarchiving_package" + PatcherLanguages.CloseTag)
             {
                 Weight = {Value = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size)}
             };
@@ -105,25 +105,35 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Unarchiving package.");
 
                 string usedSuffix;
-                MapHashExtractedFiles mapHashExtractedFiles = new MapHashExtractedFiles(); 
-                IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, mapHashExtractedFiles, out usedSuffix);
+                IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
                 _unarchivePackageStatus.IsActive.Value = true;
                 _unarchivePackageStatus.Description.Value =
                     PatcherLanguages.OpenTag + "unarchiving_package" + PatcherLanguages.CloseTag + " ...";
                 _unarchivePackageStatus.Progress.Value = 0.0;
+                _unarchivePackageStatus.TotalBytes.Value = _versionContentSummary.UncompressedSize;
 
+                int lastEntry = 0, nextEntry = -1;
+                
                 unarchiver.UnarchiveProgressChanged += (name, isFile, entry, amount, entryProgress) =>
                 {
-                    var entryMinProgress = (entry - 1) / (double) amount;
-                    var entryMaxProgress = entry / (double) amount;
+                    if (lastEntry != entry)
+                    {
+                        lastEntry = entry;
+                        
+                        DebugLogger.Log(string.Format("Unarchiving entry ({0}/{1})...", entry, amount));
+                        DebugLogger.Log("entry = " + entry);
+                    }
 
-                    _unarchivePackageStatus.Progress.Value =
-                        entryMinProgress + (entryMaxProgress - entryMinProgress) * entryProgress;
-
-                    _unarchivePackageStatus.Description.Value =
-                        PatcherLanguages.OpenTag + "unarchiving_package" + PatcherLanguages.CloseTag +
-                        string.Format(" ({0} / {1}) ...", entry, amount);
+                    if (nextEntry == entry)
+                    {
+                        return;
+                    }
+                
+                    nextEntry = entry;
+                    string entryName = HashCalculator.ComputeMD5Hash(name);
+                
+                    _unarchivePackageStatus.ObserveFile(Path.Combine(packageDir.Path, entryName) + Suffix);
                 };
 
                 // Allow to unpack with errors. This allows to install content even on corrupted hard drives, and attempt to fix these later
@@ -147,25 +157,19 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     cancellationToken.ThrowIfCancellationRequested();
                     
                     string filePath = _versionContentSummary.Files[i].Path;
-                    string nameHash;
-                    if (mapHashExtractedFiles.TryGetHash(filePath, out nameHash))
-                    {
-                        var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Files[i].Size);
+                    string nameHash = HashCalculator.ComputeMD5Hash(filePath);
+       
+                    var sourceFile = new SourceFile(filePath, packageDir.Path, usedSuffix, nameHash, _versionContentSummary.Files[i].Size);
 
-                        if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
-                        {
-                            DebugLogger.LogWarning(
-                                "Skipping unexisting file because I've been expecting unpacking errors: " +
-                                sourceFile.Name);
-                        }
-                        else
-                        {
-                            InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
-                        }
+                    if (unarchiver.HasErrors && !sourceFile.Exists()) // allow unexistent file only if does not have errors
+                    {
+                        DebugLogger.LogWarning(
+                            "Skipping unexisting file because I've been expecting unpacking errors: " +
+                            sourceFile.Name);
                     }
                     else
                     {
-                        throw new InstallerException(string.Format("Cannot find hash for file {0} in mapHash.", filePath));
+                        InstallFile(sourceFile, cancellationToken, i == _versionContentSummary.Files.Length - 1);
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
@@ -179,16 +183,16 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             });
         }
 
-        private IUnarchiver CreateUnrachiver(string destinationDir, MapHashExtractedFiles mapHashExtractedFiles, out string usedSuffix)
+        private IUnarchiver CreateUnrachiver(string destinationDir, out string usedSuffix)
         {
             switch (_versionContentSummary.CompressionMethod)
             {
                 case "zip":
                     usedSuffix = string.Empty;
-                    return new ZipUnarchiver(_packagePath, destinationDir, mapHashExtractedFiles, _packagePassword);
+                    return new ZipUnarchiver(_packagePath, destinationDir, _packagePassword);
                 case "pack1":
                     usedSuffix = Suffix;
-                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, mapHashExtractedFiles, _packagePassword, Suffix);
+                    return new Pack1Unarchiver(_packagePath, _pack1Meta, destinationDir, _packagePassword, Suffix);
                 default:
                     throw new InstallerException(string.Format("Unknown compression method: {0}",
                         _versionContentSummary.CompressionMethod));

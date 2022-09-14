@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
@@ -69,6 +70,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Downloading package.");
 
+            if (FileOperations.GetSizeFile(_destinationPackagePath) == _resource.Size)
+            {
+                DebugLogger.Log("Package has already been downloaded.");
+                _status.TotalBytes.Value = _resource.Size;
+                _status.Bytes.Value = _resource.Size;
+                return;
+            }
+            
             _status.IsActive.Value = true;
             _status.TotalBytes.Value = _resource.Size;
             if(File.Exists(_destinationPackagePath))

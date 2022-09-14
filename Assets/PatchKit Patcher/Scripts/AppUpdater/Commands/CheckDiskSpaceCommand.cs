@@ -19,23 +19,26 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         private readonly AppDiffSummary? _diffSummary;
         private readonly string _localDirectoryPath;
         private readonly long _bigestFileSize;
+        private readonly long _processedFilesSize;
         private OperationStatus _status;
 
-        public CheckDiskSpaceCommand(AppContentSummary contentSummary, string localDirectoryPath)
+        public CheckDiskSpaceCommand(AppContentSummary contentSummary, string localDirectoryPath, long processedFilesSize)
         {
             Checks.ArgumentNotNull(localDirectoryPath, "localDirectoryPath");
 
             _contentSummary = contentSummary;
             _localDirectoryPath = localDirectoryPath;
+            _processedFilesSize = processedFilesSize;
         }
 
-        public CheckDiskSpaceCommand(AppDiffSummary diffSummary, string localDirectoryPath, long bigestFileSize)
+        public CheckDiskSpaceCommand(AppDiffSummary diffSummary, string localDirectoryPath, long bigestFileSize, long processedFilesSize)
         {
             Checks.ArgumentNotNull(localDirectoryPath, "localDirectoryPath");
 
             _diffSummary = diffSummary;
             _localDirectoryPath = localDirectoryPath;
             _bigestFileSize = bigestFileSize;
+            _processedFilesSize = processedFilesSize;
         }
 
         public void Execute(CancellationToken cancellationToken)
