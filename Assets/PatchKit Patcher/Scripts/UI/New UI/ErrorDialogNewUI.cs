@@ -1,6 +1,8 @@
-﻿using PatchKit.Unity.Patcher.Cancellation;
+﻿using System.Collections;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
@@ -23,8 +25,17 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         
         public void Restart()
         {
-            Patcher.Instance.SetUserDecision(Patcher.UserDecision.CheckForAppUpdates);
+            StartCoroutine(Retry());
             OnDisplayed();
+        }
+        
+        public IEnumerator Retry()
+        {
+            while (Patcher.Instance.State.Value != PatcherState.WaitingForUserDecision)
+            {
+                yield return new WaitForSeconds(1);
+            }
+            Patcher.Instance.SetUserDecision(Patcher.UserDecision.CheckForAppUpdates);
         }
 
         public override void Display(PatcherError error, CancellationToken cancellationToken)
