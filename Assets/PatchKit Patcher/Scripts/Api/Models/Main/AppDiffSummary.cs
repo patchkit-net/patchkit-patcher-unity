@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace PatchKit.Api.Models.Main
@@ -38,22 +39,22 @@ namespace PatchKit.Api.Models.Main
         /// List of added files.
         /// </summary>
         [JsonProperty("added_files")]
-        public string[] AddedFiles;
+        public HashSet<string> AddedFiles;
         
         /// <summary>
         /// List of modified files.
         /// </summary>
         [JsonProperty("modified_files")]
-        public string[] ModifiedFiles;
+        public HashSet<string> ModifiedFiles;
         
         /// <summary>
         /// List of removed files.
         /// </summary>
         [JsonProperty("removed_files")]
-        public string[] RemovedFiles;
+        public HashSet<string> RemovedFiles;
 
         [JsonProperty("unchanged_files")]
-        public string[] UnchangedFiles;
+        public HashSet<string> UnchangedFiles;
         
         [JsonProperty("hash_code")]
         public string HashCode;
