@@ -533,7 +533,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private long GetTotalSizeModifiedFiles()
         {
-            IEnumerable<string> modifiedFiles = _diffSummary.ModifiedFiles.Where(f => !_diffSummary.UnchangedFiles.Contains(f));
+            var unchangedFiles = new HashSet<string>(_diffSummary.UnchangedFiles);
+            var modifiedFiles = new HashSet<string>(_diffSummary.ModifiedFiles).Where(f => !unchangedFiles.Contains(f));
             return _contentSummary.Files.Where(f => modifiedFiles.Contains(f.Path)).Sum(f => f.Size);
         }
         
