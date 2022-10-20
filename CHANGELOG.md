@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.17.12.1]
 ### Fixed
-- Reparing a crash when patching
+- Crash during patching operation
 
 ## [3.17.12.0]
 ### Fixed
