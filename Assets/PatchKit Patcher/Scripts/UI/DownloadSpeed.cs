@@ -72,14 +72,12 @@ namespace PatchKit.Unity.Patcher.UI
 
         private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + PatcherLanguages.OpenTag + "megabytes_sec" +
-                   PatcherLanguages.CloseTag;
+            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + LanguageHelper.Tag("megabytes_sec");
         }
 
         private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + PatcherLanguages.OpenTag + "kilobytes_sec" +
-                   PatcherLanguages.CloseTag;
+            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + LanguageHelper.Tag("kilobytes_sec");
         }
 
         private static string FormatDownloadSpeed(double s)
@@ -98,29 +96,29 @@ namespace PatchKit.Unity.Patcher.UI
 
             if (span.TotalDays > 1.0)
             {
-                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "day" + PatcherLanguages.CloseTag,
+                return FormatPlural("{0:0} ", LanguageHelper.Tag("day"),
                     span.TotalDays);
             }
 
             if (span.TotalHours > 1.0)
             {
-                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "hour" + PatcherLanguages.CloseTag,
+                return FormatPlural("{0:0} ", LanguageHelper.Tag("hour"),
                     span.TotalHours);
             }
 
             if (span.TotalMinutes > 1.0)
             {
-                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "minute" + PatcherLanguages.CloseTag,
+                return FormatPlural("{0:0} ", LanguageHelper.Tag("minute"),
                     span.TotalMinutes);
             }
 
             if (span.TotalSeconds > 1.0)
             {
-                return FormatPlural("{0:0} ", PatcherLanguages.OpenTag + "second" + PatcherLanguages.CloseTag,
+                return FormatPlural("{0:0} ", LanguageHelper.Tag("second"),
                     span.TotalSeconds);
             }
 
-            return PatcherLanguages.OpenTag + "a_moment" + PatcherLanguages.CloseTag;
+            return LanguageHelper.Tag("a_moment");
         }
 
         private static double? GetRemainingTime(long bytes, long totalBytes, double bytesPerSecond)

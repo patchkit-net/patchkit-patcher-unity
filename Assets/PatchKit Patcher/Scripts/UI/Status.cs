@@ -27,13 +27,13 @@ namespace PatchKit.Unity.Patcher.UI
                         case PatcherState.None:
                             return string.Empty;
                         case PatcherState.LoadingPatcherData:
-                            return PatcherLanguages.OpenTag + "loading_data" + PatcherLanguages.CloseTag;
+                            return LanguageHelper.Tag("loading_data");
                         case PatcherState.LoadingPatcherConfiguration:
-                            return PatcherLanguages.OpenTag + "loading_configuration" + PatcherLanguages.CloseTag;
+                            return LanguageHelper.Tag("loading_configuration");
                         case PatcherState.WaitingForUserDecision:
                             return string.Empty;
                         case PatcherState.StartingApp:
-                            return PatcherLanguages.OpenTag + "starting_application" + PatcherLanguages.CloseTag;
+                            return LanguageHelper.Tag("starting_application");
                         case PatcherState.UpdatingApp:
                             return description;
                     }

@@ -9,6 +9,7 @@ using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -56,7 +57,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             {
                 Weight = {Value = StatusWeightHelper.GetCheckVersionIntegrityWeight(_versionSummary)},
                 Description =
-                    {Value = PatcherLanguages.OpenTag + "checking_version_integrity" + PatcherLanguages.CloseTag}
+                    {Value = LanguageHelper.Tag("checking_version_integrity")}
             };
             status.RegisterOperation(_status);
         }

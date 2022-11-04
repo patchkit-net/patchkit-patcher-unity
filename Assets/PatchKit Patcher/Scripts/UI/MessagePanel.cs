@@ -1,5 +1,6 @@
 ﻿using UniRx;
 using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,7 +50,7 @@ namespace PatchKit.Unity.Patcher.UI
                 _canInstallApp = canInstallApp;
                 if (_canInstallApp)
                 {
-                    checkButtonTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "install" + PatcherLanguages.CloseTag);
+                    checkButtonTextMeshProTranslator.SetText(LanguageHelper.Tag("install"));
                 }
 
                 CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
@@ -60,8 +61,7 @@ namespace PatchKit.Unity.Patcher.UI
                 _canCheckForAppUpdates = canCheckForAppUpdates;
                 if (_canCheckForAppUpdates)
                 {
-                    checkButtonTextMeshProTranslator.SetText(PatcherLanguages.OpenTag + "check_for_updates" +
-                                                      PatcherLanguages.CloseTag);
+                    checkButtonTextMeshProTranslator.SetText(LanguageHelper.Tag("check_for_updates"));
                 }
 
                 CheckButton.interactable = _canInstallApp || _canCheckForAppUpdates;
@@ -73,9 +73,8 @@ namespace PatchKit.Unity.Patcher.UI
             _animator.SetBool("IsOpened", false);
             PlayButton.interactable = false;
             CheckButton.interactable = false;
-            
-            checkButtonTextMeshProTranslator.SetText(
-                PatcherLanguages.OpenTag + "check_for_updates" + PatcherLanguages.CloseTag);
+
+            checkButtonTextMeshProTranslator.SetText(LanguageHelper.Tag("check_for_updates"));
         }
 
         private void OnPlayButtonClicked()

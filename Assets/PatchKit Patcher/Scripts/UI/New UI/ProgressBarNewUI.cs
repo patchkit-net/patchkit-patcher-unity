@@ -59,7 +59,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private string FormatProgressForDisplay(double progress)
         {
-            return string.Format(PatcherLanguages.OpenTag + "updating" + PatcherLanguages.CloseTag + " {0:0.0}",
+            return string.Format(LanguageHelper.Tag("updating") + " {0:0.0}",
                 progress * 100.0) + "%";
         }
 
@@ -72,7 +72,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 case PatcherState.LoadingPatcherData:
                 case PatcherState.LoadingPatcherConfiguration:
                 case PatcherState.Connecting:
-                    SetIdle(PatcherLanguages.OpenTag + "connecting" + PatcherLanguages.CloseTag);
+                    SetIdle(LanguageHelper.Tag("connecting"));
                     return;
 
                 case PatcherState.UpdatingApp:
@@ -84,7 +84,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
                     if (data.Progress <= 0)
                     {
-                        SetIdle(PatcherLanguages.OpenTag + "connecting" + PatcherLanguages.CloseTag);
+                        SetIdle(LanguageHelper.Tag("connecting"));
                         return;
                     }
 
@@ -107,7 +107,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                     break;
 
                 case PatcherState.DisplayingError:
-                    SetProgressBarText(PatcherLanguages.OpenTag + "error" + PatcherLanguages.CloseTag);
+                    SetProgressBarText(LanguageHelper.Tag("error"));
                     SetProgressBarLinear(0);
                     break;
 

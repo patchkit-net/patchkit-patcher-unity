@@ -8,6 +8,7 @@ using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -70,7 +71,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             };
             status.RegisterOperation(_copyFilesStatus);
 
-            _unarchivePackageStatus = new ProgressBytesFilesStatus(PatcherLanguages.OpenTag + "unarchiving_package" + PatcherLanguages.CloseTag)
+            _unarchivePackageStatus = new ProgressBytesFilesStatus(LanguageHelper.Tag("unarchiving_package"))
             {
                 Weight = {Value = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size)}
             };
@@ -108,8 +109,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
                 _unarchivePackageStatus.IsActive.Value = true;
-                _unarchivePackageStatus.Description.Value =
-                    PatcherLanguages.OpenTag + "unarchiving_package" + PatcherLanguages.CloseTag + " ...";
+                _unarchivePackageStatus.Description.Value = LanguageHelper.Tag("unarchiving_package") + " ...";
                 _unarchivePackageStatus.Progress.Value = 0.0;
                 _unarchivePackageStatus.TotalBytes.Value = _versionContentSummary.UncompressedSize;
 
@@ -148,8 +148,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Moving files.");
 
                 _copyFilesStatus.IsActive.Value = true;
-                _copyFilesStatus.Description.Value =
-                    PatcherLanguages.OpenTag + "installing" + PatcherLanguages.CloseTag + " ...";
+                _copyFilesStatus.Description.Value = LanguageHelper.Tag("installing") + " ...";
                 _copyFilesStatus.Progress.Value = 0.0;
 
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
@@ -173,9 +172,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
-                    _copyFilesStatus.Description.Value =
-                        PatcherLanguages.OpenTag + "installing" + PatcherLanguages.CloseTag +
-                        string.Format(" ({0} / {1}) ...", i + 1, _versionContentSummary.Files.Length);
+                    _copyFilesStatus.Description.Value = LanguageHelper.Tag("installing") +
+                                                         string.Format(" ({0} / {1}) ...", i + 1,
+                                                             _versionContentSummary.Files.Length);
                 }
 
                 _copyFilesStatus.Progress.Value = 1.0;

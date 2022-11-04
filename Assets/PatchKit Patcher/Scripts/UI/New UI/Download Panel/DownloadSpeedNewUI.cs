@@ -54,14 +54,12 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private static string FormatDownloadSpeedMegabytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + PatcherLanguages.OpenTag + "megabytes_sec" +
-                   PatcherLanguages.CloseTag;
+            return FormatDownloadSpeed(bytesPerSecond / Units.MB) + LanguageHelper.Tag("megabytes_sec");
         }
 
         private static string FormatDownloadSpeedKilobytes(double bytesPerSecond)
         {
-            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + PatcherLanguages.OpenTag + "kilobytes_sec" +
-                   PatcherLanguages.CloseTag;
+            return FormatDownloadSpeed(bytesPerSecond / Units.KB) + LanguageHelper.Tag("kilobytes_sec");
         }
 
         private static string FormatDownloadSpeed(double s)

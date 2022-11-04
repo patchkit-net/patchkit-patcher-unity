@@ -64,7 +64,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var commandFactory = new AppUpdaterCommandFactory();
 
-            var geolocateCommand = commandFactory.CreateGeolocateCommand();
+            IGeolocateCommand geolocateCommand = commandFactory.CreateGeolocateCommand();
             geolocateCommand.Prepare(_status, cancellationToken);
             geolocateCommand.Execute(cancellationToken);
 

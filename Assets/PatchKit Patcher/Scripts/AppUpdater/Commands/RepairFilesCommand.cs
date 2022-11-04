@@ -14,6 +14,7 @@ using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -105,8 +106,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     downloadStatus.IsActive.Value = true;
                     downloadStatus.TotalBytes.Value = totalData;
-                    downloadStatus.Description.Value =
-                        PatcherLanguages.OpenTag + "downloading_fixes" + PatcherLanguages.CloseTag;
+                    downloadStatus.Description.Value = LanguageHelper.Tag("downloading_fixes");
                     downloadStatus.Bytes.Value = 0;
 
                     downloader.DownloadProgressChanged += downloadedBytes =>
@@ -120,8 +120,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     downloadStatus.IsActive.Value = false;
 
                     repairStatus.IsActive.Value = true;
-                    repairStatus.Description.Value =
-                        PatcherLanguages.OpenTag + "applying_fixes" + PatcherLanguages.CloseTag;
+                    repairStatus.Description.Value = LanguageHelper.Tag("applying_fixes");
                     repairStatus.Progress.Value = 0.0;
                     repairStatus.TotalBytes.Value = _contentSummary.Files.First(f => f.Path == entry.Name).Size;
 

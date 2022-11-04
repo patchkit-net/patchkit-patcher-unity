@@ -65,7 +65,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 return FormatPlural("{0:0} ", "second", span.TotalSeconds);
             }
 
-            return PatcherLanguages.OpenTag + "a_moment" + PatcherLanguages.CloseTag;
+            return LanguageHelper.Tag("a_moment");
         }
 
         private static double? GetRemainingTime(long bytes, long totalBytes, double bytesPerSecond)
@@ -87,7 +87,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private static string FormatPlural(string format, string timeUnit, double value)
         {
-            return string.Format(format, value) + PatcherLanguages.OpenTag +  timeUnit + GetPlural(value) + PatcherLanguages.CloseTag;
+            return string.Format(format, value) + LanguageHelper.Tag(timeUnit + GetPlural(value));
         }
 
         private static string GetPlural(double value)

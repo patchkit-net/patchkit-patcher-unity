@@ -6,6 +6,7 @@ using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.Utilities;
 using UniRx;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
@@ -59,7 +60,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new DownloadStatus
             {
                 Weight = {Value = StatusWeightHelper.GetResourceDownloadWeight(_resource)},
-                Description = {Value = PatcherLanguages.OpenTag + "downloading_package" + PatcherLanguages.CloseTag}
+                Description = {Value = LanguageHelper.Tag("downloading_package")}
             };
             status.RegisterOperation(_status);
         }
@@ -93,8 +94,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             using (_status.BytesPerSecond.Subscribe(bps =>
                 _status.Description.Value = bps > 0.01 || DateTime.Now - downloadStartTime < stalledTimeout
-                    ? PatcherLanguages.OpenTag + "downloading_package" + PatcherLanguages.CloseTag
-                    : PatcherLanguages.OpenTag + "stalled" + PatcherLanguages.CloseTag))
+                    ? LanguageHelper.Tag("downloading_package")
+                    : LanguageHelper.Tag("stalled")))
             {
                 downloader.Download(cancellationToken);
             }

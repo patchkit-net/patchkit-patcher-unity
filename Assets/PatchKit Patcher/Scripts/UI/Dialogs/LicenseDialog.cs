@@ -73,16 +73,13 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                     errorMessageTextTranslator.SetText(string.Empty);
                     break;
                 case LicenseDialogMessageType.InvalidLicense:
-                    errorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "invalid_license" +
-                                                       PatcherLanguages.CloseTag);
+                    errorMessageTextTranslator.SetText(LanguageHelper.Tag("invalid_license"));
                     break;
                 case LicenseDialogMessageType.BlockedLicense:
-                    errorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "blocked_license" +
-                                                       PatcherLanguages.CloseTag);
+                    errorMessageTextTranslator.SetText(LanguageHelper.Tag("blocked_license"));
                     break;
                 case LicenseDialogMessageType.ServiceUnavailable:
-                    errorMessageTextTranslator.SetText(PatcherLanguages.OpenTag + "service_is_unavailable" +
-                                                       PatcherLanguages.CloseTag);
+                    errorMessageTextTranslator.SetText(LanguageHelper.Tag("service_is_unavailable"));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);

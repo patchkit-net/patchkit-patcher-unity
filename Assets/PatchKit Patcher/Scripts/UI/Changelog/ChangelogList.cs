@@ -108,7 +108,7 @@ namespace PatchKit.Unity.Patcher.UI
             string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime)
                 .ToString("g", CurrentCultureInfo.GetCurrentCultureInfo());
             title.Texts[1].SetText(string.Format("{0} {1}",
-                PatcherLanguages.OpenTag + "published_at" + PatcherLanguages.CloseTag, publishDate));
+                LanguageHelper.Tag("published_at"), publishDate));
             title.transform.SetParent(transform, false);
             title.transform.SetAsLastSibling();
         }

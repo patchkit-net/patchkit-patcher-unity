@@ -4,6 +4,7 @@ using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.Utilities;
 
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -55,7 +56,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new OperationStatus
             {
                 Weight = {Value = 0.00001},
-                Description = {Value = PatcherLanguages.OpenTag +  "checking_path_length" + PatcherLanguages.CloseTag}
+                Description = {Value = LanguageHelper.Tag("checking_path_length")}
             };
             status.RegisterOperation(_status);
         }

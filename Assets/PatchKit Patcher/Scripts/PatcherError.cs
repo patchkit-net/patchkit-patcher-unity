@@ -1,4 +1,5 @@
 ﻿using PatchKit.Unity.UI.Languages;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -16,46 +17,37 @@ namespace PatchKit.Unity.Patcher
 
         public static PatcherError NoInternetConnection()
         {
-            return new PatcherError(PatcherLanguages.OpenTag + "please_check_your_internet_connection" +
-                                    PatcherLanguages.CloseTag);
+            return new PatcherError(LanguageHelper.Tag("please_check_your_internet_connection"));
         }
 
         public static PatcherError NoPermissions()
         {
-            return new PatcherError(PatcherLanguages.OpenTag +
-                                    "please_check_write_permissions_in_applications_directory" +
-                                    PatcherLanguages.CloseTag);
+            return new PatcherError(LanguageHelper.Tag("please_check_write_permissions_in_applications_directory"));
         }
 
         public static PatcherError NotEnoughDiskSpace(long additionalBytesRequired)
         {
-            return new PatcherError(
-                PatcherLanguages.OpenTag +
-                "not_enough_disk_space_to_install_this_application_additional_[count]_gb_of_disk_space_is_required" +
-                PatcherLanguages.CloseTag,
+            return new PatcherError(LanguageHelper.Tag(
+                    "not_enough_disk_space_to_install_this_application_additional_[count]_gb_of_disk_space_is_required"),
                 additionalBytesRequired / (1024 * 1024 * 1024.0)
             );
         }
 
         public static PatcherError NonLauncherExecution()
         {
-            return new PatcherError(PatcherLanguages.OpenTag + "patcher_has_to_be_started_using_the_launcher" +
-                                    PatcherLanguages.CloseTag);
+            return new PatcherError(LanguageHelper.Tag("patcher_has_to_be_started_using_the_launcher"));
         }
 
         public static PatcherError CannotRepairDiskFilesException()
         {
-            return new PatcherError(
-                PatcherLanguages.OpenTag +
-                "couldnt_validate_local_files_please_try_again_if_the_issue_remains_it_could_mean_a_disk_issue" +
-                PatcherLanguages.CloseTag);
+            return new PatcherError(LanguageHelper.Tag(
+                "couldnt_validate_local_files_please_try_again_if_the_issue_remains_it_could_mean_a_disk_issue"));
         }
 
         public static PatcherError Other()
         {
-            return new PatcherError(PatcherLanguages.OpenTag +
-                                    "unknown_error_please_try_again_if_the_issue_remains_please_contact_the_support" +
-                                    PatcherLanguages.CloseTag);
+            return new PatcherError(LanguageHelper.Tag(
+                "unknown_error_please_try_again_if_the_issue_remains_please_contact_the_support"));
         }
         
         public static PatcherError FilePathTooLong()
