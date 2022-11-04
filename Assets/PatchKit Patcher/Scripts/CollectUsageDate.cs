@@ -22,6 +22,13 @@ namespace PatchKit.Unity.Patcher
             ask_banner
         }
 
+        public enum Analytics
+        {
+            Off,
+            ON,
+            FirstStart
+        }
+
         public CollectUsageDate(Api.Models.Main.App appInfo)
         {
             _appInfo = appInfo;
@@ -47,11 +54,11 @@ namespace PatchKit.Unity.Patcher
 
             if (!IsNone())
             {
-                int analytics = 2;
+                int analytics = (int) Analytics.FirstStart;
 
-                UnityDispatcher.Invoke(() => analytics = GetCache(Patcher.Instance.AppSecret).GetInt(CachePatchKitAnalytics, 2)).WaitOne();
+                UnityDispatcher.Invoke(() => analytics = GetCache(Patcher.Instance.AppSecret).GetInt(CachePatchKitAnalytics, (int) Analytics.FirstStart)).WaitOne();
                 
-                if (analytics == 2)
+                if (analytics == (int) Analytics.FirstStart)
                 {
                     if (IsPopup())
                     {

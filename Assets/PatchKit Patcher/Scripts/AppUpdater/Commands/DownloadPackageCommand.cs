@@ -3,9 +3,7 @@ using System.IO;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UniRx;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
@@ -81,8 +79,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             
             _status.IsActive.Value = true;
             _status.TotalBytes.Value = _resource.Size;
-            if(File.Exists(_destinationPackagePath))
+            if (File.Exists(_destinationPackagePath))
+            {
                 _status.StartBytes.Value = new FileInfo(_destinationPackagePath).Length;
+            }
 
             var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource);
 

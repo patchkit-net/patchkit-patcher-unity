@@ -9,7 +9,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
     public class SettingsList : MonoBehaviour
     {
         public Toggle ToggleAnalytics;
-        
+
         private bool _hasBeenSet;
         private string _appSecret;
 
@@ -34,7 +34,8 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             {
                 PatcherStatistics.SetPermitStatistics(value);
                 ToggleAnalytics.isOn = value;
-                GetCache(_appSecret).SetInt(CollectUsageDate.CachePatchKitAnalytics, value ? 1 : 0);
+                GetCache(_appSecret).SetInt(CollectUsageDate.CachePatchKitAnalytics,
+                    value ? (int) CollectUsageDate.Analytics.ON : (int) CollectUsageDate.Analytics.Off);
             }
         }
 
@@ -47,7 +48,8 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
             _appSecret = appSecret;
 
-            if (GetCache(_appSecret).GetInt(CollectUsageDate.CachePatchKitAnalytics) == 1)
+            if (GetCache(_appSecret).GetInt(CollectUsageDate.CachePatchKitAnalytics) ==
+                (int) CollectUsageDate.Analytics.ON)
             {
                 SetAnalytics = true;
             }

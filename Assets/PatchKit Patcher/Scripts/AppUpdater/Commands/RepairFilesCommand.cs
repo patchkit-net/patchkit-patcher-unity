@@ -13,7 +13,6 @@ using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit.Unity.Patcher.AppData.Remote;
+using PatchKit.Unity.Patcher.AppUpdater.Commands;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
 
@@ -45,7 +45,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
 
             var commandFactory = new Commands.AppUpdaterCommandFactory();
 
-            var geolocateCommand = commandFactory.CreateGeolocateCommand();
+            IGeolocateCommand geolocateCommand = commandFactory.CreateGeolocateCommand();
             geolocateCommand.Prepare(_status, cancellationToken);
             geolocateCommand.Execute(cancellationToken);
 

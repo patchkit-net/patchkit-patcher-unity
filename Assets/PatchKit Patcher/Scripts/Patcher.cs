@@ -17,8 +17,6 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit.Unity.Patcher.UI.NewUI;
-using PatchKit.Unity.UI.Languages;
 
 namespace PatchKit.Unity.Patcher
 {

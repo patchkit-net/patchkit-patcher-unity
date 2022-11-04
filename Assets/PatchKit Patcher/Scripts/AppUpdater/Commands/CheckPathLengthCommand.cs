@@ -3,7 +3,6 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 
 
