@@ -9,9 +9,13 @@ namespace PatchKit.Unity.Patcher.UI
 {
     public class ProgressBar : MonoBehaviour
     {
+        private bool _isIdle = false;
+        private const float IdleBarWidth = 0.2f;
+        private const float IdleBarSpeed = 1.2f;
+        private float _idleProgress = -IdleBarWidth;
+
         public Text Text;
         public ITextTranslator textMeshProTranslator;
-
         public Image Image;
 
         private struct UpdateData
@@ -27,8 +31,8 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void SetProgressBar(float start, float end)
         {
-            var anchorMax = Image.rectTransform.anchorMax;
-            var anchorMin = Image.rectTransform.anchorMin;
+            Vector2 anchorMax = Image.rectTransform.anchorMax;
+            Vector2 anchorMin = Image.rectTransform.anchorMin;
 
             anchorMin.x = Mathf.Clamp(start, 0f, 1f);
             anchorMax.x = Mathf.Clamp(end, 0f, 1f);
@@ -45,10 +49,6 @@ namespace PatchKit.Unity.Patcher.UI
         private void SetProgressBarText(string text)
         {
             textMeshProTranslator.SetText(text);
-        }
-
-        private void SetProgress(UpdateData data)
-        {
         }
 
         private void SetIdle(string text)
@@ -125,10 +125,12 @@ namespace PatchKit.Unity.Patcher.UI
         private void Start()
         {
             if (textMeshProTranslator == null)
+            {
                 textMeshProTranslator = Text.gameObject.AddComponent<TextTranslator>();
+            }
 
-            var progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
-            var isUpdatingIdle = Patcher.Instance.UpdaterStatus
+            IObservable<double> progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
+            IObservable<bool> isUpdatingIdle = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrDefault(p => (IObservable<IReadOnlyOperationStatus>) p.LatestActiveOperation,
                     (IReadOnlyOperationStatus) null)
                 .SelectSwitchOrDefault(p => p.IsIdle, false);
@@ -146,24 +148,21 @@ namespace PatchKit.Unity.Patcher.UI
                 .Subscribe(OnUpdate)
                 .AddTo(this);
         }
-
-        private bool _isIdle = false;
-        private const float IdleBarWidth = 0.2f;
-        private const float IdleBarSpeed = 1.2f;
-        private float _idleProgress = -IdleBarWidth;
-
+        
         private void Update()
         {
-            if (_isIdle)
+            if (!_isIdle)
             {
-                SetProgressBar(_idleProgress, _idleProgress + IdleBarWidth);
+                return;
+            }
+            
+            SetProgressBar(_idleProgress, _idleProgress + IdleBarWidth);
 
-                _idleProgress += Time.deltaTime * IdleBarSpeed;
+            _idleProgress += Time.deltaTime * IdleBarSpeed;
 
-                if (_idleProgress >= 1)
-                {
-                    _idleProgress = -IdleBarWidth;
-                }
+            if (_idleProgress >= 1)
+            {
+                _idleProgress = -IdleBarWidth;
             }
         }
     }

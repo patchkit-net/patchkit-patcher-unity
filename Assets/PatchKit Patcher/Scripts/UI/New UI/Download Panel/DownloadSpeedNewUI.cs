@@ -17,18 +17,18 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         {
             _textTranslator = GetComponent<TextTranslator>();
 
-            var downloadStatus = Patcher.Instance.UpdaterStatus
+            IObservable<IReadOnlyDownloadStatus> downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
 
-            var downloadSpeedUnit = Patcher.Instance.AppInfo.Select(a => a.PatcherDownloadSpeedUnit);
+            IObservable<string> downloadSpeedUnit = Patcher.Instance.AppInfo.Select(a => a.PatcherDownloadSpeedUnit);
 
-            var text = downloadStatus.SelectSwitchOrDefault(status =>
+            IObservable<string> text = downloadStatus.SelectSwitchOrDefault(status =>
             {
-                var bytesPerSecond = status.BytesPerSecond;
-                
+                IReadOnlyReactiveProperty<double> bytesPerSecond = status.BytesPerSecond;
+
                 return bytesPerSecond.CombineLatest<double, string, string>(downloadSpeedUnit,
-                        GetFormattedDownloadSpeed);
+                    GetFormattedDownloadSpeed);
             }, string.Empty);
 
             text.ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
@@ -66,7 +66,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         {
             return s.ToString("#,#0.0");
         }
-        
+
         private static string GetPlural(double value)
         {
             return value.ToString("0") == "1" ? string.Empty : "s";

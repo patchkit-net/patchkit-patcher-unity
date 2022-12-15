@@ -10,9 +10,8 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            _textMeshProTranslator = GetComponent<ITextTranslator>();
-            if (_textMeshProTranslator == null)
-                _textMeshProTranslator = gameObject.AddComponent<TextTranslator>();
+            _textMeshProTranslator = GetComponent<ITextTranslator>() ?? gameObject.AddComponent<TextTranslator>();
+            
             Patcher.Instance.Warning.ObserveOnMainThread().Subscribe(warning =>
             {
                 _textMeshProTranslator.SetText(warning);

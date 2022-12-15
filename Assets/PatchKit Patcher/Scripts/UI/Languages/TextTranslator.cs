@@ -16,42 +16,42 @@ namespace PatchKit.Unity.UI.Languages
         {
             _textComponent = GetComponent<Text>();
             _language = PatcherLanguages.language;
-            if(!string.IsNullOrEmpty(Key))
+            if (!string.IsNullOrEmpty(Key))
+            {
                 _textComponent.text = PatcherLanguages.GetTranslation(Key);
-            if(!string.IsNullOrEmpty(_text))
+            }
+
+            if (!string.IsNullOrEmpty(_text))
+            {
                 _textComponent.text = PatcherLanguages.GetTranslationText(string.Format(_text, _args));
+            }
         }
 
         void Update()
         {
-            if (PatcherLanguages.language != _language)
+            if (PatcherLanguages.language == _language)
             {
-                _language = PatcherLanguages.language;
-                if(string.IsNullOrEmpty(_text))
-                {
-                    _textComponent.text = PatcherLanguages.GetTranslation(Key);
-                }
-                else
-                {
-                    if(_args != null)
-                        _textComponent.text = PatcherLanguages.GetTranslationText(_text, _args);
-                    else
-                        _textComponent.text = PatcherLanguages.GetTranslationText(_text);
-                }
+                return;
+            }
+
+            _language = PatcherLanguages.language;
+            if (string.IsNullOrEmpty(_text))
+            {
+                _textComponent.text = PatcherLanguages.GetTranslation(Key);
+            }
+            else
+            {
+                _textComponent.text = _args != null
+                    ? PatcherLanguages.GetTranslationText(_text, _args)
+                    : PatcherLanguages.GetTranslationText(_text);
             }
         }
 
         public void SetText(string text, params object[] args)
         {
             _args = args;
-            if (string.IsNullOrEmpty(text))
-            {
-                _text = "";
-            }
-            else
-            {
-                _text = text;
-            }
+            _text = string.IsNullOrEmpty(text) ? "" : text;
+
             _language = null;
         }
     }

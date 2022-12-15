@@ -18,6 +18,8 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(NewChangelogList));
         
+        private int _versionNumber;
+        
         public ChangelogElementHeader TitlePrefabDark;
         public ChangelogElementHeader TitlePrefabBright;
         public NewChangelogElement ChangePrefab;
@@ -30,7 +32,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 yield return null;
             }
 
-            var appSecret = Patcher.Instance.Data.Value.AppSecret;
+            string appSecret = Patcher.Instance.Data.Value.AppSecret;
 
             LoadChangelogFromCache(appSecret);
 
@@ -46,14 +48,14 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         {
             try
             {
-                var cacheValue = new UnityCache(appSecret).GetValue("app-changelog", null);
+                string cacheValue = new UnityCache(appSecret).GetValue("app-changelog", null);
 
                 if (cacheValue == null)
                 {
                     return;
                 }
 
-                var versions = JsonConvert.DeserializeObject<Changelog>(cacheValue).versions;
+                ChangelogEntry[] versions = JsonConvert.DeserializeObject<Changelog>(cacheValue).versions;
 
                 CreateChangelog(versions);
             }
@@ -67,7 +69,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         {
             try
             {
-                var cacheValue = JsonConvert.SerializeObject(versions);
+                string cacheValue = JsonConvert.SerializeObject(versions);
 
                 new UnityCache(appSecret).SetValue("app-changelog", cacheValue);
             }
@@ -86,19 +88,17 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 DestroyImmediate(transform.GetChild(0).gameObject);
             }
         }
-        
-        private int versionNumber;
 
         private void CreateChangelog(ChangelogEntry[] versions)
         {
             DestroyOldChangelog();
-            versionNumber = versions.Length;
+            _versionNumber = versions.Length;
 
             CreateLastRelease(versions[0]);
             foreach (ChangelogEntry version in versions)
             {
                 CreateVersionChangelog(version);
-                versionNumber--;
+                _versionNumber--;
             }
         }
 
@@ -125,7 +125,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private Transform CreateVersionTitleWithPublishData(string label, long publishTime, bool areChanges)
         {
-            ChangelogElementHeader title = Instantiate(versionNumber % 2 == 1 ? TitlePrefabDark : TitlePrefabBright,
+            ChangelogElementHeader title = Instantiate(_versionNumber % 2 == 1 ? TitlePrefabDark : TitlePrefabBright,
                 transform, false);
             title.Title.SetText(string.Format("{0}", label));
             string publishDate = UnixTimeConvert.FromUnixTimeStamp(publishTime)
@@ -141,9 +141,9 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void CreateVersionChangeList(string changelog, Transform parent)
         {
-            var changeList = (changelog ?? string.Empty).Split('\n');
+            string[] changeList = (changelog ?? string.Empty).Split('\n');
             
-            foreach (var change in changeList.Where(s => !string.IsNullOrEmpty(s)))
+            foreach (string change in changeList.Where(s => !string.IsNullOrEmpty(s)))
             {
                 string formattedChange = change.TrimStart(' ', '-', '*');
                 CreateVersionChange(formattedChange, parent);
@@ -152,7 +152,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void CreateVersionChange(string changeText, Transform parent)
         {
-            var change = Instantiate(ChangePrefab, parent, false);
+            NewChangelogElement change = Instantiate(ChangePrefab, parent, false);
             change.Text.SetText(changeText);
             change.transform.SetAsLastSibling();
         }

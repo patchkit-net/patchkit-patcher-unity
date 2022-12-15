@@ -17,7 +17,10 @@ namespace PatchKit.Unity.Patcher.UI
         {
             _textMeshProTranslator = GetComponent<ITextTranslator>();
             if (_textMeshProTranslator == null)
+            {
                 _textMeshProTranslator = gameObject.AddComponent<TextTranslator>();
+            }
+
             var downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);

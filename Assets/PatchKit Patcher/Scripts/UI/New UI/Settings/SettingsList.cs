@@ -15,7 +15,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Awake()
         {
-            var patcher = Patcher.Instance;
+            Patcher patcher = Patcher.Instance;
 
             Assert.IsNotNull(patcher);
 
@@ -35,7 +35,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 PatcherStatistics.SetPermitStatistics(value);
                 ToggleAnalytics.isOn = value;
                 GetCache(_appSecret).SetInt(CollectUsageDate.CachePatchKitAnalytics,
-                    value ? (int) CollectUsageDate.Analytics.ON : (int) CollectUsageDate.Analytics.Off);
+                    value ? (int) CollectUsageDate.Analytics.On : (int) CollectUsageDate.Analytics.Off);
             }
         }
 
@@ -49,7 +49,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             _appSecret = appSecret;
 
             if (GetCache(_appSecret).GetInt(CollectUsageDate.CachePatchKitAnalytics) ==
-                (int) CollectUsageDate.Analytics.ON)
+                (int) CollectUsageDate.Analytics.On)
             {
                 SetAnalytics = true;
             }

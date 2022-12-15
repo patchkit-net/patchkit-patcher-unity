@@ -24,13 +24,13 @@ namespace PatchKit.Unity.UI.Languages
             language = newlanguage;
             PlayerPrefs.SetString(CachePatchKitLanguages, language);
             PlayerPrefs.Save();
-            ChangeLaguage();
+            ChangeLanguage();
         }
         
         private static void LoadLanguage()
         {
             language = PlayerPrefs.GetString(CachePatchKitLanguages);
-            if (String.IsNullOrEmpty(language))
+            if (string.IsNullOrEmpty(language))
             {
                 CultureInfo cultureInfo = CurrentCultureInfo.GetCurrentCultureInfo();
                 language = cultureInfo.TwoLetterISOLanguageName;
@@ -38,7 +38,7 @@ namespace PatchKit.Unity.UI.Languages
                     EnvironmentVariables.TranslationLanguageEnvironmentVariable, language);
             }
 
-            ChangeLaguage();
+            ChangeLanguage();
             try
             {
                 DropdownLanguages.SetValue(language);
@@ -46,15 +46,18 @@ namespace PatchKit.Unity.UI.Languages
             catch (Exception e)
             {
                 language = DefaultLanguage;
-                ChangeLaguage();
+                ChangeLanguage();
                 DebugLogger.LogWarning("Not found DropdownLanguages");
             }
         }
 
-        private static void ChangeLaguage()
+        private static void ChangeLanguage()
         {
             if (Fields == null)
+            {
                 Fields = new Dictionary<string, string>();
+            }
+
             Fields.Clear();
             string path;
             
@@ -70,7 +73,7 @@ namespace PatchKit.Unity.UI.Languages
                     language));
             }
 
-            if (!String.IsNullOrEmpty(path))
+            if (!string.IsNullOrEmpty(path))
             {
                 Fields = JsonConvert.DeserializeObject<Dictionary<string, string>>(path);
             }
@@ -79,7 +82,10 @@ namespace PatchKit.Unity.UI.Languages
         public static string GetTranslation(string key)
         {
             if (Fields == null)
+            {
                 LoadLanguage();
+            }
+
             if (!String.IsNullOrEmpty(key))
             {
                 if (!Fields.ContainsKey(key))
@@ -99,15 +105,18 @@ namespace PatchKit.Unity.UI.Languages
         public static string GetTranslationText(string text, params object[] args)
         {
             if (string.IsNullOrEmpty(text))
+            {
                 return "";
+            }
+
             while(text.Contains(OpenTag) && text.Contains(CloseTag))
             {
-                int Start, End;
-                Start = text.IndexOf(OpenTag, 0) + OpenTag.Length;
-                End = text.IndexOf(CloseTag, Start);
-                string key = text.Substring(Start, End - Start);
+                int start = text.IndexOf(OpenTag, 0) + OpenTag.Length;
+                int end = text.IndexOf(CloseTag, start);
+                string key = text.Substring(start, end - start);
                 text = string.Format(text.Replace(OpenTag + key + CloseTag, GetTranslation(key)), args);
             }
+            
             return text;
         }
     }

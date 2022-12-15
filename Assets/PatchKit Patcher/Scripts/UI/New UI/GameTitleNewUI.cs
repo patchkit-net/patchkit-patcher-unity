@@ -16,7 +16,7 @@ namespace PatchKit.Unity
 
         private void Start()
         {
-            var patcher = Patcher.Patcher.Instance;
+            Patcher.Patcher patcher = Patcher.Patcher.Instance;
 
             Assert.IsNotNull(patcher);
             Assert.IsNotNull(Text);

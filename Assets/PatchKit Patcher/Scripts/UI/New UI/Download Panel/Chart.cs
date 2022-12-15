@@ -39,14 +39,14 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
             _chartWidth = rect.width;
             _image.material.SetInt("_NumberOfSamples", NumberOfSamples);
 
-            var downloadStatus = Patcher.Instance.UpdaterStatus
+            IObservable<IReadOnlyDownloadStatus> downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
 
-            var speed = downloadStatus.SelectSwitchOrDefault(d => d.BytesPerSecond, 0);
-            var startBytes = downloadStatus.SelectSwitchOrDefault(d => d.StartBytes, 0);
-            var totalBytes = downloadStatus.SelectSwitchOrDefault(d => d.TotalBytes, 0);
-            var bytes = downloadStatus.SelectSwitchOrDefault(d => d.Bytes, 0);
+            IObservable<double> speed = downloadStatus.SelectSwitchOrDefault(d => d.BytesPerSecond, 0);
+            IObservable<long> startBytes = downloadStatus.SelectSwitchOrDefault(d => d.StartBytes, 0);
+            IObservable<long> totalBytes = downloadStatus.SelectSwitchOrDefault(d => d.TotalBytes, 0);
+            IObservable<long> bytes = downloadStatus.SelectSwitchOrDefault(d => d.Bytes, 0);
 
 
             Patcher.Instance.State
@@ -70,15 +70,18 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Update()
         {
-            if (_downloadData.Bytes > _downloadData.StartBytes && _downloadData.Bytes < _downloadData.TotalBytes)
+            if (!(_downloadData.Bytes > _downloadData.StartBytes) ||
+                !(_downloadData.Bytes < _downloadData.TotalBytes))
             {
-                _timer += Time.deltaTime;
+                return;
+            }
 
-                if (_timer > WaitTime)
-                {
-                    OnUpdate();
-                    _timer -= WaitTime;
-                }
+            _timer += Time.deltaTime;
+
+            if (_timer > WaitTime)
+            {
+                OnUpdate();
+                _timer -= WaitTime;
             }
         }
 
@@ -86,16 +89,18 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
         {
             double[] heights = _heights.Reverse().Take(_smaNumber - 1).ToArray();
             double averageHeights = _downloadData.Speed;
-            for (int i = 0; i < heights.Length; i++)
+            foreach (var height in heights)
             {
-                averageHeights += heights[i];
+                averageHeights += height;
             }
 
             averageHeights /= _smaNumber;
 
             _heights.Enqueue(averageHeights);
             if (_heights.Count > NumberOfSamples)
+            {
                 _heights.Dequeue();
+            }
             else
             {
                 _id++;

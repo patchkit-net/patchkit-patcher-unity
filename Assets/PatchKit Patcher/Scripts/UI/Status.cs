@@ -11,15 +11,12 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            _textTranslator = GetComponent<ITextTranslator>();
-            if (_textTranslator == null)
-                _textTranslator = gameObject.AddComponent<TextTranslator>();
+            _textTranslator = GetComponent<ITextTranslator>() ?? gameObject.AddComponent<TextTranslator>();
 
             var operationStatus = Patcher.Instance.UpdaterStatus.SelectSwitchOrNull(s => s.LatestActiveOperation);
 
             var statusDescription = operationStatus.SelectSwitchOrDefault(s => s.Description, string.Empty);
-
-
+            
             Patcher.Instance.State.CombineLatest(statusDescription, (state, description) =>
                 {
                     switch (state)
@@ -36,9 +33,9 @@ namespace PatchKit.Unity.Patcher.UI
                             return LanguageHelper.Tag("starting_application");
                         case PatcherState.UpdatingApp:
                             return description;
+                        default:
+                            return string.Empty;
                     }
-
-                    return string.Empty;
                 }).ObserveOnMainThread().Subscribe(textTranslation => _textTranslator.SetText(textTranslation))
                 .AddTo(this);
         }

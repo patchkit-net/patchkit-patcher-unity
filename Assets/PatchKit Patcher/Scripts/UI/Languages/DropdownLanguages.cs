@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 
@@ -23,7 +24,7 @@ namespace PatchKit.Unity.UI.Languages
         public static void SetValue(string language)
         {
             int currentLanguages = _dropdown.options.FindIndex(id => id.text.ToLower() == language);
-            var options = _dropdown.options;
+            List<Dropdown.OptionData> options = _dropdown.options;
             Dropdown.OptionData tmp = options[currentLanguages];
             options[currentLanguages] = options[_currentValue];
             options[_currentValue] = tmp;
@@ -33,7 +34,7 @@ namespace PatchKit.Unity.UI.Languages
         void DropdownValueChanged(Dropdown change)
         {
             int currentLanguages = change.value;
-            var options = change.options;
+            List<Dropdown.OptionData> options = change.options;
             Dropdown.OptionData tmp = options[currentLanguages];
             options[currentLanguages] = options[_currentValue];
             options[_currentValue] = tmp;

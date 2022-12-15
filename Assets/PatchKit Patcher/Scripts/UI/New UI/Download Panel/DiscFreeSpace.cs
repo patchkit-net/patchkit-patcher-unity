@@ -11,7 +11,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         void Start()
         {
-            var text = AvailableDiskSpace.Instance.FreeDiskSpace.Select(
+            IObservable<string> text = AvailableDiskSpace.Instance.FreeDiskSpace.Select(
                 freeDiscSpace => string.Format("{0:0.0}MB", freeDiscSpace / 1024.0 / 1024.0));
 
             text.ObserveOnMainThread().Subscribe(t => sizeTextTranslator.SetText(t)).AddTo(this);

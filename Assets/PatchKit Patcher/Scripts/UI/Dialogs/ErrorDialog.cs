@@ -15,7 +15,9 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         private void Start()
         {
             if (ErrorTextTranslator == null)
+            {
                 ErrorTextTranslator = ErrorText.gameObject.AddComponent<TextTranslator>();
+            }
         }
 
         public void Confirm()
@@ -30,6 +32,7 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             {
                 yield return new WaitForSeconds(1);
             }
+
             Patcher.Instance.SetUserDecision(Patcher.UserDecision.InstallApp);
         }
 

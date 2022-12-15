@@ -13,19 +13,17 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Start()
         {
-            _textTranslator = GetComponent<ITextTranslator>();
-            if (_textTranslator == null)
-                _textTranslator = gameObject.AddComponent<TextTranslator>();
+            _textTranslator = GetComponent<ITextTranslator>() ?? gameObject.AddComponent<TextTranslator>();
 
-            var downloadStatus = Patcher.Instance.UpdaterStatus
+            IObservable<IReadOnlyDownloadStatus> downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
 
-            var text = downloadStatus.SelectSwitchOrDefault(status =>
+            IObservable<string> text = downloadStatus.SelectSwitchOrDefault(status =>
             {
-                var bytesPerSecond = status.BytesPerSecond;
+                IReadOnlyReactiveProperty<double> bytesPerSecond = status.BytesPerSecond;
 
-                var remainingTime =
+                IObservable<double?> remainingTime =
                     status.Bytes.CombineLatest<long, long, double, double?>(status.TotalBytes, bytesPerSecond,
                         GetRemainingTime);
 
@@ -43,7 +41,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 return string.Empty;
             }
 
-            var span = TimeSpan.FromSeconds(remainingTime.Value);
+            TimeSpan span = TimeSpan.FromSeconds(remainingTime.Value);
 
             if (span.TotalDays > 1.0)
             {

@@ -10,14 +10,14 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
         private void Start()
         {
-            _textTranslator = GetComponent<ITextTranslator>();
-            if (_textTranslator == null)
-                _textTranslator = gameObject.AddComponent<TextTranslator>();
+            _textTranslator = GetComponent<ITextTranslator>() ?? gameObject.AddComponent<TextTranslator>();
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
                 if (state == PatcherState.UpdatingApp)
+                {
                     _textTranslator.SetText(System.DateTime.Now.ToString("HH:mm"));
+                }
             }).AddTo(this);
         }
     }

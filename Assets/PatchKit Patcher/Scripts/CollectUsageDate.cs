@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.UI.NewUI;
@@ -15,17 +16,20 @@ namespace PatchKit.Unity.Patcher
         
         public const string CachePatchKitAnalytics = "patchkit-analytics";
 
-        enum CollectUsageData
+        private enum CollectUsageData
         {
-            none,
-            ask_popup,
-            ask_banner
+            [Description("none")]
+            None,
+            [Description("ask_popup")]
+            AskPopup,
+            [Description("ask_banner")]
+            AskBanner
         }
 
         public enum Analytics
         {
             Off,
-            ON,
+            On,
             FirstStart
         }
 
@@ -50,41 +54,48 @@ namespace PatchKit.Unity.Patcher
                 return;
             }
 
-            _collectUsageData = (CollectUsageData) Enum.Parse(typeof(CollectUsageData), _appInfo.CollectUsageData, true);
+            _collectUsageData = EnumExtension.GetEnumValueFromDescription<CollectUsageData>(_appInfo.CollectUsageData);
 
-            if (!IsNone())
+            if (IsNone())
             {
-                int analytics = (int) Analytics.FirstStart;
+                DebugLogger.Log("Application has usage data collection set to none.");
+                return;
+            }
+            
+            int analytics = (int) Analytics.FirstStart;
 
-                UnityDispatcher.Invoke(() => analytics = GetCache(Patcher.Instance.AppSecret).GetInt(CachePatchKitAnalytics, (int) Analytics.FirstStart)).WaitOne();
-                
-                if (analytics == (int) Analytics.FirstStart)
-                {
-                    if (IsPopup())
-                    {
-                        AnalyticsPopup.Instance.Display();
-                    }
-                    else
-                    {
-                        AnalyticsBanner.Instance.Display();
-                    }
-                }
+            UnityDispatcher.Invoke(() => analytics = GetCache(Patcher.Instance.AppSecret).GetInt(CachePatchKitAnalytics, (int) Analytics.FirstStart)).WaitOne();
+
+            if (analytics != (int) Analytics.FirstStart)
+            {
+                return;
+            }
+            
+            if (IsPopup())
+            {
+                DebugLogger.Log("Application has usage data collection set to popup.");
+                AnalyticsPopup.Instance.Display();
+            }
+            else
+            {
+                DebugLogger.Log("Application has usage data collection set to banner.");
+                AnalyticsBanner.Instance.Display();
             }
         }
 
         public bool IsNone()
         {
-            return _collectUsageData == CollectUsageData.none;
+            return _collectUsageData == CollectUsageData.None;
         }
 
         public bool IsPopup()
         {
-            return _collectUsageData == CollectUsageData.ask_popup;
+            return _collectUsageData == CollectUsageData.AskPopup;
         }
 
         public bool IsBanner()
         {
-            return _collectUsageData == CollectUsageData.ask_banner;
+            return _collectUsageData == CollectUsageData.AskBanner;
         }
         
         private ICache GetCache(string appSecret)

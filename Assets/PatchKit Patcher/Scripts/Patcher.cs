@@ -761,6 +761,7 @@ namespace PatchKit.Unity.Patcher
             {
                 return _app.GetInstalledVersionId() != _remoteVersionId.Value;
             }
+            
             return false;
         }
         

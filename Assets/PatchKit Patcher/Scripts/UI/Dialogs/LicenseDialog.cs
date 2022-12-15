@@ -18,7 +18,9 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
         private void Start()
         {
             if (errorMessageTextTranslator == null)
+            {
                 errorMessageTextTranslator = ErrorMessageText.gameObject.AddComponent<TextTranslator>();
+            }
         }
 
         public void Confirm()

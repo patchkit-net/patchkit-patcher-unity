@@ -33,7 +33,9 @@ namespace PatchKit.Unity.Patcher.UI
         private void Start()
         {
             if (checkButtonTextMeshProTranslator == null)
+            {
                 checkButtonTextMeshProTranslator = CheckButtonText.gameObject.AddComponent<TextTranslator>();
+            }
 
             Patcher.Instance.State.ObserveOnMainThread().Subscribe(state =>
             {
