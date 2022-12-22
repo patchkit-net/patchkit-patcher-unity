@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.17.12.1]
+### Fixed
+- Crash during patching operation
+
 ## [3.17.12.0]
 ### Fixed
 - Displaying the progress bar for patching files for large files
