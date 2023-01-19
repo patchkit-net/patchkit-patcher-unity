@@ -35,6 +35,12 @@ namespace PatchKit.Api.Models.Main
         public string DisplayName;
         
         /// <summary>
+        /// Application description.
+        /// </summary>
+        [JsonProperty("description")]
+        public string Description;
+        
+        /// <summary>
         /// Application author.
         /// </summary>
         [JsonProperty("author")]

@@ -1,14 +1,14 @@
-﻿using UnityEngine;
+﻿using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Patcher.AppData.Local;
 using UniRx;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {
-    public class GameTitleNewUI : MonoBehaviour
+    public class GameDescription : MonoBehaviour
     {
-        private const string TitleCacheKey = "app-display-name";
+        private const string DescriptionCacheKey = "app-display-description";
 
         public Text Text;
 
@@ -31,7 +31,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
 
             patcher.AppInfo
                 .ObserveOnMainThread()
-                .Where(x => !string.IsNullOrEmpty(x.DisplayName))
+                .Where(a => !string.IsNullOrEmpty(a.Secret))
                 .Subscribe(SetAndCacheText)
                 .AddTo(this);
         }
@@ -43,23 +43,23 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 return;
             }
 
-            var cachedDisplayName = GetCache(appSecret)
-                .GetValue(TitleCacheKey, null);
+            var cachedDisplayDescription = GetCache(appSecret)
+                .GetValue(DescriptionCacheKey, null);
 
-            if (string.IsNullOrEmpty(cachedDisplayName))
+            if (string.IsNullOrEmpty(cachedDisplayDescription))
             {
                 return;
             }
 
-            Text.text = cachedDisplayName;
+            Text.text = cachedDisplayDescription;
         }
 
         private void SetAndCacheText(PatchKit.Api.Models.Main.App app)
         {
-            string displayName = app.DisplayName;
+            string displayDescription = app.Description;
 
-            GetCache(app.Secret).SetValue(TitleCacheKey, displayName);
-            Text.text = displayName;
+            GetCache(app.Secret).SetValue(DescriptionCacheKey, displayDescription);
+            Text.text = displayDescription;
 
             _hasBeenSet = true;
         }
