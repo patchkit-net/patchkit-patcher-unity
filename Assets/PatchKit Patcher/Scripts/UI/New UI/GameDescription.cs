@@ -43,7 +43,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 return;
             }
 
-            var cachedDisplayDescription = GetCache(appSecret)
+            string cachedDisplayDescription = GetCache(appSecret)
                 .GetValue(DescriptionCacheKey, null);
 
             if (string.IsNullOrEmpty(cachedDisplayDescription))
