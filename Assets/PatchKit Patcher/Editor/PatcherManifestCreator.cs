@@ -81,7 +81,8 @@ namespace PatchKit.Unity.Editor
                 "security_fix_944",
                 "preselected_executable",
                 "execution_arguments",
-                "changelog_endpoint_2033"
+                "changelog_endpoint_2033",
+                "usage_data_question"
             };
         }
 

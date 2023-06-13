@@ -13,6 +13,7 @@ using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -84,7 +85,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     {
                         DirectoryOperations.CreateDirectory(unarchivePath, cancellationToken);
                     }
-
+                    
                     var downloader = new ChunkedHttpDownloader(packagePath, _resource.ResourceUrls, _resource.ChunksData, _resource.Size);
 
                     long start = entry.Offset.GetValueOrDefault();
@@ -93,16 +94,18 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     var range = new BytesRange(start, end);
 
                     downloader.SetRange(range);
-                    var effectiveRange  = downloader.CalculateContainingChunksRange(range);
+                    var effectiveRange = downloader.CalculateContainingChunksRange(range);
 
-                    long totalData = effectiveRange.End == -1 ? _resource.Size - effectiveRange.Start : effectiveRange.End - effectiveRange.Start;
+                    long totalData = effectiveRange.End == -1
+                        ? _resource.Size - effectiveRange.Start
+                        : effectiveRange.End - effectiveRange.Start;
 
                     var downloadStatus = _entryStatus[entry].DownloadStatus;
                     var repairStatus = _entryStatus[entry].RepairStatus;
 
                     downloadStatus.IsActive.Value = true;
                     downloadStatus.TotalBytes.Value = totalData;
-                    downloadStatus.Description.Value = "Downloading fixes...";
+                    downloadStatus.Description.Value = LanguageHelper.Tag("downloading_fixes");
                     downloadStatus.Bytes.Value = 0;
 
                     downloader.DownloadProgressChanged += downloadedBytes =>
@@ -116,7 +119,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     downloadStatus.IsActive.Value = false;
 
                     repairStatus.IsActive.Value = true;
-                    repairStatus.Description.Value = "Applying fixes...";
+                    repairStatus.Description.Value = LanguageHelper.Tag("applying_fixes");
                     repairStatus.Progress.Value = 0.0;
                     repairStatus.TotalBytes.Value = _contentSummary.Files.First(f => f.Path == entry.Name).Size;
 
@@ -132,7 +135,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     
                     EmplaceFile(Path.Combine(unarchivePath, nameHash + _unpackingSuffix),
                         Path.Combine(_localData.Path, entry.Name), cancellationToken);
-                    
                     repairStatus.IsActive.Value = false;
                 });
             }
@@ -142,11 +144,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             base.Prepare(status, cancellationToken);
 
-            foreach(var entry in _entries)
+            foreach (var entry in _entries)
             {
                 var repairStatus = new ProgressBytesFilesStatus("Applying fixes")
                 {
-                    Weight = { Value = StatusWeightHelper.GetUnarchivePackageWeight(entry.Size.Value) }
+                    Weight = {Value = StatusWeightHelper.GetUnarchivePackageWeight(entry.Size.Value)}
                 };
                 status.RegisterOperation(repairStatus);
 

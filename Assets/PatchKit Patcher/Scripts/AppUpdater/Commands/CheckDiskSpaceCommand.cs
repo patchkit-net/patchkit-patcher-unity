@@ -1,9 +1,9 @@
 ﻿using System.IO;
-using System.Runtime.InteropServices;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -40,30 +40,6 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _processedFilesSize = processedFilesSize;
         }
 
-#if UNITY_STANDALONE_WIN
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool GetDiskFreeSpaceEx(string directoryName,
-            out ulong freeBytes,
-            out ulong totalBytes,
-            out ulong totalFreeBytes);
-
-#elif UNITY_STANDALONE_OSX
-
-        [DllImport("getdiskspaceosx", SetLastError = true, CharSet = CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
-
-#elif UNITY_STANDALONE_LINUX
-
-        [DllImport("libgetdiskspace", SetLastError = true, CharSet = CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool getAvailableDiskSpace(string t_path, out long freeBytes);
-
-#else
-#error Unsupported platform
-#endif
-
         public void Execute(CancellationToken cancellationToken)
         {
             _status.IsActive.Value = true;
@@ -71,28 +47,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             try
             {
-                long availableDiskSpace = -1;
-                long requiredDiskSpace = GetRequiredDiskSpace() - _processedFilesSize;
-
-                var dir = new FileInfo(_localDirectoryPath);
-
-    #if UNITY_STANDALONE_WIN
-                ulong freeBytes, totalBytes, totalFreeBytes;
-                GetDiskFreeSpaceEx(dir.Directory.FullName, out freeBytes, out totalBytes, out totalFreeBytes);
-
-                availableDiskSpace = (long) freeBytes;
-
-    #else
-
-                long freeBytes = 0;
-                getAvailableDiskSpace(dir.Directory.FullName, out freeBytes);
-
-                availableDiskSpace = freeBytes;
-
-    #endif
+                long availableDiskSpace = AvailableDiskSpace.Instance.GetAvailableDiskSpace(_localDirectoryPath);
+                long requiredDiskSpace = GetRequiredDiskSpace();
 
                 DebugLogger.Log("Available free space " + availableDiskSpace + " >= required disk space " +
-                                    requiredDiskSpace);
+                                requiredDiskSpace);
 
                 if (availableDiskSpace >= requiredDiskSpace)
                 {
@@ -100,7 +59,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 }
                 else
                 {
-    #if UNITY_STANDALONE_OSX
+#if UNITY_STANDALONE_OSX
                     // On OSX available space is not always how much of data we can write on disk.
                     // OSX classifies some files as 'purgeable'. There's no easy way to find those
                     // files, but these are deleted on attempt of filling the disk space.
@@ -110,12 +69,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                         // TODO: change bar status
                         return;
                     }
-    #endif
-                    
-                    throw new NotEnoughtDiskSpaceException("There's no enough disk space to install/update this application. " +
-                                                       "Available free space " + availableDiskSpace +
-                                                       " < required disk space " + requiredDiskSpace,
-                                                       availableDiskSpace, requiredDiskSpace);
+#endif
+
+                    throw new NotEnoughtDiskSpaceException(
+                        "There's no enough disk space to install/update this application. " +
+                        "Available free space " + availableDiskSpace +
+                        " < required disk space " + requiredDiskSpace,
+                        availableDiskSpace, requiredDiskSpace);
                 }
             }
             finally
@@ -124,6 +84,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
         }
 
+
+
         private bool TryAllocateDiskSpace(string directory, long space)
         {
             string testFileName = Path.Combine(directory, "_disk_space_tester");
@@ -131,7 +93,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             try
             {
                 DebugLogger.Log("Trying to allocate " + space + " with " + testFileName +
-                    " to ensure that there's enough space available.");
+                                " to ensure that there's enough space available.");
 
                 var buffer = new byte[1024 * 1024];
 
@@ -183,7 +145,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 // estimate the size
                 uncompressedSize = (long) (_contentSummary.Value.Size * 1.4);
             }
-            
+
             long requiredDiskSpace = _contentSummary.Value.Size + uncompressedSize + Reserve;
             return requiredDiskSpace;
         }
@@ -196,7 +158,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 // estimate the size
                 uncompressedSize = (long) (_diffSummary.Value.Size * 1.4);
             }
-            
+
             long requiredDiskSpace = _diffSummary.Value.Size + uncompressedSize + _bigestFileSize + Reserve;
             return requiredDiskSpace;
         }
@@ -207,7 +169,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new OperationStatus
             {
                 Weight = {Value = 0.00001},
-                Description = {Value = "Allocating disk space..."}
+                Description = {Value = LanguageHelper.Tag("allocating_disk_space")}
             };
             status.RegisterOperation(_status);
         }

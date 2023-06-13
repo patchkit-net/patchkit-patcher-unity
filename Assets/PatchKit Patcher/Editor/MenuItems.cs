@@ -17,6 +17,7 @@ public class MenuItems
     [MenuItem(Root + "/Clean All", false, 100)]
     public static void CleanAll()
     {
+        PlayerPrefs.DeleteAll();
         CleanTemporaryAppDirectories.Clean();
     }
 

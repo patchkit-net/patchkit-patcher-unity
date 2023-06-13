@@ -35,6 +35,12 @@ namespace PatchKit.Api.Models.Main
         public string DisplayName;
         
         /// <summary>
+        /// Application description.
+        /// </summary>
+        [JsonProperty("description")]
+        public string Description;
+        
+        /// <summary>
         /// Application author.
         /// </summary>
         [JsonProperty("author")]
@@ -112,5 +118,7 @@ namespace PatchKit.Api.Models.Main
         [JsonProperty("children_channels")]
         public AppRef[] ChildrenChannels;
         
+        [JsonProperty("collect_usage_data")]
+        public string CollectUsageData;
     }
 }

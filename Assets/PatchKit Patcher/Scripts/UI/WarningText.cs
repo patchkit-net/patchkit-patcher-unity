@@ -1,19 +1,20 @@
-﻿using System;
+﻿using PatchKit.Unity.UI.Languages;
 using UniRx;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI
 {
     public class WarningText : MonoBehaviour
     {
-        public Text Text;
+        private ITextTranslator _textMeshProTranslator;
 
         private void Start()
         {
+            _textMeshProTranslator = GetComponent<ITextTranslator>() ?? gameObject.AddComponent<TextTranslator>();
+            
             Patcher.Instance.Warning.ObserveOnMainThread().Subscribe(warning =>
             {
-                Text.text = warning;
+                _textMeshProTranslator.SetText(warning);
             }).AddTo(this);
         }
     }

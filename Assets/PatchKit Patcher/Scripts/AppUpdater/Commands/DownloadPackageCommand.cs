@@ -3,8 +3,8 @@ using System.IO;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UniRx;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
@@ -58,7 +58,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _status = new DownloadStatus
             {
                 Weight = {Value = StatusWeightHelper.GetResourceDownloadWeight(_resource)},
-                Description = {Value = "Downloading package..."}
+                Description = {Value = LanguageHelper.Tag("downloading_package")}
             };
             status.RegisterOperation(_status);
         }
@@ -79,6 +79,10 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             
             _status.IsActive.Value = true;
             _status.TotalBytes.Value = _resource.Size;
+            if (File.Exists(_destinationPackagePath))
+            {
+                _status.StartBytes.Value = new FileInfo(_destinationPackagePath).Length;
+            }
 
             var downloader = new RemoteResourceDownloader(_destinationPackagePath, _destinationMetaPath, _resource);
 
@@ -87,9 +91,11 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             var downloadStartTime = DateTime.Now;
 
             var stalledTimeout = TimeSpan.FromSeconds(10);
-            
+
             using (_status.BytesPerSecond.Subscribe(bps =>
-                _status.Description.Value = bps > 0.01 || DateTime.Now - downloadStartTime < stalledTimeout ? "Downloading package..." : "Stalled..."))
+                _status.Description.Value = bps > 0.01 || DateTime.Now - downloadStartTime < stalledTimeout
+                    ? LanguageHelper.Tag("downloading_package")
+                    : LanguageHelper.Tag("stalled")))
             {
                 downloader.Download(cancellationToken);
             }

@@ -21,7 +21,6 @@ namespace PatchKit.Unity.Patcher.Debug
         private PlatformType _platformType;
         private bool _wasInitialized;
 
-
         void Start()
         {
             _graphicRaycaster = FindObjectOfType<GraphicRaycaster>();

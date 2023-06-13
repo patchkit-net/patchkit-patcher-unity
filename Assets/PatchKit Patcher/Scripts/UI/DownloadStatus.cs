@@ -1,17 +1,23 @@
 ﻿using PatchKit.Unity.Patcher.AppUpdater.Status;
+using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 using UniRx;
 
 namespace PatchKit.Unity.Patcher.UI
 {
     public class DownloadStatus : MonoBehaviour
     {
-        public Text Text;
+        private ITextTranslator _textTranslator;
 
         private void Start()
         {
+            _textTranslator = GetComponent<ITextTranslator>();
+            if (_textTranslator == null)
+            {
+                _textTranslator = gameObject.AddComponent<TextTranslator>();
+            }
+
             var downloadStatus = Patcher.Instance.UpdaterStatus
                 .SelectSwitchOrNull(u => u.LatestActiveOperation)
                 .Select(s => s as IReadOnlyDownloadStatus);
@@ -23,7 +29,7 @@ namespace PatchKit.Unity.Patcher.UI
                         totalBytes / 1024.0 / 1024.0));
             }, string.Empty);
 
-            text.ObserveOnMainThread().SubscribeToText(Text).AddTo(this);
+            text.ObserveOnMainThread().Subscribe(t => _textTranslator.SetText(t)).AddTo(this);
         }
     }
 }
