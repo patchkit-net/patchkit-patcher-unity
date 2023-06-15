@@ -63,8 +63,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             DebugLogger.LogVariable(currentLocalVersionId, "currentLocalVersionId");
 
             var commandFactory = new AppUpdaterCommandFactory();
+            var geolocateCommand = commandFactory.CreateGeolocateCommand();
 
-            IGeolocateCommand geolocateCommand = commandFactory.CreateGeolocateCommand();
             geolocateCommand.Prepare(_status, cancellationToken);
             geolocateCommand.Execute(cancellationToken);
 

@@ -1,27 +1,27 @@
 ﻿using System;
 using PatchKit.Unity.Patcher.Cancellation;
-using PatchKit.Unity.UI.Languages;
 using PatchKit.Unity.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
-    public class LicenseDialog : ALicenseDialog
+    public class LicenseDialog : Dialog<LicenseDialog>, ILicenseDialog
     {
         private LicenseDialogResult _result;
 
         public Text ErrorMessageText;
-        public ITextTranslator errorMessageTextTranslator;
 
         public InputField KeyInputField;
 
-        private void Start()
-        {
-            if (errorMessageTextTranslator == null)
-            {
-                errorMessageTextTranslator = ErrorMessageText.gameObject.AddComponent<TextTranslator>();
-            }
-        }
+        [Multiline]
+        public string InvalidLicenseMessageText;
+
+        [Multiline]
+        public string BlockedLicenseMessageText;
+
+        [Multiline]
+        public string ServiceUnavailableMessageText;
 
         public void Confirm()
         {
@@ -53,12 +53,12 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             base.OnDisplayed();
         }
 
-        public override void SetKey(string key)
+        public void SetKey(string key)
         {
             UnityDispatcher.Invoke(() => KeyInputField.text = key);
         }
 
-        public override LicenseDialogResult Display(LicenseDialogMessageType messageType)
+        public LicenseDialogResult Display(LicenseDialogMessageType messageType)
         {
             UnityDispatcher.Invoke(() => UpdateMessage(messageType));
 
@@ -72,16 +72,16 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
             switch (messageType)
             {
                 case LicenseDialogMessageType.None:
-                    errorMessageTextTranslator.SetText(string.Empty);
+                    ErrorMessageText.text = string.Empty;
                     break;
                 case LicenseDialogMessageType.InvalidLicense:
-                    errorMessageTextTranslator.SetText(LanguageHelper.Tag("invalid_license"));
+                    ErrorMessageText.text = InvalidLicenseMessageText;
                     break;
                 case LicenseDialogMessageType.BlockedLicense:
-                    errorMessageTextTranslator.SetText(LanguageHelper.Tag("blocked_license"));
+                    ErrorMessageText.text = BlockedLicenseMessageText;
                     break;
                 case LicenseDialogMessageType.ServiceUnavailable:
-                    errorMessageTextTranslator.SetText(LanguageHelper.Tag("service_is_unavailable"));
+                    ErrorMessageText.text = ServiceUnavailableMessageText;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("messageType", messageType, null);

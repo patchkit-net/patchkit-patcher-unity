@@ -1,5 +1,6 @@
-﻿using PatchKit.Unity.Patcher.AppUpdater.Status;
-using PatchKit.Unity.UI.Languages;
+﻿using System;
+using System.Collections.Generic;
+using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Utilities;
 using UniRx;
 using UnityEngine;
@@ -9,13 +10,8 @@ namespace PatchKit.Unity.Patcher.UI
 {
     public class ProgressBar : MonoBehaviour
     {
-        private bool _isIdle = false;
-        private const float IdleBarWidth = 0.2f;
-        private const float IdleBarSpeed = 1.2f;
-        private float _idleProgress = -IdleBarWidth;
-
         public Text Text;
-        public ITextTranslator textMeshProTranslator;
+
         public Image Image;
 
         private struct UpdateData
@@ -31,8 +27,8 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void SetProgressBar(float start, float end)
         {
-            Vector2 anchorMax = Image.rectTransform.anchorMax;
-            Vector2 anchorMin = Image.rectTransform.anchorMin;
+            var anchorMax = Image.rectTransform.anchorMax;
+            var anchorMin = Image.rectTransform.anchorMin;
 
             anchorMin.x = Mathf.Clamp(start, 0f, 1f);
             anchorMax.x = Mathf.Clamp(end, 0f, 1f);
@@ -48,7 +44,11 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void SetProgressBarText(string text)
         {
-            textMeshProTranslator.SetText(text);
+            Text.text = text;
+        }
+
+        private void SetProgress(UpdateData data)
+        {
         }
 
         private void SetIdle(string text)
@@ -71,7 +71,7 @@ namespace PatchKit.Unity.Patcher.UI
                 case PatcherState.LoadingPatcherData:
                 case PatcherState.LoadingPatcherConfiguration:
                 case PatcherState.Connecting:
-                    SetIdle(LanguageHelper.Tag("connecting"));
+                    SetIdle("Connecting...");
                     return;
 
                 case PatcherState.UpdatingApp:
@@ -83,7 +83,7 @@ namespace PatchKit.Unity.Patcher.UI
 
                     if (data.Progress <= 0)
                     {
-                        SetIdle(LanguageHelper.Tag("connecting"));
+                        SetIdle("Connecting...");
                         return;
                     }
 
@@ -102,11 +102,10 @@ namespace PatchKit.Unity.Patcher.UI
                         SetProgressBarText(FormatProgressForDisplay(0.0));
                         SetProgressBarLinear(0);
                     }
-
                     break;
 
                 case PatcherState.DisplayingError:
-                    SetProgressBarText(LanguageHelper.Tag(PatcherLanguages.CloseTag));
+                    SetProgressBarText("Error...");
                     SetProgressBarLinear(0);
                     break;
 
@@ -124,45 +123,41 @@ namespace PatchKit.Unity.Patcher.UI
 
         private void Start()
         {
-            if (textMeshProTranslator == null)
-            {
-                textMeshProTranslator = Text.gameObject.AddComponent<TextTranslator>();
-            }
-
-            IObservable<double> progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
-            IObservable<bool> isUpdatingIdle = Patcher.Instance.UpdaterStatus
-                .SelectSwitchOrDefault(p => (IObservable<IReadOnlyOperationStatus>) p.LatestActiveOperation,
-                    (IReadOnlyOperationStatus) null)
+            var progress = Patcher.Instance.UpdaterStatus.SelectSwitchOrDefault(p => p.Progress, -1.0);
+            var isUpdatingIdle = Patcher.Instance.UpdaterStatus
+                .SelectSwitchOrDefault(p => (IObservable<IReadOnlyOperationStatus>) p.LatestActiveOperation, (IReadOnlyOperationStatus) null)
                 .SelectSwitchOrDefault(p => p.IsIdle, false);
 
             Patcher.Instance.State
                 .CombineLatest(progress, Patcher.Instance.IsAppInstalled, isUpdatingIdle,
-                    (state, progressValue, isAppInstalled, isUpdatingIdleValue) => new UpdateData
-                    {
+                    (state, progressValue, isAppInstalled, isUpdatingIdleValue) => new UpdateData {
                         Progress = progressValue,
                         State = state,
                         IsAppInstalled = isAppInstalled,
                         IsIdle = isUpdatingIdleValue
-                    })
+                        })
                 .ObserveOnMainThread()
                 .Subscribe(OnUpdate)
                 .AddTo(this);
         }
-        
+
+        private bool _isIdle = false;
+        private const float IdleBarWidth = 0.2f;
+        private const float IdleBarSpeed = 1.2f;
+        private float _idleProgress = -IdleBarWidth;
+
         private void Update()
         {
-            if (!_isIdle)
+            if (_isIdle)
             {
-                return;
-            }
-            
-            SetProgressBar(_idleProgress, _idleProgress + IdleBarWidth);
+                SetProgressBar(_idleProgress, _idleProgress + IdleBarWidth);
 
-            _idleProgress += Time.deltaTime * IdleBarSpeed;
+                _idleProgress += Time.deltaTime * IdleBarSpeed;
 
-            if (_idleProgress >= 1)
-            {
-                _idleProgress = -IdleBarWidth;
+                if (_idleProgress >= 1)
+                {
+                    _idleProgress = -IdleBarWidth;
+                }
             }
         }
     }

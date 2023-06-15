@@ -19,19 +19,5 @@ class MockCache : ICache
         }
         return defaultValue;
     }
-
-    public void SetInt(string key, int value)
-    {
-        Dictionary[key] = value.ToString();    
-    }
-
-    public int GetInt(string key, int defaultValue = 0)
-    {
-        if (Dictionary.ContainsKey(key))
-        {
-            return int.Parse(Dictionary[key]);
-        }
-        return defaultValue;
-    }
 }
 #endif

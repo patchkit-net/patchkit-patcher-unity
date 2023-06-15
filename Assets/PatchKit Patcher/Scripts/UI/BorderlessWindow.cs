@@ -22,8 +22,6 @@ namespace PatchKit.Unity.Patcher.UI
         public Rect DraggableArea;
 
         public CanvasScaler CanvasScaler;
-        private int _width;
-        private int _height;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
         private const string UnityWindowClassName = "UnityWndClass";
@@ -137,8 +135,8 @@ namespace PatchKit.Unity.Patcher.UI
             DraggableArea.x = DraggableArea.x * screenScale;
             DraggableArea.y = DraggableArea.y * screenScale;
 
-            _windowRect.position = new Vector2(Screen.currentResolution.width/2.0f - _width/2.0f,
-                Screen.currentResolution.height/2.0f - _height/2.0f);
+            _windowRect.position = new Vector2(Screen.currentResolution.width/2.0f - Screen.width/2.0f,
+                Screen.currentResolution.height/2.0f - Screen.height/2.0f);
             _windowRect.size = new Vector2(Screen.width, Screen.height);
 
             Application.runInBackground = true;
@@ -173,14 +171,14 @@ namespace PatchKit.Unity.Patcher.UI
 
             try
             {
-                _width = (int) (int.Parse(screenResolutionText[0]) * screenScale);
-                _height = (int) (int.Parse(screenResolutionText[1]) * screenScale);
+                int width = (int) (int.Parse(screenResolutionText[0]) * screenScale);
+                int height = (int) (int.Parse(screenResolutionText[1]) * screenScale);
 
-                PlayerPrefs.SetInt("Screenmanager Resolution Width", _width);
-                PlayerPrefs.SetInt("Screenmanager Resolution Height", _height);
+                PlayerPrefs.SetInt("Screenmanager Resolution Width", width);
+                PlayerPrefs.SetInt("Screenmanager Resolution Height", height);
                 PlayerPrefs.SetInt("Screenmanager Is Fullscreen mode", 0);
 
-                Screen.SetResolution(_width, _height, false);
+                Screen.SetResolution(width, height, false);
                 CanvasScaler.scaleFactor = screenScale;
             }
             catch (System.Exception e)

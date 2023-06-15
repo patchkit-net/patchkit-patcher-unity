@@ -43,19 +43,6 @@ namespace PatchKit.Unity.Patcher.UI.Dialogs
                 _isDisplaying = false;
             }
         }
-        
-        protected void DisplayWithoutWait()
-        {
-            Assert.IsFalse(_unityThread == Thread.CurrentThread, 
-                "Display dialog can be only used on separate thread.");
-
-            _isDisplaying = true;
-        }
-        
-        protected void OnDisplayWithoutWait()
-        {
-            _isDisplaying = false;
-        }
 
         protected virtual void Awake()
         {

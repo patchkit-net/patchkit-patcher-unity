@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
@@ -6,7 +7,7 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
-using PatchKit.Unity.Utilities;
+using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -68,7 +69,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             };
             status.RegisterOperation(_copyFilesStatus);
 
-            _unarchivePackageStatus = new ProgressBytesFilesStatus(LanguageHelper.Tag("unarchiving_package"))
+            _unarchivePackageStatus = new ProgressBytesFilesStatus("Unarchiving package")
             {
                 Weight = {Value = StatusWeightHelper.GetUnarchivePackageWeight(_versionContentSummary.Size)}
             };
@@ -96,8 +97,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             DebugLogger.Log("Installing content.");
 
-            TemporaryDirectory.ExecuteIn(_packagePath + ".temp_unpack_" + Path.GetRandomFileName(), (packageDir) =>
-            {
+            TemporaryDirectory.ExecuteIn(_packagePath + ".temp_unpack_" + Path.GetRandomFileName(), (packageDir) => {
                 DebugLogger.LogVariable(packageDir.Path, "packageDirPath");
 
                 DebugLogger.Log("Unarchiving package.");
@@ -106,7 +106,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 IUnarchiver unarchiver = CreateUnrachiver(packageDir.Path, out usedSuffix);
 
                 _unarchivePackageStatus.IsActive.Value = true;
-                _unarchivePackageStatus.Description.Value = LanguageHelper.Tag("unarchiving_package") + " ...";
+                _unarchivePackageStatus.Description.Value = "Unarchiving package...";
                 _unarchivePackageStatus.Progress.Value = 0.0;
                 _unarchivePackageStatus.TotalBytes.Value = _versionContentSummary.UncompressedSize;
 
@@ -117,7 +117,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     if (lastEntry != entry)
                     {
                         lastEntry = entry;
-                        
+
                         DebugLogger.Log(string.Format("Unarchiving entry ({0}/{1})...", entry, amount));
                         DebugLogger.Log("entry = " + entry);
                     }
@@ -145,13 +145,13 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 DebugLogger.Log("Moving files.");
 
                 _copyFilesStatus.IsActive.Value = true;
-                _copyFilesStatus.Description.Value = LanguageHelper.Tag("installing") + " ...";
+                _copyFilesStatus.Description.Value = "Installing...";
                 _copyFilesStatus.Progress.Value = 0.0;
 
                 for (int i = 0; i < _versionContentSummary.Files.Length; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     string filePath = _versionContentSummary.Files[i].Path;
                     string nameHash = HashCalculator.ComputeMD5Hash(filePath);
        
@@ -169,9 +169,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     }
 
                     _copyFilesStatus.Progress.Value = (i + 1) / (double) _versionContentSummary.Files.Length;
-                    _copyFilesStatus.Description.Value = LanguageHelper.Tag("installing") +
-                                                         string.Format(" ({0} / {1}) ...", i + 1,
-                                                             _versionContentSummary.Files.Length);
+                    _copyFilesStatus.Description.Value = string.Format("Installing ({0}/{1})...", i + 1, _versionContentSummary.Files.Length);
                 }
 
                 _copyFilesStatus.Progress.Value = 1.0;
@@ -201,8 +199,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             if (!sourceFile.Exists())
             {
-                throw new InstallerException(string.Format("Cannot find file {0} in content package.",
-                    sourceFile.Name));
+                throw new InstallerException(string.Format("Cannot find file {0} in content package.", sourceFile.Name));
             }
 
             string destinationFilePath = _localData.Path.PathCombine(sourceFile.Name);
@@ -231,7 +228,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             public string HashName { get; private set; }
             private string _suffix;
             private string _root;
-            
+
             public string FullHashPath { get { return Path.Combine(_root, HashName + _suffix); } }
 
             public SourceFile(string name, string root, string suffix, string hashName, long size)

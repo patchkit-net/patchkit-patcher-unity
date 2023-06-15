@@ -12,7 +12,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
         public readonly ILicenseDialog LicenseDialog;
 
         public AppUpdaterContext(App app, AppUpdaterConfiguration configuration) :
-            this(app, configuration, UI.Dialogs.ALicenseDialog.Instance)
+            this(app, configuration, UI.Dialogs.LicenseDialog.Instance)
         {
         }
 

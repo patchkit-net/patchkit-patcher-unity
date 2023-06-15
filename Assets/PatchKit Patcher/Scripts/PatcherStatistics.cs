@@ -18,7 +18,6 @@ namespace PatchKit.Unity.Patcher
     public class PatcherStatistics
     {
         private static readonly DebugLogger DebugLogger = new DebugLogger(typeof(PatcherStatistics));
-        private static bool _permitStatistics = false;
         
         public enum Event
         {
@@ -78,16 +77,6 @@ namespace PatchKit.Unity.Patcher
             public long? Size;
             public long? Time;
         }
-        
-        public static void SetPermitStatistics(bool value)
-        {
-            _permitStatistics = value;
-        }
-        
-        public static bool GetPermitStatistics()
-        {
-            return _permitStatistics;
-        }
 
         public static bool TryDispatchSendEvent(Event ev, OptionalParams? parameters = null)
         {
@@ -112,10 +101,7 @@ namespace PatchKit.Unity.Patcher
 
         public static void DispatchSendEvent(Event ev, OptionalParams? parameters = null)
         {
-            if (_permitStatistics)
-            {
-                UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(ev, parameters));
-            }
+            UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(ev, parameters));
         }
 
         public static void DispatchSendEvent(Event ev, string appSecret, OptionalParams? parameters = null)

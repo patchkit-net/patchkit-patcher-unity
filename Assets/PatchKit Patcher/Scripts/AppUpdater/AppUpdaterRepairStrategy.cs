@@ -53,7 +53,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             validateLicense.Prepare(_status, cancellationToken);
             validateLicense.Execute(cancellationToken);
 
-            IGeolocateCommand geolocateCommand = commandFactory.CreateGeolocateCommand();
+            var geolocateCommand = commandFactory.CreateGeolocateCommand();
             geolocateCommand.Prepare(_status, cancellationToken);
             geolocateCommand.Execute(cancellationToken);
 

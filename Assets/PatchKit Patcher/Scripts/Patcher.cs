@@ -6,6 +6,7 @@ using System.Threading;
 using PatchKit.Api;
 using PatchKit.Unity.Patcher.AppUpdater;
 using PatchKit.Unity.Patcher.AppUpdater.Commands;
+using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Utilities;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.UI.Dialogs;
@@ -15,7 +16,9 @@ using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 using System.IO;
 using PatchKit.Api.Models.Main;
 using PatchKit.Network;
+using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
+using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 
 namespace PatchKit.Unity.Patcher
@@ -53,15 +56,13 @@ namespace PatchKit.Unity.Patcher
                 {
                     _instance = FindObjectOfType<Patcher>();
                 }
-
                 return _instance;
             }
         }
 
         private bool _canStartThread = true;
 
-        private readonly PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _threadCancellationTokenSource =
-            new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
+        private readonly PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _threadCancellationTokenSource = new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
 
         private Thread _thread;
 
@@ -90,7 +91,7 @@ namespace PatchKit.Unity.Patcher
 
         private PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource _updateAppCancellationTokenSource;
 
-        public string TraceableAppSecret
+        public string TraceableAppSecret     
         {
             get
             {
@@ -104,10 +105,10 @@ namespace PatchKit.Unity.Patcher
         }
 
         private string _traceableAppSecret;
-
+        
         public string AppSecret { get; private set; }
-
-        public AErrorDialog ErrorDialog;
+        
+        public ErrorDialog ErrorDialog;
 
         public string EditorAppSecret;
 
@@ -117,8 +118,7 @@ namespace PatchKit.Unity.Patcher
 
         public string StartAppCustomArgs { get; set; }
 
-        private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus =
-            new ReactiveProperty<IReadOnlyUpdaterStatus>();
+        private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
 
         public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus
         {
@@ -202,13 +202,6 @@ namespace PatchKit.Unity.Patcher
             get { return _appInfo; }
         }
 
-        private ReactiveProperty<long> _sizeLastContentSummary = new ReactiveProperty<long>();
-
-        public IReadOnlyReactiveProperty<long> SizeLastContentSummary
-        {
-            get { return _sizeLastContentSummary; }
-        }
-
         public void SetUserDecision(UserDecision userDecision)
         {
             DebugLogger.Log(string.Format("User deicision set to {0}.", userDecision));
@@ -258,7 +251,7 @@ namespace PatchKit.Unity.Patcher
                     }
                 }
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 DebugLogger.LogWarning("Lock file closing error - " + e);
             }
@@ -344,10 +337,9 @@ namespace PatchKit.Unity.Patcher
 
                 yield return StartCoroutine(KillThread());
 
-                if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted && PatcherStatistics.GetPermitStatistics())
+                if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
                 {
-                    yield return StartCoroutine(
-                        PatcherStatistics.SendEvent(PatcherStatistics.Event.PatcherSucceededClosed));
+                    yield return StartCoroutine(PatcherStatistics.SendEvent(PatcherStatistics.Event.PatcherSucceededClosed));
                 }
 
                 if (!Application.isEditor)
@@ -412,7 +404,7 @@ namespace PatchKit.Unity.Patcher
         {
             DebugLogger.Log("Starting patcher thread...");
 
-            _thread = new Thread(() => { ThreadExecution(_threadCancellationTokenSource.Token); })
+            _thread = new Thread(() => ThreadExecution(_threadCancellationTokenSource.Token))
             {
                 IsBackground = true
             };
@@ -474,30 +466,8 @@ namespace PatchKit.Unity.Patcher
 
                 ThreadLoadPatcherConfiguration();
 
-                UnityDispatcher.Invoke(() =>
-                {
-                    _app =
-                        new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId,
-                            _requestTimeoutCalculator);
-                }).WaitOne();
-                
-                _updateAppCancellationTokenSource =
-                    new PatchKit.Unity.Patcher.Cancellation.CancellationTokenSource();
-                using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
-                {
-                    _appInfo.Value =
-                        _app.RemoteMetaData.GetAppInfo(true, _updateAppCancellationTokenSource.Token);
-                    _remoteVersionId.Value =
-                        _app.GetLatestVersionId(true, _updateAppCancellationTokenSource.Token);
-                    _sizeLastContentSummary.Value = _app.RemoteMetaData
-                        .GetContentSummary(_remoteVersionId.Value.Value, _updateAppCancellationTokenSource.Token).Size;
-                }
+                UnityDispatcher.Invoke(() => _app = new App(_data.Value.AppDataPath, _data.Value.AppSecret, _data.Value.OverrideLatestVersionId, _requestTimeoutCalculator)).WaitOne();
 
-                CollectUsageDate collectUsageDate = new CollectUsageDate(_appInfo.Value);
-                collectUsageDate.Execute();
-                
-                AvailableDiskSpace.Instance.GetAvailableDiskSpace(Data.Value.AppDataPath);
-                
                 PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
 
                 while (true)
@@ -674,12 +644,12 @@ namespace PatchKit.Unity.Patcher
 
                 DebugLogger.LogVariable(isInstalled, "isInstalled");
 
-                _isAppInstalled.Value = isInstalled;
-                
                 bool canRepairApp = false; // not implemented
                 bool canInstallApp = !isInstalled;
-                bool canCheckForAppUpdates = IsUpdate();
+                bool canCheckForAppUpdates = isInstalled;
                 bool canStartApp = isInstalled;
+
+                _isAppInstalled.Value = isInstalled;
 
                 _canRepairApp.Value = false;
                 _canInstallApp.Value = false;
@@ -755,16 +725,6 @@ namespace PatchKit.Unity.Patcher
             }
         }
 
-        private bool IsUpdate()
-        {
-            if(_isAppInstalled.Value)
-            {
-                return _app.GetInstalledVersionId() != _remoteVersionId.Value;
-            }
-            
-            return false;
-        }
-        
         private void ThreadExecuteUserDecision(CancellationToken cancellationToken)
         {
             bool displayWarningInsteadOfError = false;
@@ -834,8 +794,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (displayWarningInsteadOfError)
                 {
-                    _warning.Value =
-                        LanguageHelper.Tag("unable_to_check_for_updates_please_check_your_internet_connection");
+                    _warning.Value = "Unable to check for updates. Please check your internet connection.";
                 }
                 else
                 {
@@ -879,7 +838,7 @@ namespace PatchKit.Unity.Patcher
 
                 if (displayWarningInsteadOfError)
                 {
-                    _warning.Value = "{unable_to_check_for_updates_please_check_your_internet_connection}";
+                    _warning.Value = "Unable to check for updates. Please check your internet connection.";
                 }
                 else
                 {
@@ -945,11 +904,14 @@ namespace PatchKit.Unity.Patcher
 
             using (cancellationToken.Register(() => _updateAppCancellationTokenSource.Cancel()))
             {
+                _appInfo.Value = _app.RemoteMetaData.GetAppInfo(!automatically, _updateAppCancellationTokenSource.Token);
+                _remoteVersionId.Value = _app.GetLatestVersionId(!automatically, _updateAppCancellationTokenSource.Token);
+                
                 if (_app.IsFullyInstalled())
                 {
                     _localVersionId.Value = _app.GetInstalledVersionId();
                 }
-                
+
                 var appUpdater = new AppUpdater.AppUpdater( new AppUpdaterContext( _app, _configuration.AppUpdaterConfiguration ) );
 
                 try
