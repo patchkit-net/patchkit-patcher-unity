@@ -133,7 +133,7 @@ namespace PatchKit.Unity.Patcher.UI.NewUI
                 .Replace("<>", PatcherLanguages.OpenTag)
                 .Replace("</>", PatcherLanguages.CloseTag);
             title.PublishDate.SetText(string.Format("{0}", publishDate));
-            title.ArrowButton.SetActive(areChanges);
+            title.ExpandButton.SetActive(areChanges);
             title.transform.SetAsLastSibling();
             
             return title.Body;

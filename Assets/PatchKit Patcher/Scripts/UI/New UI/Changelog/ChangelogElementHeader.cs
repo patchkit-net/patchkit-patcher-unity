@@ -1,20 +1,17 @@
-﻿using PatchKit.Unity.Utilities;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.UI.NewUI
 {
-    public class ChangelogElementHeader : CursorManager
+    public class ChangelogElementHeader : MonoBehaviour
     {
         public Transform Body;
-        public GameObject ArrowButton;
+        public GameObject ExpandButton;
         
         [SerializeField]
-        [RequireInterface(typeof(ITextTranslator))]
         private GameObject _titleReference;
         public ITextTranslator Title;
         
         [SerializeField]
-        [RequireInterface(typeof(ITextTranslator))]
         private GameObject _publishDateReference;
         public ITextTranslator PublishDate;
 

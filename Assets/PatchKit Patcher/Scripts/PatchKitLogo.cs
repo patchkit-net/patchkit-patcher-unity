@@ -7,7 +7,7 @@ namespace PatchKit.Unity
 {
     [RequireComponent(typeof(Button))]
     [RequireComponent(typeof(Image))]
-    public class PatchKitLogo : CursorManager
+    public class PatchKitLogo : MonoBehaviour
     {
         private const string PatchKitWebsiteUrl = "https://patchkit.net/?source=patcher";
 
@@ -21,8 +21,6 @@ namespace PatchKit.Unity
 
             _button = GetComponent<Button>();
             _image = GetComponent<Image>();
-
-            Assert.IsNotNull(CursorTexture);
 
             _button.enabled = false;
             _image.enabled = false;

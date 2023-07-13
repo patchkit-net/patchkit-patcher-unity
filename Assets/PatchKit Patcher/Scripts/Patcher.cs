@@ -344,7 +344,7 @@ namespace PatchKit.Unity.Patcher
 
                 yield return StartCoroutine(KillThread());
 
-                if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted && PatcherStatistics.GetPermitStatistics())
+                if (_wasUpdateSuccessfulOrNotNecessary && !_hasGameBeenStarted)
                 {
                     yield return StartCoroutine(
                         PatcherStatistics.SendEvent(PatcherStatistics.Event.PatcherSucceededClosed));

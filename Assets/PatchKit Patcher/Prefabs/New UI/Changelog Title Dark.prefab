@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 2094940973535115099}
   - component: {fileID: 4908756859566867769}
   - component: {fileID: 2565231276843740189}
+  - component: {fileID: 1751033552092948708}
   m_Layer: 5
   m_Name: Changelog Title Dark
   m_TagString: Untagged
@@ -175,10 +176,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df38948e687eb9b4d83fba2568e06b1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CursorTexture: {fileID: 2800000, guid: 9a9d58e8a026acf4bbb9018ecc4d96e3, type: 3}
-  CursorHotspot: {x: 13, y: 4}
   Body: {fileID: 5881554778570916345}
-  ArrowButton: {fileID: 469198728429917793}
+  ExpandButton: {fileID: 469198728429917793}
   _titleReference: {fileID: 117614}
   _publishDateReference: {fileID: 3410554769880655951}
 --- !u!114 &4908756859566867769
@@ -233,6 +232,20 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
+--- !u!114 &1751033552092948708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174066}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddb91ef29e561da42945dc493480a089, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CursorTexture: {fileID: 2800000, guid: 9a9d58e8a026acf4bbb9018ecc4d96e3, type: 3}
+  CursorHotspot: {x: 13, y: 4}
 --- !u!1 &76658158833263135
 GameObject:
   m_ObjectHideFlags: 0

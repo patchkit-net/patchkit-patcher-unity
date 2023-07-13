@@ -84,11 +84,6 @@ namespace PatchKit.Unity.Patcher
             _permitStatistics = value;
         }
         
-        public static bool GetPermitStatistics()
-        {
-            return _permitStatistics;
-        }
-
         public static bool TryDispatchSendEvent(Event ev, OptionalParams? parameters = null)
         {
             try
@@ -112,10 +107,7 @@ namespace PatchKit.Unity.Patcher
 
         public static void DispatchSendEvent(Event ev, OptionalParams? parameters = null)
         {
-            if (_permitStatistics)
-            {
-                UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(ev, parameters));
-            }
+            UnityDispatcher.InvokeCoroutine(PatcherStatistics.SendEvent(ev, parameters));
         }
 
         public static void DispatchSendEvent(Event ev, string appSecret, OptionalParams? parameters = null)
@@ -155,6 +147,11 @@ namespace PatchKit.Unity.Patcher
 
         public static IEnumerator SendEvent(Event ev, string appSecret, OptionalParams? parameters = null)
         {
+            if(!_permitStatistics)
+            {
+                yield return null;
+            }
+
             string senderId = PatcherSenderId.Get();
             string caller = string.Format("patcher_unity:{0}.{1}.{2}.{3}", Version.Major, Version.Minor, Version.Patch, Version.Hotfix);
             string operatingSystemFamily;
