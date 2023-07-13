@@ -2,7 +2,7 @@
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
-    public abstract class AErrorDialog : Dialog<AErrorDialog>
+    public abstract class BaseErrorDialog : Dialog<BaseErrorDialog>
     {
         public abstract void Display(PatcherError patcherError, CancellationToken cancellationToken);
     }

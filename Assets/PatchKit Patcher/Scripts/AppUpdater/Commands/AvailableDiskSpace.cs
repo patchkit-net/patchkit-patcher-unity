@@ -1,19 +1,11 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
 using PatchKit.Unity.Patcher.Debug;
-using UniRx;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
     public class AvailableDiskSpace
     {
-        private ReactiveProperty<long> _freeDiskSpace = new ReactiveProperty<long>();
-
-        public IReadOnlyReactiveProperty<long> FreeDiskSpace
-        {
-            get { return _freeDiskSpace; }
-        }
-
         private static AvailableDiskSpace _instance;
 
         public static AvailableDiskSpace Instance
@@ -60,14 +52,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             GetDiskFreeSpaceEx(new FileInfo(localDirectoryPath).Directory.FullName, out freeBytes, out totalBytes,
                 out totalFreeBytes);
 
-            _freeDiskSpace.Value = (long) freeBytes;
-            return _freeDiskSpace.Value;
+            return (long) freeBytes;
 #else
             long freeBytes = 0;
             getAvailableDiskSpace(dir.Directory.FullName, out freeBytes);
 
-            _freeDiskSpace.Value = (long) freeBytes;
-            return _freeDiskSpace.Value;
+            return (long) freeBytes;
 #endif
         }
     }

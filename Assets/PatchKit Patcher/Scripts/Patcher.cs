@@ -107,7 +107,7 @@ namespace PatchKit.Unity.Patcher
 
         public string AppSecret { get; private set; }
 
-        public AErrorDialog ErrorDialog;
+        public BaseErrorDialog ErrorDialog;
 
         public string EditorAppSecret;
 
@@ -495,8 +495,6 @@ namespace PatchKit.Unity.Patcher
 
                 CollectUsageDate collectUsageDate = new CollectUsageDate(_appInfo.Value);
                 collectUsageDate.Execute();
-                
-                AvailableDiskSpace.Instance.GetAvailableDiskSpace(Data.Value.AppDataPath);
                 
                 PatcherStatistics.TryDispatchSendEvent(PatcherStatistics.Event.PatcherStarted);
 

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace PatchKit.Unity.Patcher.UI.Dialogs
 {
-    public class LicenseDialog : ALicenseDialog
+    public class LicenseDialog : BaseLicenseDialog
     {
         private LicenseDialogResult _result;
 
