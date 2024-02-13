@@ -29,17 +29,17 @@ namespace PatchKit.Unity.Utilities
 
         private static string FindLauncherExecutable(PlatformType platformType)
         {
-            if (File.Exists(LauncherPathFileName))
+            if (File.Exists(Paths.Fix(LauncherPathFileName)))
             {
-                var launcherPath = File.ReadAllText(LauncherPathFileName);
-                if (File.Exists(launcherPath))
+                var launcherPath = File.ReadAllText(Paths.Fix(LauncherPathFileName));
+                if (File.Exists(Paths.Fix(launcherPath)))
                 {
                     return launcherPath;
                 }
             }
 
             var defaultLauncherPath = Path.Combine("..", GetDefaultLauncherName(platformType));
-            if (File.Exists(defaultLauncherPath))
+            if (File.Exists(Paths.Fix(defaultLauncherPath)))
             {
                 return defaultLauncherPath;
             }

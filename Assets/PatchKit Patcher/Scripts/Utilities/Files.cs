@@ -35,7 +35,7 @@ namespace PatchKit.Unity.Utilities
 
         public static void WriteAllText(string fileName, string text) {
             new Retry().Times(10).IntervalSeconds(0.5f).Run(() => {
-                File.WriteAllText(fileName, text);
+                File.WriteAllText(Paths.Fix(fileName), text);
             });
         }
     }

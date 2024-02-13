@@ -6,6 +6,7 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -69,7 +70,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 var filePath = _localData.Path.PathCombine(fileName);
 
-                if (File.Exists(filePath))
+                if (File.Exists(Paths.Fix(filePath)))
                 {
                     FileOperations.Delete(filePath, cancellationToken);
                 }
@@ -95,7 +96,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                     var parentDirPath = _localData.Path.PathCombine(parentDirName);
 
-                    if (Directory.Exists(parentDirPath))
+                    if (Directory.Exists(Paths.Fix(parentDirPath)))
                     {
                         if (DirectoryOperations.IsDirectoryEmpty(parentDirPath))
                         {
@@ -117,7 +118,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 var dirPath = _localData.Path.PathCombine(dirName);
 
-                if (Directory.Exists(dirPath) && DirectoryOperations.IsDirectoryEmpty(dirPath))
+                if (Directory.Exists(Paths.Fix(dirPath)) && DirectoryOperations.IsDirectoryEmpty(dirPath))
                 {
                     DirectoryOperations.Delete(dirPath, false);
                 }

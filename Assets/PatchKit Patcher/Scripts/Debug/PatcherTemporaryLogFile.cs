@@ -4,6 +4,7 @@ using System.IO;
 using PatchKit.Unity.Patcher.AppData;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.Debug
 {
@@ -32,7 +33,7 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             lock (_bufferLock)
             {
-                using (var logFileStream = new FileStream(FilePath, FileMode.OpenOrCreate, FileAccess.Write))
+                using (var logFileStream = new FileStream(Paths.Fix(FilePath), FileMode.OpenOrCreate, FileAccess.Write))
                 {
                     logFileStream.Seek(0, SeekOrigin.End);
                     using (var logFileStreamWriter = new StreamWriter(logFileStream))
@@ -54,7 +55,7 @@ namespace PatchKit.Unity.Patcher.Debug
             for (int i = 0; i < 100; i++)
             {
                 filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-                if (!File.Exists(filePath) && !Directory.Exists(filePath))
+                if (!File.Exists(Paths.Fix(filePath)) && !Directory.Exists(Paths.Fix(filePath)))
                 {
                     break;
                 }
@@ -66,7 +67,7 @@ namespace PatchKit.Unity.Patcher.Debug
         {
             try
             {
-                if (File.Exists(FilePath))
+                if (File.Exists(Paths.Fix(FilePath)))
                 {
                     FileOperations.Delete(FilePath, CancellationToken.Empty);
                 }

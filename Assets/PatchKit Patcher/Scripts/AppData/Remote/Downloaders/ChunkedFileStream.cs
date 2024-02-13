@@ -4,6 +4,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -110,7 +111,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 // Because the only way to download the file should be using Chunked Downloader.
 
                 _logger.LogDebug("Opening file stream...");
-                _fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+                _fileStream = new FileStream(Paths.Fix(path), FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
                 _fileStream.Seek(0, SeekOrigin.End); // seek and stay at the end, so we can append
                 long currentFileSize = _fileStream.Position;
                 _logger.LogDebug("File stream opened.");
@@ -153,7 +154,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
         private void OpenNewFileStream(string path)
         {
             _logger.LogDebug("Opening new file stream...");
-            _fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            _fileStream = new FileStream(Paths.Fix(path), FileMode.Create, FileAccess.Write, FileShare.None);
             _logger.LogDebug("New file stream opened.");
         }
 

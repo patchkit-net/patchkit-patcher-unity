@@ -42,7 +42,7 @@ namespace PatchKit.Unity.Patcher
 
         private string FindInFilesRecursively(string path, Func<string, bool> predicate)
         {
-            return Directory.GetFileSystemEntries(path).First(predicate);
+            return Directory.GetFileSystemEntries(Paths.Fix(path)).First(predicate);
         }
     }
 }

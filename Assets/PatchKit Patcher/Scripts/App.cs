@@ -7,6 +7,7 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher
 {
@@ -108,7 +109,7 @@ namespace PatchKit.Unity.Patcher
             foreach (string fileName in fileNames)
             {
                 string path = LocalDirectory.Path.PathCombine(fileName);
-                if (!File.Exists(path))
+                if (!File.Exists(Paths.Fix(path)))
                 {
                     DebugLogger.LogWarning("File in metadata, but not found on disk: " + fileName + ", search path: " +
                                            path);

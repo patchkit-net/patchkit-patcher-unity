@@ -2,8 +2,10 @@
 using System.IO;
 using PatchKit.Logging;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
+using PatchKit.Unity.Utilities;
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
 using System;
@@ -161,13 +163,13 @@ namespace PatchKit.Unity.Patcher.UI
             string screenSizeFilePath = Path.Combine(Application.dataPath, ScreenSizeFilename);
             _logger.LogDebug("Reading correct screen size from " + screenSizeFilePath);
 
-            if (!File.Exists(screenSizeFilePath))
+            if (!File.Exists(Paths.Fix(screenSizeFilePath)))
             {
                 _logger.LogWarning(screenSizeFilePath + " file does not exist.");
                 return;
             }
 
-            var screenResolutionText = File.ReadAllText(screenSizeFilePath).Split(' ');
+            var screenResolutionText = File.ReadAllText(Paths.Fix(screenSizeFilePath)).Split(' ');
 
             try
             {

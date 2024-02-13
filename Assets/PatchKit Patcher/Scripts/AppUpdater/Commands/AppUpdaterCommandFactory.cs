@@ -7,6 +7,7 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -114,7 +115,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             foreach (string entry in registeredEntries)
             {
                 string filePath = context.App.LocalDirectory.Path.PathCombine(entry);
-                var fileInfo = new FileInfo(filePath);
+                var fileInfo = new FileInfo(Paths.Fix(filePath));
                 if (fileInfo.Exists && fileInfo.Length > biggestFileSize)
                 {
                     biggestFileSize = fileInfo.Length;

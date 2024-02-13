@@ -25,7 +25,7 @@ public class Chmod
     private static void Execute(string mode, string path)
     {
         Assert.IsTrue(Platform.IsPosix(), "Chmod can be run only on POSIX platforms");
-        Assert.IsTrue(File.Exists(ChmodPath), "/bin/chmod should exist");
+        Assert.IsTrue(File.Exists(Paths.Fix(ChmodPath)), "/bin/chmod should exist");
 
         var process = new Process
         {

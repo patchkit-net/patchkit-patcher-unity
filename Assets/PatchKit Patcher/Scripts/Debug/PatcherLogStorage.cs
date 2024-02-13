@@ -6,6 +6,7 @@ using System.Text;
 using Ionic.Zlib;
 using Newtonsoft.Json;
 using UnityEngine;
+using PatchKit.Unity.Utilities;
 
 #if UNITY_5_4_OR_NEWER
 using UnityEngine.Networking;
@@ -129,7 +130,7 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 using (var compressionStream = new GZipStream(compressedLogFileDataStream, CompressionMode.Compress))
                 {
-                    using (var logFileStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read))
+                    using (var logFileStream = new FileStream(Paths.Fix(logFilePath), FileMode.Open, FileAccess.Read))
                     {
                         const int bufferSize = 1024;
                         byte[] buffer = new byte[bufferSize];

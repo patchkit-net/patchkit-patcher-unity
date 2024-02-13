@@ -118,6 +118,8 @@ namespace PatchKit.Unity.Patcher
 
         public string StartAppCustomArgs { get; set; }
 
+        public bool FixLongPathsOnWindows = true;
+
         private readonly ReactiveProperty<IReadOnlyUpdaterStatus> _updaterStatus = new ReactiveProperty<IReadOnlyUpdaterStatus>();
 
         public IReadOnlyReactiveProperty<IReadOnlyUpdaterStatus> UpdaterStatus
@@ -245,7 +247,7 @@ namespace PatchKit.Unity.Patcher
                     _lockFileStream.Close();
 
                     DebugLogger.Log("Deleting the lock file.");
-                    if (File.Exists(_data.Value.LockFilePath))
+                    if (File.Exists(Paths.Fix(_data.Value.LockFilePath)))
                     {
                         FileOperations.Delete(_data.Value.LockFilePath, CancellationToken.Empty);
                     }
@@ -583,7 +585,7 @@ namespace PatchKit.Unity.Patcher
             {
                 try
                 {
-                    _lockFileStream = File.Open(lockFilePath, FileMode.Append);
+                    _lockFileStream = File.Open(Paths.Fix(lockFilePath), FileMode.Append);
                     DebugLogger.Log("Lock file open success");
                 }
                 catch (UnauthorizedAccessException exception)

@@ -4,6 +4,7 @@ using PatchKit.Api.Models.Main;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -74,7 +75,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 long availableDiskSpace = -1;
                 long requiredDiskSpace = GetRequiredDiskSpace() - _processedFilesSize;
 
-                var dir = new FileInfo(_localDirectoryPath);
+                var dir = new FileInfo(Paths.Fix(_localDirectoryPath));
 
     #if UNITY_STANDALONE_WIN
                 ulong freeBytes, totalBytes, totalFreeBytes;
@@ -135,7 +136,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
                 var buffer = new byte[1024 * 1024];
 
-                using (var file = new FileStream(testFileName, FileMode.Create, FileAccess.Write))
+                using (var file = new FileStream(Paths.Fix(testFileName), FileMode.Create, FileAccess.Write))
                 {
                     for (long remaining = space; remaining > 0; remaining -= buffer.Length)
                     {
@@ -153,7 +154,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             finally
             {
                 DebugLogger.Log("Removing allocation file " + testFileName + ".");
-                File.Delete(testFileName);
+                File.Delete(Paths.Fix(testFileName));
                 DebugLogger.Log("Removed successfully.");
             }
         }

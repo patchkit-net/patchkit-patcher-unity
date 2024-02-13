@@ -3,6 +3,7 @@ using System.IO;
 using PatchKit.Network;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.FileSystem
 {
@@ -28,7 +29,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
                 throw new ArgumentException("Value cannot be null or empty", "dirPath");
             }
 
-            if (!Directory.Exists(dirPath))
+            if (!Directory.Exists(Paths.Fix(dirPath)))
             {
                 throw new ArgumentException("Directory must exist", "dirPath");
             }
@@ -37,8 +38,8 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
             {
                 DebugLogger.Log(string.Format("Checking whether directory is empty <{0}>...", dirPath));
 
-                bool isEmpty = Directory.GetFiles(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0 &&
-                    Directory.GetDirectories(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0;
+                bool isEmpty = Directory.GetFiles(Paths.Fix(dirPath), "*", SearchOption.TopDirectoryOnly).Length == 0 &&
+                    Directory.GetDirectories(Paths.Fix(dirPath), "*", SearchOption.TopDirectoryOnly).Length == 0;
 
                 DebugLogger.Log(string.Format("Check complete: directory is {0}.", isEmpty ? "empty" : "not empty"));
 
@@ -112,7 +113,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
             {
                 DebugLogger.Log(string.Format("Creating directory <{0}>.", dirPath));
 
-                Directory.CreateDirectory(dirPath);
+                Directory.CreateDirectory(Paths.Fix(dirPath));
 
                 DebugLogger.Log("Directory created.");
             }
@@ -138,7 +139,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
                 throw new ArgumentException("Value cannot be null or empty", "dirPath)");
             }
 
-            if (!Directory.Exists(dirPath))
+            if (!Directory.Exists(Paths.Fix(dirPath)))
             {
                 throw new ArgumentException("Directory must exist", "dirPath");
             }
@@ -154,7 +155,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
                     recursive ? "recursively " : string.Empty,
                     dirPath));
 
-                Directory.Delete(dirPath, recursive);
+                Directory.Delete(Paths.Fix(dirPath), recursive);
 
                 DebugLogger.Log("Directory deleted.");
             }

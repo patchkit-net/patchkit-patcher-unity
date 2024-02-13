@@ -49,7 +49,7 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
                 DirectoryOperations.CreateDirectory(parentDirectory, cancellationToken);
             }
 
-            return new FileStream(_destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            return new FileStream(Paths.Fix(_destinationFilePath), FileMode.Create, FileAccess.Write, FileShare.None);
         }
 
         public void Download(CancellationToken cancellationToken)

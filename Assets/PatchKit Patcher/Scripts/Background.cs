@@ -165,7 +165,7 @@ public class Background : MonoBehaviour
 
     private bool IsLocalBannerMissing(Data data)
     {
-        return !string.IsNullOrEmpty(CachedBannerModificationDate) && !File.Exists(CachedBannerPath);
+        return !string.IsNullOrEmpty(CachedBannerModificationDate) && !File.Exists(Paths.Fix(CachedBannerPath));
     }
 
     private bool IsNewBannerAvailable(Data data)
@@ -184,7 +184,7 @@ public class Background : MonoBehaviour
     private bool IsCachedBannerAvailable()
     {
         return !string.IsNullOrEmpty(CachedBannerPath)
-             && File.Exists(CachedBannerPath);
+             && File.Exists(Paths.Fix(CachedBannerPath));
     }
 
     private bool IsCachedBannerSameAsRemote(PatcherBannerData bannerData)
@@ -195,7 +195,7 @@ public class Background : MonoBehaviour
     private void ClearCachedBanner()
     {
         _logger.LogDebug(string.Format("Clearning the cached banner at {0}", CachedBannerPath));
-        if (!File.Exists(CachedBannerPath))
+        if (!File.Exists(Paths.Fix(CachedBannerPath)))
         {
             _logger.LogError("The cached banner doesn't exist.");
             return;
@@ -258,10 +258,10 @@ public class Background : MonoBehaviour
             }
         }
 
-        if (File.Exists(filepath))
+        if (File.Exists(Paths.Fix(filepath)))
         {
             _logger.LogDebug(string.Format("Loading the banner image from {0}", filepath));
-            var fileBytes = File.ReadAllBytes(filepath);
+            var fileBytes = File.ReadAllBytes(Paths.Fix(filepath));
 
             if (!texture.LoadImage(fileBytes))
             {

@@ -5,6 +5,7 @@ using PatchKit.Unity.Patcher.AppData.Remote;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UniRx;
 using CancellationToken = PatchKit.Unity.Patcher.Cancellation.CancellationToken;
 
@@ -30,7 +31,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 throw new ArgumentException(destinationPackagePath, "destinationPackagePath");
             }
 
-            if (!Directory.Exists(Path.GetDirectoryName(destinationPackagePath)))
+            if (!Directory.Exists(Paths.Fix(Path.GetDirectoryName(destinationPackagePath))))
             {
                 throw new ArgumentException("Parent directory doesn't exist.", "destinationPackagePath");
             }

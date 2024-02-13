@@ -7,6 +7,7 @@ using PatchKit.Unity.Patcher.AppData.Local;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 using UnityEngine;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
@@ -86,7 +87,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             if (_versionContentSummary.CompressionMethod == "pack1")
             {
-                Assert.IsTrue(File.Exists(_packageMetaPath),
+                Assert.IsTrue(File.Exists(Paths.Fix(_packageMetaPath)),
                     "Compression method is pack1, but meta file does not exist");
 
                 DebugLogger.Log("Parsing package meta file");
@@ -205,7 +206,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             string destinationFilePath = _localData.Path.PathCombine(sourceFile.Name);
             DirectoryOperations.CreateParentDirectory(destinationFilePath, cancellationToken);
 
-            if (File.Exists(destinationFilePath))
+            if (File.Exists(Paths.Fix(destinationFilePath)))
             {
                 DebugLogger.LogFormat("Destination file {0} already exists, removing it.", destinationFilePath);
                 FileOperations.Delete(destinationFilePath, cancellationToken);
@@ -247,7 +248,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             public bool Exists()
             {
-                return File.Exists(FullHashPath);
+                return File.Exists(Paths.Fix(FullHashPath));
             }
         }
     }

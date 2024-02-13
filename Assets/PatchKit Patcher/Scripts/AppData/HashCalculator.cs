@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData
 {
@@ -42,7 +43,7 @@ namespace PatchKit.Unity.Patcher.AppData
 
         public static string ComputeFileHash(string filePath)
         {
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (var fileStream = new FileStream(Paths.Fix(filePath), FileMode.Open, FileAccess.Read))
             {
                 IEnumerable<string> enumerable = new xxHash(Seed).ComputeHash(fileStream).Select(b => b.ToString("X2")).Reverse();
                 return string.Join("", enumerable.ToArray()).ToLower().TrimStart('0');

@@ -2,6 +2,7 @@
 using Ionic.Zip;
 using PatchKit.Unity.Patcher.Debug;
 using PatchKit.Unity.Patcher.Cancellation;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -71,7 +72,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             DebugLogger.Log(string.Format("Unarchiving entry {0}", zipEntry.FileName));
             string destPath = Path.Combine(_destinationDirPath, HashCalculator.ComputeMD5Hash(zipEntry.FileName));
-            using (var target = new FileStream(destPath, FileMode.Create))
+            using (var target = new FileStream(Paths.Fix(destPath), FileMode.Create))
             {
                 zipEntry.Extract(target);
             }

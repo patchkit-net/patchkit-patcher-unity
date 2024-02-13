@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
 {
@@ -6,12 +7,12 @@ namespace PatchKit.Unity.Patcher.AppData.Remote.Downloaders
     {
         public void Validate(string downloadedResourcePath, RemoteResource resource)
         {
-            if (!File.Exists(downloadedResourcePath))
+            if (!File.Exists(Paths.Fix(downloadedResourcePath)))
             {
                 throw new DownloadedResourceValidationException(string.Format("Downloaded resource doesn't exist <{0}>.", downloadedResourcePath));
             }
 
-            var fileInfo = new FileInfo(downloadedResourcePath);
+            var fileInfo = new FileInfo(Paths.Fix(downloadedResourcePath));
 
             if (fileInfo.Length != resource.Size)
             {

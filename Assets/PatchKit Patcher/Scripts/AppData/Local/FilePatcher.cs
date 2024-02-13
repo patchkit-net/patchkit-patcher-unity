@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -47,7 +48,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             DebugLogger.Log("Patching.");
 
-            int status = rs_rdiff_patch(_filePath, _diffPath, _outputFilePath);
+            int status = rs_rdiff_patch(Paths.Fix(_filePath), Paths.Fix(_diffPath), Paths.Fix(_outputFilePath));
 
             if (status != 0)
             {

@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -27,7 +28,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             Path = path;
 
-            if (Directory.Exists(Path))
+            if (Directory.Exists(Paths.Fix(Path)))
             {
                 DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
             }
@@ -45,7 +46,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 // Use first function if second would cause problems.
                 //path = System.IO.Path.Combine(Path, Guid.NewGuid().ToString("N"));
                 uniquePath = Path.PathCombine(System.IO.Path.GetRandomFileName());
-                if (!File.Exists(uniquePath) && !Directory.Exists(uniquePath))
+                if (!File.Exists(Paths.Fix(uniquePath)) && !Directory.Exists(Paths.Fix(uniquePath)))
                 {
                     return uniquePath;
                 }
@@ -61,7 +62,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         private void ReleaseUnmanagedResources()
         {
-            if (!_keep && Directory.Exists(Path))
+            if (!_keep && Directory.Exists(Paths.Fix(Path)))
             {
                 DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
             }

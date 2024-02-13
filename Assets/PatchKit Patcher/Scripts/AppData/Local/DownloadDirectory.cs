@@ -2,6 +2,7 @@
 using PatchKit.Unity.Patcher.AppData.FileSystem;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.Local
 {
@@ -46,7 +47,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
         {
             DebugLogger.Log("Clearing download data.");
 
-            if (Directory.Exists(Path))
+            if (Directory.Exists(Paths.Fix(Path)))
             {
                 DirectoryOperations.Delete(Path, CancellationToken.Empty, true);
                 DirectoryOperations.CreateDirectory(Path, CancellationToken.Empty);

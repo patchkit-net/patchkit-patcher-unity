@@ -2,6 +2,7 @@
 using System.IO;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppData.FileSystem
 {
@@ -34,12 +35,12 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
                 throw new ArgumentException("Value cannot be null or empty", "destinationFilePath");
             }
 
-            if (!File.Exists(sourceFilePath))
+            if (!File.Exists(Paths.Fix(sourceFilePath)))
             {
                 throw new ArgumentException("Source file must exist", "sourceFilePath");
             }
 
-            if (!Directory.Exists(Path.GetDirectoryName(destinationFilePath)))
+            if (!Directory.Exists(Paths.Fix(Path.GetDirectoryName(destinationFilePath))))
             {
                 throw new ArgumentException("Parent directory of destination must exist", "destinationFilePath");
             }
@@ -56,7 +57,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
                     destinationFilePath,
                     overwrite ? "(overwriting)" : string.Empty));
 
-                File.Copy(sourceFilePath, destinationFilePath, overwrite);
+                File.Copy(Paths.Fix(sourceFilePath), Paths.Fix(destinationFilePath), overwrite);
 
                 DebugLogger.Log("File copied.");
             }
@@ -82,7 +83,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
                 throw new ArgumentException("Value cannot be null or empty", "filePath");
             }
 
-            if (!File.Exists(filePath))
+            if (!File.Exists(Paths.Fix(filePath)))
             {
                 throw new ArgumentException("File must exist", "filePath");
             }
@@ -96,7 +97,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
             {
                 DebugLogger.Log(string.Format("Deleting file <{0}>.", filePath));
 
-                File.Delete(filePath);
+                File.Delete(Paths.Fix(filePath));
 
                 DebugLogger.Log("File deleted.");
             }
@@ -130,12 +131,12 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
                 throw new ArgumentException("Value cannot be null or empty", "destinationFilePath");
             }
 
-            if (!File.Exists(sourceFilePath))
+            if (!File.Exists(Paths.Fix(sourceFilePath)))
             {
                 throw new ArgumentException("Source file must exist", "sourceFilePath");
             }
 
-            if (!Directory.Exists(Path.GetDirectoryName(destinationFilePath)))
+            if (!Directory.Exists(Paths.Fix(Path.GetDirectoryName(destinationFilePath))))
             {
                 throw new ArgumentException("Parent directory of destination must exist", "destinationFilePath");
             }
@@ -149,7 +150,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
             {
                 DebugLogger.Log(string.Format("Moving file from <{0}> to <{1}>.", sourceFilePath, destinationFilePath));
 
-                File.Move(sourceFilePath, destinationFilePath);
+                File.Move(Paths.Fix(sourceFilePath), Paths.Fix(destinationFilePath));
 
                 DebugLogger.Log("File moved.");
             }
@@ -167,7 +168,7 @@ namespace PatchKit.Unity.Patcher.AppData.FileSystem
                 return 0;
             }
             
-            FileInfo fInfo = new FileInfo(filePath);
+            FileInfo fInfo = new FileInfo(Paths.Fix(filePath));
             return fInfo.Exists ? fInfo.Length : 0;
         }
     }

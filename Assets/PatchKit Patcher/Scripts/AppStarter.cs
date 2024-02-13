@@ -44,9 +44,9 @@ namespace PatchKit.Unity.Patcher
 
                 bool isOSXApp = platformType == PlatformType.OSX &&
                                 executablePath.EndsWith(".app") &&
-                                Directory.Exists(executablePath);
+                                Directory.Exists(Paths.Fix(executablePath));
                 
-                if (File.Exists(executablePath) || isOSXApp)
+                if (File.Exists(Paths.Fix(executablePath)) || isOSXApp)
                 {
                     return executablePath;
                 }

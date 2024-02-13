@@ -265,7 +265,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             DecompressorCreator decompressorCreator = ResolveDecompressor(_metaData);
 
-            using (var fs = new FileStream(_packagePath, FileMode.Open))
+            using (var fs = new FileStream(Paths.Fix(_packagePath), FileMode.Open))
             {
                 fs.Seek(file.Offset.Value - _range.Start, SeekOrigin.Begin);
 
@@ -273,7 +273,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 {
                     //using (var bufferedLimitedStream = new ThreadBufferedStream(limitedStream, 8 * 1024 * 1024))
                     {
-                        using (var target = new FileStream(destPath, FileMode.Create))
+                        using (var target = new FileStream(Paths.Fix(destPath), FileMode.Create))
                         {
                             ExtractFileFromStream(limitedStream, target, file.Size.Value, decryptor, decompressorCreator, onProgress, cancellationToken);
                             DebugTestCorruption(target);

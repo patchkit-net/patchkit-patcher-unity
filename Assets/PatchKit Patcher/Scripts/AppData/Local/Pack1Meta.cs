@@ -27,7 +27,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
         public static Pack1Meta ParseFromFile(string filename)
         {
-            var text = File.ReadAllText(filename);
+            var text = File.ReadAllText(Paths.Fix(filename));
             return Parse(text);
         }
 

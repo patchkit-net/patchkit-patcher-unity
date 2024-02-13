@@ -13,6 +13,7 @@ using PatchKit.Unity.Patcher.AppData.Remote.Downloaders;
 using PatchKit.Unity.Patcher.AppUpdater.Status;
 using PatchKit.Unity.Patcher.Cancellation;
 using PatchKit.Unity.Patcher.Debug;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 {
@@ -80,7 +81,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                     string packagePath = Path.Combine(tempDir.Path, "p_" + Path.GetRandomFileName());
                     string unarchivePath = Path.Combine(tempDir.Path, "u_" + Path.GetRandomFileName());
 
-                    if (!Directory.Exists(unarchivePath))
+                    if (!Directory.Exists(Paths.Fix(unarchivePath)))
                     {
                         DirectoryOperations.CreateDirectory(unarchivePath, cancellationToken);
                     }
@@ -170,14 +171,14 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
         {
             _logger.LogDebug(string.Format("Installing file {0} into {1}", source, target));
 
-            if (!File.Exists(source))
+            if (!File.Exists(Paths.Fix(source)))
             {
                 throw new Exception(string.Format("Source file {0} doesn't exist.", source));
             }
 
             DirectoryOperations.CreateParentDirectory(target, cancellationToken);
 
-            if (File.Exists(target))
+            if (File.Exists(Paths.Fix(target)))
             {
                 FileOperations.Delete(target, cancellationToken);
             }

@@ -23,9 +23,9 @@ namespace PatchKit.Unity.Patcher
         {
             var filePath = GetFilePath();
 
-            if (File.Exists(filePath))
+            if (File.Exists(Paths.Fix(filePath)))
             {
-                string savedSenderId = File.ReadAllText(filePath);
+                string savedSenderId = File.ReadAllText(Paths.Fix(filePath));
                 if (!string.IsNullOrEmpty(savedSenderId))
                 {
                     DebugLogger.Log("SenderId: " + savedSenderId + " (loaded from " + filePath + ")");
@@ -42,7 +42,7 @@ namespace PatchKit.Unity.Patcher
                 DirectoryOperations.CreateDirectory(parentDirPath, CancellationToken.Empty);
             }
 
-            File.WriteAllText(filePath, senderId);
+            File.WriteAllText(Paths.Fix(filePath), senderId);
 
             DebugLogger.Log("SenderId: " + senderId + " (saved in " + filePath + ")");
 

@@ -147,7 +147,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         void OpenFileSystemEntry(string path, bool isFile)
         {
-            if (File.Exists(path) || Directory.Exists(path))
+            if (File.Exists(Paths.Fix(path)) || Directory.Exists(Paths.Fix(path)))
             {
                 var processStartInfo = GetProcessStartInfo(path);
                 StartProcess(processStartInfo, isFile);

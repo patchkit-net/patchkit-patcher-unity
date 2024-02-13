@@ -61,7 +61,7 @@ namespace PatchKit.Unity.Patcher.Debug
 
         protected static void FileExists(string filePath, ValidationFailedHandler validationFailed)
         {
-            if (!File.Exists(filePath))
+            if (!File.Exists(Paths.Fix(filePath)))
             {
                 validationFailed("File doesn't exists - " + filePath);
             }
@@ -80,7 +80,7 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 validationFailed("Cannot find parent directory of root path.");
             }
-            else if (!Directory.Exists(dirPath))
+            else if (!Directory.Exists(Paths.Fix(dirPath)))
             {
                 validationFailed("Parent directory doesn't exist - " + path);
             }
@@ -92,7 +92,7 @@ namespace PatchKit.Unity.Patcher.Debug
             {
                 validationFailed("Directory doesn't exists - null");
             }
-            else if (!Directory.Exists(dirPath))
+            else if (!Directory.Exists(Paths.Fix(dirPath)))
             {
                 validationFailed("Directory doesn't exists - " + dirPath);
             }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using PatchKit.Unity.Utilities;
 
 namespace PatchKit.Unity.Patcher.Data
 {
@@ -71,12 +72,12 @@ namespace PatchKit.Unity.Patcher.Data
 
         public static bool IsMacExecutable(string filePath)
         {
-            if (!File.Exists(filePath))
+            if (!File.Exists(Paths.Fix(filePath)))
             {
                 return false;
             }
 
-            if ((File.GetAttributes(filePath) & FileAttributes.Directory) != 0)
+            if ((File.GetAttributes(Paths.Fix(filePath)) & FileAttributes.Directory) != 0)
             {
                 // not a file
                 return false;
@@ -88,12 +89,12 @@ namespace PatchKit.Unity.Patcher.Data
 
         public static bool IsLinuxExecutable(string filePath)
         {
-            if (!File.Exists(filePath))
+            if (!File.Exists(Paths.Fix(filePath)))
             {
                 return false;
             }
 
-            if ((File.GetAttributes(filePath) & FileAttributes.Directory) != 0)
+            if ((File.GetAttributes(Paths.Fix(filePath)) & FileAttributes.Directory) != 0)
             {
                 // not a file
                 return false;
@@ -115,7 +116,7 @@ namespace PatchKit.Unity.Patcher.Data
 
         public static FileType ReadFileType(string filePath)
         {
-            using (var reader = new BinaryReader(new FileStream(filePath, FileMode.Open)))
+            using (var reader = new BinaryReader(new FileStream(Paths.Fix(filePath), FileMode.Open)))
             {
                 foreach (var fileType in AllKnown)
                 {

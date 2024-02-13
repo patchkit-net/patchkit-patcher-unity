@@ -237,7 +237,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogDebug("Parsing package meta file...");
             _logger.LogTrace("packageMetaPath = " + _packageMetaPath);
 
-            if (!File.Exists(_packageMetaPath))
+            if (!File.Exists(Paths.Fix(_packageMetaPath)))
             {
                 throw new MissingPackageMetaFileException("Pack1 meta file does not exist.");
             }
@@ -359,7 +359,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("filePath = " + filePath);
 
             _logger.LogDebug("Deleting file in local data. Checking whether it actually exists...");
-            if (File.Exists(filePath))
+            if (File.Exists(Paths.Fix(filePath)))
             {
                 _logger.LogDebug("File exists. Deleting it...");
                 FileOperations.Delete(filePath, cancellationToken);
@@ -383,7 +383,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("dirPath = " + dirPath);
 
             _logger.LogDebug("Deleting directory in local data. Checking whether it actually exists...");
-            if (Directory.Exists(dirPath))
+            if (Directory.Exists(Paths.Fix(dirPath)))
             {
                 _logger.LogDebug("Directory exists. Checking whether directory is empty...");
 
@@ -407,8 +407,8 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private bool IsDirectoryEmpty(string dirPath)
         {
-            bool isEmpty = Directory.GetFiles(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0 &&
-                           Directory.GetDirectories(dirPath, "*", SearchOption.TopDirectoryOnly).Length == 0;
+            bool isEmpty = Directory.GetFiles(Paths.Fix(dirPath), "*", SearchOption.TopDirectoryOnly).Length == 0 &&
+                           Directory.GetDirectories(Paths.Fix(dirPath), "*", SearchOption.TopDirectoryOnly).Length == 0;
 
             return isEmpty;
         }
@@ -479,7 +479,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             _logger.LogTrace("sourceFilePath = " + sourceFilePath);
             _logger.LogTrace("sourceFileName = " + fileName);
             
-            if (!File.Exists(sourceFilePath))
+            if (!File.Exists(Paths.Fix(sourceFilePath)))
             {
                 throw new MissingFileFromPackageException(string.Format("Cannot find file {0} in diff package.",
                     fileName));
@@ -547,7 +547,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             string filePath = _localData.Path.PathCombine(fileName);
             _logger.LogTrace("filePath = " + filePath);
 
-            if (!File.Exists(filePath))
+            if (!File.Exists(Paths.Fix(filePath)))
             {
                 throw new MissingLocalDataFileException(
                     string.Format("Couldn't patch file {0} because it doesn't exists in local data.", fileName));
@@ -573,7 +573,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
                 string sourceDeltaFilePath = Path.Combine(packageDirPath, nameHash + suffix);
                 _logger.LogTrace("sourceDeltaFilePath = " + sourceDeltaFilePath);
 
-                if (!File.Exists(sourceDeltaFilePath))
+                if (!File.Exists(Paths.Fix(sourceDeltaFilePath)))
                 {
                     throw new MissingFileFromPackageException(string.Format(
                         "Cannot find delta file {0} in diff package.",
@@ -651,9 +651,9 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
         private static bool IsEmptyMacAppDirectory(string dirPath)
         {
-            return Directory.Exists(dirPath) &&
+            return Directory.Exists(Paths.Fix(dirPath)) &&
                    dirPath.EndsWith(".app") &&
-                   Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories).Length == 0;
+                   Directory.GetFiles(Paths.Fix(dirPath), "*", SearchOption.AllDirectories).Length == 0;
         }
     }
 }

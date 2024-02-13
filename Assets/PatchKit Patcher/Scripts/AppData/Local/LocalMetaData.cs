@@ -249,11 +249,11 @@ namespace PatchKit.Unity.Patcher.AppData.Local
 
             _logger.LogDebug("Checking whether data file exists...");
             _logger.LogTrace("filePath = " + _filePath);
-            if (!File.Exists(_filePath))
+            if (!File.Exists(Paths.Fix(_filePath)))
             {
                 _logger.LogDebug("Data file doesn't exist. Chechking whether deprecated data file exists...");
                 _logger.LogTrace("deprecatedFilePath = " + _deprecatedFilePath);
-                if (File.Exists(_deprecatedFilePath))
+                if (File.Exists(Paths.Fix(_deprecatedFilePath)))
                 {
                     _logger.LogDebug("Deprecated data file exists. Moving it to a new location...");
                     CreateDataDir();
@@ -306,7 +306,7 @@ namespace PatchKit.Unity.Patcher.AppData.Local
                 _data = new Data();
 
                 _logger.LogDebug("Loading content from file...");
-                var fileContent = File.ReadAllText(_filePath);
+                var fileContent = File.ReadAllText(Paths.Fix(_filePath));
                 _logger.LogDebug("File content loaded.");
                 _logger.LogTrace("fileContent = " + fileContent);
 
