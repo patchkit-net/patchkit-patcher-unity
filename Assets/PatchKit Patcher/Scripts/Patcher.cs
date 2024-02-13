@@ -263,7 +263,6 @@ namespace PatchKit.Unity.Patcher
         {
             UnityEngine.Assertions.Assert.raiseExceptions = true;
 
-            Assert.IsNull(_instance, "There must be only one instance of Patcher component.");
             Assert.IsNotNull(ErrorDialog, "ErrorDialog must be set.");
 
             _instance = this;

@@ -213,7 +213,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
             }
 
 #if UNITY_STANDALONE_WIN
-            if (destinationFilePath.Length > 259)
+            if (!Patcher.Instance.FixLongPathsOnWindows && destinationFilePath.Length > 259)
             {
                 throw new FilePathTooLongException(string.Format("Cannot install file {0}, the destination path length has exceeded Windows path length limit (260).", destinationFilePath)); 
             }

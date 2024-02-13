@@ -69,9 +69,12 @@ namespace PatchKit.Unity.Patcher.AppUpdater
             geolocateCommand.Execute(cancellationToken);
 
 #if UNITY_STANDALONE_WIN
-            var checkPathLengthCommand = commandFactory.CreateCheckPathLengthCommand(latestVersionId, _context, cancellationToken);
-            checkPathLengthCommand.Prepare(_status, cancellationToken);
-            checkPathLengthCommand.Execute(cancellationToken);
+            if (!Patcher.Instance.FixLongPathsOnWindows)
+            {
+                var checkPathLengthCommand = commandFactory.CreateCheckPathLengthCommand(latestVersionId, _context, cancellationToken);
+                checkPathLengthCommand.Prepare(_status, cancellationToken);
+                checkPathLengthCommand.Execute(cancellationToken);
+            }
 #endif
             
             var checkDiskSpaceCommand = commandFactory.CreateCheckDiskSpaceCommandForDiff(latestVersionId, _context, cancellationToken);

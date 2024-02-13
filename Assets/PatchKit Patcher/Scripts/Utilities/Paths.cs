@@ -10,9 +10,9 @@ namespace PatchKit.Unity.Utilities
         // - All paths start with \\?\ prefix, e.g. \\?\C:\path\to\file
         public static string Fix(string path)
         {
-            if (Platform.IsWindows() && Patcher.Instance.FixLongPathsOnWindows)
+            if (Platform.IsWindows() && Patcher.Patcher.Instance.FixLongPathsOnWindows)
             {
-                path = path.ReplaceAll('/', '\\');
+                path = path.Replace('/', '\\');
                 path = System.IO.Path.GetFullPath(path);
                 if (!path.StartsWith("\\\\?\\"))
                 {

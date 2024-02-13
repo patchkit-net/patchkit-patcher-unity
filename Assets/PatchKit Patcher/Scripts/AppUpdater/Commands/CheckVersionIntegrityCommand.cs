@@ -142,7 +142,7 @@ namespace PatchKit.Unity.Patcher.AppUpdater.Commands
 
             int actualVersionId = _localMetaData.GetEntryVersionId(file.Path);
             if (actualVersionId != _versionId)
-            {File
+            {
                 onVerificationFailed();
                 return FileIntegrity.InvalidVersion(_versionId, actualVersionId, file.Path);
             }
