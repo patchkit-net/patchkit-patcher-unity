@@ -67,7 +67,7 @@ namespace PatchKit.Unity.Utilities
             return platforms.Any(platform => platform == runtimePlatform);
         }
 
-        public static OsMajorVersion()
+        public static int OsMajorVersion()
         {
             OperatingSystem os = Environment.OSVersion;
             return os.Version.Major;
