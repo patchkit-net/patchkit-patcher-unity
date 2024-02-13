@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace PatchKit.Unity.Utilities
@@ -64,6 +65,12 @@ namespace PatchKit.Unity.Utilities
         {
             var runtimePlatform = GetRuntimePlatform();
             return platforms.Any(platform => platform == runtimePlatform);
+        }
+
+        public static OsMajorVersion()
+        {
+            OperatingSystem os = Environment.OSVersion;
+            return os.Version.Major;
         }
     }
 
