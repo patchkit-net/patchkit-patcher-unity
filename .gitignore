@@ -16,3 +16,5 @@
 _ReSharper*
 /*.sublime-project
 /*.sublime-workspace
+.DS_Store
+.gitignore
