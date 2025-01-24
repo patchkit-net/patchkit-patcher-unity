@@ -1,3 +1,6 @@
+# Deprecation Notice
+It is no longer recommended to use the Unity launcher. Please switch to the PatchKit Launcher SDK instead for better support and improved functionality. You can find the getting started guide here: [https://patchkit.net/resources/sdk-getting-started/](https://patchkit.net/resources/sdk-getting-started/) and the full documentation here: [https://docs.patchkit.net/launcher_sdk/](https://docs.patchkit.net/launcher_sdk/).
+
 # PatchKit Unity Patcher
 
 * [Documentation](http://docs.patchkit.net/unity_custom_patcher.html)
